@@ -1,4 +1,4 @@
-package models
+package cache
 
 enum class LocationType(val id: Int) {
     /**
@@ -49,7 +49,11 @@ enum class LocationType(val id: Int) {
     /**
      * A decoration positioned on the floor.
      */
-    FLOOR_DECORATION(22)
+    FLOOR_DECORATION(22);
+
+    companion object {
+        fun fromId(id: Int) = values().first { it.id == id }
+    }
 }
 
     

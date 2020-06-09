@@ -1,11 +1,9 @@
 package controllers.worldRenderer.entities
 
-import cache.definitions.UnderlayDefinition
 import controllers.worldRenderer.Constants
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.helpers.ModelBuffers.Companion.FLAG_SCENE_BUFFER
-import java.nio.IntBuffer
 
 class TilePaint(
     var swHeight: Int = 0,
@@ -17,31 +15,40 @@ class TilePaint(
     var neColor: Int,
     var nwColor: Int,
     var texture: Int,
-    var rgb: Int,
-    var underlayDefinition: UnderlayDefinition? = null
-) {
-    var bufferOffset: Int = 0
-    var bufferLen: Int = 0
-    var uvBufferOffset: Int = 0
+    var rgb: Int
+) : Renderable() {
 
-    fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int) {
+    var computeObj: ComputeObj = ComputeObj()
+
+    override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
         val x: Int = sceneX * Constants.LOCAL_TILE_SIZE
-        val y = 0
         val z: Int = sceneY * Constants.LOCAL_TILE_SIZE
         val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
         modelBuffers.incUnorderedModels()
         b.ensureCapacity(13)
-        val buffer: IntBuffer = b.buffer
-        buffer.put(bufferOffset)
-        buffer.put(uvBufferOffset)
-        buffer.put(2)
-        buffer.put(modelBuffers.targetBufferOffset)
-        buffer.put(FLAG_SCENE_BUFFER)
-        buffer.put(x).put(y).put(z)
-        buffer.put(modelBuffers.calcPickerId(sceneX, sceneY, 30))
-        buffer.put(-1).put(-1).put(-1).put(-1)
 
-//        setSceneBufferOffset(modelBuffers.getTargetBufferOffset())
-        modelBuffers.addTargetBufferOffset(2 * 3)
+        computeObj.idx = modelBuffers.targetBufferOffset
+        computeObj.flags = FLAG_SCENE_BUFFER
+        computeObj.x = x
+        computeObj.z = z
+        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, 30)
+        b.buffer.put(computeObj.toArray())
+
+        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
+    }
+
+    override fun drawDynamic(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun clearDraw(modelBuffers: ModelBuffers) {
+        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
+        modelBuffers.incUnorderedModels()
+        b.ensureCapacity(13)
+
+        computeObj.x = Int.MAX_VALUE
+        computeObj.y = Int.MAX_VALUE
+        computeObj.z = Int.MAX_VALUE
+        b.buffer.put(computeObj.toArray())
     }
 }

@@ -2,11 +2,9 @@ package models.scene
 
 import cache.definitions.Location
 import cache.definitions.RegionDefinition
-import controllers.worldRenderer.entities.FloorDecoration
-import controllers.worldRenderer.entities.TileModel
-import controllers.worldRenderer.entities.TilePaint
-import controllers.worldRenderer.entities.WallDecoration
+import controllers.worldRenderer.entities.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 class SceneTile(val z: Int, var x: Int, var y: Int) {
     private lateinit var cacheTile: RegionDefinition.Tile
@@ -15,7 +13,7 @@ class SceneTile(val z: Int, var x: Int, var y: Int) {
     var tileModel: TileModel? = null
     var floorDecoration: FloorDecoration? = null
     var wallDecoration: WallDecoration? = null
-//    private val gameObjects: List<GameObject> = ArrayList<GameObject>()
+    val gameObjects: ArrayList<GameObject> = ArrayList()
 //    private val boundaryObjects: List<WallDecoration> = ArrayList<WallDecoration>()
 
 //    override fun equals(other: Any?): Boolean {

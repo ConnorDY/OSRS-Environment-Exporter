@@ -26,7 +26,9 @@ class TileModel(
     var17: Int,
     var18: Int,
     var19: Int
-) {
+): Renderable() {
+    var computeObj: ComputeObj = ComputeObj()
+
     var vertexX: IntArray
     var vertexY: IntArray
     var vertexZ: IntArray
@@ -43,35 +45,32 @@ class TileModel(
     var underlayRgb: Int
     var overlayRgb: Int
 
-    var bufferOffset: Int = 0
-    var bufferLen: Int = 0
-    var uvBufferOffset: Int = 0
-
-    fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int) {
+    override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
         val x: Int = sceneX * Constants.LOCAL_TILE_SIZE
-        val y = 0
         val z: Int = sceneY * Constants.LOCAL_TILE_SIZE
 
         val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
         modelBuffers.incUnorderedModels()
-
         b.ensureCapacity(13)
-        val buffer: IntBuffer = b.buffer
-        buffer.put(bufferOffset)
-        buffer.put(uvBufferOffset)
-        buffer.put(bufferLen / 3)
-        buffer.put(modelBuffers.targetBufferOffset)
-        buffer.put(ModelBuffers.FLAG_SCENE_BUFFER)
-        buffer.put(x).put(y).put(z)
-        buffer.put(modelBuffers.calcPickerId(sceneX, sceneY, 31))
-        buffer.put(-1).put(-1).put(-1).put(-1) // animation
 
-        modelBuffers.addTargetBufferOffset(bufferLen)
+        computeObj.idx = modelBuffers.targetBufferOffset
+        computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER
+        computeObj.x = x
+        computeObj.z = z
+        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, 31)
+        b.buffer.put(computeObj.toArray())
+
+        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
-    fun drawDynamic(modelBuffers: ModelBuffers?, sceneUploader: SceneUploader?) {
-        throw NotImplementedError("tile models do not draw dynamic")
+    override fun drawDynamic(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int) {
+        TODO("Not yet implemented")
     }
+
+    override fun clearDraw(modelBuffers: ModelBuffers) {
+//        TODO("Not yet implemented")
+    }
+
 
     companion object {
         var field1615: IntArray

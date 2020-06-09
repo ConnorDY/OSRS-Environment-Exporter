@@ -1,5 +1,10 @@
 package controllers.worldRenderer
 
+import cache.LocationType
+import cache.definitions.Location
+import cache.definitions.ModelDefinition
+import cache.definitions.ObjectDefinition
+import cache.definitions.converters.ObjectToModelConverter
 import com.google.inject.Inject
 import com.jogamp.newt.NewtFactory
 import com.jogamp.newt.javafx.NewtCanvasJFX
@@ -7,6 +12,8 @@ import com.jogamp.newt.opengl.GLWindow
 import com.jogamp.opengl.*
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
+import controllers.worldRenderer.entities.Model
+import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
@@ -24,9 +31,8 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
-import models.scene.REGION_SIZE
-import models.scene.Scene
-import models.scene.SceneTile
+import models.ObjectsModel
+import models.scene.*
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -38,7 +44,9 @@ class Renderer @Inject constructor(
     private val sceneUploader: SceneUploader,
     private val inputHandler: InputHandler,
     private val textureManager: TextureManager,
-    private val debugModel: models.DebugModel
+    private val debugModel: models.DebugModel,
+    private val objectsModel: ObjectsModel,
+    private val objectToModelConverter: ObjectToModelConverter
 ) : GLEventListener {
     private val MAX_TEMP_VERTICES: Int = 65535
 
@@ -175,7 +183,139 @@ class Renderer @Inject constructor(
     }
 
     fun loadScene() {
-        scene.load(10038, 1)
+//        scene.load(10038, 1)
+        scene.load(9271, 1)
+        inputHandler.renderer = this
+    }
+
+    private var injectedObject: SceneObject? = null
+    fun bindModels() {
+        objectsModel.heldObject.addListener { _, _, newValue ->
+            injectedObject = newValue
+        }
+
+        scene.getRegion(0, 0)!!.tileChangeListeners.add(object : TileChangeListener {
+            override fun onTileChange(tile: SceneTile) {
+                println("tile changed".format(tile))
+            }
+        })
+    }
+
+//    private fun injectEntity(entity: Entity) {
+//        sceneUploader.uploadModel(entity, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
+//        injectedEntity = entity
+//    }
+
+    private fun handleHover() {
+        val mouseX: Int = inputHandler.mouseX
+        val mouseY: Int = inputHandler.mouseY
+
+        // Using 3 PBOs brings this function time to 0.05ms, with only 2 PBOs is it 10ms
+        // This will write to pboIndex and read from nextIndex which should have finished drawing to
+        // since it will 2 frames behind.
+        pboIndex = (pboIndex + 1) % 3
+        val nextIndex = (pboIndex + 1) % 3
+
+        // Read from pixel buffer object async to get pixels without blocking render
+        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, fboMainRenderer)
+        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, pboIds[pboIndex])
+        gl.glReadBuffer(GL2ES2.GL_COLOR_ATTACHMENT1)
+        gl.glReadPixels(mouseX, canvasHeight - mouseY, 1, 1, GL2ES3.GL_RED_INTEGER, GL2ES2.GL_INT, 0)
+        gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0)
+        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, 0)
+        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
+        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, pboIds[nextIndex])
+        val srcBuf = gl.glMapBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, GL2ES3.GL_READ_ONLY)
+        val pboBytes = ByteArray(4)
+        srcBuf[pboBytes]
+        val pickerId: Int =
+            pboBytes[3].toInt() and 0xFF shl 24 or (pboBytes[2].toInt() and 0xFF shl 16) or (pboBytes[1].toInt() and 0xFF shl 8) or (pboBytes[0].toInt() and 0xFF)
+        gl.glUnmapBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER)
+        if (pickerId == 1058050193) { // clear sky coor
+            return
+        }
+
+        // -1 = null hover, ignore
+        // -2 = we want to pass through this object
+        if (pickerId == -1) {
+            hoverId = -1
+            return
+        }
+        if (pickerId != -2) {
+            hoverId = pickerId
+        }
+
+        val x = hoverId shr 18 and 0x1FFF
+        val y = hoverId shr 5 and 0x1FFF
+        val type = hoverId and 0x1F
+
+        val tile = scene.getTile(0, x, y)
+
+        if (injectedObject != null && tile?.tilePaint != null) {
+            val objectDefinition: ObjectDefinition = injectedObject!!.objectDefinition
+            val modelDefinition: ModelDefinition? =
+                objectToModelConverter.toModel(objectDefinition, injectedObject!!.type, injectedObject!!.orientation)
+                    ?: return
+            val model = Model(modelDefinition!!, objectDefinition.ambient, objectDefinition.contrast)
+            model.xOff = objectDefinition.sizeX * REGION_SIZE
+            model.yOff = objectDefinition.sizeY * REGION_SIZE
+            sceneUploader.uploadModel(
+                StaticObject(model, tile.tilePaint!!.nwHeight),
+                modelBuffers.vertexBuffer,
+                modelBuffers.uvBuffer
+            )
+            model.drawDynamic(modelBuffers, x, y, tile.tilePaint!!.nwHeight)
+        }
+    }
+
+    private fun handleClick() {
+        if (hoverId == -1) {
+            return
+        }
+        if (inputHandler.mouseClicked) {
+            inputHandler.mouseClicked = false
+            val x = hoverId shr 18 and 0x1FFF
+            val y = hoverId shr 5 and 0x1FFF
+            val tile = scene.getTile(0, x, y)
+            val region = scene.getRegionFromSceneCoord(x, y)
+            if (injectedObject != null && region != null) {
+                val objectDefinition: ObjectDefinition = injectedObject!!.objectDefinition
+                val loc = Location(objectDefinition.id, injectedObject!!.type, injectedObject!!.orientation, x, y, 0)
+                region.locationsDefinition.locations.add(loc)
+
+                val modelDefinition: ModelDefinition? = objectToModelConverter.toModel(
+                    objectDefinition,
+                    injectedObject!!.type,
+                    injectedObject!!.orientation
+                )
+                val model = Model(modelDefinition!!, objectDefinition.ambient, objectDefinition.contrast)
+                model.xOff = objectDefinition.sizeX * REGION_SIZE
+                model.yOff = objectDefinition.sizeY * REGION_SIZE
+                sceneUploader.uploadModel(
+                    StaticObject(model, tile!!.tilePaint!!.nwHeight),
+                    modelBuffers.vertexBuffer,
+                    modelBuffers.uvBuffer
+                )
+                model.drawPersistent(modelBuffers, x, y, tile.tilePaint!!.nwHeight, injectedObject!!.type)
+            }
+            if (injectedObject == null) {
+                val type = hoverId and 0x1F
+                val tile = scene.getTile(0, x, y)
+                val region = scene.getRegionFromSceneCoord(x, y)
+                if (tile != null && region != null) {
+//                    if (type == 10) {
+//                        tile.gameObjects[0].entity?.getModel()?.clearDraw(modelBuffers)
+//                        val removed = region.locationsDefinition.locations.removeIf { it.type == 10 }
+//                        println("removed? $removed")
+//                    }
+//                    tile.tilePaint?.clearDraw(modelBuffers)
+//                    tile.gameObjects.forEach { it.entity?.getModel()?.clearDraw(modelBuffers) }
+                }
+
+//            val obj = StaticObject(injectedModel!!, tile?.tilePaint?.neHeight!!)
+//            injectEntity(obj)
+            }
+        }
     }
 
     override fun init(drawable: GLAutoDrawable) {
@@ -193,7 +333,7 @@ class Renderer @Inject constructor(
             initVao()
 
             // disable vsync
-            gl.setSwapInterval(0);
+            gl.swapInterval = 0;
         } catch (e: ShaderException) {
             e.printStackTrace()
         }
@@ -209,23 +349,20 @@ class Renderer @Inject constructor(
         gl.glViewport(x, y, width, height)
     }
 
-    override fun dispose(drawable: GLAutoDrawable?) {
-        shutdownBuffers()
-        shutdownProgram()
-        shutdownVao()
-        shutdownPickerFbo()
-        shutdownAAFbo()
-    }
-
     private var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
     override fun display(drawable: GLAutoDrawable?) {
+
         if (isSceneUploadRequired) {
             uploadScene()
         }
 
+        sceneUploader.resetOffsets() // to reuse uploadModel function
+
         debugModel.fps.set(animator.lastFPS)
+        handleClick()
         handleHover()
+
 
         if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {
             createProjectionMatrix(
@@ -271,8 +408,10 @@ class Renderer @Inject constructor(
         val sky = 9493480
         gl.glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)
         gl.glClear(GL.GL_COLOR_BUFFER_BIT or GL.GL_DEPTH_BUFFER_BIT)
+
         modelBuffers.flip()
         modelBuffers.flipVertUv()
+
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
         val modelBuffer: IntBuffer = modelBuffers.modelBuffer.buffer
@@ -360,7 +499,7 @@ class Renderer @Inject constructor(
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, colorPickerBufferId)
             //            gl.glBindBufferBase(gl.GL_SHADER_STORAGE_BUFFER, 8, animFrameBufferId);
-            gl.glDispatchCompute(modelBuffers.unorderedModels, 1, 1)
+            gl.glDispatchCompute(modelBuffers.unorderedModelsCount, 1, 1)
 
             // small
             gl.glUseProgram(glSmallComputeProgram)
@@ -373,7 +512,7 @@ class Renderer @Inject constructor(
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, colorPickerBufferId)
             //            gl.glBindBufferBase(gl.GL_SHADER_STORAGE_BUFFER, 8, animFrameBufferId);
-            gl.glDispatchCompute(modelBuffers.smallModels, 1, 1)
+            gl.glDispatchCompute(modelBuffers.smallModelsCount, 1, 1)
 
             // large
             gl.glUseProgram(glComputeProgram)
@@ -386,7 +525,7 @@ class Renderer @Inject constructor(
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, colorPickerBufferId)
             //            gl.glBindBufferBase(gl.GL_SHADER_STORAGE_BUFFER, 8, animFrameBufferId);
-            gl.glDispatchCompute(modelBuffers.largeModels, 1, 1)
+            gl.glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
             gl.glMemoryBarrier(GL3ES3.GL_SHADER_STORAGE_BARRIER_BIT)
 
             if (textureArrayId == -1) {
@@ -462,46 +601,6 @@ class Renderer @Inject constructor(
         gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
         modelBuffers.clearVertUv()
         modelBuffers.clear()
-        val end = System.nanoTime()
-    }
-
-    fun handleHover() {
-        val mouseX: Int = inputHandler.mouseX
-        val mouseY: Int = inputHandler.mouseY
-
-        // Using 3 PBOs brings this function time to 0.05ms, with only 2 PBOs is it 10ms
-        // This will write to pboIndex and read from nextIndex which should have finished drawing to
-        // since it will 2 frames behind.
-        pboIndex = (pboIndex + 1) % 3
-        val nextIndex = (pboIndex + 1) % 3
-
-        // Read from pixel buffer object async to get pixels without blocking render
-        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, fboMainRenderer)
-        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, pboIds[pboIndex])
-        gl.glReadBuffer(GL2ES2.GL_COLOR_ATTACHMENT1)
-        gl.glReadPixels(mouseX, canvasHeight - mouseY, 1, 1, GL2ES3.GL_RED_INTEGER, GL2ES2.GL_INT, 0)
-        gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0)
-        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, 0)
-        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
-        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, pboIds[nextIndex])
-        val srcBuf = gl.glMapBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, GL2ES3.GL_READ_ONLY)
-        val pboBytes = ByteArray(4)
-        srcBuf[pboBytes]
-        val pickerId: Int = pboBytes[3].toInt() and 0xFF shl 24 or (pboBytes[2].toInt() and 0xFF shl 16) or (pboBytes[1].toInt() and 0xFF shl 8) or (pboBytes[0].toInt() and 0xFF)
-        gl.glUnmapBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER)
-        if (pickerId == 1058050193) { // clear sky coor
-            return
-        }
-
-        // -1 = null hover, ignore
-        // -2 = we want to pass through this object
-        if (pickerId == -1) {
-            hoverId = -1
-            return
-        }
-        if (pickerId != -2) {
-            hoverId = pickerId
-        }
     }
 
     private fun drawTiles() {
@@ -551,19 +650,23 @@ class Renderer @Inject constructor(
         val x: Int = tile.x
         val y: Int = tile.y
         if (tile.tilePaint != null) {
-            tile.tilePaint!!.draw(modelBuffers, x, y)
+            tile.tilePaint!!.draw(modelBuffers, x, y, 0, 30)
         }
 
         if (tile.tileModel != null) {
-            tile.tileModel!!.draw(modelBuffers, x, y)
+            tile.tileModel!!.draw(modelBuffers, x, y, 0, 31)
         }
 
         if (tile.floorDecoration != null) {
-            tile.floorDecoration!!.entity!!.getModel().draw(modelBuffers, x, y, tile.floorDecoration!!.entity!!.height)
+            tile.floorDecoration!!.entity!!.getModel().draw(modelBuffers, x, y, tile.floorDecoration!!.entity!!.height, LocationType.FLOOR_DECORATION.id)
         }
 
         if (tile.wallDecoration != null) {
-            tile.wallDecoration!!.entity!!.getModel().draw(modelBuffers, x, y, tile.wallDecoration!!.entity!!.height)
+            tile.wallDecoration!!.entity!!.getModel().draw(modelBuffers, x, y, tile.wallDecoration!!.entity!!.height, LocationType.INTERACTABLE_WALL_DECORATION.id)
+        }
+
+        for (gameObject in tile.gameObjects) {
+            gameObject.entity!!.getModel().draw(modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
         }
     }
 
@@ -591,6 +694,14 @@ class Renderer @Inject constructor(
         modelBuffers.clearVertUv()
         drawTiles()
         isSceneUploadRequired = false
+    }
+
+    override fun dispose(drawable: GLAutoDrawable?) {
+        shutdownBuffers()
+        shutdownProgram()
+        shutdownVao()
+        shutdownPickerFbo()
+        shutdownAAFbo()
     }
 
     @Throws(ShaderException::class)

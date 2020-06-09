@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
@@ -10,50 +9,27 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ObjectPickerController">
-   <children>
-      <HBox prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <children>
-            <VBox prefHeight="400.0" prefWidth="169.0">
-               <children>
-                  <HBox prefHeight="26.0" prefWidth="169.0">
-                     <children>
-                        <Label text="Search" HBox.hgrow="ALWAYS">
-                           <HBox.margin>
-                              <Insets top="3.0" />
-                           </HBox.margin>
-                        </Label>
-                        <TextField fx:id="searchBox" prefHeight="25.0" prefWidth="120.0" promptText="Enter a search" HBox.hgrow="ALWAYS" />
-                     </children>
-                  </HBox>
-                  <ListView fx:id="listView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-               </children>
-            </VBox>
-            <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
-               <children>
-                  <HBox prefHeight="32.0" prefWidth="431.0">
-                     <children>
-                        <Label text="Types:">
-                           <HBox.margin>
-                              <Insets top="4.0" />
-                           </HBox.margin>
-                        </Label>
-                        <HBox fx:id="paneTypeList" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
-                     </children>
-                  </HBox>
-                  <StackPane fx:id="stackPane" alignment="TOP_LEFT" prefHeight="381.0" prefWidth="431.0" VBox.vgrow="ALWAYS">
-                     <children>
-                        <HBox fx:id="paneAddToSwatch" alignment="BOTTOM_CENTER" prefHeight="100.0" prefWidth="200.0" StackPane.alignment="BOTTOM_CENTER">
-                           <children>
-                              <TextField fx:id="txtAddToSwatchName" />
-                              <Button fx:id="btnAddToSwatch" mnemonicParsing="false" text="Add to swatch" />
-                           </children>
+<AnchorPane minHeight="200.0" minWidth="400.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ObjectPickerController">
+    <children>
+        <HBox prefHeight="100.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <VBox minWidth="200.0">
+                    <children>
+                        <HBox>
+                            <children>
+                                <Label text="Search" HBox.hgrow="ALWAYS">
+                                    <HBox.margin>
+                                        <Insets top="3.0" />
+                                    </HBox.margin>
+                                </Label>
+                                <TextField fx:id="searchBox" prefHeight="25.0" prefWidth="120.0" promptText="Enter a search" HBox.hgrow="ALWAYS" />
+                            </children>
                         </HBox>
-                     </children>
-                  </StackPane>
-               </children>
-            </VBox>
-         </children>
-      </HBox>
-   </children>
+                        <ListView fx:id="listView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                    </children>
+                </VBox>
+                <StackPane fx:id="stackPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+            </children>
+        </HBox>
+    </children>
 </AnchorPane>

@@ -15,6 +15,10 @@ class ObjectLoader @Inject constructor(
     cacheLibrary: CacheLibrary,
     private val objectDefinitionCache: HashMap<Int, ObjectDefinition> = HashMap()
 ) {
+    fun getAll(): HashMap<Int, ObjectDefinition> {
+        return objectDefinitionCache
+    }
+
     fun get(id: Int): ObjectDefinition? {
         return objectDefinitionCache[id]
     }

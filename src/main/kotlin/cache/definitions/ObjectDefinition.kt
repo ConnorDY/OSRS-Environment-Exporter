@@ -46,4 +46,8 @@ class ObjectDefinition {
     var anInt2113 = 0
     var blocksProjectile = true
     var params: Map<Int, Any>? = null
+
+    override fun toString(): String {
+        return String.format("%s (%d)", name, id)
+    }
 }

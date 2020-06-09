@@ -81,55 +81,17 @@ class SceneUploader {
 //		{
 //			reset(bridge);
 //		}
-        val sceneTilePaint = tile.tilePaint
-        if (sceneTilePaint != null) {
-            sceneTilePaint.bufferOffset = -1
-        }
-        val sceneTileModel = tile.tileModel
-        if (sceneTileModel != null) {
-            sceneTileModel.bufferOffset = -1
-        }
+        tile.tilePaint?.computeObj?.offset = -1
 
-        val wallDecoration = tile.wallDecoration
-        if (wallDecoration != null) {
-            val entity = wallDecoration.entity
-            if (entity is StaticObject) {
-                entity.getModel().bufferOffset = -1
-            }
-            //            Entity entityB = wallDecoration.getEntityB();
-//            if (entityB instanceof StaticObject) {
-//                ((StaticObject) entityB).setBufferOffset(-1);
-//            }
+        tile.tileModel?.computeObj?.offset = -1
+
+        tile.wallDecoration?.entity?.getModel()?.computeObj?.offset = -1
+
+        tile.floorDecoration?.entity?.getModel()?.computeObj?.offset = -1
+
+        for (gameObject in tile.gameObjects) {
+            gameObject.entity?.getModel()?.computeObj?.offset = -1
         }
-
-        val floorDecoration = tile.floorDecoration
-        if (floorDecoration != null) {
-            val entity = floorDecoration.entity
-            if (entity is StaticObject) {
-                entity.getModel().bufferOffset = -1
-            }
-        }
-
-//		DecorativeObject decorativeObject = tile.getDecorativeObject();
-//		if (decorativeObject != null)
-//		{
-//			if (decorativeObject.getRenderable() instanceof Model)
-//			{
-//				((Model) decorativeObject.getRenderable()).setBufferOffset(-1);
-//			}
-//		}
-//
-
-//        List<GameObject> gameObjects = tile.getGameObjects();
-//        for (GameObject gameObject : gameObjects) {
-//            if (gameObject == null) {
-//                continue;
-//            }
-//            Entity entity = gameObject.getEntity();
-//            if (entity instanceof StaticObject) {
-//                ((StaticObject) entity).setBufferOffset(-1);
-//            }
-//        }
     }
 
     fun upload(tile: SceneTile, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
@@ -140,51 +102,42 @@ class SceneUploader {
 //		}
         val sceneTilePaint = tile.tilePaint
         if (sceneTilePaint != null) {
-            sceneTilePaint.bufferOffset = offset
+            sceneTilePaint.computeObj.offset = offset
             if (sceneTilePaint.texture != -1) {
-                sceneTilePaint.uvBufferOffset = uvOffset
+                sceneTilePaint.computeObj.uvOffset = uvOffset
             } else {
-                sceneTilePaint.uvBufferOffset = -1
+                sceneTilePaint.computeObj.uvOffset = -1
             }
             val len = upload(sceneTilePaint, vertexBuffer, uvBuffer)
-            sceneTilePaint.bufferLen = len
+            sceneTilePaint.computeObj.size = len / 3
             offset += len
             if (sceneTilePaint.texture != -1) {
                 uvOffset += len
             }
         }
+
         val sceneTileModel = tile.tileModel
         if (sceneTileModel != null) {
-            sceneTileModel.bufferOffset = offset
+            sceneTileModel.computeObj.offset = offset
             if (sceneTileModel.triangleTextureId != null) {
-                sceneTileModel.uvBufferOffset = uvOffset
+                sceneTileModel.computeObj.uvOffset = uvOffset
             } else {
-                sceneTileModel.uvBufferOffset = -1
+                sceneTileModel.computeObj.uvOffset = -1
             }
             val len = upload(sceneTileModel, vertexBuffer, uvBuffer)
-            sceneTileModel.bufferLen = len
+            sceneTileModel.computeObj.size = len / 3
             offset += len
             if (sceneTileModel.triangleTextureId != null) {
                 uvOffset += len
             }
         }
 
-        val wallDecoration = tile.wallDecoration;
+        val wallDecoration = tile.wallDecoration
         if (wallDecoration != null) {
-            val entity = wallDecoration.entity;
+            val entity = wallDecoration.entity
             if (entity is StaticObject) {
-                uploadModel(entity, vertexBuffer, uvBuffer);
+                uploadModel(entity, vertexBuffer, uvBuffer)
             }
-//            else if (entityA instanceof DynamicObject) {
-//                for (int i = ((DynamicObject) entityA).getSequenceDefinition().frameIds.length - ((DynamicObject) entityA).getSequenceDefinition().frameCount; i < ((DynamicObject) entityA).getSequenceDefinition().frameIds.length; i++) {
-//                    uploadModel(((DynamicObject) entityA).getModel(i), vertexBuffer, uvBuffer);
-//                }
-//            }
-
-//            Entity entityB = wallDecoration.getEntityA();
-//            if (entityB instanceof StaticObject) {
-//                uploadModel(entityB.getModel(), vertexBuffer, uvBuffer);
-//            }
         }
 
         val floorDecoration = tile.floorDecoration
@@ -195,32 +148,12 @@ class SceneUploader {
             }
         }
 
-//		DecorativeObject decorativeObject = tile.getDecorativeObject();
-//		if (decorativeObject != null)
-//		{
-//			Renderable renderable = decorativeObject.getRenderable();
-//			if (renderable instanceof Model)
-//			{
-//				uploadModel((Model) renderable, vertexBuffer, uvBuffer);
-//			}
-//
-//			Renderable renderable2 = decorativeObject.getRenderable2();
-//			if (renderable2 instanceof Model)
-//			{
-//				uploadModel((Model) renderable2, vertexBuffer, uvBuffer);
-//			}
-//		}
-//
-//        List<GameObject> gameObjects = tile.getGameObjects();
-//        for (GameObject gameObject : gameObjects) {
-//            if (gameObject == null) {
-//                continue;
-//            }
-//            Entity entity = gameObject.getEntity();
-//            if (entity instanceof StaticObject) {
-//                uploadModel(entity.getModel(), vertexBuffer, uvBuffer);
-//            }
-//        }
+        for (gameObject in tile.gameObjects) {
+            val entity = gameObject.entity
+            if (entity is StaticObject) {
+                uploadModel(entity, vertexBuffer, uvBuffer)
+            }
+        }
     }
 
     fun upload(tile: TilePaint, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
@@ -325,14 +258,16 @@ class SceneUploader {
     fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val model = entity.getModel()
 
-        if (model.bufferOffset > 0) {
+        // FIXME: computeObj should be composed of model, position, etc.
+        // so that entities can reuse the same model and the model will know it's position in the vertexbuffer
+        if (model.computeObj.offset > 0) {
             return -1
         }
-        model.bufferOffset = offset
+        model.computeObj.offset = offset
         if (model.modelDefinition.faceTextures != null) {
-            model.uvBufferOffset = uvOffset
+            model.computeObj.uvOffset = uvOffset
         } else {
-            model.uvBufferOffset = -1
+            model.computeObj.uvOffset = -1
         }
         vertexBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
         uvBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
@@ -341,6 +276,7 @@ class SceneUploader {
         for (i in 0 until triangleCount) {
             len += pushFace(model, i, vertexBuffer, uvBuffer)
         }
+        model.computeObj.size = len / 3
         offset += len
         if (model.modelDefinition.faceTextures != null) {
             uvOffset += len

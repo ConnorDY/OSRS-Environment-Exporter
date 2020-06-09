@@ -15,9 +15,9 @@ class ModelBuffers {
         modelBuffer.clear()
         modelBufferSmall.clear()
         modelBufferUnordered.clear()
-        unorderedModels = 0
-        largeModels = unorderedModels
-        smallModels = largeModels
+        unorderedModelsCount = 0
+        largeModelsCount = unorderedModelsCount
+        smallModelsCount = largeModelsCount
         tempOffset = 0
         tempUvOffset = 0
     }
@@ -30,10 +30,10 @@ class ModelBuffers {
 
     fun bufferForTriangles(triangles: Int): GpuIntBuffer {
         return if (triangles < SMALL_TRIANGLE_COUNT) {
-            ++smallModels
+            ++smallModelsCount
             modelBufferSmall
         } else {
-            ++largeModels
+            ++largeModelsCount
             modelBuffer
         }
     }
@@ -44,20 +44,20 @@ class ModelBuffers {
     val modelBufferSmall: GpuIntBuffer = GpuIntBuffer()
     val modelBuffer: GpuIntBuffer = GpuIntBuffer()
 
-    var unorderedModels = 0
+    var unorderedModelsCount = 0
     fun incUnorderedModels() {
-        unorderedModels++
+        unorderedModelsCount++
     }
 
     /**
      * number of models in small buffer
      */
-    var smallModels = 0
+    var smallModelsCount = 0
 
     /**
      * number of models in large buffer
      */
-    var largeModels = 0
+    var largeModelsCount = 0
 
     /**
      * offset in the target buffer for model

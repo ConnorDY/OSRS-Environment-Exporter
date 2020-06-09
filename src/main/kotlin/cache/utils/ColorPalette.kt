@@ -1,5 +1,6 @@
 package cache.utils
 
+import java.awt.Color
 import kotlin.math.pow
 
 class ColorPalette(
@@ -95,6 +96,17 @@ class ColorPalette(
             val var10 = (var5 * 256.0).toInt()
             val var11 = (var7 * 256.0).toInt()
             return var11 + (var10 shl 8) + (var9 shl 16)
+        }
+
+        fun rs2hsbToColor(hsb: Int): Color {
+            val decode_hue = hsb shr 10 and 0x3f
+            val decode_saturation = hsb shr 7 and 0x07
+            val decode_brightness = hsb and 0x7f
+            return Color.getHSBColor(
+                decode_hue.toFloat() / 63,
+                decode_saturation.toFloat() / 7,
+                decode_brightness.toFloat() / 127
+            )
         }
     }
 }

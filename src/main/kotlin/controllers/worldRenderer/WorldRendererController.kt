@@ -20,6 +20,7 @@ class WorldRendererController @Inject constructor(private val renderer: Renderer
     fun initialize() {
         renderer.loadScene()
         renderer.initCanvas(group)
+        renderer.bindModels()
         anchorPane.boundsInLocalProperty().addListener(listener)
     }
 

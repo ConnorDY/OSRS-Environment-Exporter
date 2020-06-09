@@ -13,7 +13,7 @@ class CacheModule : AbstractModule() {
     }
 }
 
-@javax.inject.Singleton
+@Singleton
 class CacheLibraryProvider : Provider<CacheLibrary?> {
     private var library: CacheLibrary? = null
 
@@ -24,7 +24,7 @@ class CacheLibraryProvider : Provider<CacheLibrary?> {
 
     override fun get(): CacheLibrary? {
         if (library == null) {
-            library = CacheLibrary("cache-188")
+            library = CacheLibrary("cache-out")
         }
         return library
     }
@@ -41,7 +41,7 @@ class XteaManagerProvider : Provider<XteaManager> {
 
     override fun get(): XteaManager? {
         if (xteaManager == null) {
-            xteaManager = XteaManager("cache-188")
+            xteaManager = XteaManager("cache-out")
         }
         return xteaManager
     }

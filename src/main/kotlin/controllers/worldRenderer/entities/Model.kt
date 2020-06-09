@@ -9,11 +9,15 @@ import controllers.worldRenderer.Constants
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
+import controllers.worldRenderer.helpers.ModelBuffers.Companion.MAX_TRIANGLE
 import java.nio.IntBuffer
 import kotlin.math.min
 import kotlin.math.sqrt
 
-class Model(var modelDefinition: ModelDefinition) : Renderable() {
+class Model(
+    var modelDefinition: ModelDefinition,
+    val computeObj: ComputeObj = ComputeObj()
+) : Renderable() {
 
     var faceColors1: IntArray? = null
     var faceColors2: IntArray? = null
@@ -30,27 +34,70 @@ class Model(var modelDefinition: ModelDefinition) : Renderable() {
     private var radius = 0
     private var diameter = 0
 
-    override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, sceneZ: Int) {
-        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + Constants.LOCAL_HALF_TILE_SIZE
-        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + Constants.LOCAL_HALF_TILE_SIZE
-        val tc: Int = min(ModelBuffers.MAX_TRIANGLE, modelDefinition.faceCount)
-        val uvOffset: Int = uvBufferOffset
-        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(tc)
+    override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
+        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + xOff
+        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + yOff
+
+        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
         b.ensureCapacity(13)
-        val buffer: IntBuffer = b.buffer
-        buffer.put(bufferOffset)
-        buffer.put(uvOffset)
-        buffer.put(tc)
-        buffer.put(modelBuffers.targetBufferOffset)
-        buffer.put(ModelBuffers.FLAG_SCENE_BUFFER or (radius shl 12) or orientation)
-        buffer.put(x).put(sceneZ).put(z)
-        buffer.put(modelBuffers.calcPickerId(sceneX, sceneY, 2))
-        buffer.put(-1).put(-1).put(-1).put(-1) //animation
-        modelBuffers.addTargetBufferOffset(tc * 3)
+
+        computeObj.idx = modelBuffers.targetBufferOffset
+        computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER or (radius shl 12) or orientationType.id
+        computeObj.x = x
+        computeObj.y = height
+        computeObj.z = z
+        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
+        b.buffer.put(computeObj.toArray())
+
+        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
-    override fun drawDynamic(modelBuffers: ModelBuffers, sceneUploader: SceneUploader) {
-        TODO("Not yet implemented")
+    fun drawPersistent(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
+        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + xOff
+        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + yOff
+
+        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
+        b.ensureCapacity(13)
+
+        computeObj.idx = modelBuffers.targetBufferOffset
+        computeObj.flags = (radius shl 12) or orientationType.id
+        computeObj.x = x
+        computeObj.y = height
+        computeObj.z = z
+        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
+        b.buffer.put(computeObj.toArray())
+
+        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
+    }
+
+    override fun drawDynamic(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int) {
+        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + xOff
+        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + yOff
+
+        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
+        b.ensureCapacity(13)
+
+        computeObj.idx = modelBuffers.targetBufferOffset + modelBuffers.tempOffset
+        computeObj.flags = (radius shl 12) or orientationType.id
+        computeObj.x = x
+        computeObj.y = height
+        computeObj.z = z
+        computeObj.pickerId = -2
+        b.buffer.put(computeObj.toArray())
+
+        modelBuffers.addTempOffset(computeObj.size * 3)
+        modelBuffers.addTempUvOffset(computeObj.size * 3)
+    }
+
+    override fun clearDraw(modelBuffers: ModelBuffers) {
+        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
+        b.ensureCapacity(13)
+
+        // FIXME: hack to make it look like the object has been removed..
+        computeObj.x = Int.MAX_VALUE
+        computeObj.y = Int.MAX_VALUE
+        computeObj.z = Int.MAX_VALUE
+        b.buffer.put(computeObj.toArray())
     }
 
     private fun getTileHeight(regionLoader: RegionLoader, x: Int, y: Int): Int {

@@ -10,6 +10,7 @@ import javax.inject.Singleton
 class ModelsModule : AbstractModule() {
     override fun configure() {
         bind(DebugModel::class.java).toInstance(DebugModel())
+        bind(ObjectsModel::class.java).toInstance(ObjectsModel())
         bind(Scene::class.java).toProvider(SceneProvider::class.java)
     }
 }

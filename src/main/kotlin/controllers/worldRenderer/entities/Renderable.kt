@@ -1,26 +1,22 @@
 package controllers.worldRenderer.entities
 
-import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.helpers.ModelBuffers
 
 abstract class Renderable(
-    var tag: Long = 0,
-    var flags: Int = 0,
     var orientation: Int = 0,
-    var sceneX: Int = 0,
-    var sceneY: Int = 0,
+    var orientationType: OrientationType = OrientationType.STRAIGHT,
     var x: Int = 0, // 3d world space position
     var y: Int = 0,
+    var yOff: Int = 0,
+    var xOff: Int = 0,
     var height: Int = 0
 ) {
+    abstract fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int)
+    abstract fun drawDynamic(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int)
+    abstract fun clearDraw(modelBuffers: ModelBuffers)
+}
 
-    // opengl buffer offsets
-    var bufferOffset = -1
-    var uvBufferOffset = -1
-    protected var sceneBufferOffset = -1
-    protected var bufferLen = -1
-    protected var pickerType = -1
-
-    abstract fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, sceneZ: Int)
-    abstract fun drawDynamic(modelBuffers: ModelBuffers, sceneUploader: SceneUploader)
+enum class OrientationType(val id: Int) {
+    STRAIGHT(0),
+    DIAGONAL(0xFF);
 }

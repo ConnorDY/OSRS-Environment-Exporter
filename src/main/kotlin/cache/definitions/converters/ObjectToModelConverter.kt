@@ -9,6 +9,20 @@ class ObjectToModelConverter @Inject constructor(
     private val modelLoader: ModelLoader,
     private val litModelCache: HashMap<Long, ModelDefinition> = HashMap()
 ) {
+    fun toModelTypesMap(objectDefinition: ObjectDefinition): HashMap<Int, ModelDefinition?> {
+        val modelDefMap: HashMap<Int, ModelDefinition?> = HashMap()
+        if (objectDefinition.modelTypes == null) {
+            // interactable is the default
+            modelDefMap[10] = toModel(objectDefinition, 10, 0)
+        } else {
+            for (typ in objectDefinition.modelTypes!!) {
+                modelDefMap[typ] = toModel(objectDefinition, typ, 0)
+            }
+        }
+
+        return modelDefMap
+    }
+
     fun toModel(objectDefinition: ObjectDefinition, type: Int, orientation: Int): ModelDefinition? {
         val modelTag: Long = if (objectDefinition.modelTypes == null) {
             orientation + (10 shl 3) + (objectDefinition.id shl 10).toLong()
@@ -42,6 +56,13 @@ class ObjectToModelConverter @Inject constructor(
                     modelId += 65536
                 }
                 modelDefinition = modelLoader.get(modelId)
+                if (modelDefinition == null) {
+                    return null
+                }
+
+                if (isRotated) {
+                    modelDefinition.rotateMulti()
+                }
             }
             if (modelLen > 1) {
                 modelDefinition = ModelDefinition()
@@ -63,6 +84,14 @@ class ObjectToModelConverter @Inject constructor(
                 modelId += 65536
             }
             modelDefinition = modelLoader.get(modelId and 0xFFFF)
+
+            if (modelDefinition == null) {
+                return null
+            }
+
+            if (isRotated) {
+                modelDefinition.rotateMulti()
+            }
         }
         if (modelDefinition == null) {
             return null
@@ -74,6 +103,7 @@ class ObjectToModelConverter @Inject constructor(
             recolorToFind == null,
             retextureToFind == null
         )
+
         orientation = orientation and 0x3
         when (orientation) {
             1 -> {

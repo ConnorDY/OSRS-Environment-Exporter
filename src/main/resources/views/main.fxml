@@ -36,7 +36,9 @@
               </menus>
             </MenuBar>
                 <ToolBar prefHeight="40.0" prefWidth="200.0">
-                    <Button fx:id="btnTest" mnemonicParsing="false" text="Button"/>
+                    <Button fx:id="btnTest" mnemonicParsing="false" text="Export"/>
+                    <Button fx:id="btnPlace" mnemonicParsing="false" text="Place Tool"/>
+                    <Button fx:id="btnDelete" mnemonicParsing="false" text="Delete Tool"/>
                     <Pane HBox.hgrow="ALWAYS"/>
                     <Label fx:id="lblFps" text="FPS: -1"/>
                 </ToolBar>

@@ -35,10 +35,11 @@ class RegionDefinition(
                         if (height == 1) {
                             height = 0
                         }
+
                         if (z == 0) {
                             tileHeights[0][x][y] = -height * 8
                         } else {
-                            tileHeights[z][x][y] = tileHeights.get(z - 1).get(x).get(y) - height * 8
+                            tileHeights[z][x][y] = tileHeights[z - 1][x][y] - height * 8
                         }
                     }
                     overlayIds[z][x][y] = tile.overlayId.toInt()
@@ -52,7 +53,7 @@ class RegionDefinition(
     }
 
     data class Tile(
-        var cacheHeight: Int? = 0,
+        var cacheHeight: Int? = null,
         var height: Int = 0,
         var attrOpcode: Int = 0,
         var settings: Byte = 0,

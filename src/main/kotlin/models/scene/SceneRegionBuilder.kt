@@ -1,11 +1,12 @@
 package models.scene
 
+import cache.LocationType
 import cache.definitions.*
 import cache.definitions.converters.ObjectToModelConverter
 import cache.loaders.*
 import cache.utils.ColorPalette
-import models.LocationType
 import controllers.worldRenderer.entities.Model
+import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
 import javax.inject.Inject
 import kotlin.math.sqrt
@@ -21,6 +22,7 @@ class SceneRegionBuilder @Inject constructor(
 ) {
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
+
     // Loads a single region(rs size 64), not a scene(rs size 104)!
     // worldCoords to regionId
     // int regionId = (x >>> 6 << 8) | y >>> 6;
@@ -267,13 +269,8 @@ class SceneRegionBuilder @Inject constructor(
             val x: Int = loc.x
             val y: Int = loc.y
 
-            val worldX: Int = x + baseX
-            val worldY: Int = y + baseY
-
-//            sceneRegion.addLocation(loc, z, sceneX, sceneY)
             val objectDefinition: ObjectDefinition = objectLoader.get(loc.objId) ?: return@forEach
-            val modelDefinition: ModelDefinition =
-                objectToModelConverter.toModel(objectDefinition, loc.type, loc.orientation) ?: return@forEach
+            val modelDefinition: ModelDefinition = objectToModelConverter.toModel(objectDefinition, loc.type, loc.orientation) ?: return@forEach
 
             val width: Int
             val length: Int
@@ -338,21 +335,21 @@ class SceneRegionBuilder @Inject constructor(
                 sceneRegion.newFloorDecoration(z, x, y, staticObject)
             }
 
-
             if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
-                sceneRegion.newWallDecoration(
-                    z,
-                    x,
-                    y,
-                    height,
-                    staticObject,
-                    null,
-                    orientationTransform[loc.orientation],
-                    0,
-                    0,
-                    0,
-                    modelDefinition.tag
-                )
+                sceneRegion.newWallDecoration(z, x, y, staticObject)
+            }
+
+            if (loc.type == LocationType.INTERACTABLE.id) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
+            }
+
+            if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
+                staticObject.getModel().orientationType = OrientationType.DIAGONAL
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
+            }
+
+            if (loc.type in 12..21) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
             }
         }
 

@@ -69,7 +69,7 @@ class LocationsLoader(
         return locationsDefinition
     }
 
-    fun writeLocations(locationsDefinition: LocationsDefinition): Boolean {
+    fun writeLocations(outputLibrary: CacheLibrary, locationsDefinition: LocationsDefinition): Boolean {
         val x = (locationsDefinition.regionId shr 8) and 0xFF
         val y = locationsDefinition.regionId and 0xFF
 
@@ -115,7 +115,7 @@ class LocationsLoader(
         val out = ByteArray(outputBuffer.limit())
         outputBuffer.get(out)
 
-        library.put(5, "l${x}_${y}", out, xtea.getKeys(locationsDefinition.regionId))
-        return library.index(5).update()
+        outputLibrary.put(5, "l${x}_${y}", out, xtea.getKeys(locationsDefinition.regionId))
+        return outputLibrary.index(5).update()
     }
 }
