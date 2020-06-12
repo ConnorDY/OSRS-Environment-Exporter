@@ -24,7 +24,7 @@ class CacheLibraryProvider : Provider<CacheLibrary?> {
 
     override fun get(): CacheLibrary? {
         if (library == null) {
-            library = CacheLibrary("cache-out")
+            library = CacheLibrary("cache-181")
         }
         return library
     }
@@ -41,7 +41,7 @@ class XteaManagerProvider : Provider<XteaManager> {
 
     override fun get(): XteaManager? {
         if (xteaManager == null) {
-            xteaManager = XteaManager("cache-out")
+            xteaManager = XteaManager("cache-181")
         }
         return xteaManager
     }

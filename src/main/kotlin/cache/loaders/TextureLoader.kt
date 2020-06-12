@@ -11,8 +11,14 @@ class TextureLoader(
     cacheLibrary: CacheLibrary,
     private val textureDefinitionCache: HashMap<Int, TextureDefinition> = HashMap()
 ) {
-    fun getAll(): Array<TextureDefinition> {
-        return textureDefinitionCache.map { it.value }.toTypedArray()
+    fun getAll(): Array<TextureDefinition?> {
+        val maxId = textureDefinitionCache.maxBy { it.key }!!.key
+        // Jagex skipped texture id 54 so now we have to do this?
+        val texArray = arrayOfNulls<TextureDefinition>(maxId + 1)
+        for (tex in textureDefinitionCache) {
+            texArray[tex.key] = tex.value
+        }
+        return texArray
     }
 
     fun get(id: Int): TextureDefinition? {

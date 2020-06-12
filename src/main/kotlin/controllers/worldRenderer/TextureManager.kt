@@ -41,7 +41,7 @@ class TextureManager @Inject constructor(
         if (!allTexturesLoaded()) {
             return -1
         }
-        val textures: Array<TextureDefinition> = textureLoader.getAll()
+        val textures: Array<TextureDefinition?> = textureLoader.getAll()
         val textureArrayId: Int = GLUtil.glGenTexture(gl)
         gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
         gl.glTexStorage3D(
@@ -79,12 +79,12 @@ class TextureManager @Inject constructor(
      * @return
      */
     private fun allTexturesLoaded(): Boolean {
-        val textures: Array<TextureDefinition> = textureLoader.getAll()
+        val textures: Array<TextureDefinition?> = textureLoader.getAll()
         if (textures.isEmpty()) {
             return false
         }
         for (textureId in textures.indices) {
-            val texture: TextureDefinition = textures[textureId]
+            val texture: TextureDefinition = textures[textureId]?: continue
             val loaded = texture.loadPixels(0.8, 128, spriteLoader)
             if (!loaded) {
                 return false
@@ -94,11 +94,11 @@ class TextureManager @Inject constructor(
     }
 
     private fun updateTextures(gl: GL4, textureArrayId: Int) {
-        val textures: Array<TextureDefinition> = textureLoader.getAll()
+        val textures: Array<TextureDefinition?> = textureLoader.getAll()
         gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
         var cnt = 0
         for (textureId in textures.indices) {
-            val texture: TextureDefinition = textures[textureId]
+            val texture: TextureDefinition = textures[textureId]?: continue
             val srcPixels: IntArray = textureLoader.get(textureId)?.pixels ?: continue  // this can't happen
             ++cnt
             if (srcPixels.size != TEXTURE_SIZE * TEXTURE_SIZE) {

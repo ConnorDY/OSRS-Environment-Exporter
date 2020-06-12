@@ -183,8 +183,8 @@ class Renderer @Inject constructor(
     }
 
     fun loadScene() {
-//        scene.load(10038, 1)
-        scene.load(9271, 1)
+        scene.load(10038, 1)
+//        scene.load(9271, 1)
         inputHandler.renderer = this
     }
 

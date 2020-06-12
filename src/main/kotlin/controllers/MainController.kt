@@ -44,16 +44,16 @@ class MainController @Inject constructor(
 
     @FXML
     fun initialize() {
-//        val topdownLoader = FXMLLoader()
-//        topdownLoader.controllerFactory = Callback { type: Class<*>? ->
-//            injector.getInstance(type)
-//        }
-//        topdownLoader.location = javaClass.getResource("/views/widgets/topdown-map-widget.fxml")
-//        val topdownWidget = topdownLoader.load<Parent>()
-//        val topdownNode = DockNode(topdownWidget)
-//        topdownNode.title = "Topdown View"
-//        topdownNode.setPrefSize(600.0, 600.0)
-//        topdownNode.dock(dockPane, DockPos.LEFT)
+        val topdownLoader = FXMLLoader()
+        topdownLoader.controllerFactory = Callback { type: Class<*>? ->
+            injector.getInstance(type)
+        }
+        topdownLoader.location = javaClass.getResource("/views/widgets/topdown-map-widget.fxml")
+        val topdownWidget = topdownLoader.load<Parent>()
+        val topdownNode = DockNode(topdownWidget)
+        topdownNode.title = "Topdown View"
+        topdownNode.setPrefSize(600.0, 600.0)
+        topdownNode.dock(dockPane, DockPos.LEFT)
 
 
 
@@ -67,7 +67,7 @@ class MainController @Inject constructor(
         worldRendererControllerController = worldLoader.getController()
         val worldRendererNode = DockNode(worldRendererWidget)
         worldRendererNode.setPrefSize(800.0, 600.0)
-        worldRendererNode.dock(dockPane, DockPos.RIGHT)
+        worldRendererNode.dock(dockPane, DockPos.RIGHT, topdownNode)
         worldRendererNode.dockTitleBar.isVisible = false
 
 
@@ -81,7 +81,7 @@ class MainController @Inject constructor(
         val objectPickerNode = DockNode(objectPickerLoader.load<Parent>())
         objectPickerNode.title = "Object Picker"
         objectPickerNode.setPrefSize(400.0, 400.0)
-        objectPickerNode.dock(dockPane, DockPos.RIGHT, worldRendererNode)
+        objectPickerNode.dock(dockPane, DockPos.BOTTOM)
 
 
         DockPane.initializeDefaultUserAgentStylesheet()

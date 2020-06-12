@@ -54,6 +54,9 @@ class ObjectPickerController @Inject constructor(
 
     @FXML
     private fun initialize() {
+        searchBox.setOnMouseClicked {
+            searchBox.requestFocus()
+        }
         searchBox.textProperty()
             .addListener { _: ObservableValue<out String>?, oldVal: String?, newVal: String ->
                 search(
