@@ -1,15 +1,13 @@
 package controllers.worldRenderer.entities
 
 import controllers.worldRenderer.Constants
-import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
-import java.nio.IntBuffer
 
 class TileModel(
-    var1: Int,
-    var2: Int,
-    var3: Int,
+    overylayPath: Int,
+    overlayRotation: Int,
+    overlayTexture: Int,
     x: Int,
     y: Int,
     var6: Int,
@@ -124,15 +122,15 @@ class TileModel(
         if (var7 != var6 || var8 != var6 || var9 != var6) {
             isFlat = false
         }
-        shape = var1
-        rotation = var2
+        shape = overylayPath
+        rotation = overlayRotation
         underlayRgb = var18
         overlayRgb = var19
         val var20: Short = 128
         val var21 = var20 / 2
         val var22 = var20 / 4
         val var23 = var20 * 3 / 4
-        val var24 = field1617[var1]
+        val var24 = field1617[overylayPath]
         val var25 = var24.size
         vertexX = IntArray(var25)
         vertexY = IntArray(var25)
@@ -150,14 +148,15 @@ class TileModel(
         for (var30 in 0 until var25) {
             var31 = var24[var30]
             if (var31 and 1 == 0 && var31 <= 8) {
-                var31 = (var31 - var2 - var2 - 1 and 7) + 1
+                var31 = (var31 - overlayRotation - overlayRotation - 1 and 7) + 1
             }
             if (var31 > 8 && var31 <= 12) {
-                var31 = (var31 - 9 - var2 and 3) + 9
+                var31 = (var31 - 9 - overlayRotation and 3) + 9
             }
             if (var31 > 12 && var31 <= 16) {
-                var31 = (var31 - 13 - var2 and 3) + 13
+                var31 = (var31 - 13 - overlayRotation and 3) + 13
             }
+
             if (var31 == 1) {
                 var32 = var28
                 var33 = var29
@@ -261,7 +260,7 @@ class TileModel(
             var26[var30] = var35
             var27[var30] = var36
         }
-        val var38 = field1626[var1]
+        val var38 = field1626[overylayPath]
         var31 = var38.size / 4
         faceX = IntArray(var31)
         faceY = IntArray(var31)
@@ -269,7 +268,7 @@ class TileModel(
         triangleColorA = IntArray(var31)
         triangleColorB = IntArray(var31)
         triangleColorC = IntArray(var31)
-        if (var3 != -1) {
+        if (overlayTexture != -1) {
             triangleTextureId = IntArray(var31)
         }
         var32 = 0
@@ -281,13 +280,13 @@ class TileModel(
             var var37 = var38[var32 + 3]
             var32 += 4
             if (var35 < 4) {
-                var35 = var35 - var2 and 3
+                var35 = var35 - overlayRotation and 3
             }
             if (var36 < 4) {
-                var36 = var36 - var2 and 3
+                var36 = var36 - overlayRotation and 3
             }
             if (var37 < 4) {
-                var37 = var37 - var2 and 3
+                var37 = var37 - overlayRotation and 3
             }
             faceX[var33] = var35
             faceY[var33] = var36
@@ -304,7 +303,7 @@ class TileModel(
                 triangleColorB[var33] = var27[var36]
                 triangleColorC[var33] = var27[var37]
                 if (triangleTextureId != null) {
-                    triangleTextureId!![var33] = var3
+                    triangleTextureId!![var33] = overlayTexture
                 }
             }
             ++var33

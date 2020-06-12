@@ -153,6 +153,7 @@ class SceneRegionBuilder @Inject constructor(
                                 }
                                 underlayHsl = hslToRgb(avgHue, avgSat, avgLight)
                             }
+
                             var underlayRgb = 0
                             if (underlayHsl != -1) {
                                 val var0 = method4220(underlayHsl, 96)
@@ -190,15 +191,16 @@ class SceneRegionBuilder @Inject constructor(
                                 val overlayDefinition: OverlayDefinition? = overlayLoader.get(overlayId - 1)
                                 var overlayTexture: Int = overlayDefinition?.texture!!
                                 val overlayHsl: Int
+                                var overlayCol: Int
                                 when {
                                     overlayTexture >= 0 -> {
-                                        rgb = textureLoader.getAverageTextureRGB(overlayTexture)
+                                        overlayCol = textureLoader.getAverageTextureRGB(overlayTexture)
                                         overlayHsl = -1
                                     }
                                     overlayDefinition.rgbColor == 0xFF00FF -> {
                                         overlayHsl = -2
                                         overlayTexture = -1
-                                        rgb = -2
+                                        overlayCol = -2
                                     }
                                     else -> {
                                         overlayHsl = hslToRgb(
@@ -213,12 +215,12 @@ class SceneRegionBuilder @Inject constructor(
                                         } else if (lightness > 255) {
                                             lightness = 255
                                         }
-                                        rgb = hslToRgb(hue, overlayDefinition.saturation, lightness)
+                                        overlayCol = hslToRgb(hue, overlayDefinition.saturation, lightness)
                                     }
                                 }
                                 var overlayRgb = 0
-                                if (rgb != -2) {
-                                    val var0 = adjustHSLListness0(rgb, 96)
+                                if (overlayCol != -2) {
+                                    val var0 = adjustHSLListness0(overlayCol, 96)
                                     overlayRgb = colorPalette[var0]
                                 }
                                 if (overlayDefinition.secondaryRgbColor != -1) {
@@ -229,8 +231,8 @@ class SceneRegionBuilder @Inject constructor(
                                     } else if (lightness > 255) {
                                         lightness = 255
                                     }
-                                    rgb = hslToRgb(hue, overlayDefinition.otherSaturation, lightness)
-                                    val var0 = adjustHSLListness0(rgb, 96)
+                                    overlayCol = hslToRgb(hue, overlayDefinition.otherSaturation, lightness)
+                                    val var0 = adjustHSLListness0(overlayCol, 96)
                                     overlayRgb = colorPalette[var0]
                                 }
                                 val underlay: UnderlayDefinition? = underlayLoader.get(underlayId - 1)
@@ -331,6 +333,10 @@ class SceneRegionBuilder @Inject constructor(
 
             val staticObject = StaticObject(model, height)
 
+            if (loc.type in 0..3 || loc.type in 5..10) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
+            }
+
             if (loc.type == LocationType.FLOOR_DECORATION.id) {
                 sceneRegion.newFloorDecoration(z, x, y, staticObject)
             }
@@ -408,24 +414,28 @@ class SceneRegionBuilder @Inject constructor(
         }
 
         fun adjustHSLListness0(var0: Int, var1: Int): Int {
-            var var1 = var1
-            return if (var0 == -2) {
-                12345678
-            } else if (var0 == -1) {
-                if (var1 < 2) {
-                    var1 = 2
-                } else if (var1 > 126) {
-                    var1 = 126
+            var v1 = var1
+            return when (var0) {
+                -2 -> {
+                    12345678
                 }
-                var1
-            } else {
-                var1 = (var0 and 127) * var1 / 128
-                if (var1 < 2) {
-                    var1 = 2
-                } else if (var1 > 126) {
-                    var1 = 126
+                -1 -> {
+                    if (v1 < 2) {
+                        v1 = 2
+                    } else if (v1 > 126) {
+                        v1 = 126
+                    }
+                    v1
                 }
-                (var0 and 65408) + var1
+                else -> {
+                    v1 = (var0 and 0x7f) * v1 / 128
+                    if (v1 < 2) {
+                        v1 = 2
+                    } else if (v1 > 126) {
+                        v1 = 126
+                    }
+                    (var0 and 0xff80) + v1
+                }
             }
         }
     }
