@@ -9,7 +9,7 @@ import javafx.scene.Group
 import javafx.scene.layout.AnchorPane
 import java.util.*
 
-class WorldRendererController @Inject constructor(private val renderer: Renderer) {
+class WorldRendererController @Inject constructor(val renderer: Renderer) {
     @FXML
     lateinit var anchorPane: AnchorPane
 
@@ -22,6 +22,9 @@ class WorldRendererController @Inject constructor(private val renderer: Renderer
         renderer.initCanvas(group)
         renderer.bindModels()
         anchorPane.boundsInLocalProperty().addListener(listener)
+
+        renderer.window.requestFocus()
+        group.requestFocus()
     }
 
     fun forceRefresh() {

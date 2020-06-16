@@ -8,7 +8,7 @@ import kotlin.collections.ArrayList
 
 class SceneTile(val z: Int, var x: Int, var y: Int) {
     private lateinit var cacheTile: RegionDefinition.Tile
-    var locations: List<Location> = ArrayList<Location>()
+    var locations: ArrayList<Location> = ArrayList<Location>()
     var tilePaint: TilePaint? = null
     var tileModel: TileModel? = null
     var floorDecoration: FloorDecoration? = null

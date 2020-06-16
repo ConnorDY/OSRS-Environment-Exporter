@@ -6,7 +6,10 @@ import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.definitions.converters.ObjectToModelConverter
 import com.google.inject.Inject
+import com.jogamp.nativewindow.javafx.JFXAccessor
 import com.jogamp.newt.NewtFactory
+import com.jogamp.newt.event.WindowAdapter
+import com.jogamp.newt.event.WindowEvent
 import com.jogamp.newt.javafx.NewtCanvasJFX
 import com.jogamp.newt.opengl.GLWindow
 import com.jogamp.opengl.*
@@ -31,6 +34,8 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
+import models.HoverModel
+import models.HoverObject
 import models.ObjectsModel
 import models.scene.*
 import java.awt.event.ActionListener
@@ -46,6 +51,7 @@ class Renderer @Inject constructor(
     private val textureManager: TextureManager,
     private val debugModel: models.DebugModel,
     private val objectsModel: ObjectsModel,
+    private val hoverModel: HoverModel,
     private val objectToModelConverter: ObjectToModelConverter
 ) : GLEventListener {
     private val MAX_TEMP_VERTICES: Int = 65535
@@ -149,12 +155,12 @@ class Renderer @Inject constructor(
         colorPickerBufferId = selectedIdsBufferId
         modelBuffers = ModelBuffers()
 
-        GLProfile.initSingleton()
         val jfxNewtDisplay = NewtFactory.createDisplay(null, false)
         val screen = NewtFactory.createScreen(jfxNewtDisplay, 0)
         val glProfile = GLProfile.get(GLProfile.GL4)
         val glCaps = GLCapabilities(glProfile)
         glCaps.alphaBits = 8
+
         window = GLWindow.create(screen, glCaps)
         window.addGLEventListener(this)
         window.addKeyListener(inputHandler)
@@ -167,6 +173,21 @@ class Renderer @Inject constructor(
         animator = Animator(window)
         animator.setUpdateFPSFrames(3, null)
         animator.start()
+
+        // Begin bad hack to fix GLWindow not releasing focus properly //
+        window.addWindowListener(object : WindowAdapter() {
+            override fun windowGainedFocus(e: WindowEvent) {
+                // when heavyweight window gains focus, also tell javafx to give focus to glCanvas
+                glCanvas.requestFocus()
+            }
+        })
+        glCanvas.focusedProperty().addListener { _, _, newValue ->
+            if (!newValue) {
+                window.isVisible = false
+                window.isVisible = true
+            }
+        }
+        // End bad hack //
 
         group.children.add(glCanvas)
 
@@ -248,10 +269,11 @@ class Renderer @Inject constructor(
         val x = hoverId shr 18 and 0x1FFF
         val y = hoverId shr 5 and 0x1FFF
         val type = hoverId and 0x1F
+        val tile = scene.getTile(0, x, y)!!
 
-        val tile = scene.getTile(0, x, y)
+        hoverModel.hovered.set(HoverObject(x, y, LocationType.fromId(type), tile))
 
-        if (injectedObject != null && tile?.tilePaint != null) {
+        if (injectedObject != null && tile.tilePaint != null) {
             val objectDefinition: ObjectDefinition = injectedObject!!.objectDefinition
             val modelDefinition: ModelDefinition? =
                 objectToModelConverter.toModel(objectDefinition, injectedObject!!.type, injectedObject!!.orientation)
@@ -658,15 +680,23 @@ class Renderer @Inject constructor(
         }
 
         if (tile.floorDecoration != null) {
-            tile.floorDecoration!!.entity!!.getModel().draw(modelBuffers, x, y, tile.floorDecoration!!.entity!!.height, LocationType.FLOOR_DECORATION.id)
+            tile.floorDecoration!!.entity!!.getModel()
+                .draw(modelBuffers, x, y, tile.floorDecoration!!.entity!!.height, LocationType.FLOOR_DECORATION.id)
         }
 
         if (tile.wallDecoration != null) {
-            tile.wallDecoration!!.entity!!.getModel().draw(modelBuffers, x, y, tile.wallDecoration!!.entity!!.height, LocationType.INTERACTABLE_WALL_DECORATION.id)
+            tile.wallDecoration!!.entity!!.getModel().draw(
+                modelBuffers,
+                x,
+                y,
+                tile.wallDecoration!!.entity!!.height,
+                LocationType.INTERACTABLE_WALL_DECORATION.id
+            )
         }
 
         for (gameObject in tile.gameObjects) {
-            gameObject.entity!!.getModel().draw(modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
+            gameObject.entity!!.getModel()
+                .draw(modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
         }
     }
 

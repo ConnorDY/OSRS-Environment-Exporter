@@ -11,6 +11,7 @@ class ModelsModule : AbstractModule() {
     override fun configure() {
         bind(DebugModel::class.java).toInstance(DebugModel())
         bind(ObjectsModel::class.java).toInstance(ObjectsModel())
+        bind(HoverModel::class.java).toInstance(HoverModel())
         bind(Scene::class.java).toProvider(SceneProvider::class.java)
     }
 }

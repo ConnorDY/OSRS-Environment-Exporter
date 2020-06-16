@@ -1,5 +1,6 @@
 package models.scene
 
+import cache.definitions.Location
 import cache.definitions.LocationsDefinition
 import cache.definitions.RegionDefinition
 import cache.definitions.UnderlayDefinition
@@ -142,7 +143,8 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         y: Int,
         width: Int,
         length: Int,
-        entity: Entity?
+        entity: Entity?,
+        location: Location
     ) {
         for (iz in z downTo 0) {
             if (tiles[iz][x][y] == null) {
@@ -153,5 +155,6 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         entity!!.getModel().xOff = width * REGION_SIZE
         entity.getModel().yOff = length * REGION_SIZE
         tiles[z][x][y]!!.gameObjects.add(GameObject(entity))
+        tiles[z][x][y]!!.locations.add(location)
     }
 }

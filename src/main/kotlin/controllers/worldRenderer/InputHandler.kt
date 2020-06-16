@@ -5,6 +5,7 @@ import com.jogamp.newt.event.KeyListener
 import com.jogamp.newt.event.MouseEvent
 import com.jogamp.newt.event.MouseListener
 import javafx.animation.AnimationTimer
+import jogamp.newt.driver.DriverClearFocus
 import models.ObjectsModel
 import models.scene.Scene
 import models.scene.SceneObject

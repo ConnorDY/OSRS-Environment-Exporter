@@ -49,7 +49,11 @@ enum class LocationType(val id: Int) {
     /**
      * A decoration positioned on the floor.
      */
-    FLOOR_DECORATION(22);
+    FLOOR_DECORATION(22),
+
+
+    TILE_PAINT(30),
+    TILE_MODEL(31);
 
     companion object {
         fun fromId(id: Int) = values().first { it.id == id }

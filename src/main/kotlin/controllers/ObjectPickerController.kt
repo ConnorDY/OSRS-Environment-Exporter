@@ -25,6 +25,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.shape.MeshView
 import javafx.scene.transform.Rotate
 import cache.LocationType
+import controllers.worldRenderer.Renderer
 import models.ObjectsModel
 import models.scene.SceneObject
 import utils.JavaFxHelpers
@@ -37,6 +38,11 @@ class ObjectPickerController @Inject constructor(
     private val objectToModelConverter: ObjectToModelConverter,
     private val objectsModel: ObjectsModel
 ) {
+
+    private lateinit var renderer: Renderer
+    fun setRenderer(renderer: Renderer) {
+        this.renderer = renderer
+    }
 
     @FXML
     private lateinit var stackPane: StackPane
@@ -54,9 +60,6 @@ class ObjectPickerController @Inject constructor(
 
     @FXML
     private fun initialize() {
-        searchBox.setOnMouseClicked {
-            searchBox.requestFocus()
-        }
         searchBox.textProperty()
             .addListener { _: ObservableValue<out String>?, oldVal: String?, newVal: String ->
                 search(

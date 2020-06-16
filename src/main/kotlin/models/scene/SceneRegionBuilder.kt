@@ -334,7 +334,7 @@ class SceneRegionBuilder @Inject constructor(
             val staticObject = StaticObject(model, height)
 
             if (loc.type in 0..3 || loc.type in 5..10) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
             if (loc.type == LocationType.FLOOR_DECORATION.id) {
@@ -346,16 +346,16 @@ class SceneRegionBuilder @Inject constructor(
             }
 
             if (loc.type == LocationType.INTERACTABLE.id) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
             if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
                 staticObject.getModel().orientationType = OrientationType.DIAGONAL
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
             if (loc.type in 12..21) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject)
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
         }
 

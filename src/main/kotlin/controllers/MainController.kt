@@ -71,17 +71,29 @@ class MainController @Inject constructor(
         worldRendererNode.dockTitleBar.isVisible = false
 
 
-
-
         val objectPickerLoader = FXMLLoader()
         objectPickerLoader.controllerFactory = Callback { type: Class<*>? ->
             injector.getInstance(type)
         }
         objectPickerLoader.location = javaClass.getResource("/views/object-picker.fxml")
         val objectPickerNode = DockNode(objectPickerLoader.load<Parent>())
+        val objectPickerController: ObjectPickerController = objectPickerLoader.getController()
+        objectPickerController.setRenderer(worldRendererControllerController.renderer)
         objectPickerNode.title = "Object Picker"
         objectPickerNode.setPrefSize(400.0, 400.0)
         objectPickerNode.dock(dockPane, DockPos.BOTTOM)
+
+
+
+        val inspectorLoader = FXMLLoader()
+        inspectorLoader.controllerFactory = Callback { type: Class<*>? ->
+            injector.getInstance(type)
+        }
+        inspectorLoader.location = javaClass.getResource("/views/inspector.fxml")
+        val inspectorNode = DockNode(inspectorLoader.load<Parent>())
+        inspectorNode.title = "Inspector"
+        inspectorNode.setPrefSize(400.0, 400.0)
+        inspectorNode.dock(dockPane, DockPos.RIGHT, objectPickerNode)
 
 
         DockPane.initializeDefaultUserAgentStylesheet()
