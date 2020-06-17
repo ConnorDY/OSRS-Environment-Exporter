@@ -1,31 +1,29 @@
 package controllers
 
+import cache.LocationType
 import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.definitions.converters.ObjectToModelConverter
 import cache.loaders.ObjectLoader
 import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
+import controllers.worldRenderer.Renderer
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.collections.transformation.FilteredList
 import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.scene.*
-import javafx.scene.control.ListView
-import javafx.scene.control.TextField
-import javafx.scene.control.ToggleButton
-import javafx.scene.control.ToggleGroup
+import javafx.scene.control.*
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.shape.MeshView
 import javafx.scene.transform.Rotate
-import cache.LocationType
-import controllers.worldRenderer.Renderer
 import models.ObjectsModel
 import models.scene.SceneObject
 import utils.JavaFxHelpers
@@ -48,8 +46,8 @@ class ObjectPickerController @Inject constructor(
     private lateinit var stackPane: StackPane
 
     @FXML
-    private lateinit var listView: ListView<ObjectDefinition>
-    var entries: ObservableList<ObjectDefinition> = FXCollections.observableArrayList()
+    private lateinit var listView: ListView<ObjectListItem>
+    private var entries: ObservableList<ObjectListItem> = FXCollections.observableArrayList()
 
     @FXML
     private lateinit var searchBox: TextField
@@ -60,13 +58,6 @@ class ObjectPickerController @Inject constructor(
 
     @FXML
     private fun initialize() {
-        searchBox.textProperty()
-            .addListener { _: ObservableValue<out String>?, oldVal: String?, newVal: String ->
-                search(
-                    oldVal,
-                    newVal
-                )
-            }
         val g = Group()
         val p = StackPane(g)
         val camera: Camera = PerspectiveCamera(true)
@@ -85,17 +76,28 @@ class ObjectPickerController @Inject constructor(
         subScene.heightProperty().bind(stackPane.heightProperty())
         subScene.widthProperty().bind(stackPane.widthProperty())
         initMouseControl(g, stackPane, camera)
-        entries.addAll(objectLoader.getAll().values)
-        listView.items = entries
+
+        entries.addAll(objectLoader.getAll().values.map { ObjectListItem(it.id, String.format("%s (%d)", it.name, it.id)) })
+        val filterableEntries = FilteredList(entries)
+        listView.items = filterableEntries
+
+        searchBox.textProperty()
+            .addListener { _: ObservableValue<out String>?, _: String?, newVal: String ->
+                filterableEntries.setPredicate { obj ->
+                    newVal.isEmpty() || obj.toString().toLowerCase().contains(newVal.toLowerCase())
+                }
+            }
 
         val typeToggleGroup = ToggleGroup()
         listView.selectionModel.selectedItemProperty()
-            .addListener { _: ObservableValue<out ObjectDefinition?>?, oldVal: ObjectDefinition?, newVal: ObjectDefinition? ->
+            .addListener { _: ObservableValue<out ObjectListItem?>?, oldVal: ObjectListItem?, newVal: ObjectListItem? ->
                 if (newVal == null || newVal === oldVal) {
                     return@addListener
                 }
+                val objectDefinition = objectLoader.get(newVal.id) ?: return@addListener
 //            paneTypeList.children.clear()
-                val modelDefinitionMap: Map<Int, ModelDefinition?> = objectToModelConverter.toModelTypesMap(newVal)
+                val modelDefinitionMap: Map<Int, ModelDefinition?> =
+                    objectToModelConverter.toModelTypesMap(objectDefinition)
                 if (modelDefinitionMap.isEmpty()) {
                     return@addListener
                 }
@@ -120,8 +122,14 @@ class ObjectPickerController @Inject constructor(
                         first = false
                     }
                 }
-                objectsModel.heldObject.set(SceneObject(objectDefinition = newVal, type = 10, orientation = 0))
-                selectedObject = newVal
+                objectsModel.heldObject.set(
+                    SceneObject(
+                        objectDefinition = objectDefinition,
+                        type = 10,
+                        orientation = 0
+                    )
+                )
+                selectedObject = objectDefinition
             }
     }
 
@@ -171,17 +179,9 @@ class ObjectPickerController @Inject constructor(
         }
     }
 
-    private fun search(oldVal: String?, newVal: String) {
-        if (oldVal != null && newVal.length < oldVal.length) {
-            listView.items = entries
+    class ObjectListItem(val id: Int, private val text: String) {
+        override fun toString(): String {
+            return text
         }
-        val value = newVal.toUpperCase()
-        val subentries: ObservableList<ObjectDefinition> = FXCollections.observableArrayList()
-        for (entry in listView.items) {
-            if (entry.toString().toUpperCase().contains(value)) {
-                subentries.add(entry)
-            }
-        }
-        listView.items = subentries
     }
 }
