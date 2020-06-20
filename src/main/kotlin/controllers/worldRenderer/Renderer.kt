@@ -200,11 +200,17 @@ class Renderer @Inject constructor(
         lastAntiAliasingMode = null
         textureArrayId = -1
 
-        scene.sceneChangeListeners.add(ActionListener { isSceneUploadRequired = true })
+        scene.sceneChangeListeners.add(ActionListener {
+            isSceneUploadRequired = true
+            camera.cameraX = 0
+            camera.cameraY = 0
+            camera.cameraZ = -2500
+        })
     }
 
     fun loadScene() {
-        scene.load(10038, 1)
+//        scene.load(10038, 1)
+        scene.load(12850, 1)
 //        scene.load(9271, 1)
         inputHandler.renderer = this
     }
@@ -269,7 +275,7 @@ class Renderer @Inject constructor(
         val x = hoverId shr 18 and 0x1FFF
         val y = hoverId shr 5 and 0x1FFF
         val type = hoverId and 0x1F
-        val tile = scene.getTile(0, x, y)!!
+        val tile = scene.getTile(0, x, y)?: return
 
         hoverModel.hovered.set(HoverObject(x, y, LocationType.fromId(type), tile))
 

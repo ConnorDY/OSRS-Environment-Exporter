@@ -11,6 +11,8 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.Label
+import javafx.scene.control.MenuItem
+import javafx.stage.Stage
 import javafx.util.Callback
 import models.DebugModel
 import models.scene.Scene
@@ -26,10 +28,16 @@ class MainController @Inject constructor(
 ) {
 
     @FXML
+    lateinit var menuChangeRegion: MenuItem
+
+    @FXML
     lateinit var dockPane: DockPane
 
     @FXML
     lateinit var lblFps: Label
+
+    @FXML
+    lateinit var lblStatus: Label
 
     @FXML
     lateinit var btnTest: Button
@@ -104,6 +112,20 @@ class MainController @Inject constructor(
 //            sr.locationsDefinition.locations.removeIf { it.type == 10 || it.type == 11 || it.type == 22 }
             locationsLoader.writeLocations(CacheLibrary("cache-out"), sr.locationsDefinition)
             println("saved")
+        }
+
+
+        menuChangeRegion.setOnAction {
+            val regionChangeLoader = FXMLLoader()
+            regionChangeLoader.controllerFactory = Callback { type: Class<*>? ->
+                injector.getInstance(type)
+            }
+            regionChangeLoader.location = javaClass.getResource("/views/region-chooser.fxml")
+            val regionChangeRoot = regionChangeLoader.load<Parent>()
+            val stage = Stage()
+            stage.title = "Region Chooser"
+            stage.scene = javafx.scene.Scene(regionChangeRoot)
+            stage.show()
         }
 
         object : AnimationTimer() {
