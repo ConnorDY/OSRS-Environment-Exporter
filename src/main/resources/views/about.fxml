@@ -16,7 +16,7 @@
                   <Font size="18.0" />
                </font>
             </Label>
-            <Label fx:id="lblVersion" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="v0.0.1">
+            <Label fx:id="lblVersion" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="v0.1.0">
                <font>
                   <Font size="14.0" />
                </font>

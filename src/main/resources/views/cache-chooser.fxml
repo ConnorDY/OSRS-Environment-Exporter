@@ -16,6 +16,7 @@
          <children>
             <VBox prefHeight="200.0" prefWidth="100.0">
                <children>
+                  <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Caches available from Runestats" textAlignment="CENTER" />
                   <HBox prefHeight="18.0" prefWidth="200.0">
                      <children>
                         <Label alignment="CENTER" text="Filter:">

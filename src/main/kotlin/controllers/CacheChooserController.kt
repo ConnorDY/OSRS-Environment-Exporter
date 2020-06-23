@@ -11,12 +11,14 @@ import javafx.collections.ObservableList
 import javafx.collections.transformation.FilteredList
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
+import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ListView
 import javafx.scene.control.TextField
+import javafx.scene.text.TextAlignment
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -31,6 +33,8 @@ import java.io.*
 import java.lang.Exception
 import java.net.URL
 import java.util.*
+import javax.net.ssl.SSLEngine
+import javax.net.ssl.SSLHandshakeException
 
 
 class CacheChooserController @Inject constructor(
@@ -67,13 +71,28 @@ class CacheChooserController @Inject constructor(
 
     @FXML
     private fun initialize() {
-        val doc = Jsoup.connect(RUNESTATS_URL).get()
-        entries.addAll(doc.select("a")
-            .map { col -> col.attr("href") }
-            .filter { it.length > 10 } // get rid of ../ and ./types
-            .reversed()
-        )
+        val listCachesPlaceholder = Label("No downloadable caches found.")
+        listCachesPlaceholder.isWrapText = true
+        listCachesPlaceholder.textAlignment = TextAlignment.CENTER
+        listCaches.placeholder = listCachesPlaceholder
+
+        try {
+            val doc = Jsoup.connect(RUNESTATS_URL).get()
+            entries.addAll(doc.select("a")
+                .map { col -> col.attr("href") }
+                .filter { it.length > 10 } // get rid of ../ and ./types
+                .reversed()
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            listCachesPlaceholder.text += "\n\n${e.message}"
+            if (e is SSLHandshakeException) {
+                listCachesPlaceholder.text += "\n\nSSLHandshakeException is a known bug with certain Java versions, try updating."
+            }
+        }
+
         val filterableEntries = FilteredList(entries)
+
         listCaches.items = filterableEntries
 
         listCaches.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
