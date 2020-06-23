@@ -71,6 +71,15 @@ class CacheChooserController @Inject constructor(
 
     @FXML
     private fun initialize() {
+        val javaVer = System.getProperty("java.version")
+        val majorVer = javaVer.split(".")[0].toInt()
+        if (majorVer < 11) {
+            lblErrorText.isVisible = true
+            lblErrorText.text = "Java version detected ($javaVer) is too low, please update Java to at least version 11."
+            btnLaunch.isDisable = true
+            return
+        }
+
         val listCachesPlaceholder = Label("No downloadable caches found.")
         listCachesPlaceholder.isWrapText = true
         listCachesPlaceholder.textAlignment = TextAlignment.CENTER
