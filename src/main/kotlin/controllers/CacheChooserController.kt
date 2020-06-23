@@ -72,6 +72,7 @@ class CacheChooserController @Inject constructor(
     @FXML
     private fun initialize() {
         val javaVer = System.getProperty("java.version")
+        println("Java version: $javaVer")
         val majorVer = javaVer.split(".")[0].toInt()
         if (majorVer < 11) {
             lblErrorText.isVisible = true
@@ -142,7 +143,9 @@ class CacheChooserController @Inject constructor(
 
         btnChooseDirectory.setOnAction {
             val directoryChooser = DirectoryChooser()
-            directoryChooser.initialDirectory = File("./caches")
+            val initDir = File("./caches")
+            initDir.mkdirs()
+            directoryChooser.initialDirectory = initDir
             val f = directoryChooser.showDialog(null) ?: return@setOnAction
             txtCacheLocation.text = f.absolutePath
         }
