@@ -20,6 +20,7 @@ import javafx.scene.*
 import javafx.scene.control.*
 import javafx.scene.input.MouseEvent
 import javafx.scene.input.ScrollEvent
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Pane
 import javafx.scene.layout.StackPane
 import javafx.scene.shape.MeshView
@@ -54,6 +55,9 @@ class ObjectPickerController @Inject constructor(
     private var selectedObject: ObjectDefinition? = null
     private var selectedModelType: LocationType? = null
 
+    @FXML
+    private lateinit var paneTypeList: HBox
+
     private lateinit var subScene: SubScene
 
     @FXML
@@ -77,7 +81,12 @@ class ObjectPickerController @Inject constructor(
         subScene.widthProperty().bind(stackPane.widthProperty())
         initMouseControl(g, stackPane, camera)
 
-        entries.addAll(objectLoader.getAll().values.map { ObjectListItem(it.id, String.format("%s (%d)", it.name, it.id)) })
+        entries.addAll(objectLoader.getAll().values.map {
+            ObjectListItem(
+                it.id,
+                String.format("%s (%d)", it.name, it.id)
+            )
+        })
         val filterableEntries = FilteredList(entries)
         listView.items = filterableEntries
 
@@ -95,7 +104,7 @@ class ObjectPickerController @Inject constructor(
                     return@addListener
                 }
                 val objectDefinition = objectLoader.get(newVal.id) ?: return@addListener
-//            paneTypeList.children.clear()
+                paneTypeList.children.clear()
                 val modelDefinitionMap: Map<Int, ModelDefinition?> =
                     objectToModelConverter.toModelTypesMap(objectDefinition)
                 if (modelDefinitionMap.isEmpty()) {
@@ -109,26 +118,27 @@ class ObjectPickerController @Inject constructor(
                     val b = ToggleButton()
                     b.text = LocationType.fromId(t).toString().toLowerCase().replace("_", " ").capitalize()
                     b.toggleGroup = typeToggleGroup
-//                paneTypeList.children.add(b)
+                    paneTypeList.children.add(b)
                     b.onAction = EventHandler {
                         g.children.clear()
                         val mv: Array<MeshView?> =
                             JavaFxHelpers.modelToMeshViews(modelDefinitionMap[t]!!, textureLoader, spriteLoader)
                         g.children.addAll(*mv)
                         selectedModelType = LocationType.fromId(t)
+
+                        objectsModel.heldObject.set(
+                            SceneObject(
+                                objectDefinition = objectDefinition,
+                                type = t,
+                                orientation = 0
+                            )
+                        )
                     }
                     if (first) {
                         b.fire()
                         first = false
                     }
                 }
-                objectsModel.heldObject.set(
-                    SceneObject(
-                        objectDefinition = objectDefinition,
-                        type = 10,
-                        orientation = 0
-                    )
-                )
                 selectedObject = objectDefinition
             }
     }

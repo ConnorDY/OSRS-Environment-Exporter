@@ -312,6 +312,8 @@ class SceneRegionBuilder @Inject constructor(
             val xTransforms = intArrayOf(1, 0, -1, 0)
             val yTransforms = intArrayOf(0, -1, 0, 1)
 
+//            if (loc.type != 0 || loc.objId != 980) return@forEach
+
             var model = Model(
                 modelDefinition,
                 objectDefinition.ambient,

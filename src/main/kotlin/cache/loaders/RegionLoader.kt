@@ -91,7 +91,7 @@ class RegionLoader(
                     if (tile.cacheHeight != null) {
                         outputStream.write(byteArrayOf(1, tile.height.toByte()))
                     } else {
-                        outputStream.writeBytes(byteArrayOf(0))
+                        outputStream.write(byteArrayOf(0))
                     }
                 }
             }

@@ -9,6 +9,7 @@ import javax.inject.Singleton
 
 class ModelsModule : AbstractModule() {
     override fun configure() {
+        bind(Configuration::class.java).toInstance(Configuration())
         bind(DebugModel::class.java).toInstance(DebugModel())
         bind(ObjectsModel::class.java).toInstance(ObjectsModel())
         bind(HoverModel::class.java).toInstance(HoverModel())

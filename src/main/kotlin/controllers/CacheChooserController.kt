@@ -22,6 +22,7 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import models.Configuration
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
@@ -34,7 +35,8 @@ import java.util.*
 
 class CacheChooserController @Inject constructor(
     private val cacheLibraryProvider: CacheLibraryProvider,
-    private val xteaManagerProvider: XteaManagerProvider
+    private val xteaManagerProvider: XteaManagerProvider,
+    private val configuration: Configuration
 ) {
 
     @FXML
@@ -65,11 +67,6 @@ class CacheChooserController @Inject constructor(
 
     @FXML
     private fun initialize() {
-        val props = Properties()
-        val configFile = File("config.properties")
-        configFile.createNewFile()
-        props.load(configFile.inputStream())
-
         val doc = Jsoup.connect(RUNESTATS_URL).get()
         entries.addAll(doc.select("a")
             .map { col -> col.attr("href") }
@@ -127,9 +124,7 @@ class CacheChooserController @Inject constructor(
             lblStatusText.text = "Launching map editor please wait.."
 
             GlobalScope.launch {
-                val writer = FileWriter(configFile)
-                props.setProperty("last-cache-dir", txtCacheLocation.text)
-                props.store(writer, "")
+                configuration.saveProp("last-cache-dir", txtCacheLocation.text)
                 btnLaunch.isDisable = true
                 // load and open main scene
                 val fxmlLoader = FXMLLoader()
@@ -155,7 +150,11 @@ class CacheChooserController @Inject constructor(
             }
         }
 
-        txtCacheLocation.text = props.getProperty("last-cache-dir").orEmpty()
+        txtCacheLocation.text = configuration.getProp("last-cache-dir")
+
+        if (configuration.getProp("debug") == "true") {
+            btnLaunch.fire()
+        }
     }
 
     private fun downloadCache(cacheName: String) {
@@ -163,9 +162,12 @@ class CacheChooserController @Inject constructor(
         lblStatusText.text = "Downloading cache $cacheName please wait.."
         txtCacheLocation.text = ""
         val destFolder = File("caches/${cacheName.removeSuffix(".tar.gz")}")
+
         GlobalScope.launch {
             try {
-                BufferedInputStream(URL("$RUNESTATS_URL/$cacheName").openStream()).use { inputStream ->
+                val conn = URL("$RUNESTATS_URL/$cacheName").openConnection()
+                conn.addRequestProperty("User-Agent", "taylors-map-editor")
+                BufferedInputStream(conn.getInputStream()).use { inputStream ->
                     val tarIn = TarArchiveInputStream(GzipCompressorInputStream(inputStream))
                     var tarEntry: TarArchiveEntry? = tarIn.nextTarEntry
                     while (tarEntry != null) {
@@ -191,7 +193,7 @@ class CacheChooserController @Inject constructor(
                     txtCacheLocation.text = destFolder.absolutePath
                 }
             } catch (e: IOException) {
-                // handle exception
+                e.printStackTrace()
             }
         }
     }

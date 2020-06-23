@@ -164,6 +164,7 @@ class Model(
             this
         } else {
             val model: Model
+            val originalY = modelDefinition.vertexPositionsY
             if (deepCopy) {
                 modelDefinition = ModelDefinition(
                     modelDefinition,
@@ -171,11 +172,11 @@ class Model(
                     shallowCopyFaceColors = true,
                     shallowCopyFaceTextures = true
                 )
-                modelDefinition.vertexPositionsY = IntArray(modelDefinition.vertexCount)
                 model = Model(modelDefinition)
                 model.faceColors1 = faceColors1
                 model.faceColors2 = faceColors2
                 model.faceColors3 = faceColors3
+                model.modelDefinition.vertexPositionsY  = IntArray(modelDefinition.vertexCount)
             } else {
                 model = this
             }
@@ -191,7 +192,7 @@ class Model(
             var var21: Int
             if (clipType == 0) {
                 var12 = 0
-                while (var12 < model.modelDefinition.vertexCount) {
+                while (var12 < modelDefinition.vertexCount) {
                     var13 = xOff + modelDefinition.vertexPositionsX[var12]
                     var14 = yOff + modelDefinition.vertexPositionsZ[var12]
                     var15 = var13 and 127
@@ -206,12 +207,12 @@ class Model(
                     var20 = third * (128 - var15) + var15 * fourth shr 7
                     var21 = var19 * (128 - var16) + var20 * var16 shr 7
                     model.modelDefinition.vertexPositionsY[var12] =
-                        var21 + this.modelDefinition.vertexPositionsY[var12] - height
+                        var21 + originalY[var12] - height
                     ++var12
                 }
             } else {
                 var12 = 0
-                while (var12 < model.modelDefinition.vertexCount) {
+                while (var12 < modelDefinition.vertexCount) {
                     var13 = (-modelDefinition.vertexPositionsY[var12] shl 16) / super.height
                     if (var13 < clipType) {
                         var14 = xOff + modelDefinition.vertexPositionsX[var12]
@@ -228,7 +229,7 @@ class Model(
                         var21 = third * (128 - var15) + var15 * fourth shr 7
                         val var22 = var20 * (128 - var17) + var21 * var17 shr 7
                         model.modelDefinition.vertexPositionsY[var12] =
-                            (clipType - var13) * (var22 - height) / clipType + modelDefinition.vertexPositionsY[var12]
+                            (clipType - var13) * (var22 - height) / clipType + originalY[var12]
                     }
                     ++var12
                 }

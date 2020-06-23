@@ -28,6 +28,7 @@
                         <ListView fx:id="listView" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                     </children>
                 </VBox>
+                <HBox fx:id="paneTypeList" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
                 <StackPane fx:id="stackPane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
             </children>
         </HBox>
