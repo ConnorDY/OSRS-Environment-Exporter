@@ -165,6 +165,7 @@ class Renderer @Inject constructor(
         window.addGLEventListener(this)
         window.addKeyListener(inputHandler)
         window.addMouseListener(inputHandler)
+        inputHandler.renderer = this
 
         val glCanvas = NewtCanvasJFX(window)
         glCanvas.width = canvasWidth.toDouble()
@@ -209,10 +210,9 @@ class Renderer @Inject constructor(
     }
 
     fun loadScene() {
-//        scene.load(10038, 1)
-        scene.load(12850, 1)
+        scene.load(10038, 1)
+//        scene.load(12850, 1)
 //        scene.load(9271, 1)
-        inputHandler.renderer = this
     }
 
     private var injectedObject: SceneObject? = null

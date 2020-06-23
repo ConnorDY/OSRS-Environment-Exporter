@@ -9,17 +9,17 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="150.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegionChooserController">
+<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="150.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegionChooserController">
    <children>
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
                   <Label text="Visit Explv's OSRS map to find region ids." />
-                  <Hyperlink text="https://explv.github.io/" />
+                  <Hyperlink fx:id="linkExplv" text="https://explv.github.io/" />
                </children>
             </HBox>
-            <Label alignment="CENTER" text="Note: Load time will increase exponentially with radius and FPS will decrease." />
+            <Label alignment="CENTER" text="Note: Higher radius will affect load time and FPS." />
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
                   <Label text="Region ID:" />

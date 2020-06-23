@@ -18,11 +18,6 @@
             <children>
             <MenuBar>
               <menus>
-                <Menu mnemonicParsing="false" text="File">
-                  <items>
-                    <MenuItem fx:id="menuLoadCache" mnemonicParsing="false" text="Load cache" />
-                  </items>
-                </Menu>
                 <Menu mnemonicParsing="false" text="World">
                   <items>
                     <MenuItem fx:id="menuChangeRegion" mnemonicParsing="false" text="Change Region" />
@@ -30,15 +25,15 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="About" />
+                    <MenuItem mnemonicParsing="false" text="About" fx:id="menuAbout"/>
                   </items>
                 </Menu>
               </menus>
             </MenuBar>
                 <ToolBar prefHeight="40.0" prefWidth="200.0">
-                    <Button fx:id="btnTest" mnemonicParsing="false" text="Export" />
-                    <Button fx:id="btnPlace" mnemonicParsing="false" text="Place Tool" />
-                    <Button fx:id="btnDelete" mnemonicParsing="false" text="Delete Tool" />
+                    <Button visible="false" fx:id="btnTest" mnemonicParsing="false" text="Export" />
+                    <Button visible="false" fx:id="btnPlace" mnemonicParsing="false" text="Place Tool" />
+                    <Button visible="false" fx:id="btnDelete" mnemonicParsing="false" text="Delete Tool" />
                     <Pane HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblStatus" text="Status: N/A" visible="false" />
                     <Label fx:id="lblFps" text="FPS: -1" />

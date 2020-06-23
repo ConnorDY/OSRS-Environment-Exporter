@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.control.Button
 import javafx.scene.control.Label
+import javafx.scene.control.Menu
 import javafx.scene.control.MenuItem
 import javafx.stage.Stage
 import javafx.util.Callback
@@ -19,16 +20,16 @@ import models.scene.Scene
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
-import java.io.File
 
 class MainController @Inject constructor(
     private val debugModel: DebugModel,
     private val scene: Scene,
     private val locationsLoader: LocationsLoader
 ) {
-
     @FXML
     lateinit var menuChangeRegion: MenuItem
+    @FXML
+    lateinit var menuAbout: MenuItem
 
     @FXML
     lateinit var dockPane: DockPane
@@ -114,7 +115,6 @@ class MainController @Inject constructor(
             println("saved")
         }
 
-
         menuChangeRegion.setOnAction {
             val regionChangeLoader = FXMLLoader()
             regionChangeLoader.controllerFactory = Callback { type: Class<*>? ->
@@ -125,6 +125,20 @@ class MainController @Inject constructor(
             val stage = Stage()
             stage.title = "Region Chooser"
             stage.scene = javafx.scene.Scene(regionChangeRoot)
+            stage.show()
+        }
+
+        menuAbout.setOnAction {
+
+            val aboutLoader = FXMLLoader()
+            aboutLoader.controllerFactory = Callback { type: Class<*>? ->
+                injector.getInstance(type)
+            }
+            aboutLoader.location = javaClass.getResource("/views/about.fxml")
+            val aboutRoot = aboutLoader.load<Parent>()
+            val stage = Stage()
+            stage.title = "About"
+            stage.scene = javafx.scene.Scene(aboutRoot)
             stage.show()
         }
 

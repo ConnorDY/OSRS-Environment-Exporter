@@ -76,3 +76,10 @@
     -fx-border-color: transparent;
     -fx-table-cell-border-color:transparent;
 }
+
+.hyperlink {
+    -fx-text-fill: #8af5ff;
+    -fx-border-color: transparent;
+    -fx-padding: 4 0 4 0;
+    -fx-background-color: transparent;
+}

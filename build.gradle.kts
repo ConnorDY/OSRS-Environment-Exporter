@@ -19,6 +19,9 @@ dependencies {
     api(files("lib/dockfx-0.4-SNAPSHOT.jar"))
     api("com.google.inject:guice:4.2.3")
     api("com.jfoenix:jfoenix:9.0.9")
+    implementation("org.jsoup:jsoup:1.11.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
+    api(group = "org.codehaus.plexus", name = "plexus-archiver", version = "4.2.2")
 }
 
 tasks {
