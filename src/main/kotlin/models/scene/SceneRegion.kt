@@ -1,5 +1,6 @@
 package models.scene
 
+import cache.LocationType
 import cache.definitions.Location
 import cache.definitions.LocationsDefinition
 import cache.definitions.RegionDefinition
@@ -135,6 +136,30 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         entity.getModel().yOff = Constants.LOCAL_HALF_TILE_SIZE
         val wallDecoration = WallDecoration(entity)
         tiles[z][x][y]!!.wallDecoration = wallDecoration
+    }
+
+    fun newWall(
+        z: Int,
+        x: Int,
+        y: Int,
+        width: Int,
+        length: Int,
+        entity: Entity?,
+        entity2: Entity?,
+        location: Location
+    ) {
+        for (iz in z downTo 0) {
+            if (tiles[iz][x][y] == null) {
+                tiles[iz][x][y] = SceneTile(iz, x, y)
+            }
+        }
+
+        entity!!.getModel().xOff = width * REGION_SIZE
+        entity.getModel().yOff = length * REGION_SIZE
+        entity2?.getModel()?.xOff = width * REGION_SIZE
+        entity2?.getModel()?.yOff = length * REGION_SIZE
+        tiles[z][x][y]!!.wall = WallObject(entity, entity2, LocationType.fromId(location.type)!!)
+        tiles[z][x][y]!!.locations.add(location)
     }
 
     fun newGameObject(

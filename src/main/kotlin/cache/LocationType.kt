@@ -56,7 +56,7 @@ enum class LocationType(val id: Int) {
     TILE_MODEL(31);
 
     companion object {
-        fun fromId(id: Int) = values().first { it.id == id }
+        fun fromId(id: Int) =  values().firstOrNull { it.id == id }
     }
 }
 

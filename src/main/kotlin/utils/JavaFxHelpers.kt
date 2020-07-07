@@ -48,7 +48,7 @@ object JavaFxHelpers {
 //            mesh.getNormals().addAll(md.vertexNormals[faceC].x, md.vertexNormals[faceC].y, md.vertexNormals[faceC].z);
             if (md.faceTextureVCoordinates != null && md.faceTextureUCoordinates != null && md.faceTextureUCoordinates!![i] != null && md.faceTextureVCoordinates!![i] != null) {
                 mesh.texCoords
-                    .addAll(md.faceTextureUCoordinates!![i]!![0], md.faceTextureVCoordinates!![i]!!.get(0))
+                    .addAll(md.faceTextureUCoordinates!![i]!![0], md.faceTextureVCoordinates!![i]!![0])
                 mesh.texCoords
                     .addAll(md.faceTextureUCoordinates!![i]!![1], md.faceTextureVCoordinates!![i]!![1])
                 mesh.texCoords

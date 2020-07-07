@@ -19,7 +19,6 @@ class InputHandler @Inject internal constructor(
 
     var renderer: Renderer? = null
 
-
     private var isLeftMouseDown = false
     var leftMousePressed = false
     private var isRightMouseDown = false
@@ -94,16 +93,17 @@ class InputHandler @Inject internal constructor(
 
     private fun handleCameraDrag(e: MouseEvent) {
         // TODO: use screen size or adjustable speeds
-        val xSpeed = 2
+        val xSpeed = (renderer!!.canvasWidth * 0.0025).toInt()
         if (previousMouseX < e.x) {
             camera.addYaw(-xSpeed)
         } else if (previousMouseX > e.x) {
             camera.addYaw(xSpeed)
         }
+        val ySpeed = (renderer!!.canvasHeight * 0.002).toInt()
         if (previousMouseY < e.y) {
-            camera.addPitch(1)
+            camera.addPitch(ySpeed)
         } else if (previousMouseY > e.y) {
-            camera.addPitch(-1)
+            camera.addPitch(-ySpeed)
         }
     }
 

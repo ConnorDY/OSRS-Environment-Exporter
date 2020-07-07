@@ -5,6 +5,7 @@ import cache.definitions.*
 import cache.definitions.converters.ObjectToModelConverter
 import cache.loaders.*
 import cache.utils.ColorPalette
+import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
@@ -272,7 +273,6 @@ class SceneRegionBuilder @Inject constructor(
             val y: Int = loc.y
 
             val objectDefinition: ObjectDefinition = objectLoader.get(loc.objId) ?: return@forEach
-            val modelDefinition: ModelDefinition = objectToModelConverter.toModel(objectDefinition, loc.type, loc.orientation) ?: return@forEach
 
             val width: Int
             val length: Int
@@ -312,30 +312,20 @@ class SceneRegionBuilder @Inject constructor(
             val xTransforms = intArrayOf(1, 0, -1, 0)
             val yTransforms = intArrayOf(0, -1, 0, 1)
 
-//            if (loc.type != 0 || loc.objId != 980) return@forEach
+            val staticObject = getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, baseX, baseY)
+                ?: return@forEach
 
-            var model = Model(
-                modelDefinition,
-                objectDefinition.ambient,
-                objectDefinition.contrast
-            )
-
-            if (objectDefinition.contouredGround >= 0) {
-                model = model.contourGround(
-                    regionLoader,
-                    xSize,
-                    height,
-                    ySize,
-                    baseX,
-                    baseY,
-                    true,
-                    objectDefinition.contouredGround
-                )
+            if (loc.type in 0..3) {
+                sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
             }
 
-            val staticObject = StaticObject(model, height)
+            if (loc.type == 2) {
+                val entity1 = getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, baseX, baseY)
+                val entity2 = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, baseX, baseY)
+                sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
+            }
 
-            if (loc.type in 0..3 || loc.type in 5..10) {
+            if (loc.type in 5..9) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
@@ -362,6 +352,41 @@ class SceneRegionBuilder @Inject constructor(
         }
 
         return sceneRegion
+    }
+
+    data class ModelKey (
+        val id: Int,
+        val type: Int,
+        val orientation: Int,
+        val ambient: Int,
+        val contrast: Int
+    )
+
+    private val entityCache: HashMap<ModelKey, Model> = HashMap()
+    private fun getEntity(objectDefinition: ObjectDefinition, type: Int, orientation: Int, xSize: Int, height: Int, ySize: Int, baseX: Int, baseY: Int): Entity? {
+        val modelDefinition: ModelDefinition = objectToModelConverter.toModel(objectDefinition, type, orientation)?: return null
+
+        val modelKey = ModelKey(modelDefinition.id, type, orientation, objectDefinition.ambient, objectDefinition.contrast)
+        var model = entityCache[modelKey]
+        if (model == null) {
+            model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+            entityCache[modelKey] = model
+        }
+
+        if (objectDefinition.contouredGround >= 0) {
+            model = model.contourGround(
+                regionLoader,
+                xSize,
+                height,
+                ySize,
+                baseX,
+                baseY,
+                true,
+                objectDefinition.contouredGround
+            )
+        }
+
+        return StaticObject(model, height, type, orientation)
     }
 
     private fun getTileHeight(z: Int, x: Int, y: Int): Int {

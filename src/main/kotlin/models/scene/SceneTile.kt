@@ -13,6 +13,7 @@ class SceneTile(val z: Int, var x: Int, var y: Int) {
     var tileModel: TileModel? = null
     var floorDecoration: FloorDecoration? = null
     var wallDecoration: WallDecoration? = null
+    var wall: WallObject? = null
     val gameObjects: ArrayList<GameObject> = ArrayList()
 //    private val boundaryObjects: List<WallDecoration> = ArrayList<WallDecoration>()
 

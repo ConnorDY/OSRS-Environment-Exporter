@@ -166,17 +166,17 @@ class Model(
             val model: Model
             val originalY = modelDefinition.vertexPositionsY
             if (deepCopy) {
-                modelDefinition = ModelDefinition(
+                val newDef = ModelDefinition(
                     modelDefinition,
                     shallowCopyVerts = true,
                     shallowCopyFaceColors = true,
                     shallowCopyFaceTextures = true
                 )
-                model = Model(modelDefinition)
+                model = Model(newDef)
                 model.faceColors1 = faceColors1
                 model.faceColors2 = faceColors2
                 model.faceColors3 = faceColors3
-                model.modelDefinition.vertexPositionsY  = IntArray(modelDefinition.vertexCount)
+                model.modelDefinition.vertexPositionsY = IntArray(modelDefinition.vertexCount)
             } else {
                 model = this
             }
@@ -384,6 +384,7 @@ class Model(
             }
         }
         modelDefinition.id = def.id
+        modelDefinition.tag = def.tag
         modelDefinition.vertexCount = def.vertexCount
         modelDefinition.vertexPositionsX = def.vertexPositionsX
         modelDefinition.vertexPositionsY = def.vertexPositionsY

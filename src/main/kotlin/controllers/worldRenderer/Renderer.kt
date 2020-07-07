@@ -6,7 +6,6 @@ import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.definitions.converters.ObjectToModelConverter
 import com.google.inject.Inject
-import com.jogamp.nativewindow.javafx.JFXAccessor
 import com.jogamp.newt.NewtFactory
 import com.jogamp.newt.event.WindowAdapter
 import com.jogamp.newt.event.WindowEvent
@@ -17,8 +16,8 @@ import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.StaticObject
-import controllers.worldRenderer.helpers.AntiAliasingMode
-import controllers.worldRenderer.helpers.GLUtil
+import controllers.worldRenderer.entities.TilePaint
+import controllers.worldRenderer.helpers.*
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffers
 import controllers.worldRenderer.helpers.GLUtil.glDeleteFrameBuffer
@@ -28,8 +27,6 @@ import controllers.worldRenderer.helpers.GLUtil.glDeleteVertexArrays
 import controllers.worldRenderer.helpers.GLUtil.glGenBuffers
 import controllers.worldRenderer.helpers.GLUtil.glGenVertexArrays
 import controllers.worldRenderer.helpers.GLUtil.glGetInteger
-import controllers.worldRenderer.helpers.GpuIntBuffer
-import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
@@ -128,6 +125,8 @@ class Renderer @Inject constructor(
     private var lastStretchedCanvasHeight = 0
     private var lastAntiAliasingMode: AntiAliasingMode? = null
 
+    private val useComputeShaders: Boolean = false
+
     fun reposResize(x: Int, y: Int, width: Int, height: Int) {
         window.setPosition(x, y)
         window.setSize(width, height)
@@ -203,14 +202,14 @@ class Renderer @Inject constructor(
 
         scene.sceneChangeListeners.add(ActionListener {
             isSceneUploadRequired = true
-            camera.cameraX = 0
-            camera.cameraY = 0
+            camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
+            camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
             camera.cameraZ = -2500
         })
     }
 
     fun loadScene() {
-        scene.load(10038, 1)
+        scene.load(9271, 1)
 //        scene.load(12850, 1)
 //        scene.load(9271, 1)
     }
@@ -221,11 +220,11 @@ class Renderer @Inject constructor(
             injectedObject = newValue
         }
 
-        scene.getRegion(0, 0)!!.tileChangeListeners.add(object : TileChangeListener {
-            override fun onTileChange(tile: SceneTile) {
-                println("tile changed".format(tile))
-            }
-        })
+//        scene.getRegion(0, 0)!!.tileChangeListeners.add(object : TileChangeListener {
+//            override fun onTileChange(tile: SceneTile) {
+//                println("tile changed".format(tile))
+//            }
+//        })
     }
 
 //    private fun injectEntity(entity: Entity) {
@@ -275,9 +274,9 @@ class Renderer @Inject constructor(
         val x = hoverId shr 18 and 0x1FFF
         val y = hoverId shr 5 and 0x1FFF
         val type = hoverId and 0x1F
-        val tile = scene.getTile(0, x, y)?: return
+        val tile = scene.getTile(0, x, y) ?: return
 
-        hoverModel.hovered.set(HoverObject(x, y, LocationType.fromId(type), tile))
+        hoverModel.hovered.set(HoverObject(x, y, LocationType.fromId(type)!!, tile))
 
         if (injectedObject != null && tile.tilePaint != null) {
             val objectDefinition: ObjectDefinition = injectedObject!!.objectDefinition
@@ -288,7 +287,7 @@ class Renderer @Inject constructor(
             model.xOff = objectDefinition.sizeX * REGION_SIZE
             model.yOff = objectDefinition.sizeY * REGION_SIZE
             sceneUploader.uploadModel(
-                StaticObject(model, tile.tilePaint!!.nwHeight),
+                StaticObject(model, tile.tilePaint!!.nwHeight, injectedObject!!.type, injectedObject!!.orientation),
                 modelBuffers.vertexBuffer,
                 modelBuffers.uvBuffer
             )
@@ -296,10 +295,59 @@ class Renderer @Inject constructor(
         }
     }
 
+    fun redrawTile(tilePaint: TilePaint) {
+        // modify the tiles vertex data
+        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferId)
+        val buf = GpuIntBuffer()
+        sceneUploader.upload(tilePaint, buf, GpuFloatBuffer())
+        buf.flip()
+
+        gl.glBufferSubData(
+            GL.GL_ARRAY_BUFFER,
+            (tilePaint.computeObj.offset * 4 * GLBuffers.SIZEOF_INT).toLong(), buf.buffer.limit() * GLBuffers.SIZEOF_INT.toLong(), buf.buffer
+        )
+        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+
+        // add the tile to be recomputed
+        tilePaint.recompute(modelBuffers)
+    }
+
     private fun handleClick() {
         if (hoverId == -1) {
             return
         }
+
+        // modifying tile height code
+        if (inputHandler.mouseClicked) {
+            inputHandler.mouseClicked = false
+            val x = hoverId shr 18 and 0x1FFF
+            val y = hoverId shr 5 and 0x1FFF
+            val tile = scene.getTile(0, x, y) ?: return
+            if (tile.tilePaint == null) return
+
+            tile.tilePaint!!.swHeight += 10
+            redrawTile(tile.tilePaint!!)
+
+//            val north = scene.getTile(0, x, y-1)
+//            if (north?.tilePaint != null) {
+//                north.tilePaint!!.seHeight += 10
+//                redrawTile(north.tilePaint!!)
+//            }
+//
+//            val west = scene.getTile(0, x-1, y)
+//            if (west?.tilePaint != null) {
+//                west.tilePaint!!.neHeight += 10
+//                redrawTile(west.tilePaint!!)
+//            }
+//
+//            val northWest = scene.getTile(0, x-1, y-1)
+//            if (northWest?.tilePaint != null) {
+//                northWest.tilePaint!!.swHeight += 10
+//                redrawTile(northWest.tilePaint!!)
+//            }
+        }
+
+        // adding model to scene code
         if (inputHandler.mouseClicked) {
             inputHandler.mouseClicked = false
             val x = hoverId shr 18 and 0x1FFF
@@ -320,7 +368,7 @@ class Renderer @Inject constructor(
                 model.xOff = objectDefinition.sizeX * REGION_SIZE
                 model.yOff = objectDefinition.sizeY * REGION_SIZE
                 sceneUploader.uploadModel(
-                    StaticObject(model, tile!!.tilePaint!!.nwHeight),
+                    StaticObject(model, tile!!.tilePaint!!.nwHeight, injectedObject!!.type, injectedObject!!.orientation),
                     modelBuffers.vertexBuffer,
                     modelBuffers.uvBuffer
                 )
@@ -361,7 +409,7 @@ class Renderer @Inject constructor(
             initVao()
 
             // disable vsync
-            gl.swapInterval = 0;
+//            gl.swapInterval = 0;
         } catch (e: ShaderException) {
             e.printStackTrace()
         }
@@ -380,7 +428,6 @@ class Renderer @Inject constructor(
     private var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
     override fun display(drawable: GLAutoDrawable?) {
-
         if (isSceneUploadRequired) {
             uploadScene()
         }
@@ -390,7 +437,6 @@ class Renderer @Inject constructor(
         debugModel.fps.set(animator.lastFPS)
         handleClick()
         handleHover()
-
 
         if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {
             createProjectionMatrix(
@@ -512,9 +558,9 @@ class Renderer @Inject constructor(
             gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
 
             /*
-             * Compute is split into two separate programs 'small' and 'large' to
-             * save on GPU resources. Small will sort <= 512 faces, large will do <= 4096.
-             */
+         * Compute is split into two separate programs 'small' and 'large' to
+         * save on GPU resources. Small will sort <= 512 faces, large will do <= 4096.
+         */
 
             // unordered
             gl.glUseProgram(glUnorderedComputeProgram)
@@ -598,6 +644,7 @@ class Renderer @Inject constructor(
             gl.glDisable(GL.GL_CULL_FACE)
             gl.glUseProgram(0)
         }
+
         if (aaEnabled) {
             gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, fboSceneHandle)
             gl.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, fboMainRenderer)
@@ -619,6 +666,7 @@ class Renderer @Inject constructor(
             gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0)
             gl.glDrawBuffer(GL.GL_COLOR_ATTACHMENT0)
         }
+
         gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, fboMainRenderer)
         gl.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, 0)
         gl.glBlitFramebuffer(
@@ -627,6 +675,7 @@ class Renderer @Inject constructor(
             GL.GL_COLOR_BUFFER_BIT or GL.GL_DEPTH_BUFFER_BIT, GL.GL_NEAREST
         )
         gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
+
         modelBuffers.clearVertUv()
         modelBuffers.clear()
     }
@@ -690,6 +739,13 @@ class Renderer @Inject constructor(
                 .draw(modelBuffers, x, y, tile.floorDecoration!!.entity!!.height, LocationType.FLOOR_DECORATION.id)
         }
 
+        if (tile.wall != null) {
+            tile.wall!!.entity!!.getModel()
+                .draw(modelBuffers, x, y, tile.wall!!.entity!!.height, tile.wall!!.type.id)
+            tile.wall!!.entity2?.getModel()
+                ?.draw(modelBuffers, x, y, tile.wall!!.entity2!!.height, tile.wall!!.type.id)
+        }
+
         if (tile.wallDecoration != null) {
             tile.wallDecoration!!.entity!!.getModel().draw(
                 modelBuffers,
@@ -712,6 +768,8 @@ class Renderer @Inject constructor(
         modelBuffers.flipVertUv()
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
+
+        println("vertexBuffer size %d".format(vertexBuffer.limit()))
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferId)
         gl.glBufferData(
             GL.GL_ARRAY_BUFFER,

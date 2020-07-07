@@ -1,7 +1,6 @@
 package controllers.worldRenderer
 
 class Camera {
-    private val debugText = ""
     var yaw = 0 // yaw 0 true north, same with 2047 and 1
     var pitch = 220
     val scale = 550

@@ -4,6 +4,7 @@ import cache.LocationType
 import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.definitions.converters.ObjectToModelConverter
+import cache.loaders.ModelLoader
 import cache.loaders.ObjectLoader
 import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
@@ -35,7 +36,8 @@ class ObjectPickerController @Inject constructor(
     private val textureLoader: TextureLoader,
     private val spriteLoader: SpriteLoader,
     private val objectToModelConverter: ObjectToModelConverter,
-    private val objectsModel: ObjectsModel
+    private val objectsModel: ObjectsModel,
+    private val modelLoader: ModelLoader
 ) {
 
     private lateinit var renderer: Renderer
@@ -96,6 +98,16 @@ class ObjectPickerController @Inject constructor(
                     newVal.isEmpty() || obj.toString().toLowerCase().contains(newVal.toLowerCase())
                 }
             }
+
+//        g.children.clear()
+//        val mv: Array<MeshView?> =
+//            JavaFxHelpers.modelToMeshViews(modelLoader.get(4695)!!, textureLoader, spriteLoader)
+//        g.children.addAll(*mv)
+//
+//        g.transforms.addAll(
+//            Rotate(360.0 * 512 / 2048, Rotate.X_AXIS))
+//
+//        camera.translateZ += 440
 
         val typeToggleGroup = ToggleGroup()
         listView.selectionModel.selectedItemProperty()

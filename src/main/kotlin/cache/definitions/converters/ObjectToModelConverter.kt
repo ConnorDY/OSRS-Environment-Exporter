@@ -83,7 +83,7 @@ class ObjectToModelConverter @Inject constructor(
             if (isRotated) {
                 modelId += 65536
             }
-            modelDefinition = modelLoader.get(modelId and 0xFFFF)
+            modelDefinition = modelLoader.get(modelId)
 
             if (modelDefinition == null) {
                 return null

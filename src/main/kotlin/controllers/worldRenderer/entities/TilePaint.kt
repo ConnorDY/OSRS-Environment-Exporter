@@ -1,6 +1,10 @@
 package controllers.worldRenderer.entities
 
+import com.jogamp.opengl.GL
+import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.Constants
+import controllers.worldRenderer.SceneUploader
+import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.helpers.ModelBuffers.Companion.FLAG_SCENE_BUFFER
@@ -39,6 +43,14 @@ class TilePaint(
 
     override fun drawDynamic(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int) {
         TODO("Not yet implemented")
+    }
+
+    fun recompute(modelBuffers: ModelBuffers) {
+        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
+        modelBuffers.incUnorderedModels()
+        b.ensureCapacity(13)
+
+        b.buffer.put(computeObj.toArray())
     }
 
     override fun clearDraw(modelBuffers: ModelBuffers) {

@@ -20,7 +20,7 @@ class ModelLoader @Inject constructor(
         }
 
         val index = cacheLibrary.index(IndexType.MODELS.id)
-        val archive = index.archive(modelId) ?: return null
+        val archive = index.archive(modelId and 0xFFFF) ?: return null
         val b = archive.files[0]?.data!!
         cacheLibrary.index(IndexType.MODELS.id).unCache() // free memory
 

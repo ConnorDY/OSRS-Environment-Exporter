@@ -18,7 +18,7 @@ open class ModelDefinition {
     var faceCount = 0
     var faceVertexIndices1: IntArray? = null
     var faceVertexIndices2: IntArray? = null
-     var faceVertexIndices3: IntArray? = null
+    var faceVertexIndices3: IntArray? = null
     var faceAlphas: ByteArray? = null
     var faceColors: ShortArray? = null
     var faceRenderPriorities: ByteArray? = null
@@ -107,6 +107,7 @@ open class ModelDefinition {
             faceTextures = original.faceTextures
         }
         id = original.id
+        tag = original.tag
         vertexCount = original.vertexCount
         faceCount = original.faceCount
         faceVertexIndices1 = original.faceVertexIndices1
@@ -562,8 +563,8 @@ open class ModelDefinition {
     private fun reset() {
         vertexNormals = null
         faceNormals = null
-        faceTextureVCoordinates = null
-        faceTextureUCoordinates = faceTextureVCoordinates
+//        faceTextureVCoordinates = null
+//        faceTextureUCoordinates = null
     }
 
     fun resize(var1: Int, var2: Int, var3: Int) {

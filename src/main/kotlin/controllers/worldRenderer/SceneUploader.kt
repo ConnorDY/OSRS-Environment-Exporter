@@ -85,6 +85,9 @@ class SceneUploader {
 
         tile.tileModel?.computeObj?.offset = -1
 
+        tile.wall?.entity?.getModel()?.computeObj?.offset = -1
+        tile.wall?.entity2?.getModel()?.computeObj?.offset = -1
+
         tile.wallDecoration?.entity?.getModel()?.computeObj?.offset = -1
 
         tile.floorDecoration?.entity?.getModel()?.computeObj?.offset = -1
@@ -129,6 +132,18 @@ class SceneUploader {
             offset += len
             if (sceneTileModel.triangleTextureId != null) {
                 uvOffset += len
+            }
+        }
+
+        val wall = tile.wall
+        if (wall != null) {
+            val entity = wall.entity
+            if (entity is StaticObject) {
+                uploadModel(entity, vertexBuffer, uvBuffer)
+            }
+            val entity2 = wall.entity2
+            if (entity2 is StaticObject) {
+                uploadModel(entity2, vertexBuffer, uvBuffer)
             }
         }
 
@@ -186,12 +201,15 @@ class SceneUploader {
         // 0,1
         val vertexBx = 0
         val vertexBy = Constants.LOCAL_TILE_SIZE
+
         vertexBuffer.put(vertexAx, neHeight, vertexAy, neColor)
         vertexBuffer.put(vertexBx, nwHeight, vertexBy, nwColor)
         vertexBuffer.put(vertexCx, seHeight, vertexCy, seColor)
+
         vertexBuffer.put(vertexDx, swHeight, vertexDy, swColor)
         vertexBuffer.put(vertexCx, seHeight, vertexCy, seColor)
         vertexBuffer.put(vertexBx, nwHeight, vertexBy, nwColor)
+
         if (tile.texture != -1) {
             val tex = tile.texture + 1f
             uvBuffer.put(tex, 1.0f, 1.0f, 0f)
@@ -258,11 +276,11 @@ class SceneUploader {
     fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val model = entity.getModel()
 
-        // FIXME: computeObj should be composed of model, position, etc.
-        // so that entities can reuse the same model and the model will know it's position in the vertexbuffer
         if (model.computeObj.offset > 0) {
+            // this model is shared between gameobjects and has already been uploaded
             return -1
         }
+
         model.computeObj.offset = offset
         if (model.modelDefinition.faceTextures != null) {
             model.computeObj.uvOffset = uvOffset
@@ -281,6 +299,7 @@ class SceneUploader {
         if (model.modelDefinition.faceTextures != null) {
             uvOffset += len
         }
+
         return len
     }
 
