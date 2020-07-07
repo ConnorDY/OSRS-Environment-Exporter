@@ -209,7 +209,8 @@ class Renderer @Inject constructor(
     }
 
     fun loadScene() {
-        scene.load(9271, 1)
+        scene.load(10038, 1)
+//        scene.load(9271, 1)
 //        scene.load(12850, 1)
 //        scene.load(9271, 1)
     }
@@ -232,6 +233,7 @@ class Renderer @Inject constructor(
 //        injectedEntity = entity
 //    }
 
+    private var idx = 0
     private fun handleHover() {
         val mouseX: Int = inputHandler.mouseX
         val mouseY: Int = inputHandler.mouseY
@@ -409,7 +411,7 @@ class Renderer @Inject constructor(
             initVao()
 
             // disable vsync
-//            gl.swapInterval = 0;
+            gl.swapInterval = 0;
         } catch (e: ShaderException) {
             e.printStackTrace()
         }
