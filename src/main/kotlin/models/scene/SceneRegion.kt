@@ -8,9 +8,7 @@ import cache.definitions.UnderlayDefinition
 import controllers.worldRenderer.Constants
 import controllers.worldRenderer.entities.*
 
-
 class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinition: LocationsDefinition) {
-    val tileChangeListeners: ArrayList<TileChangeListener> = ArrayList()
     val tiles = Array(RegionDefinition.Z) { Array(RegionDefinition.X) { arrayOfNulls<SceneTile>(RegionDefinition.Y) } }
     val tileColors = Array(RegionDefinition.X + 1) { IntArray(RegionDefinition.Y + 1) }
 

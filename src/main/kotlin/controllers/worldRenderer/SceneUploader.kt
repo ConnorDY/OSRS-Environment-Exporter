@@ -43,8 +43,7 @@ class SceneUploader {
 
     fun upload(scene: Scene, vertexbuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
         ++sceneId
-        offset = 0
-        uvOffset = 0
+        resetOffsets()
         vertexbuffer.clear()
         uvBuffer.clear()
         for (rx in 0 until scene.radius) {
@@ -183,6 +182,7 @@ class SceneUploader {
         if (neColor == 12345678) {
             return 0
         }
+
         vertexBuffer.ensureCapacity(24)
         uvBuffer.ensureCapacity(24)
 

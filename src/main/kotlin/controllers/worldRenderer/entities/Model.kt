@@ -16,8 +16,16 @@ import kotlin.math.sqrt
 
 class Model(
     var modelDefinition: ModelDefinition,
+
+    var orientation: Int = 0,
+    var orientationType: OrientationType = OrientationType.STRAIGHT,
+    var x: Int = 0, // 3d world space position
+    var y: Int = 0,
+    var yOff: Int = 0,
+    var xOff: Int = 0,
+    var height: Int = 0,
     val computeObj: ComputeObj = ComputeObj()
-) : Renderable() {
+) : Renderable {
 
     var faceColors1: IntArray? = null
     var faceColors2: IntArray? = null
@@ -110,7 +118,7 @@ class Model(
             boundsType = 1
             bottomY = 0
             xYZMag = 0
-            super.height = 0
+            height = 0
             for (var1 in 0 until modelDefinition.vertexCount) {
                 val var2: Int = modelDefinition.vertexPositionsX[var1]
                 val var3: Int = modelDefinition.vertexPositionsY[var1]
@@ -213,7 +221,7 @@ class Model(
             } else {
                 var12 = 0
                 while (var12 < modelDefinition.vertexCount) {
-                    var13 = (-modelDefinition.vertexPositionsY[var12] shl 16) / super.height
+                    var13 = (-modelDefinition.vertexPositionsY[var12] shl 16) / height
                     if (var13 < clipType) {
                         var14 = xOff + modelDefinition.vertexPositionsX[var12]
                         var15 = yOff + modelDefinition.vertexPositionsZ[var12]

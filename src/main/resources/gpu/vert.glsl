@@ -95,11 +95,11 @@ void main()
 
     // picking logic
     o_pickerId = pickerId;
-
-    if (hoverId == pickerId) {
-        vColor.a = 0.8;
-        vHsl = 11111;
-    }
+//
+//    if (hoverId == pickerId) {
+//        vColor.a = 0.8;
+//        vHsl = 11111;
+//    }
 
 //    int x = (pickerId >> 18) & 0x1FFF;
 //    int y = (pickerId >> 5) & 0x1FFF;

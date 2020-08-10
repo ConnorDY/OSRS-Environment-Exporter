@@ -56,15 +56,11 @@ class SceneRegionBuilder @Inject constructor(
                     val var17 = 65536 / diff
                     val var18 = (yHeightDiff shl 8) / diff
                     val var19 = (var16 * -50 + var18 * -50 + var17 * -10) / var10 + 96
-                    val color = (getTileSettings(z, worldX - 1, worldY) shr 2) + (getTileSettings(
-                        0,
-                        worldX,
-                        worldY - 1
-                    ) shr 2) + (getTileSettings(z, worldX + 1, worldY) shr 3) + (getTileSettings(
-                        0,
-                        worldX,
-                        worldY + 1
-                    ) shr 3) + (getTileSettings(z, worldX, worldY) shr 1)
+                    val color = (getTileSettings(z, worldX - 1, worldY) shr 2) +
+                            (getTileSettings(z, worldX, worldY - 1) shr 2) +
+                            (getTileSettings(z, worldX + 1, worldY) shr 3) +
+                            (getTileSettings(z, worldX, worldY + 1) shr 3) +
+                            (getTileSettings(z, worldX, worldY) shr 1)
                     sceneRegion.tileColors[x][y] = var19 - color
                 }
             }
@@ -142,7 +138,7 @@ class SceneRegionBuilder @Inject constructor(
                             val nwColor = sceneRegion.tileColors[xi][yi + 1]
                             var rgb = -1
                             var underlayHsl = -1
-                            if (underlayId > 0 && runningHues > 0 && runningMultiplier > 0) {
+                            if (underlayId > 0 && runningHues > 0 && runningMultiplier > 0 && runningNumber > 0) {
                                 val avgHue = runningHues * 256 / runningMultiplier
                                 val avgSat = runningSat / runningNumber
                                 var avgLight = runningLight / runningNumber
@@ -312,16 +308,19 @@ class SceneRegionBuilder @Inject constructor(
             val xTransforms = intArrayOf(1, 0, -1, 0)
             val yTransforms = intArrayOf(0, -1, 0, 1)
 
-            val staticObject = getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, baseX, baseY)
-                ?: return@forEach
+            val staticObject =
+                getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, baseX, baseY)
+                    ?: return@forEach
 
             if (loc.type in 0..3) {
                 sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
             }
 
             if (loc.type == 2) {
-                val entity1 = getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, baseX, baseY)
-                val entity2 = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, baseX, baseY)
+                val entity1 =
+                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, baseX, baseY)
+                val entity2 =
+                    getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, baseX, baseY)
                 sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
             }
 
@@ -354,7 +353,7 @@ class SceneRegionBuilder @Inject constructor(
         return sceneRegion
     }
 
-    data class ModelKey (
+    data class ModelKey(
         val id: Int,
         val type: Int,
         val orientation: Int,
@@ -363,10 +362,21 @@ class SceneRegionBuilder @Inject constructor(
     )
 
     private val entityCache: HashMap<ModelKey, Model> = HashMap()
-    private fun getEntity(objectDefinition: ObjectDefinition, type: Int, orientation: Int, xSize: Int, height: Int, ySize: Int, baseX: Int, baseY: Int): Entity? {
-        val modelDefinition: ModelDefinition = objectToModelConverter.toModel(objectDefinition, type, orientation)?: return null
+    private fun getEntity(
+        objectDefinition: ObjectDefinition,
+        type: Int,
+        orientation: Int,
+        xSize: Int,
+        height: Int,
+        ySize: Int,
+        baseX: Int,
+        baseY: Int
+    ): Entity? {
+        val modelDefinition: ModelDefinition =
+            objectToModelConverter.toModel(objectDefinition, type, orientation) ?: return null
 
-        val modelKey = ModelKey(modelDefinition.id, type, orientation, objectDefinition.ambient, objectDefinition.contrast)
+        val modelKey =
+            ModelKey(modelDefinition.id, type, orientation, objectDefinition.ambient, objectDefinition.contrast)
         var model = entityCache[modelKey]
         if (model == null) {
             model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)

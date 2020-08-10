@@ -144,7 +144,7 @@ class MainController @Inject constructor(
 
         object : AnimationTimer() {
             override fun handle(now: Long) {
-                lblFps.text = "FPS: %f".format(debugModel.fps.get())
+                lblFps.text = "FPS: %s".format(debugModel.fps.get())
             }
         }.start()
     }

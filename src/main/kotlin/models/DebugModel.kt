@@ -6,5 +6,5 @@ import javafx.beans.property.SimpleStringProperty
 import javafx.beans.property.StringProperty
 
 class DebugModel {
-    val fps: FloatProperty = SimpleFloatProperty()
+    val fps: StringProperty = SimpleStringProperty()
 }

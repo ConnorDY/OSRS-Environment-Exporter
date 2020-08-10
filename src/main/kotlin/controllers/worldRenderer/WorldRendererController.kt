@@ -6,6 +6,8 @@ import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.geometry.Bounds
 import javafx.scene.Group
+import javafx.scene.ImageCursor
+import javafx.scene.image.Image
 import javafx.scene.layout.AnchorPane
 import java.util.*
 

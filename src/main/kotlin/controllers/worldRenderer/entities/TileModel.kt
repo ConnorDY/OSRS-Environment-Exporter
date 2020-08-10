@@ -1,11 +1,13 @@
 package controllers.worldRenderer.entities
 
 import controllers.worldRenderer.Constants
+import controllers.worldRenderer.components.*
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
+import utils.Observable
 
 class TileModel(
-    overylayPath: Int,
+    overlayPath: Int,
     overlayRotation: Int,
     overlayTexture: Int,
     x: Int,
@@ -23,19 +25,58 @@ class TileModel(
     var16: Int,
     var17: Int,
     var18: Int,
-    var19: Int
-): Renderable() {
+    var19: Int,
+    hoverComponent: HoverComponent = HoverComponent(),
+    selectComponent: SelectComponent = SelectComponent(),
+    clickableComponent: ClickableComponent = ClickableComponent()
+) : Observable<TileModel>(),
+    Renderable,
+    Clickable by clickableComponent,
+    Hoverable by hoverComponent,
+    Selectable by selectComponent {
+
     var computeObj: ComputeObj = ComputeObj()
 
     var vertexX: IntArray
     var vertexY: IntArray
     var vertexZ: IntArray
-    var triangleColorA: IntArray
-    var triangleColorB: IntArray
-    var triangleColorC: IntArray
+    var triangleColorA: IntArray = intArrayOf()
+        get() {
+            if (isSelected) {
+                return IntArray(faceCount) { Constants.SELECTED_HSL }
+            }
+            if (isHovered) {
+                return IntArray(faceCount) { Constants.HOVER_HSL }
+            }
+            return field
+        }
+
+    var triangleColorB: IntArray = intArrayOf()
+        get() {
+            if (isSelected) {
+                return IntArray(faceCount) { Constants.SELECTED_HSL }
+            }
+            if (isHovered) {
+                return IntArray(faceCount) { Constants.HOVER_HSL }
+            }
+            return field
+        }
+
+    var triangleColorC: IntArray = intArrayOf()
+        get() {
+            if (isSelected) {
+                return IntArray(faceCount) { Constants.SELECTED_HSL }
+            }
+            if (isHovered) {
+                return IntArray(faceCount) { Constants.HOVER_HSL }
+            }
+            return field
+        }
+
     var faceX: IntArray
     var faceY: IntArray
     var faceZ: IntArray
+    var faceCount: Int = -1
     var triangleTextureId: IntArray? = null
     var isFlat = true
     var shape: Int
@@ -55,7 +96,7 @@ class TileModel(
         computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER
         computeObj.x = x
         computeObj.z = z
-        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, 31)
+        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
         b.buffer.put(computeObj.toArray())
 
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
@@ -69,60 +110,17 @@ class TileModel(
 //        TODO("Not yet implemented")
     }
 
-
-    companion object {
-        var field1615: IntArray
-        var field1605: IntArray
-        var field1613: IntArray
-        var field1623: IntArray
-        var field1620: IntArray
-        val field1617: Array<IntArray>
-        val field1626: Array<IntArray>
-
-        init {
-            field1615 = IntArray(6)
-            field1605 = IntArray(6)
-            field1613 = IntArray(6)
-            field1623 = IntArray(6)
-            field1620 = IntArray(6)
-            field1617 = arrayOf(
-                intArrayOf(1, 3, 5, 7),
-                intArrayOf(1, 3, 5, 7),
-                intArrayOf(1, 3, 5, 7),
-                intArrayOf(1, 3, 5, 7, 6),
-                intArrayOf(1, 3, 5, 7, 6),
-                intArrayOf(1, 3, 5, 7, 6),
-                intArrayOf(1, 3, 5, 7, 6),
-                intArrayOf(1, 3, 5, 7, 2, 6),
-                intArrayOf(1, 3, 5, 7, 2, 8),
-                intArrayOf(1, 3, 5, 7, 2, 8),
-                intArrayOf(1, 3, 5, 7, 11, 12),
-                intArrayOf(1, 3, 5, 7, 11, 12),
-                intArrayOf(1, 3, 5, 7, 13, 14)
-            )
-            field1626 = arrayOf(
-                intArrayOf(0, 1, 2, 3, 0, 0, 1, 3),
-                intArrayOf(1, 1, 2, 3, 1, 0, 1, 3),
-                intArrayOf(0, 1, 2, 3, 1, 0, 1, 3),
-                intArrayOf(0, 0, 1, 2, 0, 0, 2, 4, 1, 0, 4, 3),
-                intArrayOf(0, 0, 1, 4, 0, 0, 4, 3, 1, 1, 2, 4),
-                intArrayOf(0, 0, 4, 3, 1, 0, 1, 2, 1, 0, 2, 4),
-                intArrayOf(0, 1, 2, 4, 1, 0, 1, 4, 1, 0, 4, 3),
-                intArrayOf(0, 4, 1, 2, 0, 4, 2, 5, 1, 0, 4, 5, 1, 0, 5, 3),
-                intArrayOf(0, 4, 1, 2, 0, 4, 2, 3, 0, 4, 3, 5, 1, 0, 4, 5),
-                intArrayOf(0, 0, 4, 5, 1, 4, 1, 2, 1, 4, 2, 3, 1, 4, 3, 5),
-                intArrayOf(0, 0, 1, 5, 0, 1, 4, 5, 0, 1, 2, 4, 1, 0, 5, 3, 1, 5, 4, 3, 1, 4, 2, 3),
-                intArrayOf(1, 0, 1, 5, 1, 1, 4, 5, 1, 1, 2, 4, 0, 0, 5, 3, 0, 5, 4, 3, 0, 4, 2, 3),
-                intArrayOf(1, 0, 5, 4, 1, 0, 1, 5, 0, 0, 4, 3, 0, 4, 5, 3, 0, 5, 2, 3, 0, 1, 2, 5)
-            )
-        }
-    }
-
     init {
+        hoverComponent.observable = this
+        selectComponent.observable = this
+        clickableComponent.onClickFunc = {
+            isSelected = true
+        }
+
         if (var7 != var6 || var8 != var6 || var9 != var6) {
             isFlat = false
         }
-        shape = overylayPath
+        shape = overlayPath
         rotation = overlayRotation
         underlayRgb = var18
         overlayRgb = var19
@@ -130,7 +128,7 @@ class TileModel(
         val var21 = var20 / 2
         val var22 = var20 / 4
         val var23 = var20 * 3 / 4
-        val var24 = field1617[overylayPath]
+        val var24 = field1617[overlayPath]
         val var25 = var24.size
         vertexX = IntArray(var25)
         vertexY = IntArray(var25)
@@ -260,7 +258,7 @@ class TileModel(
             var26[var30] = var35
             var27[var30] = var36
         }
-        val var38 = field1626[overylayPath]
+        val var38 = field1626[overlayPath]
         var31 = var38.size / 4
         faceX = IntArray(var31)
         faceY = IntArray(var31)
@@ -268,6 +266,7 @@ class TileModel(
         triangleColorA = IntArray(var31)
         triangleColorB = IntArray(var31)
         triangleColorC = IntArray(var31)
+        faceCount = var31
         if (overlayTexture != -1) {
             triangleTextureId = IntArray(var31)
         }
@@ -330,5 +329,53 @@ class TileModel(
         }
         var33 /= 14
         var34 /= 14
+    }
+
+    companion object {
+        var field1615: IntArray
+        var field1605: IntArray
+        var field1613: IntArray
+        var field1623: IntArray
+        var field1620: IntArray
+        val field1617: Array<IntArray>
+        val field1626: Array<IntArray>
+
+        init {
+            field1615 = IntArray(6)
+            field1605 = IntArray(6)
+            field1613 = IntArray(6)
+            field1623 = IntArray(6)
+            field1620 = IntArray(6)
+            field1617 = arrayOf(
+                intArrayOf(1, 3, 5, 7),
+                intArrayOf(1, 3, 5, 7),
+                intArrayOf(1, 3, 5, 7),
+                intArrayOf(1, 3, 5, 7, 6),
+                intArrayOf(1, 3, 5, 7, 6),
+                intArrayOf(1, 3, 5, 7, 6),
+                intArrayOf(1, 3, 5, 7, 6),
+                intArrayOf(1, 3, 5, 7, 2, 6),
+                intArrayOf(1, 3, 5, 7, 2, 8),
+                intArrayOf(1, 3, 5, 7, 2, 8),
+                intArrayOf(1, 3, 5, 7, 11, 12),
+                intArrayOf(1, 3, 5, 7, 11, 12),
+                intArrayOf(1, 3, 5, 7, 13, 14)
+            )
+            field1626 = arrayOf(
+                intArrayOf(0, 1, 2, 3, 0, 0, 1, 3),
+                intArrayOf(1, 1, 2, 3, 1, 0, 1, 3),
+                intArrayOf(0, 1, 2, 3, 1, 0, 1, 3),
+                intArrayOf(0, 0, 1, 2, 0, 0, 2, 4, 1, 0, 4, 3),
+                intArrayOf(0, 0, 1, 4, 0, 0, 4, 3, 1, 1, 2, 4),
+                intArrayOf(0, 0, 4, 3, 1, 0, 1, 2, 1, 0, 2, 4),
+                intArrayOf(0, 1, 2, 4, 1, 0, 1, 4, 1, 0, 4, 3),
+                intArrayOf(0, 4, 1, 2, 0, 4, 2, 5, 1, 0, 4, 5, 1, 0, 5, 3),
+                intArrayOf(0, 4, 1, 2, 0, 4, 2, 3, 0, 4, 3, 5, 1, 0, 4, 5),
+                intArrayOf(0, 0, 4, 5, 1, 4, 1, 2, 1, 4, 2, 3, 1, 4, 3, 5),
+                intArrayOf(0, 0, 1, 5, 0, 1, 4, 5, 0, 1, 2, 4, 1, 0, 5, 3, 1, 5, 4, 3, 1, 4, 2, 3),
+                intArrayOf(1, 0, 1, 5, 1, 1, 4, 5, 1, 1, 2, 4, 0, 0, 5, 3, 0, 5, 4, 3, 0, 4, 2, 3),
+                intArrayOf(1, 0, 5, 4, 1, 0, 1, 5, 0, 0, 4, 3, 0, 4, 5, 3, 0, 5, 2, 3, 0, 1, 2, 5)
+            )
+        }
     }
 }

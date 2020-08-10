@@ -14,8 +14,11 @@ import com.jogamp.newt.opengl.GLWindow
 import com.jogamp.opengl.*
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
+import controllers.worldRenderer.components.Hoverable
+import controllers.worldRenderer.components.Selectable
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.StaticObject
+import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
 import controllers.worldRenderer.helpers.*
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
@@ -31,6 +34,9 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
+import javafx.scene.ImageCursor
+import javafx.scene.image.Image
+import javafx.scene.input.KeyCode
 import models.HoverModel
 import models.HoverObject
 import models.ObjectsModel
@@ -125,8 +131,6 @@ class Renderer @Inject constructor(
     private var lastStretchedCanvasHeight = 0
     private var lastAntiAliasingMode: AntiAliasingMode? = null
 
-    private val useComputeShaders: Boolean = false
-
     fun reposResize(x: Int, y: Int, width: Int, height: Int) {
         window.setPosition(x, y)
         window.setSize(width, height)
@@ -136,6 +140,7 @@ class Renderer @Inject constructor(
     //-Dnewt.debug=true
     lateinit var window: GLWindow
     lateinit var animator: Animator
+    lateinit var glCanvas: NewtCanvasJFX
     fun initCanvas(group: Group) {
         // center camera in viewport
         camera.centerX = canvasWidth / 2
@@ -166,7 +171,7 @@ class Renderer @Inject constructor(
         window.addMouseListener(inputHandler)
         inputHandler.renderer = this
 
-        val glCanvas = NewtCanvasJFX(window)
+        glCanvas = NewtCanvasJFX(window)
         glCanvas.width = canvasWidth.toDouble()
         glCanvas.height = canvasHeight.toDouble()
 
@@ -215,17 +220,30 @@ class Renderer @Inject constructor(
 //        scene.load(9271, 1)
     }
 
+    private val redrawList: ArrayList<SceneTile> = ArrayList()
     private var injectedObject: SceneObject? = null
     fun bindModels() {
         objectsModel.heldObject.addListener { _, _, newValue ->
             injectedObject = newValue
         }
 
-//        scene.getRegion(0, 0)!!.tileChangeListeners.add(object : TileChangeListener {
-//            override fun onTileChange(tile: SceneTile) {
-//                println("tile changed".format(tile))
-//            }
-//        })
+        scene.getRegion(0, 0)!!.tiles.forEach { z ->
+            z.forEach { x ->
+                x.forEach { tile ->
+                    tile?.addListener { (tile, _) ->
+                        redrawList.add(tile)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun redrawTiles() {
+        for (tile in redrawList) {
+            sceneUploader.upload(tile, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
+            tile.tilePaint?.recompute(modelBuffers)
+        }
+        redrawList.clear()
     }
 
 //    private fun injectEntity(entity: Entity) {
@@ -233,7 +251,6 @@ class Renderer @Inject constructor(
 //        injectedEntity = entity
 //    }
 
-    private var idx = 0
     private fun handleHover() {
         val mouseX: Int = inputHandler.mouseX
         val mouseY: Int = inputHandler.mouseY
@@ -278,6 +295,23 @@ class Renderer @Inject constructor(
         val type = hoverId and 0x1F
         val tile = scene.getTile(0, x, y) ?: return
 
+        var hoverEntity: Hoverable? = null
+        if (tile.tilePaint != null) {
+            hoverEntity = tile.tilePaint!!
+        }
+
+        if (tile.tileModel != null) {
+            hoverEntity = tile.tileModel!!
+        }
+
+        if (hoverEntity != null) {
+            hoverEntity.isHovered = true
+            if (lastHovered != hoverEntity) {
+                lastHovered?.isHovered = false
+                lastHovered = hoverEntity
+            }
+        }
+
         hoverModel.hovered.set(HoverObject(x, y, LocationType.fromId(type)!!, tile))
 
         if (injectedObject != null && tile.tilePaint != null) {
@@ -297,56 +331,78 @@ class Renderer @Inject constructor(
         }
     }
 
-    fun redrawTile(tilePaint: TilePaint) {
-        // modify the tiles vertex data
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferId)
-        val buf = GpuIntBuffer()
-        sceneUploader.upload(tilePaint, buf, GpuFloatBuffer())
-        buf.flip()
+    private var lastHovered: Hoverable? = null
+    private var lastSelected: Selectable? = null
 
-        gl.glBufferSubData(
-            GL.GL_ARRAY_BUFFER,
-            (tilePaint.computeObj.offset * 4 * GLBuffers.SIZEOF_INT).toLong(), buf.buffer.limit() * GLBuffers.SIZEOF_INT.toLong(), buf.buffer
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-
-        // add the tile to be recomputed
-        tilePaint.recompute(modelBuffers)
-    }
-
-    private fun handleClick() {
+    private var selectMode = "height"
+    private var lastClick: Double = 0.0
+    private fun handleClick(dt: Double) {
         if (hoverId == -1) {
             return
         }
-
-        // modifying tile height code
-        if (inputHandler.mouseClicked) {
-            inputHandler.mouseClicked = false
+        if (lastClick < 16) { // 60 fps
+            lastClick += dt
+            return
+        }
+        lastClick = 0.0
+        if (inputHandler.isLeftMouseDown) {
+//            inputHandler.mouseClicked = false
             val x = hoverId shr 18 and 0x1FFF
             val y = hoverId shr 5 and 0x1FFF
+            val type = hoverId and 0x1F
             val tile = scene.getTile(0, x, y) ?: return
-            if (tile.tilePaint == null) return
 
-            tile.tilePaint!!.swHeight += 10
-            redrawTile(tile.tilePaint!!)
+            if (selectMode == "select") {
+                var selectedEntity: Selectable? = null
+                if (type == LocationType.TILE_MODEL.id) {
+                    tile.tileModel?.onClick()
+                    selectedEntity = tile.tileModel
+                }
 
-//            val north = scene.getTile(0, x, y-1)
-//            if (north?.tilePaint != null) {
-//                north.tilePaint!!.seHeight += 10
-//                redrawTile(north.tilePaint!!)
-//            }
-//
-//            val west = scene.getTile(0, x-1, y)
-//            if (west?.tilePaint != null) {
-//                west.tilePaint!!.neHeight += 10
-//                redrawTile(west.tilePaint!!)
-//            }
-//
-//            val northWest = scene.getTile(0, x-1, y-1)
-//            if (northWest?.tilePaint != null) {
-//                northWest.tilePaint!!.swHeight += 10
-//                redrawTile(northWest.tilePaint!!)
-//            }
+                if (type == LocationType.TILE_PAINT.id) {
+                    tile.tilePaint?.onClick()
+                    selectedEntity = tile.tilePaint
+                }
+
+                if (selectedEntity != null) {
+                    selectedEntity.isSelected = true
+                    if (lastSelected != selectedEntity) {
+                        lastSelected?.isSelected = false
+                        lastSelected = selectedEntity
+                    }
+                }
+            }
+        }
+
+        if (inputHandler.isLeftMouseDown || inputHandler.isRightMouseDown) {
+            val x = hoverId shr 18 and 0x1FFF
+            val y = hoverId shr 5 and 0x1FFF
+            val type = hoverId and 0x1F
+            val tile = scene.getTile(0, x, y) ?: return
+
+            var amt = 5
+            if (inputHandler.isRightMouseDown) amt *= -1
+
+            if (selectMode == "height") {
+                if (tile.tilePaint != null) {
+                    tile.tilePaint!!.swHeight += amt
+                }
+
+                val south = scene.getTile(0, x, y - 1)
+                if (south?.tilePaint != null) {
+                    south.tilePaint!!.nwHeight += amt
+                }
+
+                val west = scene.getTile(0, x - 1, y)
+                if (west?.tilePaint != null) {
+                    west.tilePaint!!.seHeight += amt
+                }
+
+                val southWest = scene.getTile(0, x - 1, y - 1)
+                if (southWest?.tilePaint != null) {
+                    southWest.tilePaint!!.neHeight += amt
+                }
+            }
         }
 
         // adding model to scene code
@@ -370,7 +426,12 @@ class Renderer @Inject constructor(
                 model.xOff = objectDefinition.sizeX * REGION_SIZE
                 model.yOff = objectDefinition.sizeY * REGION_SIZE
                 sceneUploader.uploadModel(
-                    StaticObject(model, tile!!.tilePaint!!.nwHeight, injectedObject!!.type, injectedObject!!.orientation),
+                    StaticObject(
+                        model,
+                        tile!!.tilePaint!!.nwHeight,
+                        injectedObject!!.type,
+                        injectedObject!!.orientation
+                    ),
                     modelBuffers.vertexBuffer,
                     modelBuffers.uvBuffer
                 )
@@ -429,15 +490,20 @@ class Renderer @Inject constructor(
 
     private var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
+    private var lastUpdate: Long = System.nanoTime()
     override fun display(drawable: GLAutoDrawable?) {
+        debugModel.fps.set(animator.lastFPS.toString())
+        val deltaTime: Double = (System.nanoTime().toDouble() - lastUpdate.toDouble()) / 1000 / 1000
+        lastUpdate = System.nanoTime()
+
         if (isSceneUploadRequired) {
             uploadScene()
         }
 
         sceneUploader.resetOffsets() // to reuse uploadModel function
 
-        debugModel.fps.set(animator.lastFPS)
-        handleClick()
+        redrawTiles()
+        handleClick(deltaTime)
         handleHover()
 
         if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {

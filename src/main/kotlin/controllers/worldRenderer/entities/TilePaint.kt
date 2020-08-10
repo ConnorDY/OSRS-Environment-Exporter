@@ -1,26 +1,107 @@
 package controllers.worldRenderer.entities
 
-import com.jogamp.opengl.GL
-import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.Constants
-import controllers.worldRenderer.SceneUploader
-import controllers.worldRenderer.helpers.GpuFloatBuffer
+import controllers.worldRenderer.components.*
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.helpers.ModelBuffers.Companion.FLAG_SCENE_BUFFER
+import utils.EventType
+import utils.Observable
 
 class TilePaint(
-    var swHeight: Int = 0,
-    var seHeight: Int = 0,
-    var neHeight: Int = 0,
-    var nwHeight: Int = 0,
-    var swColor: Int,
-    var seColor: Int,
-    var neColor: Int,
-    var nwColor: Int,
+    swHeight: Int = 0,
+    seHeight: Int = 0,
+    neHeight: Int = 0,
+    nwHeight: Int = 0,
+    swColor: Int,
+    seColor: Int,
+    neColor: Int,
+    nwColor: Int,
     var texture: Int,
-    var rgb: Int
-) : Renderable() {
+    var rgb: Int,
+    hoverComponent: HoverComponent = HoverComponent(),
+    selectComponent: SelectComponent = SelectComponent(),
+    clickableComponent: ClickableComponent = ClickableComponent()
+): Observable<TilePaint>(),
+    Renderable,
+    Hoverable by hoverComponent,
+    Selectable by selectComponent,
+    Clickable by clickableComponent {
+
+    init {
+        hoverComponent.observable = this
+        selectComponent.observable = this
+        clickableComponent.onClickFunc = {
+            isSelected = true
+        }
+    }
+
+    var swHeight: Int = swHeight
+        set(value) {
+            if (value == field) return
+            field = value
+            notifyObservers(EventType.SELECT)
+        }
+
+    var seHeight: Int = seHeight
+        set(value) {
+            if (value == field) return
+            field = value
+            notifyObservers(EventType.SELECT)
+        }
+    var neHeight: Int = neHeight
+        set(value) {
+            if (value == field) return
+            field = value
+            notifyObservers(EventType.SELECT)
+        }
+    var nwHeight: Int = nwHeight
+        set(value) {
+            if (value == field) return
+            field = value
+            notifyObservers(EventType.SELECT)
+        }
+
+    var swColor: Int = swColor
+    get() {
+        if (isSelected) {
+            return Constants.SELECTED_HSL
+        }
+        if (isHovered) {
+            return Constants.HOVER_HSL
+        }
+        return field
+    }
+    var seColor: Int = seColor
+        get() {
+            if (isSelected) {
+                return Constants.SELECTED_HSL
+            }
+            if (isHovered) {
+                return Constants.HOVER_HSL
+            }
+            return field
+        }
+    var neColor: Int = neColor
+        get() {
+            if (isSelected) {
+                return Constants.SELECTED_HSL
+            }
+            if (isHovered) {
+                return Constants.HOVER_HSL
+            }
+            return field
+        }
+    var nwColor: Int = nwColor
+        get() {
+            if (isSelected) {
+                return Constants.SELECTED_HSL
+            }
+            if (isHovered) {
+                return Constants.HOVER_HSL
+            }
+            return field
+        }
 
     var computeObj: ComputeObj = ComputeObj()
 
@@ -49,6 +130,7 @@ class TilePaint(
         val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
         modelBuffers.incUnorderedModels()
         b.ensureCapacity(13)
+        computeObj.flags = 0
 
         b.buffer.put(computeObj.toArray())
     }

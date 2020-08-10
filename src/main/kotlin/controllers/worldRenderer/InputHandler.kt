@@ -5,6 +5,7 @@ import com.jogamp.newt.event.KeyListener
 import com.jogamp.newt.event.MouseEvent
 import com.jogamp.newt.event.MouseListener
 import javafx.animation.AnimationTimer
+import javafx.scene.input.KeyCode
 import jogamp.newt.driver.DriverClearFocus
 import models.ObjectsModel
 import models.scene.Scene
@@ -19,15 +20,16 @@ class InputHandler @Inject internal constructor(
 
     var renderer: Renderer? = null
 
-    private var isLeftMouseDown = false
+    var isLeftMouseDown = false
     var leftMousePressed = false
-    private var isRightMouseDown = false
+    var isRightMouseDown = false
     private val keys = BooleanArray(250)
     var mouseClicked = false
     private var previousMouseX = 0
     private var previousMouseY = 0
     var mouseX = 0
     var mouseY = 0
+
     private fun handleKeys(dt: Double) {
         if (dt > 1000) { // big lag spike, don't send the user flying
             return
@@ -78,6 +80,10 @@ class InputHandler @Inject internal constructor(
         if (keys[KeyEvent.VK_ESCAPE.toInt()]) {
             objectsModel.heldObject.set(null)
         }
+    }
+
+    fun isKeyDown(keyCode: KeyCode): Boolean {
+        return keys[keyCode.code]
     }
 
     override fun keyPressed(e: KeyEvent) {
