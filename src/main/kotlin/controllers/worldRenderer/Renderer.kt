@@ -16,10 +16,7 @@ import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.components.Hoverable
 import controllers.worldRenderer.components.Selectable
-import controllers.worldRenderer.entities.Model
-import controllers.worldRenderer.entities.StaticObject
-import controllers.worldRenderer.entities.TileModel
-import controllers.worldRenderer.entities.TilePaint
+import controllers.worldRenderer.entities.*
 import controllers.worldRenderer.helpers.*
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffers
@@ -44,7 +41,13 @@ import models.scene.*
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
+import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+import kotlin.math.floor
+import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 class Renderer @Inject constructor(
     private val camera: Camera,
@@ -210,17 +213,21 @@ class Renderer @Inject constructor(
             camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
             camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
             camera.cameraZ = -2500
+
+            bindModels()
         })
     }
 
     fun loadScene() {
-        scene.load(10038, 1)
-//        scene.load(9271, 1)
-//        scene.load(12850, 1)
-//        scene.load(9271, 1)
+//        scene.load(10038, 1)
+//        scene.load(6967, 1)
+        scene.load(12850, 1)
+//        scene.load(11828, 6)
+//        scene.load(13623, 6)
     }
 
-    private val redrawList: ArrayList<SceneTile> = ArrayList()
+    private val redrawList: HashSet<SceneTile> = HashSet()
+    private val modelRedrawList: HashSet<Entity> = HashSet()
     private var injectedObject: SceneObject? = null
     fun bindModels() {
         objectsModel.heldObject.addListener { _, _, newValue ->
@@ -230,6 +237,9 @@ class Renderer @Inject constructor(
         scene.getRegion(0, 0)!!.tiles.forEach { z ->
             z.forEach { x ->
                 x.forEach { tile ->
+                    tile?.floorDecoration?.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }
+                    tile?.gameObjects?.forEach { it.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }}
+                    tile?.wall?.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }
                     tile?.addListener { (tile, _) ->
                         redrawList.add(tile)
                     }
@@ -244,12 +254,12 @@ class Renderer @Inject constructor(
             tile.tilePaint?.recompute(modelBuffers)
         }
         redrawList.clear()
-    }
 
-//    private fun injectEntity(entity: Entity) {
-//        sceneUploader.uploadModel(entity, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
-//        injectedEntity = entity
-//    }
+        for (e in modelRedrawList) {
+            e.getModel().recompute(modelBuffers, e.height)
+        }
+        modelRedrawList.clear()
+    }
 
     private fun handleHover() {
         val mouseX: Int = inputHandler.mouseX
@@ -304,11 +314,35 @@ class Renderer @Inject constructor(
             hoverEntity = tile.tileModel!!
         }
 
+        val isClickSticky = false
+
         if (hoverEntity != null) {
             hoverEntity.isHovered = true
-            if (lastHovered != hoverEntity) {
-                lastHovered?.isHovered = false
-                lastHovered = hoverEntity
+            if (!isClickSticky || (isClickSticky && !inputHandler.isLeftMouseDown && !inputHandler.isRightMouseDown)) {
+                if (lastHovered != hoverEntity) {
+                    hoverList.forEach { (it as SceneTile).tilePaint?.isHovered = false }
+                    lastHovered?.isHovered = false
+                    lastHovered = hoverEntity
+
+                    hoverList = LinkedList()
+                    // CIRCLE SELECTION
+                    val radius = 5
+                    val top = Math.max(0, y - radius)
+                    val bottom = min(REGION_SIZE, y + radius)
+                    for (yy in top until bottom+1) {
+                        val dy = yy - y
+                        val dx = floor(sqrt((radius*radius + 1 - dy*dy).toDouble())).toInt()
+                        val left = max(0, x - dx)
+                        val right = min(REGION_SIZE, x + dx)
+                        for (xx in left until right) {
+                            val t = scene.getTile(0, xx, yy) ?: continue
+                            hoverList.add(t)
+                        }
+                    }
+
+                hoverList.add(tile)
+                    hoverList.forEach { (it as SceneTile).tilePaint?.isHovered = true }
+                }
             }
         }
 
@@ -323,13 +357,15 @@ class Renderer @Inject constructor(
             model.xOff = objectDefinition.sizeX * REGION_SIZE
             model.yOff = objectDefinition.sizeY * REGION_SIZE
             sceneUploader.uploadModel(
-                StaticObject(model, tile.tilePaint!!.nwHeight, injectedObject!!.type, injectedObject!!.orientation),
+                StaticObject(objectDefinition, model, tile.tilePaint!!.nwHeight, injectedObject!!.type, injectedObject!!.orientation),
                 modelBuffers.vertexBuffer,
                 modelBuffers.uvBuffer
             )
             model.drawDynamic(modelBuffers, x, y, tile.tilePaint!!.nwHeight)
         }
     }
+
+    private var hoverList: LinkedList<Hoverable> = LinkedList()
 
     private var lastHovered: Hoverable? = null
     private var lastSelected: Selectable? = null
@@ -374,34 +410,22 @@ class Renderer @Inject constructor(
             }
         }
 
-        if (inputHandler.isLeftMouseDown || inputHandler.isRightMouseDown) {
+        if (inputHandler.isLeftMouseDown) {
             val x = hoverId shr 18 and 0x1FFF
             val y = hoverId shr 5 and 0x1FFF
             val type = hoverId and 0x1F
             val tile = scene.getTile(0, x, y) ?: return
 
-            var amt = 5
-            if (inputHandler.isRightMouseDown) amt *= -1
+            var amt = -10
+            if (inputHandler.isKeyDown(KeyCode.SHIFT)) amt *= -1
 
             if (selectMode == "height") {
-                if (tile.tilePaint != null) {
-                    tile.tilePaint!!.swHeight += amt
+                hoverList.forEach {
+                    (it as SceneTile).cacheTile!!.height += amt
+                    (it as SceneTile).cacheTile!!.cacheHeight = it.cacheTile!!.height / -8
                 }
 
-                val south = scene.getTile(0, x, y - 1)
-                if (south?.tilePaint != null) {
-                    south.tilePaint!!.nwHeight += amt
-                }
-
-                val west = scene.getTile(0, x - 1, y)
-                if (west?.tilePaint != null) {
-                    west.tilePaint!!.seHeight += amt
-                }
-
-                val southWest = scene.getTile(0, x - 1, y - 1)
-                if (southWest?.tilePaint != null) {
-                    southWest.tilePaint!!.neHeight += amt
-                }
+                scene.recalculateTile(tile.z, tile.x, tile.y)
             }
         }
 
@@ -427,6 +451,7 @@ class Renderer @Inject constructor(
                 model.yOff = objectDefinition.sizeY * REGION_SIZE
                 sceneUploader.uploadModel(
                     StaticObject(
+                        objectDefinition,
                         model,
                         tile!!.tilePaint!!.nwHeight,
                         injectedObject!!.type,
@@ -472,7 +497,7 @@ class Renderer @Inject constructor(
             initVao()
 
             // disable vsync
-            gl.swapInterval = 0;
+            gl.swapInterval = 0
         } catch (e: ShaderException) {
             e.printStackTrace()
         }
@@ -491,9 +516,12 @@ class Renderer @Inject constructor(
     private var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
     private var lastUpdate: Long = System.nanoTime()
+    var deltaTime: Double = 0.0
     override fun display(drawable: GLAutoDrawable?) {
-        debugModel.fps.set(animator.lastFPS.toString())
-        val deltaTime: Double = (System.nanoTime().toDouble() - lastUpdate.toDouble()) / 1000 / 1000
+        debugModel.fps.set("%.0f".format(animator.lastFPS))
+        debugModel.deltaTime.set("%.2f".format(deltaTime))
+        //
+        deltaTime = (System.nanoTime().toDouble() - lastUpdate.toDouble()) / 1000 / 1000
         lastUpdate = System.nanoTime()
 
         if (isSceneUploadRequired) {
@@ -523,7 +551,7 @@ class Renderer @Inject constructor(
         gl.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, fboMainRenderer)
 
         // Setup anti-aliasing
-        val antiAliasingMode: AntiAliasingMode = AntiAliasingMode.MSAA_4
+        val antiAliasingMode: AntiAliasingMode = AntiAliasingMode.MSAA_16
         val aaEnabled = antiAliasingMode !== AntiAliasingMode.DISABLED
         if (aaEnabled) {
             gl.glEnable(GL.GL_MULTISAMPLE)
@@ -753,10 +781,22 @@ class Renderer @Inject constructor(
         modelBuffers.targetBufferOffset = 0
         for (x in 0 until scene.radius * REGION_SIZE) {
             for (y in 0 until scene.radius * REGION_SIZE) {
-                val tile: SceneTile? = scene.getTile(0, x, y)
+                var tile: SceneTile? = scene.getTile(0, x, y)
                 if (tile != null) {
                     drawTile(tile)
                 }
+//                tile = scene.getTile(1, x, y)
+//                if (tile != null) {
+//                    drawTile(tile)
+//                }
+//                tile = scene.getTile(2, x, y)
+//                if (tile != null) {
+//                    drawTile(tile)
+//                }
+//                tile = scene.getTile(3, x, y)
+//                if (tile != null) {
+//                    drawTile(tile)
+//                }
             }
         }
 

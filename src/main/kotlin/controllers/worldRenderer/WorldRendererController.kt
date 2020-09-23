@@ -20,9 +20,9 @@ class WorldRendererController @Inject constructor(val renderer: Renderer) {
 
     @FXML
     fun initialize() {
-        renderer.loadScene()
         renderer.initCanvas(group)
-        renderer.bindModels()
+        renderer.loadScene()
+//        renderer.bindModels()
         anchorPane.boundsInLocalProperty().addListener(listener)
 
         renderer.window.requestFocus()

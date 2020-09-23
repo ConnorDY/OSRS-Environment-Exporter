@@ -12,7 +12,6 @@ class RegionDefinition(
     val baseX: Int get() = regionId shr 8 and 0xFF shl 6 // local coords are in bottom 6 bits (64*64)
     val baseY: Int get() = (regionId and 0xFF) shl 6
 
-    val tileHeights: Array<Array<IntArray>> = Array(Z) { Array(X) { IntArray(Y) } }
     val tileSettings: Array<Array<IntArray>> = Array(Z) { Array(X) { IntArray(Y) } }
     val overlayIds: Array<Array<IntArray>> = Array(Z) { Array(X) { IntArray(Y) } }
     val overlayPaths: Array<Array<IntArray>> = Array(Z) { Array(X) { IntArray(Y) } }
@@ -26,9 +25,9 @@ class RegionDefinition(
                     val tile: Tile = tiles[z][x][y]?: continue
                     if (tile.cacheHeight == null) {
                         if (z == 0) {
-                            tileHeights[0][x][y] = -HeightCalc.calculate(baseX + x + 0xe3b7b, baseY + y + 0x87cce) * 8
+                            tile.height = -HeightCalc.calculate(baseX + x + 0xe3b7b, baseY + y + 0x87cce) * 8
                         } else {
-                            tileHeights[z][x][y] = tileHeights[z - 1][x][y] - 240
+                            tile.height = tiles[z-1][x][y]!!.height - 240
                         }
                     } else {
                         var height: Int = tile.cacheHeight!!
@@ -37,9 +36,9 @@ class RegionDefinition(
                         }
 
                         if (z == 0) {
-                            tileHeights[0][x][y] = -height * 8
+                            tiles[0][x][y]!!.height = -height * 8
                         } else {
-                            tileHeights[z][x][y] = tileHeights[z - 1][x][y] - height * 8
+                            tiles[z][x][y]!!.height = (tiles[z-1][x][y]?.height ?: 0) - height * 8
                         }
                     }
                     overlayIds[z][x][y] = tile.overlayId.toInt()

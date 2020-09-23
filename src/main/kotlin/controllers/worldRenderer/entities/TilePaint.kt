@@ -5,14 +5,15 @@ import controllers.worldRenderer.components.*
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.helpers.ModelBuffers.Companion.FLAG_SCENE_BUFFER
+import models.scene.SceneTile
 import utils.EventType
 import utils.Observable
 
 class TilePaint(
-    swHeight: Int = 0,
-    seHeight: Int = 0,
-    neHeight: Int = 0,
-    nwHeight: Int = 0,
+    swHeight: Int,
+    seHeight: Int,
+    neHeight: Int,
+    nwHeight: Int,
     swColor: Int,
     seColor: Int,
     neColor: Int,
@@ -36,69 +37,78 @@ class TilePaint(
         }
     }
 
+    fun setHeight(swHeight: Int, seHeight: Int, neHeight: Int, nwHeight: Int) {
+        this.swHeight = swHeight
+        this.seHeight = seHeight
+        this.neHeight = neHeight
+        this.nwHeight = nwHeight
+        notifyObservers(EventType.SELECT)
+    }
+
+    fun setColor(swColor: Int, seColor: Int, neColor: Int, nwColor: Int) {
+        this.swColor = swColor
+        this.seColor = seColor
+        this.neColor = neColor
+        this.nwColor = nwColor
+        notifyObservers(EventType.SELECT)
+    }
+
     var swHeight: Int = swHeight
-        set(value) {
-            if (value == field) return
-            field = value
-            notifyObservers(EventType.SELECT)
-        }
+        private set
 
     var seHeight: Int = seHeight
-        set(value) {
-            if (value == field) return
-            field = value
-            notifyObservers(EventType.SELECT)
-        }
+        private set
+
     var neHeight: Int = neHeight
-        set(value) {
-            if (value == field) return
-            field = value
-            notifyObservers(EventType.SELECT)
-        }
+        private set
+
     var nwHeight: Int = nwHeight
-        set(value) {
-            if (value == field) return
-            field = value
-            notifyObservers(EventType.SELECT)
-        }
+        private set
 
     var swColor: Int = swColor
-    get() {
-        if (isSelected) {
-            return Constants.SELECTED_HSL
+        private set
+        get() {
+            if (isSelected) {
+                return Constants.SELECTED_HSL
+            }
+            if (isHovered) {
+                return field + Constants.HOVER_HSL_ALPHA
+            }
+            return field
         }
-        if (isHovered) {
-            return Constants.HOVER_HSL
-        }
-        return field
-    }
+
     var seColor: Int = seColor
+        private set
         get() {
             if (isSelected) {
                 return Constants.SELECTED_HSL
             }
             if (isHovered) {
-                return Constants.HOVER_HSL
+                return field + Constants.HOVER_HSL_ALPHA
             }
             return field
         }
+
     var neColor: Int = neColor
+        private set
         get() {
             if (isSelected) {
                 return Constants.SELECTED_HSL
             }
             if (isHovered) {
-                return Constants.HOVER_HSL
+                return field + Constants.HOVER_HSL_ALPHA
             }
             return field
         }
+
     var nwColor: Int = nwColor
+        private set
         get() {
             if (isSelected) {
                 return Constants.SELECTED_HSL
             }
             if (isHovered) {
-                return Constants.HOVER_HSL
+                return field + Constants.HOVER_HSL_ALPHA
             }
             return field
         }

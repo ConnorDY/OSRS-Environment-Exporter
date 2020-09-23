@@ -7,6 +7,7 @@ import com.jogamp.newt.event.MouseListener
 import javafx.animation.AnimationTimer
 import javafx.scene.input.KeyCode
 import jogamp.newt.driver.DriverClearFocus
+import models.DebugModel
 import models.ObjectsModel
 import models.scene.Scene
 import models.scene.SceneObject
@@ -83,7 +84,7 @@ class InputHandler @Inject internal constructor(
     }
 
     fun isKeyDown(keyCode: KeyCode): Boolean {
-        return keys[keyCode.code]
+        return keys[keyCode.code-1]
     }
 
     override fun keyPressed(e: KeyEvent) {
@@ -98,25 +99,18 @@ class InputHandler @Inject internal constructor(
     }
 
     private fun handleCameraDrag(e: MouseEvent) {
-        // TODO: use screen size or adjustable speeds
-        val xSpeed = (renderer!!.canvasWidth * 0.0025).toInt()
-        if (previousMouseX < e.x) {
-            camera.addYaw(-xSpeed)
-        } else if (previousMouseX > e.x) {
-            camera.addYaw(xSpeed)
-        }
-        val ySpeed = (renderer!!.canvasHeight * 0.002).toInt()
-        if (previousMouseY < e.y) {
-            camera.addPitch(ySpeed)
-        } else if (previousMouseY > e.y) {
-            camera.addPitch(-ySpeed)
-        }
+        val dx = previousMouseX - e.x
+        camera.addYaw(dx)
+
+        val dy = previousMouseY - e.y
+        camera.addPitch(-dy)
     }
 
     override fun mouseClicked(e: MouseEvent) {
         if (e.button == MouseEvent.BUTTON1) {
             mouseClicked = true
         }
+
     }
 
     override fun mouseEntered(e: MouseEvent) {}
@@ -124,6 +118,8 @@ class InputHandler @Inject internal constructor(
     override fun mousePressed(e: MouseEvent) {
         if (e.button == MouseEvent.BUTTON3) {
             isRightMouseDown = true
+            previousMouseX = e.x
+            previousMouseY = e.y
         }
         if (e.button == MouseEvent.BUTTON1) {
             leftMousePressed = true

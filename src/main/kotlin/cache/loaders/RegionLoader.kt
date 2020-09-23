@@ -68,8 +68,7 @@ class RegionLoader(
         return get((x ushr 6) shl 8 or (y ushr 6))
     }
 
-    fun writeRegion(regionDefinition: RegionDefinition) {
-        val outputLibrary = CacheLibrary("cache-out")
+    fun writeRegion(outputLibrary: CacheLibrary, regionDefinition: RegionDefinition) {
         val outputStream = ByteArrayOutputStream()
 
         for (z in 0 until Z) {
@@ -89,7 +88,7 @@ class RegionLoader(
                     }
 
                     if (tile.cacheHeight != null) {
-                        outputStream.write(byteArrayOf(1, tile.height.toByte()))
+                        outputStream.write(byteArrayOf(1, (tile.height / -8).toByte()))
                     } else {
                         outputStream.write(byteArrayOf(0))
                     }

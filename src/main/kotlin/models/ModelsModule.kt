@@ -1,5 +1,8 @@
 package models
 
+import cache.definitions.converters.ObjectToModelConverter
+import cache.loaders.RegionLoader
+import cache.loaders.UnderlayLoader
 import com.google.inject.AbstractModule
 import com.google.inject.Inject
 import com.google.inject.Provider
@@ -18,9 +21,9 @@ class ModelsModule : AbstractModule() {
 }
 
 @Singleton
-internal class SceneProvider @Inject constructor(sceneRegionBuilder: SceneRegionBuilder) :
+internal class SceneProvider @Inject constructor(sceneRegionBuilder: SceneRegionBuilder, underlayLoader: UnderlayLoader, regionLoader: RegionLoader, objectToModelConverter: ObjectToModelConverter) :
     Provider<Scene> {
-    private val scene: Scene = Scene(sceneRegionBuilder)
+    private val scene: Scene = Scene(sceneRegionBuilder, underlayLoader, regionLoader, objectToModelConverter)
     override fun get(): Scene {
         return scene
     }

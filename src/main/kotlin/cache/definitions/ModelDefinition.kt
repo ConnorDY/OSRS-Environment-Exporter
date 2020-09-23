@@ -624,6 +624,10 @@ open class ModelDefinition {
         @Transient
         var animOffsetZ = 0
     }
+
+    override fun toString(): String {
+        return "ModelDefinition(id: $id, tag: $tag)"
+    }
 }
 
 

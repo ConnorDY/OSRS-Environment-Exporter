@@ -14,4 +14,8 @@ data class HoverObject(
     val y: Int,
     val type: LocationType,
     val sceneTile: SceneTile
-)
+) {
+    override fun toString(): String {
+        return "sceneTile: ($x,$y) $type ${sceneTile.gameObjects}, ${sceneTile.tileModel}"
+    }
+}

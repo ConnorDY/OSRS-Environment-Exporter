@@ -31,7 +31,7 @@
               </menus>
             </MenuBar>
                 <ToolBar prefHeight="40.0" prefWidth="200.0">
-                    <Button visible="false" fx:id="btnTest" mnemonicParsing="false" text="Export" />
+                    <Button fx:id="btnTest" mnemonicParsing="false" text="Export" />
                     <Button visible="false" fx:id="btnPlace" mnemonicParsing="false" text="Place Tool" />
                     <Button visible="false" fx:id="btnDelete" mnemonicParsing="false" text="Delete Tool" />
                     <Pane HBox.hgrow="ALWAYS" />

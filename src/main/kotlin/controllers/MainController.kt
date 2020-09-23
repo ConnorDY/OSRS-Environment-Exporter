@@ -2,10 +2,12 @@ package controllers
 
 import JfxApplication.Companion.injector
 import cache.loaders.LocationsLoader
+import cache.loaders.RegionLoader
 import com.displee.cache.CacheLibrary
 import com.google.inject.Inject
 import controllers.worldRenderer.WorldRendererController
 import javafx.animation.AnimationTimer
+import javafx.beans.binding.BooleanBinding
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
@@ -20,11 +22,13 @@ import models.scene.Scene
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
+import java.io.File
 
 class MainController @Inject constructor(
     private val debugModel: DebugModel,
     private val scene: Scene,
-    private val locationsLoader: LocationsLoader
+    private val locationsLoader: LocationsLoader,
+    private val regionLoader: RegionLoader
 ) {
     @FXML
     lateinit var menuChangeRegion: MenuItem
@@ -103,15 +107,22 @@ class MainController @Inject constructor(
         inspectorNode.title = "Inspector"
         inspectorNode.setPrefSize(400.0, 400.0)
         inspectorNode.dock(dockPane, DockPos.RIGHT, objectPickerNode)
+        inspectorNode.dockedProperty().not().and(inspectorNode.floatingProperty().not()).addListener { _, _, newValue ->
+            if (newValue) {
+                (inspectorLoader.getController() as InspectorController).onClose()
+            }
+        }
 
 
         DockPane.initializeDefaultUserAgentStylesheet()
 
         btnTest.setOnAction {
-//            File("cache-181").copyRecursively(File("cache-out"), true)
+            File("cache-181").copyRecursively(File("cache-out"), true)
             val sr = scene.getRegion(0,0)!!
 //            sr.locationsDefinition.locations.removeIf { it.type == 10 || it.type == 11 || it.type == 22 }
             locationsLoader.writeLocations(CacheLibrary("cache-out"), sr.locationsDefinition)
+            regionLoader.writeRegion(CacheLibrary("cache-out"), sr.regionDefinition)
+            CacheLibrary("cache-out").close()
             println("saved")
         }
 
@@ -144,7 +155,7 @@ class MainController @Inject constructor(
 
         object : AnimationTimer() {
             override fun handle(now: Long) {
-                lblFps.text = "FPS: %s".format(debugModel.fps.get())
+                lblFps.text = "FPS: ${debugModel.fps.get()} - DT: ${debugModel.deltaTime.get()}"
             }
         }.start()
     }

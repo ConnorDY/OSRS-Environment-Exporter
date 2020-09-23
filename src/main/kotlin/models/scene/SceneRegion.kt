@@ -1,10 +1,7 @@
 package models.scene
 
 import cache.LocationType
-import cache.definitions.Location
-import cache.definitions.LocationsDefinition
-import cache.definitions.RegionDefinition
-import cache.definitions.UnderlayDefinition
+import cache.definitions.*
 import controllers.worldRenderer.Constants
 import controllers.worldRenderer.entities.*
 
@@ -33,7 +30,9 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         var18: Int,
         rgb: Int,
         overlayRgb: Int,
-        underlayDefinition: UnderlayDefinition?
+        underlayDefinition: UnderlayDefinition?,
+        overlayDefinition: OverlayDefinition?,
+        cacheTile: RegionDefinition.Tile?
     ) {
         when {
             overlayPath == 0 -> {
@@ -104,6 +103,9 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
                 )
             }
         }
+        tiles[z][x][y]?.underlayDefinition = underlayDefinition
+        tiles[z][x][y]?.overlayDefinition = overlayDefinition
+        tiles[z][x][y]?.cacheTile = cacheTile
     }
 
     fun newFloorDecoration(z: Int, x: Int, y: Int, entity: Entity?) {

@@ -48,6 +48,6 @@ class ObjectDefinition {
     var params: Map<Int, Any>? = null
 
     override fun toString(): String {
-        return String.format("%s (%d)", name, id)
+        return "ObjectDefinition($javaClass, name: $name, id: $id, contouredGround: $contouredGround)"
     }
 }

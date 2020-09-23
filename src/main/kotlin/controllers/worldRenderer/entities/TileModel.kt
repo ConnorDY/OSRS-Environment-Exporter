@@ -46,7 +46,7 @@ class TileModel(
                 return IntArray(faceCount) { Constants.SELECTED_HSL }
             }
             if (isHovered) {
-                return IntArray(faceCount) { Constants.HOVER_HSL }
+                return field + Constants.HOVER_HSL_ALPHA
             }
             return field
         }
@@ -57,7 +57,7 @@ class TileModel(
                 return IntArray(faceCount) { Constants.SELECTED_HSL }
             }
             if (isHovered) {
-                return IntArray(faceCount) { Constants.HOVER_HSL }
+                return field + Constants.HOVER_HSL_ALPHA
             }
             return field
         }
@@ -68,7 +68,7 @@ class TileModel(
                 return IntArray(faceCount) { Constants.SELECTED_HSL }
             }
             if (isHovered) {
-                return IntArray(faceCount) { Constants.HOVER_HSL }
+                return field + Constants.HOVER_HSL_ALPHA
             }
             return field
         }
@@ -377,5 +377,9 @@ class TileModel(
                 intArrayOf(1, 0, 5, 4, 1, 0, 1, 5, 0, 0, 4, 3, 0, 4, 5, 3, 0, 5, 2, 3, 0, 1, 2, 5)
             )
         }
+    }
+
+    override fun toString(): String {
+        return "shape: $shape, rotation: $rotation, underlayRgb $underlayRgb, overlayRgb $overlayRgb"
     }
 }

@@ -21,8 +21,13 @@ class GpuFloatBuffer {
     }
 
     fun ensureCapacity(size: Int) {
-        while (buffer.remaining() < size) {
-            val newB = allocateDirect(buffer.capacity() * 2)
+        var capacity = buffer.capacity()
+        val position = buffer.position()
+        if (capacity - position < size) {
+            do {
+                capacity *= 2
+            } while (capacity - position < size)
+            val newB = allocateDirect(capacity)
             buffer.flip()
             newB.put(buffer)
             buffer = newB

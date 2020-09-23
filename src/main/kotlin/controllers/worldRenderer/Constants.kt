@@ -15,6 +15,6 @@ object Constants {
         IntArray(2048) { i -> (65536.0 * sin(i * UNIT)).toInt() } // sine angles for each of the 2048 units, * 65536 and stored as an int
     val COSINE = IntArray(2048) { i -> (65536.0 * cos(i * UNIT)).toInt() } // cosine
 
-    const val HOVER_HSL = 11111
+    const val HOVER_HSL_ALPHA = 25
     const val SELECTED_HSL = 22222
 }

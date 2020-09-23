@@ -24,6 +24,28 @@ class SceneRegionBuilder @Inject constructor(
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
 
+    fun calcTileColor(sceneRegion: SceneRegion, x: Int, y: Int, baseX: Int, baseY: Int) {
+        val var9 = sqrt(5100.0).toInt()
+        val var10 = var9 * 768 shr 8
+        val z = 0
+
+        val worldX = baseX + x
+        val worldY = baseY + y
+        val xHeightDiff = getTileHeight(z, worldX + 1, worldY) - getTileHeight(z, worldX - 1, worldY)
+        val yHeightDiff = getTileHeight(z, worldX, worldY + 1) - getTileHeight(z, worldX, worldY - 1)
+        val diff = sqrt(xHeightDiff * xHeightDiff + yHeightDiff * yHeightDiff + 65536.toDouble()).toInt()
+        val var16 = (xHeightDiff shl 8) / diff
+        val var17 = 65536 / diff
+        val var18 = (yHeightDiff shl 8) / diff
+        val var19 = (var16 * -50 + var18 * -50 + var17 * -10) / var10 + 96
+        val color = (getTileSettings(z, worldX - 1, worldY) shr 2) +
+                (getTileSettings(z, worldX, worldY - 1) shr 2) +
+                (getTileSettings(z, worldX + 1, worldY) shr 3) +
+                (getTileSettings(z, worldX, worldY + 1) shr 3) +
+                (getTileSettings(z, worldX, worldY) shr 1)
+        sceneRegion.tileColors[x][y] = var19 - color
+    }
+
     // Loads a single region(rs size 64), not a scene(rs size 104)!
     // worldCoords to regionId
     // int regionId = (x >>> 6 << 8) | y >>> 6;
@@ -41,32 +63,17 @@ class SceneRegionBuilder @Inject constructor(
         val mul = IntArray(len)
         val num = IntArray(len)
 
-        // calculate tile colors
-        val var9 = sqrt(5100.0).toInt()
-        val var10 = var9 * 768 shr 8
+        sceneRegionCache[regionId] = sceneRegion
+
         for (z in 0 until RegionDefinition.Z) {
             for (x in 0 until REGION_SIZE + 1) {
                 for (y in 0 until REGION_SIZE + 1) {
-                    val worldX = baseX + x
-                    val worldY = baseY + y
-                    val xHeightDiff = getTileHeight(z, worldX + 1, worldY) - getTileHeight(z, worldX - 1, worldY)
-                    val yHeightDiff = getTileHeight(z, worldX, worldY + 1) - getTileHeight(z, worldX, worldY - 1)
-                    val diff = sqrt(xHeightDiff * xHeightDiff + yHeightDiff * yHeightDiff + 65536.toDouble()).toInt()
-                    val var16 = (xHeightDiff shl 8) / diff
-                    val var17 = 65536 / diff
-                    val var18 = (yHeightDiff shl 8) / diff
-                    val var19 = (var16 * -50 + var18 * -50 + var17 * -10) / var10 + 96
-                    val color = (getTileSettings(z, worldX - 1, worldY) shr 2) +
-                            (getTileSettings(z, worldX, worldY - 1) shr 2) +
-                            (getTileSettings(z, worldX + 1, worldY) shr 3) +
-                            (getTileSettings(z, worldX, worldY + 1) shr 3) +
-                            (getTileSettings(z, worldX, worldY) shr 1)
-                    sceneRegion.tileColors[x][y] = var19 - color
+                    calcTileColor(sceneRegion, x, y, baseX, baseY)
                 }
             }
             for (xi in -blend * 2 until REGION_SIZE + blend * 2) {
                 for (yi in -blend until REGION_SIZE + blend) {
-                    val xr = xi + 5
+                    val xr = xi + blend
                     if (xr >= -blend && xr < REGION_SIZE + blend) {
                         val r: RegionDefinition? = regionLoader.findRegionForWorldCoordinates(baseX + xr, baseY + yi)
                         if (r != null) {
@@ -104,7 +111,7 @@ class SceneRegionBuilder @Inject constructor(
                     var runningMultiplier = 0
                     var runningNumber = 0
                     for (yi in -blend * 2 until REGION_SIZE + blend * 2) {
-                        val yu = yi + 5
+                        val yu = yi + blend
                         if (yu >= -blend && yu < REGION_SIZE + blend) {
                             runningHues += hues[yu + blend]
                             runningSat += sats[yu + blend]
@@ -112,7 +119,7 @@ class SceneRegionBuilder @Inject constructor(
                             runningMultiplier += mul[yu + blend]
                             runningNumber += num[yu + blend]
                         }
-                        val yd = yi - 5
+                        val yd = yi - blend
                         if (yd >= -blend && yd < REGION_SIZE + blend) {
                             runningHues -= hues[yd + blend]
                             runningSat -= sats[yd + blend]
@@ -138,7 +145,7 @@ class SceneRegionBuilder @Inject constructor(
                             val nwColor = sceneRegion.tileColors[xi][yi + 1]
                             var rgb = -1
                             var underlayHsl = -1
-                            if (underlayId > 0 && runningHues > 0 && runningMultiplier > 0 && runningNumber > 0) {
+                            if (underlayId > 0 && runningMultiplier > 0 && runningNumber > 0) {
                                 val avgHue = runningHues * 256 / runningMultiplier
                                 val avgSat = runningSat / runningNumber
                                 var avgLight = runningLight / runningNumber
@@ -180,7 +187,9 @@ class SceneRegionBuilder @Inject constructor(
                                     0,
                                     underlayRgb,
                                     0,
-                                    underlay
+                                    underlay,
+                                    null,
+                                    r.tiles[z][xi][yi]
                                 )
                             } else {
                                 val overlayPath: Int = r.tiles[z][xi][yi]?.overlayPath!!.toInt() + 1
@@ -254,7 +263,9 @@ class SceneRegionBuilder @Inject constructor(
                                     adjustHSLListness0(overlayHsl, nwColor),
                                     underlayRgb,
                                     overlayRgb,
-                                    underlay
+                                    underlay,
+                                    overlayDefinition,
+                                    r.tiles[z][xi][yi]
                                 )
                             }
                         }
@@ -312,7 +323,7 @@ class SceneRegionBuilder @Inject constructor(
                 getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, baseX, baseY)
                     ?: return@forEach
 
-            if (loc.type in 0..3) {
+            if (loc.type == LocationType.LENGTHWISE_WALL.id) {
                 sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
             }
 
@@ -375,13 +386,8 @@ class SceneRegionBuilder @Inject constructor(
         val modelDefinition: ModelDefinition =
             objectToModelConverter.toModel(objectDefinition, type, orientation) ?: return null
 
-        val modelKey =
-            ModelKey(modelDefinition.id, type, orientation, objectDefinition.ambient, objectDefinition.contrast)
-        var model = entityCache[modelKey]
-        if (model == null) {
-            model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
-            entityCache[modelKey] = model
-        }
+        // FIXME: nonFlatShading affects fence doors
+        var model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
 
         if (objectDefinition.contouredGround >= 0) {
             model = model.contourGround(
@@ -396,12 +402,12 @@ class SceneRegionBuilder @Inject constructor(
             )
         }
 
-        return StaticObject(model, height, type, orientation)
+        return StaticObject(objectDefinition, model, height, type, orientation)
     }
 
     private fun getTileHeight(z: Int, x: Int, y: Int): Int {
         val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tileHeights[z][x % 64][y % 64]
+        return r.tiles[z][x % 64][y % 64]?.height ?: return 0
     }
 
     private fun getTileSettings(z: Int, x: Int, y: Int): Int {
@@ -427,7 +433,9 @@ class SceneRegionBuilder @Inject constructor(
     }
 
     companion object {
-        private fun convert(d: Int): Int {
+        val sceneRegionCache = hashMapOf<Int, SceneRegion>()
+
+        fun convert(d: Int): Int {
             return if (d >= 0) {
                 d % 64
             } else {

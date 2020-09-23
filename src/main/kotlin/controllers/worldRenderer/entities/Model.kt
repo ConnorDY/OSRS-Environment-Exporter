@@ -24,12 +24,16 @@ class Model(
     var yOff: Int = 0,
     var xOff: Int = 0,
     var height: Int = 0,
-    val computeObj: ComputeObj = ComputeObj()
+    var computeObj: ComputeObj = ComputeObj()
 ) : Renderable {
 
     var faceColors1: IntArray? = null
     var faceColors2: IntArray? = null
     var faceColors3: IntArray? = null
+    var vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
+    var vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
+    var vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ.clone()
+
     var field1840: ByteArray? = null
     var field1852 = 0
     var field1844: IntArray? = null
@@ -97,6 +101,15 @@ class Model(
         modelBuffers.addTempUvOffset(computeObj.size * 3)
     }
 
+    fun recompute(modelBuffers: ModelBuffers, height: Int) {
+        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
+        b.ensureCapacity(13)
+//        computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER or (radius shl 12) or orientationType.id
+        computeObj.y = height
+
+        b.buffer.put(computeObj.toArray())
+    }
+
     override fun clearDraw(modelBuffers: ModelBuffers) {
         val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
         b.ensureCapacity(13)
@@ -110,7 +123,7 @@ class Model(
 
     private fun getTileHeight(regionLoader: RegionLoader, x: Int, y: Int): Int {
         val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tileHeights[0][x % 64][y % 64]
+        return r.tiles[0][x % 64][y % 64]?.height ?: return 0
     }
 
     private fun calculateBoundsCylinder() {
@@ -172,7 +185,6 @@ class Model(
             this
         } else {
             val model: Model
-            val originalY = modelDefinition.vertexPositionsY
             if (deepCopy) {
                 val newDef = ModelDefinition(
                     modelDefinition,
@@ -184,7 +196,6 @@ class Model(
                 model.faceColors1 = faceColors1
                 model.faceColors2 = faceColors2
                 model.faceColors3 = faceColors3
-                model.modelDefinition.vertexPositionsY = IntArray(modelDefinition.vertexCount)
             } else {
                 model = this
             }
@@ -214,8 +225,8 @@ class Model(
                     var19 = first * (128 - var15) + second * var15 shr 7
                     var20 = third * (128 - var15) + var15 * fourth shr 7
                     var21 = var19 * (128 - var16) + var20 * var16 shr 7
-                    model.modelDefinition.vertexPositionsY[var12] =
-                        var21 + originalY[var12] - height
+                    model.vertexPositionsY[var12] =
+                        var21 + model.modelDefinition.vertexPositionsY[var12] - height
                     ++var12
                 }
             } else {
@@ -236,8 +247,8 @@ class Model(
                         var20 = first * (128 - var15) + second * var15 shr 7
                         var21 = third * (128 - var15) + var15 * fourth shr 7
                         val var22 = var20 * (128 - var17) + var21 * var17 shr 7
-                        model.modelDefinition.vertexPositionsY[var12] =
-                            (clipType - var13) * (var22 - height) / clipType + originalY[var12]
+                        model.vertexPositionsY[var12] =
+                            (clipType - var13) * (var22 - height) / clipType + model.modelDefinition.vertexPositionsY[var12]
                     }
                     ++var12
                 }
@@ -252,8 +263,6 @@ class Model(
     }
 
     constructor(def: ModelDefinition, ambient: Int, contrast: Int) : this(def) {
-        def.computeNormals()
-        def.computeTextureUVCoordinates()
         val x = -50
         val y = -10
         val z = -50
@@ -426,5 +435,9 @@ class Model(
             }
             return var0
         }
+    }
+
+    override fun toString(): String {
+        return "Model(${super.toString()}, x: $x y: $y, orientation: $orientation, definition: ${modelDefinition})"
     }
 }

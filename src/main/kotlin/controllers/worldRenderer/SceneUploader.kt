@@ -48,10 +48,11 @@ class SceneUploader {
         uvBuffer.clear()
         for (rx in 0 until scene.radius) {
             for (ry in 0 until scene.radius) {
+                val region = scene.getRegion(rx, ry) ?: continue
+
                 for (z in 0 until RegionDefinition.Z) {
                     for (x in 0 until REGION_SIZE) {
                         for (y in 0 until REGION_SIZE) {
-                            val region = scene.getRegion(rx, ry) ?: continue
                             val tile = region.tiles[z][x][y]
                             tile?.let { reset(it) }
                         }
@@ -61,10 +62,11 @@ class SceneUploader {
         }
         for (rx in 0 until scene.radius) {
             for (ry in 0 until scene.radius) {
+                val region = scene.getRegion(rx, ry) ?: continue
+
                 for (z in 0 until RegionDefinition.Z) {
                     for (x in 0 until REGION_SIZE) {
                         for (y in 0 until REGION_SIZE) {
-                            val region = scene.getRegion(rx, ry) ?: continue
                             val tile = region.tiles[z][x][y]
                             tile?.let { upload(it, vertexbuffer, uvBuffer) }
                         }
@@ -276,8 +278,11 @@ class SceneUploader {
     fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val model = entity.getModel()
 
-        if (model.computeObj.offset > 0) {
-            // this model is shared between gameobjects and has already been uploaded
+        if (model.computeObj.offset >= 0) {
+//            // this model is shared between gameobjects and has already been uploaded
+//            // copy the computeObj so that we can maintain a reference to the vertexs on the GPU
+//            // but also modify the position of this specific model
+//            model.computeObj = model.computeObj.copy()
             return -1
         }
 
@@ -305,9 +310,9 @@ class SceneUploader {
 
     fun pushFace(model: Model, face: Int, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val modelDefinition = model.modelDefinition
-        val vertexX: IntArray = modelDefinition.vertexPositionsX
-        val vertexY: IntArray = modelDefinition.vertexPositionsY
-        val vertexZ: IntArray = modelDefinition.vertexPositionsZ
+        val vertexX: IntArray = model.vertexPositionsX
+        val vertexY: IntArray = model.vertexPositionsY
+        val vertexZ: IntArray = model.vertexPositionsZ
         val trianglesX: IntArray = modelDefinition.faceVertexIndices1!!
         val trianglesY: IntArray = modelDefinition.faceVertexIndices2!!
         val trianglesZ: IntArray = modelDefinition.faceVertexIndices3!!

@@ -1,6 +1,7 @@
 package controllers
 
 import cache.LocationType
+import cache.loaders.RegionLoader
 import com.google.inject.Inject
 import javafx.animation.AnimationTimer
 import javafx.fxml.FXML
@@ -16,39 +17,58 @@ class InspectorController @Inject constructor(
 
     private var lastHover: Any? = null
 
+    fun onClose() {
+        animationTimer.stop()
+    }
+
+    private lateinit var animationTimer: AnimationTimer
     @FXML
     private fun initialize() {
         txtArea.isWrapText = true
-        object : AnimationTimer() {
+        animationTimer = object: AnimationTimer() {
             override fun handle(now: Long) {
-                val hovered = hoverModel.hovered.get()?: return
+                val hovered = hoverModel.hovered.get() ?: return
                 if (hovered == lastHover) return
-                var inspectorText = ""
 
-
+                val sb = StringBuilder()
                 when (hovered.type) {
                     LocationType.TILE_PAINT -> {
-                        val tp = hovered.sceneTile.tilePaint!!
-                        inspectorText = "Tile Paint -- nwHeight: ${tp.nwHeight}, neHeight: ${tp.neHeight}, swHeight: ${tp.swHeight}, seHeight: ${tp.seHeight}"
-                        inspectorText += "sceneX: ${hovered.sceneTile.x} sceneY: ${hovered.sceneTile.y}"
+                        val tp = hovered.sceneTile.tilePaint?: return
+                        sb.append(
+                            "Tile Paint -- nwHeight: ${tp.nwHeight}, neHeight: ${tp.neHeight}, swHeight: ${tp.swHeight}, seHeight: ${tp.seHeight}")
+                        sb.append("sceneX: ${hovered.sceneTile.x} sceneY: ${hovered.sceneTile.y}")
+                        sb.append("\n cacheTile cacheHeight: ${hovered.sceneTile.cacheTile?.cacheHeight} height: ${hovered.sceneTile.cacheTile?.height} \n overlayId: ${hovered.sceneTile.overlayDefinition?.id}")
                     }
                     LocationType.WALL_CORNER -> {
-                        val wall = hovered.sceneTile.wall!!
+                        val wall = hovered.sceneTile.wall?: return
                         val entity1 = wall.entity
                         val entity2 = wall.entity2
-                        inspectorText = "Wall Corner\n" +
+                        sb.append("Wall Corner\n" +
                                 "entity1: $entity1 \n" +
                                 "model1:${entity1?.getModel()} \n" +
                                 "entity2: $entity2 \n" +
-                                "model2:${entity2?.getModel()}"
+                                "model2:${entity2?.getModel()}")
+                    }
+                    LocationType.INTERACTABLE -> {
+                        sb.append("entities: \n")
+                        for (i in 0 until hovered.sceneTile.gameObjects.size) {
+                            sb.append("entity[$i]: ${hovered.sceneTile.gameObjects[i].entity?.height}")
+                        }
+
                     }
                 }
 
-                inspectorText += "\n" + hovered.toString()
-                txtArea.text = inspectorText
+                sb.append("\n" + hovered.toString())
+
+                val out = sb.toString()
+                if (txtArea.text == out) return
+
+                txtArea.text = out
                 lastHover = hovered
             }
-        }.start()
+        }
+
+        animationTimer.start()
 
 //        hoverModel.hovered.addListener { observable, oldValue, newValue ->
 //            if (newValue == null) {

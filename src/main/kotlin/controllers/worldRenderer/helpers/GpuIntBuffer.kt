@@ -1,6 +1,7 @@
 package controllers.worldRenderer.helpers
 
 import com.jogamp.opengl.util.GLBuffers
+import java.nio.BufferOverflowException
 import java.nio.IntBuffer
 
 class GpuIntBuffer {
@@ -24,10 +25,20 @@ class GpuIntBuffer {
     }
 
     fun ensureCapacity(size: Int) {
-        while (buffer.remaining() < size) {
-            val newB = allocateDirect(buffer.capacity() * 2)
+        var capacity = buffer.capacity()
+        val position = buffer.position()
+        if (capacity - position < size) {
+            do {
+                capacity *= 2
+            } while (capacity - position < size)
+            val newB = allocateDirect(capacity)
             buffer.flip()
-            newB.put(buffer)
+            try {
+                newB.put(buffer)
+            } catch(e: BufferOverflowException) {
+                println(e)
+            }
+
             buffer = newB
         }
     }
