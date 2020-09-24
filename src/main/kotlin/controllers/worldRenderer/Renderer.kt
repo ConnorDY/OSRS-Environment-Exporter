@@ -221,7 +221,7 @@ class Renderer @Inject constructor(
     fun loadScene() {
 //        scene.load(10038, 1)
 //        scene.load(6967, 1)
-        scene.load(12850, 1)
+        scene.load(12850, 3)
 //        scene.load(11828, 6)
 //        scene.load(13623, 6)
     }
@@ -229,19 +229,29 @@ class Renderer @Inject constructor(
     private val redrawList: HashSet<SceneTile> = HashSet()
     private val modelRedrawList: HashSet<Entity> = HashSet()
     private var injectedObject: SceneObject? = null
-    fun bindModels() {
+    private fun bindModels() {
         objectsModel.heldObject.addListener { _, _, newValue ->
             injectedObject = newValue
         }
 
-        scene.getRegion(0, 0)!!.tiles.forEach { z ->
-            z.forEach { x ->
-                x.forEach { tile ->
-                    tile?.floorDecoration?.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }
-                    tile?.gameObjects?.forEach { it.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }}
-                    tile?.wall?.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }
-                    tile?.addListener { (tile, _) ->
-                        redrawList.add(tile)
+        for (x in scene.getRegions()) {
+            x.forEach {
+                it!!.tiles.forEach { z ->
+                    z.forEach { x ->
+                        x.forEach { tile ->
+                            tile?.floorDecoration?.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }
+                            tile?.gameObjects?.forEach {
+                                it.entity?.addListener { (entity, _) ->
+                                    modelRedrawList.add(
+                                        entity
+                                    )
+                                }
+                            }
+                            tile?.wall?.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }
+                            tile?.addListener { (tile, _) ->
+                                redrawList.add(tile)
+                            }
+                        }
                     }
                 }
             }
@@ -252,6 +262,7 @@ class Renderer @Inject constructor(
         for (tile in redrawList) {
             sceneUploader.upload(tile, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
             tile.tilePaint?.recompute(modelBuffers)
+            tile.tileModel?.recompute(modelBuffers)
         }
         redrawList.clear()
 
@@ -320,7 +331,12 @@ class Renderer @Inject constructor(
             hoverEntity.isHovered = true
             if (!isClickSticky || (isClickSticky && !inputHandler.isLeftMouseDown && !inputHandler.isRightMouseDown)) {
                 if (lastHovered != hoverEntity) {
-                    hoverList.forEach { (it as SceneTile).tilePaint?.isHovered = false }
+                    hoverList.forEach {
+                        val st = it as SceneTile
+                        st.tilePaint?.isHovered = false
+                        st.tileModel?.isHovered = false
+                    }
+
                     lastHovered?.isHovered = false
                     lastHovered = hoverEntity
 
@@ -328,20 +344,24 @@ class Renderer @Inject constructor(
                     // CIRCLE SELECTION
                     val radius = 5
                     val top = Math.max(0, y - radius)
-                    val bottom = min(REGION_SIZE, y + radius)
-                    for (yy in top until bottom+1) {
+                    val bottom = min(REGION_SIZE * scene.radius, y + radius)
+                    for (yy in top until bottom + 1) {
                         val dy = yy - y
-                        val dx = floor(sqrt((radius*radius + 1 - dy*dy).toDouble())).toInt()
+                        val dx = floor(sqrt((radius * radius + 1 - dy * dy).toDouble())).toInt()
                         val left = max(0, x - dx)
-                        val right = min(REGION_SIZE, x + dx)
+                        val right = min(REGION_SIZE * scene.radius, x + dx)
                         for (xx in left until right) {
                             val t = scene.getTile(0, xx, yy) ?: continue
                             hoverList.add(t)
                         }
                     }
 
-                hoverList.add(tile)
-                    hoverList.forEach { (it as SceneTile).tilePaint?.isHovered = true }
+                    hoverList.add(tile)
+                    hoverList.forEach {
+                        val st = it as SceneTile
+                        st.tilePaint?.isHovered = true
+                        st.tileModel?.isHovered = true
+                    }
                 }
             }
         }
@@ -357,7 +377,13 @@ class Renderer @Inject constructor(
             model.xOff = objectDefinition.sizeX * REGION_SIZE
             model.yOff = objectDefinition.sizeY * REGION_SIZE
             sceneUploader.uploadModel(
-                StaticObject(objectDefinition, model, tile.tilePaint!!.nwHeight, injectedObject!!.type, injectedObject!!.orientation),
+                StaticObject(
+                    objectDefinition,
+                    model,
+                    tile.tilePaint!!.nwHeight,
+                    injectedObject!!.type,
+                    injectedObject!!.orientation
+                ),
                 modelBuffers.vertexBuffer,
                 modelBuffers.uvBuffer
             )
@@ -420,12 +446,20 @@ class Renderer @Inject constructor(
             if (inputHandler.isKeyDown(KeyCode.SHIFT)) amt *= -1
 
             if (selectMode == "height") {
+                // build a set of regions that need to be recalculated
+                val regionChangedSet: HashSet<SceneRegion?> = HashSet()
                 hoverList.forEach {
-                    (it as SceneTile).cacheTile!!.height += amt
-                    (it as SceneTile).cacheTile!!.cacheHeight = it.cacheTile!!.height / -8
+                    val sceneTile = it as SceneTile
+                    val sr = scene.getRegionFromSceneCoord(sceneTile.x, sceneTile.y) ?: return@forEach
+                    regionChangedSet.add(sr)
+                    sceneTile.cacheTile!!.height += amt
+                    sceneTile.cacheTile!!.cacheHeight = it.cacheTile!!.height / -8
                 }
 
-                scene.recalculateTile(tile.z, tile.x, tile.y)
+                // recompute the blending and contouring of each region
+                regionChangedSet.forEach {
+                    scene.recalculateRegion(it!!)
+                }
             }
         }
 
@@ -488,8 +522,7 @@ class Renderer @Inject constructor(
             gl.glEnable(GL.GL_DEPTH_TEST)
             gl.glDepthFunc(GL.GL_LEQUAL)
             gl.glDepthRangef(0f, 1f)
-            //            gl.glGetIntegerv(gl.GL_DEPTH_BITS, intBuf1);
-//            System.out.printf("depth bits %s \n", intBuf1.get(0));
+
             initProgram()
             initUniformBuffer()
             initBuffers()
@@ -497,7 +530,7 @@ class Renderer @Inject constructor(
             initVao()
 
             // disable vsync
-            gl.swapInterval = 0
+//            gl.swapInterval = 0
         } catch (e: ShaderException) {
             e.printStackTrace()
         }

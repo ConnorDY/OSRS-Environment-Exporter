@@ -126,7 +126,7 @@ class TilePaint(
         computeObj.flags = FLAG_SCENE_BUFFER
         computeObj.x = x
         computeObj.z = z
-        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, 30)
+        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
         b.buffer.put(computeObj.toArray())
 
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)

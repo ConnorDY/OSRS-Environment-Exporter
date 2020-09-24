@@ -2,16 +2,20 @@ package models.scene
 
 
 import cache.definitions.ModelDefinition
+import cache.definitions.OverlayDefinition
 import cache.definitions.RegionDefinition
 import cache.definitions.UnderlayDefinition
 import cache.definitions.converters.ObjectToModelConverter
+import cache.loaders.OverlayLoader
 import cache.loaders.RegionLoader
+import cache.loaders.TextureLoader
 import cache.loaders.UnderlayLoader
 import cache.utils.ColorPalette
 import com.google.inject.Inject
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.StaticObject
+import controllers.worldRenderer.entities.TileModel
 import javafx.beans.property.ObjectProperty
 import javafx.beans.property.SimpleObjectProperty
 import java.awt.event.ActionListener
@@ -23,7 +27,9 @@ class Scene @Inject constructor(
     private val sceneRegionBuilder: SceneRegionBuilder,
     private val underlayLoader: UnderlayLoader,
     private val regionLoader: RegionLoader,
-    private val objectToModelConverter: ObjectToModelConverter
+    private val objectToModelConverter: ObjectToModelConverter,
+    private val overlayLoader: OverlayLoader,
+    private val textureLoader: TextureLoader
 ) {
     var radius: Int = 1
 
@@ -46,7 +52,6 @@ class Scene @Inject constructor(
         if (radius > 1) {
             regionId = centerRegionId - 256 * (radius - 2) - (radius - 2)
         }
-        println("starting with $regionId")
         for (x in 0 until radius) {
             for (y in 0 until radius) {
                 System.out.printf("Loading region %d\n", regionId)
@@ -58,25 +63,19 @@ class Scene @Inject constructor(
         reload()
     }
 
-    fun recalculateTile(z: Int, x: Int, y: Int) {
-        val gridX: Int = x / REGION_SIZE
-        val gridY: Int = y / REGION_SIZE
-        if (gridX >= radius || gridY >= radius) {
-            return
-        }
-        val region = getRegion(gridX, gridY) ?: return
+    fun recalculateRegion(sceneRegion: SceneRegion) {
         for (x in 0 until REGION_SIZE + 1) {
             for (y in 0 until REGION_SIZE + 1) {
                 sceneRegionBuilder.calcTileColor(
-                    region,
+                    sceneRegion,
                     x,
                     y,
-                    region.regionDefinition.baseX,
-                    region.regionDefinition.baseY
+                    sceneRegion.regionDefinition.baseX,
+                    sceneRegion.regionDefinition.baseY
                 )
             }
         }
-        calcColor(0, region.regionDefinition.baseX, region.regionDefinition.baseY)
+        calcColor(sceneRegion, 0, sceneRegion.regionDefinition.baseX, sceneRegion.regionDefinition.baseY)
     }
 
     fun getTile(z: Int, x: Int, y: Int): SceneTile? {
@@ -102,6 +101,10 @@ class Scene @Inject constructor(
         return tile
     }
 
+    fun getRegions(): Array<Array<SceneRegion?>> {
+        return this.regions
+    }
+
     fun getRegion(gridX: Int, gridY: Int): SceneRegion? {
         return if (gridX >= radius || gridY >= radius) {
             null
@@ -123,7 +126,7 @@ class Scene @Inject constructor(
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
 
-    fun calcColor(z: Int, baseX: Int, baseY: Int) {
+    private fun calcColor(region: SceneRegion, z: Int, baseX: Int, baseY: Int) {
         val blend = 5
         val len: Int = REGION_SIZE * blend * 2// 1 + blend * 2
         val hues = IntArray(len)
@@ -191,7 +194,7 @@ class Scene @Inject constructor(
                         runningNumber -= num[yd + blend]
                     }
                     if (yi in 0 until REGION_SIZE) {
-                        var sr: SceneRegion = getRegionFromSceneCoord(xi, yi) ?: continue
+                        val sr: SceneRegion = region
                         val r: RegionDefinition =
                             regionLoader.findRegionForWorldCoordinates(baseX + xi, baseY + yi) ?: continue
                         val underlayId: Int = r.tiles[z][xi][yi]?.underlayId!!.toInt() and 0xFF
@@ -236,15 +239,86 @@ class Scene @Inject constructor(
                                 SceneRegionBuilder.method4220(rgb, neColor),
                                 SceneRegionBuilder.method4220(rgb, nwColor)
                             )
-
-                            sr.tiles[z][xi][yi]?.gameObjects?.forEach {
-                                stickToGround(it.entity, null, z, xi, yi, baseX, baseY)
+                        } else {
+                            val overlayPath: Int = r.tiles[z][xi][yi]?.overlayPath!!.toInt() + 1
+                            val overlayRotation: Int = r.tiles[z][xi][yi]?.overlayRotation!!.toInt()
+                            val overlayDefinition: OverlayDefinition? = overlayLoader.get(overlayId - 1)
+                            var overlayTexture: Int = overlayDefinition?.texture!!
+                            val overlayHsl: Int
+                            var overlayCol: Int
+                            when {
+                                overlayTexture >= 0 -> {
+                                    overlayCol = textureLoader.getAverageTextureRGB(overlayTexture)
+                                    overlayHsl = -1
+                                }
+                                overlayDefinition.rgbColor == 0xFF00FF -> {
+                                    overlayHsl = -2
+                                    overlayTexture = -1
+                                    overlayCol = -2
+                                }
+                                else -> {
+                                    overlayHsl = hslToRgb(
+                                        overlayDefinition.hue,
+                                        overlayDefinition.saturation,
+                                        overlayDefinition.lightness
+                                    )
+                                    val hue: Int = overlayDefinition.hue and 255
+                                    var lightness: Int = overlayDefinition.lightness
+                                    if (lightness < 0) {
+                                        lightness = 0
+                                    } else if (lightness > 255) {
+                                        lightness = 255
+                                    }
+                                    overlayCol = hslToRgb(hue, overlayDefinition.saturation, lightness)
+                                }
                             }
-
-                            stickToGround(sr.tiles[z][xi][yi]?.floorDecoration?.entity, null, z, xi, yi, baseX, baseY)
-
-                            stickToGround(sr.tiles[z][xi][yi]?.wall?.entity, null, z, xi, yi, baseX, baseY)
+                            var overlayRgb = 0
+                            if (overlayCol != -2) {
+                                val var0 = SceneRegionBuilder.adjustHSLListness0(overlayCol, 96)
+                                overlayRgb = colorPalette[var0]
+                            }
+                            if (overlayDefinition.secondaryRgbColor != -1) {
+                                val hue: Int = overlayDefinition.otherHue and 255
+                                var lightness: Int = overlayDefinition.otherLightness
+                                if (lightness < 0) {
+                                    lightness = 0
+                                } else if (lightness > 255) {
+                                    lightness = 255
+                                }
+                                overlayCol = hslToRgb(hue, overlayDefinition.otherSaturation, lightness)
+                                val var0 = SceneRegionBuilder.adjustHSLListness0(overlayCol, 96)
+                                overlayRgb = colorPalette[var0]
+                            }
+                            val underlay: UnderlayDefinition? = underlayLoader.get(underlayId - 1)
+                            sr.tiles[z][xi][yi]?.tileModel?.setHeight(swHeight, seHeight, neHeight, nwHeight)
+                            sr.tiles[z][xi][yi]?.tileModel?.setColor(
+                                SceneRegionBuilder.method4220(rgb, swColor),
+                                SceneRegionBuilder.method4220(rgb, seColor),
+                                SceneRegionBuilder.method4220(rgb, neColor),
+                                SceneRegionBuilder.method4220(rgb, nwColor)
+                            )
+                            sr.tiles[z][xi][yi]?.tileModel?.setBrightnessMaybe(
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, swColor),
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, seColor),
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, neColor),
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, nwColor)
+                            )
+                            sr.tiles[z][xi][yi]?.tilePaint?.setHeight(swHeight, seHeight, neHeight, nwHeight)
+                            sr.tiles[z][xi][yi]?.tilePaint?.setColor(
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, swColor),
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, seColor),
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, neColor),
+                                SceneRegionBuilder.adjustHSLListness0(overlayHsl, nwColor)
+                            )
                         }
+
+                        sr.tiles[z][xi][yi]?.gameObjects?.forEach {
+                            stickToGround(it.entity, null, z, xi, yi, baseX, baseY)
+                        }
+
+                        stickToGround(sr.tiles[z][xi][yi]?.floorDecoration?.entity, null, z, xi, yi, baseX, baseY)
+
+                        stickToGround(sr.tiles[z][xi][yi]?.wall?.entity, null, z, xi, yi, baseX, baseY)
                     }
                 }
             }

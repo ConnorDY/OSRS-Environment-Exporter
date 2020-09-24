@@ -4,28 +4,29 @@ import controllers.worldRenderer.Constants
 import controllers.worldRenderer.components.*
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
+import utils.EventType
 import utils.Observable
 
 class TileModel(
-    overlayPath: Int,
-    overlayRotation: Int,
-    overlayTexture: Int,
-    x: Int,
-    y: Int,
-    var6: Int,
-    var7: Int,
-    var8: Int,
-    var9: Int,
-    var10: Int,
-    var11: Int,
-    var12: Int,
-    var13: Int,
-    var14: Int,
-    var15: Int,
-    var16: Int,
-    var17: Int,
-    var18: Int,
-    var19: Int,
+    private var overlayPath: Int,
+    private var overlayRotation: Int,
+    private var overlayTexture: Int,
+    private val x: Int,
+    private val y: Int,
+    private var swHeight: Int,
+    private var seHeight: Int,
+    private var neHeight: Int,
+    private var nwHeight: Int,
+    private var swColor: Int,
+    private var seColor: Int,
+    private var neColor: Int,
+    private var nwColor: Int,
+    private var var14: Int,
+    private var var15: Int,
+    private var var16: Int,
+    private var var17: Int,
+    private val var18: Int,
+    private val var19: Int,
     hoverComponent: HoverComponent = HoverComponent(),
     selectComponent: SelectComponent = SelectComponent(),
     clickableComponent: ClickableComponent = ClickableComponent()
@@ -37,52 +38,84 @@ class TileModel(
 
     var computeObj: ComputeObj = ComputeObj()
 
-    var vertexX: IntArray
-    var vertexY: IntArray
-    var vertexZ: IntArray
+    lateinit var vertexX: IntArray
+    lateinit var vertexY: IntArray
+    lateinit var vertexZ: IntArray
+    lateinit var faceX: IntArray
+    lateinit var faceY: IntArray
+    lateinit var faceZ: IntArray
+
+    fun setHeight(swHeight: Int, seHeight: Int, neHeight: Int, nwHeight: Int) {
+        this.swHeight = swHeight
+        this.seHeight = seHeight
+        this.neHeight = neHeight
+        this.nwHeight = nwHeight
+        calculateVertexs()
+        notifyObservers(EventType.SELECT)
+    }
+
+    fun setColor(swColor: Int, seColor: Int, neColor: Int, nwColor: Int) {
+        this.swColor = swColor
+        this.seColor = seColor
+        this.neColor = neColor
+        this.nwColor = nwColor
+        calculateVertexs()
+        notifyObservers(EventType.SELECT)
+    }
+
+    fun setBrightnessMaybe(swColor: Int, seColor: Int, neColor: Int, nwColor: Int) {
+        this.var14 = swColor
+        this.var15 = seColor
+        this.var16 = neColor
+        this.var17 = nwColor
+        calculateVertexs()
+        notifyObservers(EventType.SELECT)
+    }
+
     var triangleColorA: IntArray = intArrayOf()
+        private set
         get() {
             if (isSelected) {
                 return IntArray(faceCount) { Constants.SELECTED_HSL }
             }
             if (isHovered) {
-                return field + Constants.HOVER_HSL_ALPHA
+                return field.map { it + Constants.HOVER_HSL_ALPHA }.toIntArray()
             }
             return field
         }
 
     var triangleColorB: IntArray = intArrayOf()
+        private set
         get() {
             if (isSelected) {
                 return IntArray(faceCount) { Constants.SELECTED_HSL }
             }
             if (isHovered) {
-                return field + Constants.HOVER_HSL_ALPHA
+                return field.map { it + Constants.HOVER_HSL_ALPHA }.toIntArray()
             }
             return field
         }
 
     var triangleColorC: IntArray = intArrayOf()
+        private set
         get() {
             if (isSelected) {
                 return IntArray(faceCount) { Constants.SELECTED_HSL }
             }
             if (isHovered) {
-                return field + Constants.HOVER_HSL_ALPHA
+                return field.map { it + Constants.HOVER_HSL_ALPHA }.toIntArray()
             }
             return field
         }
 
-    var faceX: IntArray
-    var faceY: IntArray
-    var faceZ: IntArray
+
     var faceCount: Int = -1
     var triangleTextureId: IntArray? = null
     var isFlat = true
-    var shape: Int
-    var rotation: Int
-    var underlayRgb: Int
-    var overlayRgb: Int
+    private var shape: Int = 0
+    private var rotation: Int = 0
+    private var underlayRgb: Int = 0
+    private var overlayRgb: Int = 0
 
     override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
         val x: Int = sceneX * Constants.LOCAL_TILE_SIZE
@@ -110,6 +143,15 @@ class TileModel(
 //        TODO("Not yet implemented")
     }
 
+    fun recompute(modelBuffers: ModelBuffers) {
+        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
+        modelBuffers.incUnorderedModels()
+        b.ensureCapacity(13)
+        computeObj.flags = 0
+
+        b.buffer.put(computeObj.toArray())
+    }
+
     init {
         hoverComponent.observable = this
         selectComponent.observable = this
@@ -117,7 +159,11 @@ class TileModel(
             isSelected = true
         }
 
-        if (var7 != var6 || var8 != var6 || var9 != var6) {
+        this.calculateVertexs()
+    }
+
+    fun calculateVertexs() {
+        if (seHeight != swHeight || neHeight != swHeight || nwHeight != swHeight) {
             isFlat = false
         }
         shape = overlayPath
@@ -158,98 +204,98 @@ class TileModel(
             if (var31 == 1) {
                 var32 = var28
                 var33 = var29
-                var34 = var6
-                var35 = var10
+                var34 = swHeight
+                var35 = swColor
                 var36 = var14
             } else if (var31 == 2) {
                 var32 = var28 + var21
                 var33 = var29
-                var34 = var7 + var6 shr 1
-                var35 = var11 + var10 shr 1
+                var34 = seHeight + swHeight shr 1
+                var35 = seColor + swColor shr 1
                 var36 = var15 + var14 shr 1
             } else if (var31 == 3) {
                 var32 = var28 + var20
                 var33 = var29
-                var34 = var7
-                var35 = var11
+                var34 = seHeight
+                var35 = seColor
                 var36 = var15
             } else if (var31 == 4) {
                 var32 = var28 + var20
                 var33 = var29 + var21
-                var34 = var8 + var7 shr 1
-                var35 = var11 + var12 shr 1
+                var34 = neHeight + seHeight shr 1
+                var35 = seColor + neColor shr 1
                 var36 = var15 + var16 shr 1
             } else if (var31 == 5) {
                 var32 = var28 + var20
                 var33 = var29 + var20
-                var34 = var8
-                var35 = var12
+                var34 = neHeight
+                var35 = neColor
                 var36 = var16
             } else if (var31 == 6) {
                 var32 = var28 + var21
                 var33 = var29 + var20
-                var34 = var8 + var9 shr 1
-                var35 = var13 + var12 shr 1
+                var34 = neHeight + nwHeight shr 1
+                var35 = nwColor + neColor shr 1
                 var36 = var17 + var16 shr 1
             } else if (var31 == 7) {
                 var32 = var28
                 var33 = var29 + var20
-                var34 = var9
-                var35 = var13
+                var34 = nwHeight
+                var35 = nwColor
                 var36 = var17
             } else if (var31 == 8) {
                 var32 = var28
                 var33 = var29 + var21
-                var34 = var9 + var6 shr 1
-                var35 = var13 + var10 shr 1
+                var34 = nwHeight + swHeight shr 1
+                var35 = nwColor + swColor shr 1
                 var36 = var17 + var14 shr 1
             } else if (var31 == 9) {
                 var32 = var28 + var21
                 var33 = var29 + var22
-                var34 = var7 + var6 shr 1
-                var35 = var11 + var10 shr 1
+                var34 = seHeight + swHeight shr 1
+                var35 = seColor + swColor shr 1
                 var36 = var15 + var14 shr 1
             } else if (var31 == 10) {
                 var32 = var28 + var23
                 var33 = var29 + var21
-                var34 = var8 + var7 shr 1
-                var35 = var11 + var12 shr 1
+                var34 = neHeight + seHeight shr 1
+                var35 = seColor + neColor shr 1
                 var36 = var15 + var16 shr 1
             } else if (var31 == 11) {
                 var32 = var28 + var21
                 var33 = var29 + var23
-                var34 = var8 + var9 shr 1
-                var35 = var13 + var12 shr 1
+                var34 = neHeight + nwHeight shr 1
+                var35 = nwColor + neColor shr 1
                 var36 = var17 + var16 shr 1
             } else if (var31 == 12) {
                 var32 = var28 + var22
                 var33 = var29 + var21
-                var34 = var9 + var6 shr 1
-                var35 = var13 + var10 shr 1
+                var34 = nwHeight + swHeight shr 1
+                var35 = nwColor + swColor shr 1
                 var36 = var17 + var14 shr 1
             } else if (var31 == 13) {
                 var32 = var28 + var22
                 var33 = var29 + var22
-                var34 = var6
-                var35 = var10
+                var34 = swHeight
+                var35 = swColor
                 var36 = var14
             } else if (var31 == 14) {
                 var32 = var28 + var23
                 var33 = var29 + var22
-                var34 = var7
-                var35 = var11
+                var34 = seHeight
+                var35 = seColor
                 var36 = var15
             } else if (var31 == 15) {
                 var32 = var28 + var23
                 var33 = var29 + var23
-                var34 = var8
-                var35 = var12
+                var34 = neHeight
+                var35 = neColor
                 var36 = var16
             } else {
                 var32 = var28 + var22
                 var33 = var29 + var23
-                var34 = var9
-                var35 = var13
+                var34 = nwHeight
+                var35 = nwColor
                 var36 = var17
             }
             vertexX[var30] = var32 - x * Constants.LOCAL_TILE_SIZE
@@ -263,9 +309,12 @@ class TileModel(
         faceX = IntArray(var31)
         faceY = IntArray(var31)
         faceZ = IntArray(var31)
-        triangleColorA = IntArray(var31)
-        triangleColorB = IntArray(var31)
-        triangleColorC = IntArray(var31)
+        if (triangleColorA.size != var31) {
+            triangleColorA = IntArray(var31)
+            triangleColorB = IntArray(var31)
+            triangleColorC = IntArray(var31)
+        }
+
         faceCount = var31
         if (overlayTexture != -1) {
             triangleTextureId = IntArray(var31)
@@ -307,25 +356,25 @@ class TileModel(
             }
             ++var33
         }
-        var33 = var6
-        var34 = var7
-        if (var7 < var6) {
-            var33 = var7
+        var33 = swHeight
+        var34 = seHeight
+        if (seHeight < swHeight) {
+            var33 = seHeight
         }
-        if (var7 > var7) {
-            var34 = var7
+        if (seHeight > seHeight) {
+            var34 = seHeight
         }
-        if (var8 < var33) {
-            var33 = var8
+        if (neHeight < var33) {
+            var33 = neHeight
         }
-        if (var8 > var34) {
-            var34 = var8
+        if (neHeight > var34) {
+            var34 = neHeight
         }
-        if (var9 < var33) {
-            var33 = var9
+        if (nwHeight < var33) {
+            var33 = nwHeight
         }
-        if (var9 > var34) {
-            var34 = var9
+        if (nwHeight > var34) {
+            var34 = nwHeight
         }
         var33 /= 14
         var34 /= 14
