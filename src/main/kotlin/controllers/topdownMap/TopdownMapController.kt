@@ -66,7 +66,7 @@ class TopdownMapController @Inject constructor(
     }
 
     private fun drawFull() {
-        return
+        // return
         sceneHeight = scene.radius * REGION_SIZE
         sceneWidth = sceneHeight
         canvasHeight = sceneWidth * tileSize.get()

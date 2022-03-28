@@ -33,11 +33,26 @@ class InspectorController @Inject constructor(
                 val sb = StringBuilder()
                 when (hovered.type) {
                     LocationType.TILE_PAINT -> {
-                        val tp = hovered.sceneTile.tilePaint?: return
-                        sb.append(
-                            "Tile Paint -- nwHeight: ${tp.nwHeight}, neHeight: ${tp.neHeight}, swHeight: ${tp.swHeight}, seHeight: ${tp.seHeight}")
-                        sb.append("sceneX: ${hovered.sceneTile.x} sceneY: ${hovered.sceneTile.y}")
-                        sb.append("\n cacheTile cacheHeight: ${hovered.sceneTile.cacheTile?.cacheHeight} height: ${hovered.sceneTile.cacheTile?.height} \n overlayId: ${hovered.sceneTile.overlayDefinition?.id}")
+                        val st = hovered.sceneTile?: return
+                        val t = st.tilePaint?: return
+                        sb.append("TILE_PAINT:\n")
+                        sb.append("  nwHeight: ${t.nwHeight}, neHeight: ${t.neHeight}, swHeight: ${t.swHeight}, seHeight: ${t.seHeight}\n")
+                        sb.append("  nwColor: ${t.nwColor}, neColor: ${t.neColor}, swColor: ${t.swColor}, seColor: ${t.seColor}\n")
+                        sb.append("  X: ${st.x} Y: ${st.y} cacheTile.cacheHeight: ${st.cacheTile?.cacheHeight} height: ${st.cacheTile?.height}\n")
+                        sb.append("  overlay: id: ${st.overlayDefinition?.id} rgbColor: ${st.overlayDefinition?.rgbColor} texture: ${st.overlayDefinition?.texture} secondaryRgbColor: ${st.overlayDefinition?.secondaryRgbColor} hideUnderlay: ${st.overlayDefinition?.hideUnderlay}\n")
+                        sb.append("  underlay: id: ${st.underlayDefinition?.id} color: ${st.underlayDefinition?.color} hue: ${st.underlayDefinition?.hue} saturation: ${st.underlayDefinition?.saturation} lightness: ${st.underlayDefinition?.lightness}\n")
+                    }
+                    LocationType.TILE_MODEL -> {
+                        val st = hovered.sceneTile?: return
+                        val t = st.tileModel?: return
+                        sb.append("TILE_MODEL:\n")
+                        sb.append("  nwHeight: ${t.nwHeight}, neHeight: ${t.neHeight}, swHeight: ${t.swHeight}, seHeight: ${t.seHeight}\n")
+                        sb.append("  nwColor: ${t.nwColor}, neColor: ${t.neColor}, swColor: ${t.swColor}, seColor: ${t.seColor}\n")
+                        sb.append("  nwColorB: ${t.nwColorB}, neColorB: ${t.neColorB}, swColorB: ${t.swColorB}, seColorB: ${t.seColorB}\n")
+                        sb.append("  X: ${st.x} Y: ${st.y} cacheTile.cacheHeight: ${st.cacheTile?.cacheHeight} height: ${st.cacheTile?.height}\n")
+                        sb.append("  overlayPath: ${t.overlayPath} overlayRotation: ${t.overlayRotation} overlayTexture: ${t.overlayTexture} underlayRgb: ${t.underlayRgb} overlayRgb: ${t.overlayRgb}\n");
+                        sb.append("  overlay: id: ${st.overlayDefinition?.id} rgbColor: ${st.overlayDefinition?.rgbColor} texture: ${st.overlayDefinition?.texture} secondaryRgbColor: ${st.overlayDefinition?.secondaryRgbColor} hideUnderlay: ${st.overlayDefinition?.hideUnderlay}\n")
+                        sb.append("  underlay: id: ${st.underlayDefinition?.id} color: ${st.underlayDefinition?.color} hue: ${st.underlayDefinition?.hue} saturation: ${st.underlayDefinition?.saturation} lightness: ${st.underlayDefinition?.lightness}\n")
                     }
                     LocationType.WALL_CORNER -> {
                         val wall = hovered.sceneTile.wall?: return

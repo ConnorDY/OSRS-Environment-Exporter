@@ -24,11 +24,11 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         seColor: Int,
         neColor: Int,
         nwColor: Int,
-        var15: Int,
-        var16: Int,
-        var17: Int,
-        var18: Int,
-        rgb: Int,
+        swColorB: Int,
+        seColorB: Int,
+        neColorB: Int,
+        nwColorB: Int,
+        underlayRgb: Int,
         overlayRgb: Int,
         underlayDefinition: UnderlayDefinition?,
         overlayDefinition: OverlayDefinition?,
@@ -51,10 +51,29 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
                     neColor,
                     nwColor,
                     -1,
-                    rgb
+                    underlayRgb
                 )
             }
-            overlayPath != 1 -> {
+            overlayPath == 1 -> {
+                for (iz in z downTo 0) {
+                    if (tiles[iz][x][y] == null) {
+                        tiles[iz][x][y] = SceneTile(iz, x, y)
+                    }
+                }
+                tiles[z][x][y]!!.tilePaint = TilePaint(
+                    swHeight,
+                    seHeight,
+                    neHeight,
+                    nwHeight,
+                    swColorB,
+                    seColorB,
+                    neColorB,
+                    nwColorB,
+                    overlayTexture,
+                    overlayRgb
+                )
+            }
+            else -> {
                 for (iz in z downTo 0) {
                     if (tiles[iz][x][y] == null) {
                         tiles[iz][x][y] = SceneTile(iz, x, y)
@@ -75,32 +94,13 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
                         seColor,
                         neColor,
                         nwColor,
-                        var15,
-                        var16,
-                        var17,
-                        var18,
-                        rgb,
+                        swColorB,
+                        seColorB,
+                        neColorB,
+                        nwColorB,
+                        underlayRgb,
                         overlayRgb
                     )
-            }
-            else -> {
-                for (iz in z downTo 0) {
-                    if (tiles[iz][x][y] == null) {
-                        tiles[iz][x][y] = SceneTile(iz, x, y)
-                    }
-                }
-                tiles[z][x][y]!!.tilePaint = TilePaint(
-                    swHeight,
-                    seHeight,
-                    neHeight,
-                    nwHeight,
-                    var15,
-                    var16,
-                    var17,
-                    var18,
-                    overlayTexture,
-                    overlayRgb
-                )
             }
         }
         tiles[z][x][y]?.underlayDefinition = underlayDefinition
