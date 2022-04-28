@@ -28,7 +28,7 @@ class ObjectLoader @Inject constructor(
         val inputStream = ByteBuffer.wrap(b)
         def.id = id
         while (true) {
-            val opcode: Int = inputStream.readUnsignedByte()
+            val opcode = inputStream.readUnsignedByte()
             if (opcode == 0) {
                 break
             }
@@ -39,6 +39,7 @@ class ObjectLoader @Inject constructor(
     }
 
     private fun processOp(opcode: Int, def: ObjectDefinition, inputStream: ByteBuffer) {
+        println("Processing opcode " + opcode)
         if (opcode == 1) {
             val length: Int = inputStream.readUnsignedByte()
             if (length > 0) {
@@ -119,6 +120,8 @@ class ObjectLoader @Inject constructor(
             }
             def.retextureToFind = textureToFind
             def.textureToReplace = textureToReplace
+        } else if (opcode == 61) {
+            val ignore = inputStream.readUnsignedShort()
         } else if (opcode == 62) {
             def.isRotated = true
         } else if (opcode == 64) {
