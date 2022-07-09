@@ -814,25 +814,25 @@ class Renderer @Inject constructor(
     private fun drawTiles() {
         modelBuffers.clear()
         modelBuffers.targetBufferOffset = 0
-        for (x in 0 until scene.radius * REGION_SIZE) {
-            for (y in 0 until scene.radius * REGION_SIZE) {
-                var tile: SceneTile? = scene.getTile(0, x, y)
-
-                // check each height level 1-4
-                if (tile != null) {
-                    drawTile(tile)
-                }
-                tile = scene.getTile(1, x, y)
-                if (tile != null) {
-                    drawTile(tile)
-                }
-                tile = scene.getTile(2, x, y)
-                if (tile != null) {
-                    drawTile(tile)
-                }
-                tile = scene.getTile(3, x, y)
-                if (tile != null) {
-                    drawTile(tile)
+        for (z in 0 until REGION_HEIGHT) {
+            for (x in 0 until scene.radius * REGION_SIZE) {
+                for (y in 0 until scene.radius * REGION_SIZE) {
+                    var tile: SceneTile? = scene.getTile(z, x, y)
+                    if (tile != null) {
+                        drawTile(tile)
+                    }
+//                tile = scene.getTile(1, x, y)
+//                if (tile != null) {
+//                    drawTile(tile)
+//                }
+//                tile = scene.getTile(2, x, y)
+//                if (tile != null) {
+//                    drawTile(tile)
+//                }
+//                tile = scene.getTile(3, x, y)
+//                if (tile != null) {
+//                    drawTile(tile)
+//                }
                 }
             }
         }

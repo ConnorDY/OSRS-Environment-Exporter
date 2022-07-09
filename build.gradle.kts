@@ -14,16 +14,16 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.displee:rs-cache-library:6.4")
-    implementation("com.google.code.gson:gson:2.8.5")
+    implementation("com.displee:rs-cache-library:6.8.1")
+    implementation("com.google.code.gson:gson:2.8.8")
     implementation("org.bitbucket.akornilov.kotlin:binary-streams:0.33")
     implementation(files("lib/jogamp-fat.jar"))
     implementation(files("lib/dockfx-0.4-SNAPSHOT.jar"))
-    implementation("com.google.inject:guice:4.2.3")
-    implementation("com.jfoenix:jfoenix:9.0.9")
-    implementation("org.jsoup:jsoup:1.11.3")
+    implementation("com.google.inject:guice:5.0.1")
+    implementation("com.jfoenix:jfoenix:9.0.10")
+    implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
-    implementation("org.apache.commons:commons-compress:1.20")
+    implementation("org.apache.commons:commons-compress:1.21")
 }
 
 tasks {

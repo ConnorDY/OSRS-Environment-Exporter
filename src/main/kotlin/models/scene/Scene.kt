@@ -15,13 +15,11 @@ import com.google.inject.Inject
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.StaticObject
-import controllers.worldRenderer.entities.TileModel
-import javafx.beans.property.ObjectProperty
-import javafx.beans.property.SimpleObjectProperty
 import java.awt.event.ActionListener
 import java.util.function.Consumer
 
 const val REGION_SIZE = 64
+const val REGION_HEIGHT = 4
 
 class Scene @Inject constructor(
     private val sceneRegionBuilder: SceneRegionBuilder,
@@ -64,18 +62,20 @@ class Scene @Inject constructor(
     }
 
     fun recalculateRegion(sceneRegion: SceneRegion) {
-        for (x in 0 until REGION_SIZE + 1) {
-            for (y in 0 until REGION_SIZE + 1) {
-                sceneRegionBuilder.calcTileColor(
-                    sceneRegion,
-                    x,
-                    y,
-                    sceneRegion.regionDefinition.baseX,
-                    sceneRegion.regionDefinition.baseY
-                )
+        for (z in 0 until REGION_HEIGHT) {
+            for (x in 0 until REGION_SIZE + 1) {
+                for (y in 0 until REGION_SIZE + 1) {
+                    sceneRegionBuilder.calcTileColor(
+                        sceneRegion,
+                        x,
+                        y,
+                        sceneRegion.regionDefinition.baseX,
+                        sceneRegion.regionDefinition.baseY
+                    )
+                }
             }
+            calcColor(sceneRegion, z, sceneRegion.regionDefinition.baseX, sceneRegion.regionDefinition.baseY)
         }
-        calcColor(sceneRegion, 0, sceneRegion.regionDefinition.baseX, sceneRegion.regionDefinition.baseY)
     }
 
     fun getTile(z: Int, x: Int, y: Int): SceneTile? {
@@ -272,38 +272,38 @@ class Scene @Inject constructor(
                                     overlayCol = hslToRgb(hue, overlayDefinition.saturation, lightness)
                                 }
                             }
-                            var overlayRgb = 0
-                            if (overlayCol != -2) {
-                                val var0 = SceneRegionBuilder.adjustHSLListness0(overlayCol, 96)
-                                overlayRgb = colorPalette[var0]
-                            }
-                            if (overlayDefinition.secondaryRgbColor != -1) {
-                                val hue: Int = overlayDefinition.otherHue and 255
-                                var lightness: Int = overlayDefinition.otherLightness
-                                if (lightness < 0) {
-                                    lightness = 0
-                                } else if (lightness > 255) {
-                                    lightness = 255
-                                }
-                                overlayCol = hslToRgb(hue, overlayDefinition.otherSaturation, lightness)
-                                val var0 = SceneRegionBuilder.adjustHSLListness0(overlayCol, 96)
-                                overlayRgb = colorPalette[var0]
-                            }
-                            val underlay: UnderlayDefinition? = underlayLoader.get(underlayId - 1)
+//                            var overlayRgb = 0
+//                            if (overlayCol != -2) {
+//                                val var0 = SceneRegionBuilder.adjustHSLListness0(overlayCol, 96)
+//                                overlayRgb = colorPalette[var0]
+//                            }
+//                            if (overlayDefinition.secondaryRgbColor != -1) {
+//                                val hue: Int = overlayDefinition.otherHue and 255
+//                                var lightness: Int = overlayDefinition.otherLightness
+//                                if (lightness < 0) {
+//                                    lightness = 0
+//                                } else if (lightness > 255) {
+//                                    lightness = 255
+//                                }
+//                                overlayCol = hslToRgb(hue, overlayDefinition.otherSaturation, lightness)
+//                                val var0 = SceneRegionBuilder.adjustHSLListness0(overlayCol, 96)
+//                                overlayRgb = colorPalette[var0]
+//                            }
+//                            val underlay: UnderlayDefinition? = underlayLoader.get(underlayId - 1)
                             sr.tiles[z][xi][yi]?.tileModel?.setHeight(swHeight, seHeight, neHeight, nwHeight)
-                            sr.tiles[z][xi][yi]?.tileModel?.setColor(
-                                SceneRegionBuilder.method4220(rgb, swColor),
-                                SceneRegionBuilder.method4220(rgb, seColor),
-                                SceneRegionBuilder.method4220(rgb, neColor),
-                                SceneRegionBuilder.method4220(rgb, nwColor)
-                            )
+//                            sr.tiles[z][xi][yi]?.tileModel?.setColor(
+//                                SceneRegionBuilder.method4220(rgb, swColor),
+//                                SceneRegionBuilder.method4220(rgb, seColor),
+//                                SceneRegionBuilder.method4220(rgb, neColor),
+//                                SceneRegionBuilder.method4220(rgb, nwColor)
+//                            )
                             sr.tiles[z][xi][yi]?.tileModel?.setBrightnessMaybe(
                                 SceneRegionBuilder.adjustHSLListness0(overlayHsl, swColor),
                                 SceneRegionBuilder.adjustHSLListness0(overlayHsl, seColor),
                                 SceneRegionBuilder.adjustHSLListness0(overlayHsl, neColor),
                                 SceneRegionBuilder.adjustHSLListness0(overlayHsl, nwColor)
                             )
-                            sr.tiles[z][xi][yi]?.tilePaint?.setHeight(swHeight, seHeight, neHeight, nwHeight)
+                            // sr.tiles[z][xi][yi]?.tilePaint?.setHeight(swHeight, seHeight, neHeight, nwHeight)
                             sr.tiles[z][xi][yi]?.tilePaint?.setColor(
                                 SceneRegionBuilder.adjustHSLListness0(overlayHsl, swColor),
                                 SceneRegionBuilder.adjustHSLListness0(overlayHsl, seColor),

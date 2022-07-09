@@ -327,7 +327,7 @@ class SceneRegionBuilder @Inject constructor(
                 sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
             }
 
-            if (loc.type == 2) {
+            if (loc.type == LocationType.WALL_CORNER.id) {
                 val entity1 =
                     getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, baseX, baseY)
                 val entity2 =
@@ -335,7 +335,7 @@ class SceneRegionBuilder @Inject constructor(
                 sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
             }
 
-            if (loc.type in 5..9) {
+            if (loc.type in LocationType.INTERACTABLE_WALL.id .. LocationType.DIAGONAL_WALL.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
@@ -356,6 +356,7 @@ class SceneRegionBuilder @Inject constructor(
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
+            // Other objects ?
             if (loc.type in 12..21) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
