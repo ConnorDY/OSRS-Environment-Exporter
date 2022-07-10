@@ -4,7 +4,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 object Constants {
-    const val MAX_DISTANCE = 1000
+    const val MAX_DISTANCE = 10000
 
     const val LOCAL_COORD_BITS = 7
     const val LOCAL_TILE_SIZE = 1 shl LOCAL_COORD_BITS // 128 - size of a tile in local coordinates

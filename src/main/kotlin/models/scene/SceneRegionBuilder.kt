@@ -145,6 +145,10 @@ class SceneRegionBuilder @Inject constructor(
                             val nwColor = sceneRegion.tileColors[xi][yi + 1]
                             var rgb = -1
                             var underlayHsl = -1
+
+                            if (runningMultiplier == 0) runningMultiplier = 1
+                            if (runningNumber == 0) runningNumber = 1
+
                             if (underlayId > 0 && runningMultiplier > 0 && runningNumber > 0) {
                                 val avgHue = runningHues * 256 / runningMultiplier
                                 val avgSat = runningSat / runningNumber
@@ -320,45 +324,59 @@ class SceneRegionBuilder @Inject constructor(
             val yTransforms = intArrayOf(0, -1, 0, 1)
 
             val staticObject =
-                getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, baseX, baseY)
+                getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, z, baseX, baseY)
                     ?: return@forEach
 
             if (loc.type == LocationType.LENGTHWISE_WALL.id) {
                 sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
             }
 
-            if (loc.type == LocationType.WALL_CORNER.id) {
+            else if (loc.type == LocationType.WALL_CORNER.id) {
                 val entity1 =
-                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, baseX, baseY)
+                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)
                 val entity2 =
-                    getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, baseX, baseY)
+                    getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)
                 sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
             }
 
-            if (loc.type in LocationType.INTERACTABLE_WALL.id .. LocationType.DIAGONAL_WALL.id) {
+            else if (loc.type in LocationType.INTERACTABLE_WALL.id .. LocationType.DIAGONAL_WALL.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
+                return@forEach;
             }
 
-            if (loc.type == LocationType.FLOOR_DECORATION.id) {
+            else if (loc.type == LocationType.FLOOR_DECORATION.id) {
                 sceneRegion.newFloorDecoration(z, x, y, staticObject)
             }
 
-            if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
+            else if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
                 sceneRegion.newWallDecoration(z, x, y, staticObject)
             }
 
-            if (loc.type == LocationType.INTERACTABLE.id) {
+            else if (loc.type == LocationType.INTERACTABLE.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
-            if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
+            else if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
                 staticObject.getModel().orientationType = OrientationType.DIAGONAL
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
+            else if (loc.type == LocationType.TRIANGULAR_CORNER.id) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc);
+            }
+
+            else if (loc.type == LocationType.RECTANGULAR_CORNER.id) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc);
+            }
+
             // Other objects ?
-            if (loc.type in 12..21) {
+            else if (loc.type in 12..21) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
+                println("Load new object? ${loc.type}")
+            }
+
+            else {
+                println("SceneRegionLoader Loading something new? ${loc.type}")
             }
         }
 
@@ -381,6 +399,7 @@ class SceneRegionBuilder @Inject constructor(
         xSize: Int,
         height: Int,
         ySize: Int,
+        zPlane: Int,
         baseX: Int,
         baseY: Int
     ): Entity? {
@@ -396,6 +415,7 @@ class SceneRegionBuilder @Inject constructor(
                 xSize,
                 height,
                 ySize,
+                zPlane,
                 baseX,
                 baseY,
                 true,
@@ -444,18 +464,17 @@ class SceneRegionBuilder @Inject constructor(
             }
         }
 
-        fun method4220(var0: Int, var1: Int): Int {
-            var var1 = var1
-            return if (var0 == -1) {
+        fun method4220(rgb: Int, color: Int): Int {
+            return if (rgb == -1) {
                 12345678
             } else {
-                var1 = (var0 and 127) * var1 / 128
+                var var1 = (rgb and 0x7f) * color / 0x80
                 if (var1 < 2) {
                     var1 = 2
-                } else if (var1 > 126) {
-                    var1 = 126
+                } else if (var1 > 0x7e) {
+                    var1 = 0x7e
                 }
-                (var0 and 65408) + var1
+                (rgb and 0xff80) + var1
             }
         }
 

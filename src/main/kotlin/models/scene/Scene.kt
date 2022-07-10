@@ -376,6 +376,7 @@ class Scene @Inject constructor(
                 xSize,
                 height,
                 ySize,
+                z,
                 baseX,
                 baseY,
                 false,

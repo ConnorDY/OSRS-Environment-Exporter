@@ -31,7 +31,13 @@ import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES3
 import com.jogamp.opengl.GL4
 import controllers.worldRenderer.helpers.GLUtil
+import java.awt.image.BufferedImage
+import java.awt.image.IndexColorModel
+import java.io.File
 import java.nio.ByteBuffer
+import java.nio.file.Files
+import java.nio.file.Paths
+import javax.imageio.ImageIO
 
 class TextureManager @Inject constructor(
     private val spriteLoader: SpriteLoader,
@@ -127,6 +133,38 @@ class TextureManager @Inject constructor(
                 GL.GL_UNSIGNED_BYTE,
                 pixelBuffer
             )
+
+            var pathAsFile = File("./OBJ/")
+            if (!Files.exists(Paths.get("./OBJ/"))) {
+                pathAsFile.mkdir()
+            }
+
+            pathAsFile = File("./OBJ/Textures/")
+            if (!Files.exists(Paths.get("./OBJ/Textures/"))) {
+                pathAsFile.mkdir()
+            }
+
+            val image = BufferedImage(TEXTURE_SIZE, TEXTURE_SIZE, IndexColorModel.BITMASK)
+            for(y in 0 until 128) {
+                for(x in 0 until 128) {
+                    var p = srcPixels[x + y * 128]
+                    val r = (p and 0xff000000L.toInt()).ushr(24)
+                    val g = (p and 0xff0000).ushr(16)
+                    val b = (p and 0xff00).ushr(8)
+                    val a = p and 0xff
+
+                    var alpha = 0
+                    if (g + b + a > 0) {
+                        alpha = 0xff
+                    }
+
+                    p = (alpha shl 24) or (g shl 16) or (b shl 8) or a
+                    image.setRGB(x, y, p)
+                }
+            }
+
+            ImageIO.write(image, "png", File("./OBJ/Textures/$textureId.png"))
+
         }
     }
 

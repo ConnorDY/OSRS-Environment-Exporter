@@ -124,15 +124,12 @@ class TileModel(
         computeObj.idx = modelBuffers.targetBufferOffset
         computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER
         computeObj.x = x
+        computeObj.y = height
         computeObj.z = z
         computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
         b.buffer.put(computeObj.toArray())
 
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
-    }
-
-    override fun drawDynamic(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int) {
-        TODO("Not yet implemented")
     }
 
     override fun clearDraw(modelBuffers: ModelBuffers) {

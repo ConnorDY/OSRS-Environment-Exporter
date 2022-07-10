@@ -109,6 +109,11 @@ class Renderer @Inject constructor(
 
     private lateinit var modelBuffers: ModelBuffers
 
+    public var z0ChkBtnSelected = true
+    public var z1ChkBtnSelected = true
+    public var z2ChkBtnSelected = true
+    public var z3ChkBtnSelected = true
+
     // Uniforms
     private var uniDrawDistance = 0
     private var uniProjectionMatrix = 0
@@ -124,7 +129,7 @@ class Renderer @Inject constructor(
 
     // FIXME: setting these here locks this in as the minimum
     // figure out how to make these small and resize programmatically after load
-    var canvasWidth = 800
+    var canvasWidth = 100
     var canvasHeight = (canvasWidth / 1.3).toInt()
     private var lastViewportWidth = 0
     private var lastViewportHeight = 0
@@ -221,9 +226,10 @@ class Renderer @Inject constructor(
     fun loadScene() {
 //        scene.load(10038, 1)
 //        scene.load(6967, 1)
-        scene.load(12850, 3)
+//        scene.load(12850, 3)
 //        scene.load(11828, 6)
 //        scene.load(13623, 6)
+        scene.load(15256, 1)
     }
 
     private val redrawList: HashSet<SceneTile> = HashSet()
@@ -273,122 +279,6 @@ class Renderer @Inject constructor(
     }
 
     private fun handleHover() {
-        val mouseX: Int = inputHandler.mouseX
-        val mouseY: Int = inputHandler.mouseY
-
-        // Using 3 PBOs brings this function time to 0.05ms, with only 2 PBOs is it 10ms
-        // This will write to pboIndex and read from nextIndex which should have finished drawing to
-        // since it will 2 frames behind.
-        pboIndex = (pboIndex + 1) % 3
-        val nextIndex = (pboIndex + 1) % 3
-
-        // Read from pixel buffer object async to get pixels without blocking render
-        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, fboMainRenderer)
-        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, pboIds[pboIndex])
-        gl.glReadBuffer(GL2ES2.GL_COLOR_ATTACHMENT1)
-        gl.glReadPixels(mouseX, canvasHeight - mouseY, 1, 1, GL2ES3.GL_RED_INTEGER, GL2ES2.GL_INT, 0)
-        gl.glReadBuffer(GL.GL_COLOR_ATTACHMENT0)
-        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, 0)
-        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
-        gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, pboIds[nextIndex])
-        val srcBuf = gl.glMapBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, GL2ES3.GL_READ_ONLY)
-        val pboBytes = ByteArray(4)
-        srcBuf[pboBytes]
-        val pickerId: Int =
-            pboBytes[3].toInt() and 0xFF shl 24 or (pboBytes[2].toInt() and 0xFF shl 16) or (pboBytes[1].toInt() and 0xFF shl 8) or (pboBytes[0].toInt() and 0xFF)
-        gl.glUnmapBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER)
-        if (pickerId == 1058050193) { // clear sky coor
-            return
-        }
-
-        // -1 = null hover, ignore
-        // -2 = we want to pass through this object
-        if (pickerId == -1) {
-            hoverId = -1
-            return
-        }
-        if (pickerId != -2) {
-            hoverId = pickerId
-        }
-
-        val x = hoverId shr 18 and 0x1FFF
-        val y = hoverId shr 5 and 0x1FFF
-        val type = hoverId and 0x1F
-        val tile = scene.getTile(0, x, y) ?: return
-
-        var hoverEntity: Hoverable? = null
-        if (tile.tilePaint != null) {
-            hoverEntity = tile.tilePaint!!
-        }
-
-        if (tile.tileModel != null) {
-            hoverEntity = tile.tileModel!!
-        }
-
-        val isClickSticky = false
-
-        if (hoverEntity != null) {
-            hoverEntity.isHovered = true
-            if (!isClickSticky || (isClickSticky && !inputHandler.isLeftMouseDown && !inputHandler.isRightMouseDown)) {
-                if (lastHovered != hoverEntity) {
-                    hoverList.forEach {
-                        val st = it as SceneTile
-                        st.tilePaint?.isHovered = false
-                        st.tileModel?.isHovered = false
-                    }
-
-                    lastHovered?.isHovered = false
-                    lastHovered = hoverEntity
-
-                    hoverList = LinkedList()
-                    // CIRCLE SELECTION
-                    val radius = 5
-                    val top = Math.max(0, y - radius)
-                    val bottom = min(REGION_SIZE * scene.radius, y + radius)
-                    for (yy in top until bottom + 1) {
-                        val dy = yy - y
-                        val dx = floor(sqrt((radius * radius + 1 - dy * dy).toDouble())).toInt()
-                        val left = max(0, x - dx)
-                        val right = min(REGION_SIZE * scene.radius, x + dx)
-                        for (xx in left until right) {
-                            val t = scene.getTile(0, xx, yy) ?: continue
-                            hoverList.add(t)
-                        }
-                    }
-
-                    hoverList.add(tile)
-                    hoverList.forEach {
-                        val st = it as SceneTile
-                        st.tilePaint?.isHovered = true
-                        st.tileModel?.isHovered = true
-                    }
-                }
-            }
-        }
-
-        hoverModel.hovered.set(HoverObject(x, y, LocationType.fromId(type)!!, tile))
-
-        if (injectedObject != null && tile.tilePaint != null) {
-            val objectDefinition: ObjectDefinition = injectedObject!!.objectDefinition
-            val modelDefinition: ModelDefinition? =
-                objectToModelConverter.toModel(objectDefinition, injectedObject!!.type, injectedObject!!.orientation)
-                    ?: return
-            val model = Model(modelDefinition!!, objectDefinition.ambient, objectDefinition.contrast)
-            model.xOff = objectDefinition.sizeX * REGION_SIZE
-            model.yOff = objectDefinition.sizeY * REGION_SIZE
-            sceneUploader.uploadModel(
-                StaticObject(
-                    objectDefinition,
-                    model,
-                    tile.tilePaint!!.nwHeight,
-                    injectedObject!!.type,
-                    injectedObject!!.orientation
-                ),
-                modelBuffers.vertexBuffer,
-                modelBuffers.uvBuffer
-            )
-            model.drawDynamic(modelBuffers, x, y, tile.tilePaint!!.nwHeight)
-        }
     }
 
     private var hoverList: LinkedList<Hoverable> = LinkedList()
@@ -546,7 +436,7 @@ class Renderer @Inject constructor(
         gl.glViewport(x, y, width, height)
     }
 
-    private var isSceneUploadRequired = true
+    public var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
     private var lastUpdate: Long = System.nanoTime()
     var deltaTime: Double = 0.0
@@ -813,24 +703,29 @@ class Renderer @Inject constructor(
         modelBuffers.clear()
         modelBuffers.targetBufferOffset = 0
         for (z in 0 until REGION_HEIGHT) {
-            for (x in 0 until scene.radius * REGION_SIZE) {
-                for (y in 0 until scene.radius * REGION_SIZE) {
-                    var tile: SceneTile? = scene.getTile(z, x, y)
-                    if (tile != null) {
-                        drawTile(tile)
+            if ((z != 0 || z0ChkBtnSelected)
+              && (z != 1 || z1ChkBtnSelected)
+              && (z != 2 || z2ChkBtnSelected)
+              && (z != 3 || z3ChkBtnSelected)) {
+                for (x in 0 until scene.radius * REGION_SIZE) {
+                    for (y in 0 until scene.radius * REGION_SIZE) {
+                        var tile: SceneTile? = scene.getTile(z, x, y)
+                        if (tile != null) {
+                            drawTile(tile)
+                        }
+//                    tile = scene.getTile(1, x, y)
+//                    if (tile != null) {
+//                        drawTile(tile)
+//                    }
+//                    tile = scene.getTile(2, x, y)
+//                    if (tile != null) {
+//                        drawTile(tile)
+//                    }
+//                    tile = scene.getTile(3, x, y)
+//                    if (tile != null) {
+//                        drawTile(tile)
+//                    }
                     }
-//                tile = scene.getTile(1, x, y)
-//                if (tile != null) {
-//                    drawTile(tile)
-//                }
-//                tile = scene.getTile(2, x, y)
-//                if (tile != null) {
-//                    drawTile(tile)
-//                }
-//                tile = scene.getTile(3, x, y)
-//                if (tile != null) {
-//                    drawTile(tile)
-//                }
                 }
             }
         }
@@ -870,11 +765,11 @@ class Renderer @Inject constructor(
         val x: Int = tile.x
         val y: Int = tile.y
         if (tile.tilePaint != null) {
-            tile.tilePaint!!.draw(modelBuffers, x, y, 0, 30)
+            tile.tilePaint!!.draw(modelBuffers, x, y, 0, LocationType.TILE_PAINT.id)
         }
 
         if (tile.tileModel != null) {
-            tile.tileModel!!.draw(modelBuffers, x, y, 0, 31)
+            tile.tileModel!!.draw(modelBuffers, x, y, 0, LocationType.TILE_MODEL.id)
         }
 
         if (tile.floorDecoration != null) {
@@ -905,9 +800,13 @@ class Renderer @Inject constructor(
         }
     }
 
+    public fun exportScene() {
+        SceneExporter().exportSceneToFile(scene, this)
+    }
+
     private fun uploadScene() {
         modelBuffers.clearVertUv()
-        sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
+        sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer, this)
         modelBuffers.flipVertUv()
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer

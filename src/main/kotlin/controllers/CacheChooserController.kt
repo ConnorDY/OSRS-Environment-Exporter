@@ -130,8 +130,16 @@ class CacheChooserController @Inject constructor(
                 lblErrorText.isVisible = false
                 try {
                     cacheLibraryProvider.setLibraryLocation("${txtCacheLocation.text}/cache")
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    lblErrorText.text = e.message
+                    lblErrorText.isVisible = true
+                    btnLaunch.isDisable = true
+                }
+                try {
                     xteaManagerProvider.setXteaLocation(txtCacheLocation.text)
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     lblErrorText.text = e.message
                     lblErrorText.isVisible = true
                     btnLaunch.isDisable = true
