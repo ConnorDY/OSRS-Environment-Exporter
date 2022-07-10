@@ -12,3 +12,4 @@
 config.properties
 /caches
 *.log
+/OBJ
