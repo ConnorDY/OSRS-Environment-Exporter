@@ -218,20 +218,9 @@ public class ModelLoader
 		def.setVertexCount(vertexCount);
 		def.setFaceCount(faceCount);
 		def.setTextureTriangleCount(textureCount);
-		def.setVertexPositionsX(new int[vertexCount]);
-		def.setVertexPositionsY(new int[vertexCount]);
-		def.setVertexPositionsZ(new int[vertexCount]);
-		def.setFaceVertexIndices1(new int[faceCount]);
-		def.setFaceVertexIndices2(new int[faceCount]);
-		def.setFaceVertexIndices3(new int[faceCount]);
 
 		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			def.setFaceSkins(new int[faceCount]);
 		}
 
 		if (hasFaceTextures == 1)
@@ -307,18 +296,18 @@ public class ModelLoader
 			stream1.position(offsetOfFaceTransparencies);
 			def.setFaceAlphas(readByteArray(stream1, faceCount));
 		}
+		
+		if (hasPackedTransparencyVertexGroups == 1)
+		{
+			stream1.position(offsetOfPackedTransparencyVertexGroups);
+			readFaceSkins(def, stream1, faceCount);
+		}
 
-		stream5.position(offsetOfPackedTransparencyVertexGroups);
 		stream6.position(offsetOfFaceTextures);
 		stream7.position(offsetOfTextureCoordinates);
 
 		for (int i = 0; i < faceCount; ++i)
 		{
-			if (hasPackedTransparencyVertexGroups == 1)
-			{
-				def.getFaceSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
-
 			if (hasFaceTextures == 1)
 			{
 				def.getFaceTextures()[i] = (short) (ByteBufferExtKt.readUnsignedShort(stream6) - 1);
@@ -330,54 +319,10 @@ public class ModelLoader
 			}
 		}
 
+		stream1.position(offsetOfFaceIndexCompressionTypes);
+		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
 		stream1.position(offsetOfFaceIndexData);
-		stream2.position(offsetOfFaceIndexCompressionTypes);
-		int previousIndex1 = 0;
-		int previousIndex2 = 0;
-		int previousIndex3 = 0;
-
-		for (int i = 0; i < faceCount; ++i)
-		{
-			int faceIndexCompressionType = ByteBufferExtKt.readUnsignedByte(stream2);
-			if (faceIndexCompressionType == 1)
-			{
-				previousIndex1 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				previousIndex2 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex1;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex2;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 2)
-			{
-				previousIndex2 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 3)
-			{
-				previousIndex1 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 4)
-			{
-				int swap = previousIndex1;
-				previousIndex1 = previousIndex2;
-				previousIndex2 = swap;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-		}
+		readFaceIndexData(def, stream1, faceIndexCompressionTypes);
 
 		stream1.position(var42);
 		if (false) {
@@ -483,12 +428,6 @@ public class ModelLoader
 		def.setVertexCount(vertexCount);
 		def.setFaceCount(faceCount);
 		def.setTextureTriangleCount(textureCount);
-		def.setVertexPositionsX(new int[vertexCount]);
-		def.setVertexPositionsY(new int[vertexCount]);
-		def.setVertexPositionsZ(new int[vertexCount]);
-		def.setFaceVertexIndices1(new int[faceCount]);
-		def.setFaceVertexIndices2(new int[faceCount]);
-		def.setFaceVertexIndices3(new int[faceCount]);
 		if (textureCount > 0)
 		{
 			def.setTextureRenderTypes(new byte[textureCount]);
@@ -506,11 +445,6 @@ public class ModelLoader
 
 		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			def.setFaceSkins(new int[faceCount]);
 		}
 
 		if (hasAnimayaGroups == 1)
@@ -551,8 +485,6 @@ public class ModelLoader
 		stream1.position(offsetOfFaceColors);
 		readFaceColors(def, stream1, faceCount);
 
-		stream2.position(offsetOfFaceTextureFlags);
-
 		if (faceRenderPriority == 255) {
 			stream1.position(offsetOfFaceRenderPriorities);
 			final byte[] faceRenderPriorities = new byte[faceCount];
@@ -564,14 +496,19 @@ public class ModelLoader
 			stream1.position(offsetOfFaceTransparencies);
 			def.setFaceAlphas(readByteArray(stream1, faceCount));
 		}
-
-		stream5.position(offsetOfPackedTransparencyVertexGroups);
-
+		
+		if (hasPackedTransparencyVertexGroups == 1)
+		{
+			stream1.position(offsetOfPackedTransparencyVertexGroups);
+			readFaceSkins(def, stream1, faceCount);
+		}
+		
+		stream1.position(offsetOfFaceTextureFlags);
 		for (int i = 0; i < faceCount; ++i)
 		{
 			if (isTextured == 1)
 			{
-				int faceTextureFlags = ByteBufferExtKt.readUnsignedByte(stream2);
+				int faceTextureFlags = ByteBufferExtKt.readUnsignedByte(stream1);
 				if ((faceTextureFlags & 1) == 1)
 				{
 					def.getFaceRenderTypes()[i] = 1;
@@ -599,60 +536,12 @@ public class ModelLoader
 				}
 			}
 
-			if (hasPackedTransparencyVertexGroups == 1)
-			{
-				def.getFaceSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
 		}
 
+		stream1.position(offsetOfFaceIndexCompressionTypes);
+		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
 		stream1.position(offsetOfFaceIndexData);
-		stream2.position(offsetOfFaceIndexCompressionTypes);
-		int previousIndex1 = 0;
-		int previousIndex2 = 0;
-		int previousIndex3 = 0;
-
-		for (int i = 0; i < faceCount; ++i)
-		{
-			int faceIndexCompressionType = ByteBufferExtKt.readUnsignedByte(stream2);
-			if (faceIndexCompressionType == 1)
-			{
-				previousIndex1 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				previousIndex2 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex1;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex2;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 2)
-			{
-				previousIndex2 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 3)
-			{
-				previousIndex1 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 4)
-			{
-				int swap = previousIndex1;
-				previousIndex1 = previousIndex2;
-				previousIndex2 = swap;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-		}
+		readFaceIndexData(def, stream1, faceIndexCompressionTypes);
 
 		stream1.position(offsetOfTextureIndices);
 
@@ -824,20 +713,9 @@ public class ModelLoader
 		def.setVertexCount(vertexCount);
 		def.setFaceCount(faceCount);
 		def.setTextureTriangleCount(textureCount);
-		def.setVertexPositionsX(new int[vertexCount]);
-		def.setVertexPositionsY(new int[vertexCount]);
-		def.setVertexPositionsZ(new int[vertexCount]);
-		def.setFaceVertexIndices1(new int[faceCount]);
-		def.setFaceVertexIndices2(new int[faceCount]);
-		def.setFaceVertexIndices3(new int[faceCount]);
 
 		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			def.setFaceSkins(new int[faceCount]);
 		}
 
 		if (hasFaceTextures == 1)
@@ -889,17 +767,17 @@ public class ModelLoader
 			def.setFaceAlphas(readByteArray(stream1, faceCount));
 		}
 
-		stream5.position(offsetOfPackedTransparencyVertexGroups);
+		if (hasPackedTransparencyVertexGroups == 1)
+		{
+			stream1.position(offsetOfPackedTransparencyVertexGroups);
+			readFaceSkins(def, stream1, faceCount);
+		}
+
 		stream6.position(offsetOfFaceTextures);
 		stream7.position(offsetOfTextureCoordinates);
 
 		for (int i = 0; i < faceCount; ++i)
 		{
-			if (hasPackedTransparencyVertexGroups == 1)
-			{
-				def.getFaceSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
-
 			if (hasFaceTextures == 1)
 			{
 				def.getFaceTextures()[i] = (short) (ByteBufferExtKt.readUnsignedShort(stream6) - 1);
@@ -911,54 +789,10 @@ public class ModelLoader
 			}
 		}
 
+		stream1.position(offsetOfFaceIndexCompressionTypes);
+		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
 		stream1.position(offsetOfFaceIndexData);
-		stream2.position(offsetOfFaceIndexCompressionTypes);
-		int previousIndex1 = 0;
-		int previousIndex2 = 0;
-		int previousIndex3 = 0;
-
-		for (int i = 0; i < faceCount; ++i)
-		{
-			int faceIndexCompressionType = ByteBufferExtKt.readUnsignedByte(stream2);
-			if (faceIndexCompressionType == 1)
-			{
-				previousIndex1 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				previousIndex2 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex1;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex2;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 2)
-			{
-				previousIndex2 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 3)
-			{
-				previousIndex1 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 4)
-			{
-				int swap = previousIndex1;
-				previousIndex1 = previousIndex2;
-				previousIndex2 = swap;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-		}
+		readFaceIndexData(def, stream1, faceIndexCompressionTypes);
 
 		stream1.position(offsetOfTextureIndices);
 		if (false) {
@@ -1064,12 +898,6 @@ public class ModelLoader
 		def.setVertexCount(vertexCount);
 		def.setFaceCount(faceCount);
 		def.setTextureTriangleCount(textureCount);
-		def.setVertexPositionsX(new int[vertexCount]);
-		def.setVertexPositionsY(new int[vertexCount]);
-		def.setVertexPositionsZ(new int[vertexCount]);
-		def.setFaceVertexIndices1(new int[faceCount]);
-		def.setFaceVertexIndices2(new int[faceCount]);
-		def.setFaceVertexIndices3(new int[faceCount]);
 		if (textureCount > 0)
 		{
 			def.setTextureRenderTypes(new byte[textureCount]);
@@ -1087,11 +915,6 @@ public class ModelLoader
 
 		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			def.setFaceSkins(new int[faceCount]);
 		}
 
 		stream1.position(offsetOfVertexFlags);
@@ -1114,20 +937,24 @@ public class ModelLoader
 			def.setFaceRenderPriorities(readByteArray(stream1, faceCount));
 		}
 
-		stream2.position(offsetOfFaceTextureFlags);
-
 		if (hasFaceTransparencies == 1) {
 			stream1.position(offsetOfFaceTransparencies);
 			def.setFaceAlphas(readByteArray(stream1, faceCount));
 		}
 
-		stream5.position(offsetOfPackedTransparencyVertexGroups);
+		if (hasPackedTransparencyVertexGroups == 1)
+		{
+			stream1.position(offsetOfPackedTransparencyVertexGroups);
+			readFaceSkins(def, stream1, faceCount);
+		}
+
+		stream1.position(offsetOfFaceTextureFlags);
 
 		for (int i = 0; i < faceCount; ++i)
 		{
 			if (isTextured == 1)
 			{
-				int faceTextureFlags = ByteBufferExtKt.readUnsignedByte(stream2);
+				int faceTextureFlags = ByteBufferExtKt.readUnsignedByte(stream1);
 				if ((faceTextureFlags & 1) == 1)
 				{
 					def.getFaceRenderTypes()[i] = 1;
@@ -1154,61 +981,12 @@ public class ModelLoader
 					def.getFaceTextures()[i] = -1;
 				}
 			}
-
-			if (hasPackedTransparencyVertexGroups == 1)
-			{
-				def.getFaceSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
 		}
 
+		stream1.position(offsetOfFaceIndexCompressionTypes);
+		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
 		stream1.position(offsetOfFaceIndexData);
-		stream2.position(offsetOfFaceIndexCompressionTypes);
-		int previousIndex1 = 0;
-		int previousIndex2 = 0;
-		int previousIndex3 = 0;
-
-		for (int i = 0; i < faceCount; ++i)
-		{
-			int faceIndexCompressionType = ByteBufferExtKt.readUnsignedByte(stream2);
-			if (faceIndexCompressionType == 1)
-			{
-				previousIndex1 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				previousIndex2 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex1;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex2;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 2)
-			{
-				previousIndex2 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 3)
-			{
-				previousIndex1 = previousIndex3;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-
-			if (faceIndexCompressionType == 4)
-			{
-				int swap = previousIndex1;
-				previousIndex1 = previousIndex2;
-				previousIndex2 = swap;
-				previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
-				def.getFaceVertexIndices1()[i] = previousIndex1;
-				def.getFaceVertexIndices2()[i] = previousIndex2;
-				def.getFaceVertexIndices3()[i] = previousIndex3;
-			}
-		}
+		readFaceIndexData(def, stream1, faceIndexCompressionTypes);
 
 		stream1.position(offsetOfTextureIndices);
 
@@ -1258,6 +1036,49 @@ public class ModelLoader
 
 	}
 
+	private void readFaceIndexData(ModelDefinition def, ByteBuffer stream1, byte[] faceIndexCompressionTypes) {
+		final int faceCount = faceIndexCompressionTypes.length;
+		final int[] faceVertexIndices1 = new int[faceCount];
+		final int[] faceVertexIndices2 = new int[faceCount];
+		final int[] faceVertexIndices3 = new int[faceCount];
+		int previousIndex1 = 0;
+		int previousIndex2 = 0;
+		int previousIndex3 = 0;
+
+		for (int i = 0; i < faceCount; ++i)
+		{
+			int faceIndexCompressionType = faceIndexCompressionTypes[i];
+			switch (faceIndexCompressionType) {
+				case 1:
+					previousIndex1 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
+					previousIndex2 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex1;
+					previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex2;
+					break;
+				case 2:
+					previousIndex2 = previousIndex3;
+					previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
+					break;
+				case 3:
+					previousIndex1 = previousIndex3;
+					previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
+					break;
+				case 4:
+					int swap = previousIndex1;
+					previousIndex1 = previousIndex2;
+					previousIndex2 = swap;
+					previousIndex3 = ByteBufferExtKt.readShortSmart(stream1) + previousIndex3;
+					break;
+			}
+			faceVertexIndices1[i] = previousIndex1;
+			faceVertexIndices2[i] = previousIndex2;
+			faceVertexIndices3[i] = previousIndex3;
+		}
+
+		def.setFaceVertexIndices1(faceVertexIndices1);
+		def.setFaceVertexIndices2(faceVertexIndices2);
+		def.setFaceVertexIndices3(faceVertexIndices3);
+	}
+
 	private void readVertexData(ModelDefinition def, ByteBuffer stream, byte[] vertexFlags) {
 		def.setVertexPositionsX(readVertexGroup(stream, vertexFlags, HAS_DELTA_X));
 		def.setVertexPositionsY(readVertexGroup(stream, vertexFlags, HAS_DELTA_Y));
@@ -1289,6 +1110,14 @@ public class ModelLoader
 			vertices[i] = position;
 		}
 		return vertices;
+	}
+	
+	private void readFaceSkins(ModelDefinition def, ByteBuffer stream, int faceCount) {
+		final int[] faceSkins = new int[faceCount];
+		for (int i = 0; i < faceCount; ++i) {
+			faceSkins[i] = ByteBufferExtKt.readUnsignedByte(stream);
+		}
+		def.setFaceSkins(faceSkins);
 	}
 
 	private byte[] readByteArray(ByteBuffer stream, int length) {
