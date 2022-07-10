@@ -176,7 +176,7 @@ class CacheChooserController @Inject constructor(
                 val jfxScene = Scene(root)
                 Platform.runLater {
                     val stage = Stage()
-                    stage.title = "Taylor's Map Editor"
+                    stage.title = "OSRS Environment Exporter"
                     stage.scene = jfxScene
                     stage.sizeToScene()
                     stage.x = -10.0

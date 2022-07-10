@@ -11,7 +11,7 @@
    <children>
       <VBox prefHeight="300.0" prefWidth="100.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="25.0">
          <children>
-            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Taylor's Map Editor">
+            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="OSRS Environment Exporter">
                <font>
                   <Font size="18.0" />
                </font>
