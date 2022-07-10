@@ -126,14 +126,14 @@ public class ModelLoader
 		int renderTypeZeroCount = 0;
 		int renderTypeOtherCount = 0;
 		int renderTypeTwoCount = 0;
+		stream1.rewind();
 		if (textureCount > 0)
 		{
-			def.setTextureRenderTypes(new byte[textureCount]);
-			stream1.rewind();
+			final byte[] textureRenderTypes = new byte[textureCount];
+			stream1.get(textureRenderTypes);
 
-			for (int i = 0; i < textureCount; ++i)
+			for (byte renderType : textureRenderTypes)
 			{
-				byte renderType = def.getTextureRenderTypes()[i] = stream1.get();
 				if (renderType == 0)
 				{
 					++renderTypeZeroCount;
@@ -149,6 +149,8 @@ public class ModelLoader
 					++renderTypeTwoCount;
 				}
 			}
+
+			def.setTextureRenderTypes(textureRenderTypes);
 		}
 
 		int dataOffset = textureCount;
@@ -222,28 +224,9 @@ public class ModelLoader
 		def.setFaceVertexIndices1(new int[faceCount]);
 		def.setFaceVertexIndices2(new int[faceCount]);
 		def.setFaceVertexIndices3(new int[faceCount]);
-		if (hasVertexSkins == 1)
-		{
-			def.setVertexSkins(new int[vertexCount]);
-		}
 
-		if (hasFaceRenderTypes == 1)
-		{
-			def.setFaceRenderTypes(new byte[faceCount]);
-		}
-
-		if (faceRenderPriority == 255)
-		{
-			def.setFaceRenderPriorities(new byte[faceCount]);
-		}
-		else
-		{
+		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasFaceTransparencies == 1)
-		{
-			def.setFaceAlphas(new byte[faceCount]);
 		}
 
 		if (hasPackedTransparencyVertexGroups == 1)
@@ -267,7 +250,6 @@ public class ModelLoader
 //			def.setAnimayaScales(new int[vertexCount][]);
 		}
 
-		def.setFaceColors(new short[faceCount]);
 		if (textureCount > 0)
 		{
 			def.setTextureTriangleVertexIndices1(new short[textureCount]);
@@ -276,45 +258,16 @@ public class ModelLoader
 		}
 
 		stream1.position(offsetOfVertexFlags);
-		stream2.position(offsetOfVertexXData);
-		stream3.position(offsetOfVertexYData);
-		stream4.position(offsetOfVertexZData);
-		stream5.position(offsetOfVertexSkins);
-		int previousVertexX = 0;
-		int previousVertexY = 0;
-		int previousVertexZ = 0;
+		final byte[] vertexFlags = new byte[vertexCount];
+		stream1.get(vertexFlags);
 
-		for (int i = 0; i < vertexCount; ++i)
+		stream1.position(offsetOfVertexXData);
+		readVertexData(def, stream1, vertexFlags);
+
+		if (hasVertexSkins == 1)
 		{
-			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
-			int deltaX = 0;
-			if ((vertexFlags & HAS_DELTA_X) != 0)
-			{
-				deltaX = ByteBufferExtKt.readShortSmart(stream2);
-			}
-
-			int deltaY = 0;
-			if ((vertexFlags & HAS_DELTA_Y) != 0)
-			{
-				deltaY = ByteBufferExtKt.readShortSmart(stream3);
-			}
-
-			int deltaZ = 0;
-			if ((vertexFlags & HAS_DELTA_Z) != 0)
-			{
-				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
-			}
-
-			def.getVertexPositionsX()[i] = previousVertexX + deltaX;
-			def.getVertexPositionsY()[i] = previousVertexY + deltaY;
-			def.getVertexPositionsZ()[i] = previousVertexZ + deltaZ;
-			previousVertexX = def.getVertexPositionsX()[i];
-			previousVertexY = def.getVertexPositionsY()[i];
-			previousVertexZ = def.getVertexPositionsZ()[i];
-			if (hasVertexSkins == 1)
-			{
-				def.getVertexSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
+			stream1.position(offsetOfVertexSkins);
+			readVertexSkins(def, stream1, vertexCount);
 		}
 
 		if (hasAnimayaGroups == 1)
@@ -334,31 +287,33 @@ public class ModelLoader
 		}
 
 		stream1.position(offsetOfFaceColors);
-		stream2.position(offsetOfFaceRenderTypes);
-		stream3.position(offsetOfFaceRenderPriorities);
-		stream4.position(offsetOfFaceTransparencies);
+		readFaceColors(def, stream1, faceCount);
+
+		if (hasFaceRenderTypes == 1) {
+			stream1.position(offsetOfFaceRenderTypes);
+			final byte[] faceRenderTypes = new byte[faceCount];
+			stream1.get(faceRenderTypes);
+			def.setFaceRenderTypes(faceRenderTypes);
+		}
+
+		if (faceRenderPriority == 255) {
+			stream1.position(offsetOfFaceRenderPriorities);
+			final byte[] faceRenderPriorities = new byte[faceCount];
+			stream1.get(faceRenderPriorities);
+			def.setFaceRenderPriorities(faceRenderPriorities);
+		}
+
+		if (hasFaceTransparencies == 1) {
+			stream1.position(offsetOfFaceTransparencies);
+			def.setFaceAlphas(readByteArray(stream1, faceCount));
+		}
+
 		stream5.position(offsetOfPackedTransparencyVertexGroups);
 		stream6.position(offsetOfFaceTextures);
 		stream7.position(offsetOfTextureCoordinates);
 
 		for (int i = 0; i < faceCount; ++i)
 		{
-			def.getFaceColors()[i] = (short) ByteBufferExtKt.readUnsignedShort(stream1);
-			if (hasFaceRenderTypes == 1)
-			{
-				def.getFaceRenderTypes()[i] = stream2.get();
-			}
-
-			if (faceRenderPriority == 255)
-			{
-				def.getFaceRenderPriorities()[i] = stream3.get();
-			}
-
-			if (hasFaceTransparencies == 1)
-			{
-				def.getFaceAlphas()[i] = stream4.get();
-			}
-
 			if (hasPackedTransparencyVertexGroups == 1)
 			{
 				def.getFaceSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
@@ -516,7 +471,7 @@ public class ModelLoader
 
 		int offsetOfFaceIndexData = dataOffset;
 		dataOffset += faceIndexDataByteCount;
-		int ofsetOfFaceColorsOrFaceTextures = dataOffset;
+		int offsetOfFaceColors = dataOffset;
 		dataOffset += faceCount * 2;
 		int offsetOfTextureIndices = dataOffset;
 		dataOffset += textureCount * 6;
@@ -542,11 +497,6 @@ public class ModelLoader
 			def.setTextureTriangleVertexIndices3(new short[textureCount]);
 		}
 
-		if (hasVertexSkins == 1)
-		{
-			def.setVertexSkins(new int[vertexCount]);
-		}
-
 		if (isTextured == 1)
 		{
 			def.setFaceRenderTypes(new byte[faceCount]);
@@ -554,18 +504,8 @@ public class ModelLoader
 			def.setFaceTextures(new short[faceCount]);
 		}
 
-		if (faceRenderPriority == 255)
-		{
-			def.setFaceRenderPriorities(new byte[faceCount]);
-		}
-		else
-		{
+		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasFaceTransparencies == 1)
-		{
-			def.setFaceAlphas(new byte[faceCount]);
 		}
 
 		if (hasPackedTransparencyVertexGroups == 1)
@@ -579,47 +519,17 @@ public class ModelLoader
 //			def.setAnimayaScales(new int[vertexCount][]);
 		}
 
-		def.setFaceColors(new short[faceCount]);
 		stream1.position(offsetOfVertexFlags);
-		stream2.position(offsetOfVertexXData);
-		stream3.position(offsetOfVertexYData);
-		stream4.position(offsetOfVertexZData);
-		stream5.position(offsetOfVertexSkins);
-		int previousVertexX = 0;
-		int previousVertexY = 0;
-		int previousVertexZ = 0;
+		final byte[] vertexFlags = new byte[vertexCount];
+		stream1.get(vertexFlags);
 
-		for (int i = 0; i < vertexCount; ++i)
+		stream1.position(offsetOfVertexXData);
+		readVertexData(def, stream1, vertexFlags);
+
+		if (hasVertexSkins == 1)
 		{
-			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
-			int deltaX = 0;
-			if ((vertexFlags & HAS_DELTA_X) != 0)
-			{
-				deltaX = ByteBufferExtKt.readShortSmart(stream2);
-			}
-
-			int deltaY = 0;
-			if ((vertexFlags & HAS_DELTA_Y) != 0)
-			{
-				deltaY = ByteBufferExtKt.readShortSmart(stream3);
-			}
-
-			int deltaZ = 0;
-			if ((vertexFlags & HAS_DELTA_Z) != 0)
-			{
-				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
-			}
-
-			def.getVertexPositionsX()[i] = previousVertexX + deltaX;
-			def.getVertexPositionsY()[i] = previousVertexY + deltaY;
-			def.getVertexPositionsZ()[i] = previousVertexZ + deltaZ;
-			previousVertexX = def.getVertexPositionsX()[i];
-			previousVertexY = def.getVertexPositionsY()[i];
-			previousVertexZ = def.getVertexPositionsZ()[i];
-			if (hasVertexSkins == 1)
-			{
-				def.getVertexSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
+			stream1.position(offsetOfVertexSkins);
+			readVertexSkins(def, stream1, vertexCount);
 		}
 
 		if (hasAnimayaGroups == 1)
@@ -638,15 +548,27 @@ public class ModelLoader
 			}
 		}
 
-		stream1.position(ofsetOfFaceColorsOrFaceTextures);
+		stream1.position(offsetOfFaceColors);
+		readFaceColors(def, stream1, faceCount);
+
 		stream2.position(offsetOfFaceTextureFlags);
-		stream3.position(offsetOfFaceRenderPriorities);
-		stream4.position(offsetOfFaceTransparencies);
+
+		if (faceRenderPriority == 255) {
+			stream1.position(offsetOfFaceRenderPriorities);
+			final byte[] faceRenderPriorities = new byte[faceCount];
+			stream1.get(faceRenderPriorities);
+			def.setFaceRenderPriorities(faceRenderPriorities);
+		}
+
+		if (hasFaceTransparencies == 1) {
+			stream1.position(offsetOfFaceTransparencies);
+			def.setFaceAlphas(readByteArray(stream1, faceCount));
+		}
+
 		stream5.position(offsetOfPackedTransparencyVertexGroups);
 
 		for (int i = 0; i < faceCount; ++i)
 		{
-			def.getFaceColors()[i] = (short) ByteBufferExtKt.readUnsignedShort(stream1);
 			if (isTextured == 1)
 			{
 				int faceTextureFlags = ByteBufferExtKt.readUnsignedByte(stream2);
@@ -675,16 +597,6 @@ public class ModelLoader
 					def.getTextureCoordinates()[i] = -1;
 					def.getFaceTextures()[i] = -1;
 				}
-			}
-
-			if (faceRenderPriority == 255)
-			{
-				def.getFaceRenderPriorities()[i] = stream3.get();
-			}
-
-			if (hasFaceTransparencies == 1)
-			{
-				def.getFaceAlphas()[i] = stream4.get();
 			}
 
 			if (hasPackedTransparencyVertexGroups == 1)
@@ -817,14 +729,14 @@ public class ModelLoader
 		int renderTypeZeroCount = 0;
 		int renderTypeOtherCount = 0;
 		int renderTypeTwoCount = 0;
+		stream1.rewind();
 		if (textureCount > 0)
 		{
-			def.setTextureRenderTypes(new byte[textureCount]);
-			stream1.position(0);
+			final byte[] textureRenderTypes = new byte[textureCount];
+			stream1.get(textureRenderTypes);
 
-			for (int i = 0; i < textureCount; ++i)
+			for (byte renderType : textureRenderTypes)
 			{
-				byte renderType = def.getTextureRenderTypes()[i] = stream1.get();
 				if (renderType == 0)
 				{
 					++renderTypeZeroCount;
@@ -840,6 +752,8 @@ public class ModelLoader
 					++renderTypeTwoCount;
 				}
 			}
+
+			def.setTextureRenderTypes(textureRenderTypes);
 		}
 		int dataOffset = textureCount;
 		int offsetOfVertexFlags = dataOffset;
@@ -916,28 +830,9 @@ public class ModelLoader
 		def.setFaceVertexIndices1(new int[faceCount]);
 		def.setFaceVertexIndices2(new int[faceCount]);
 		def.setFaceVertexIndices3(new int[faceCount]);
-		if (hasVertexSkins == 1)
-		{
-			def.setVertexSkins(new int[vertexCount]);
-		}
 
-		if (hasFaceRenderTypes == 1)
-		{
-			def.setFaceRenderTypes(new byte[faceCount]);
-		}
-
-		if (faceRenderPriority == 255)
-		{
-			def.setFaceRenderPriorities(new byte[faceCount]);
-		}
-		else
-		{
+		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasFaceTransparencies == 1)
-		{
-			def.setFaceAlphas(new byte[faceCount]);
 		}
 
 		if (hasPackedTransparencyVertexGroups == 1)
@@ -955,7 +850,6 @@ public class ModelLoader
 			def.setTextureCoordinates(new byte[faceCount]);
 		}
 
-		def.setFaceColors(new short[faceCount]);
 		if (textureCount > 0)
 		{
 			def.setTextureTriangleVertexIndices1(new short[textureCount]);
@@ -964,73 +858,43 @@ public class ModelLoader
 		}
 
 		stream1.position(offsetOfVertexFlags);
-		stream2.position(offsetOfVertexXData);
-		stream3.position(offsetOfVertexYData);
-		stream4.position(offsetOfVertexZData);
-		stream5.position(offsetOfVertexSkins);
-		int previousVertexX = 0;
-		int previousVertexY = 0;
-		int previousVertexZ = 0;
+		final byte[] vertexFlags = new byte[vertexCount];
+		stream1.get(vertexFlags);
 
-		for (int i = 0; i < vertexCount; ++i)
+		stream1.position(offsetOfVertexXData);
+		readVertexData(def, stream1, vertexFlags);
+
+		if (hasVertexSkins == 1)
 		{
-			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
-			int deltaX = 0;
-			if ((vertexFlags & HAS_DELTA_X) != 0)
-			{
-				deltaX = ByteBufferExtKt.readShortSmart(stream2);
-			}
-
-			int deltaY = 0;
-			if ((vertexFlags & HAS_DELTA_Y) != 0)
-			{
-				deltaY = ByteBufferExtKt.readShortSmart(stream3);
-			}
-
-			int deltaZ = 0;
-			if ((vertexFlags & HAS_DELTA_Z) != 0)
-			{
-				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
-			}
-
-			def.getVertexPositionsX()[i] = previousVertexX + deltaX;
-			def.getVertexPositionsY()[i] = previousVertexY + deltaY;
-			def.getVertexPositionsZ()[i] = previousVertexZ + deltaZ;
-			previousVertexX = def.getVertexPositionsX()[i];
-			previousVertexY = def.getVertexPositionsY()[i];
-			previousVertexZ = def.getVertexPositionsZ()[i];
-			if (hasVertexSkins == 1)
-			{
-				def.getVertexSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
+			stream1.position(offsetOfVertexSkins);
+			readVertexSkins(def, stream1, vertexCount);
 		}
 
+
 		stream1.position(offsetOfFaceColors);
-		stream2.position(offsetOfFaceRenderTypes);
-		stream3.position(offsetOfFaceRenderPriorities);
-		stream4.position(offsetOfFaceTransparencies);
+		readFaceColors(def, stream1, faceCount);
+
+		if (hasFaceRenderTypes == 1) {
+			stream1.position(offsetOfFaceRenderTypes);
+			def.setFaceRenderTypes(readByteArray(stream1, faceCount));
+		}
+
+		if (faceRenderPriority == 255) {
+			stream1.position(offsetOfFaceRenderPriorities);
+			def.setFaceRenderPriorities(readByteArray(stream1, faceCount));
+		}
+
+		if (hasFaceTransparencies == 1) {
+			stream1.position(offsetOfFaceTransparencies);
+			def.setFaceAlphas(readByteArray(stream1, faceCount));
+		}
+
 		stream5.position(offsetOfPackedTransparencyVertexGroups);
 		stream6.position(offsetOfFaceTextures);
 		stream7.position(offsetOfTextureCoordinates);
 
 		for (int i = 0; i < faceCount; ++i)
 		{
-			def.getFaceColors()[i] = (short) ByteBufferExtKt.readUnsignedShort(stream1);
-			if (hasFaceRenderTypes == 1)
-			{
-				def.getFaceRenderTypes()[i] = stream2.get();
-			}
-
-			if (faceRenderPriority == 255)
-			{
-				def.getFaceRenderPriorities()[i] = stream3.get();
-			}
-
-			if (hasFaceTransparencies == 1)
-			{
-				def.getFaceAlphas()[i] = stream4.get();
-			}
-
 			if (hasPackedTransparencyVertexGroups == 1)
 			{
 				def.getFaceSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
@@ -1188,7 +1052,7 @@ public class ModelLoader
 
 		int offsetOfFaceIndexData = dataOffset;
 		dataOffset += faceIndexDataByteCount;
-		int offsetOfFaceColorsOrFaceTextures = dataOffset;
+		int offsetOfFaceColors = dataOffset;
 		dataOffset += faceCount * 2;
 		int offsetOfTextureIndices = dataOffset;
 		dataOffset += textureCount * 6;
@@ -1214,11 +1078,6 @@ public class ModelLoader
 			def.setTextureTriangleVertexIndices3(new short[textureCount]);
 		}
 
-		if (hasVertexSkins == 1)
-		{
-			def.setVertexSkins(new int[vertexCount]);
-		}
-
 		if (isTextured == 1)
 		{
 			def.setFaceRenderTypes(new byte[faceCount]);
@@ -1226,18 +1085,8 @@ public class ModelLoader
 			def.setFaceTextures(new short[faceCount]);
 		}
 
-		if (faceRenderPriority == 255)
-		{
-			def.setFaceRenderPriorities(new byte[faceCount]);
-		}
-		else
-		{
+		if (faceRenderPriority != 255) {
 			def.setPriority((byte) faceRenderPriority);
-		}
-
-		if (hasFaceTransparencies == 1)
-		{
-			def.setFaceAlphas(new byte[faceCount]);
 		}
 
 		if (hasPackedTransparencyVertexGroups == 1)
@@ -1245,58 +1094,37 @@ public class ModelLoader
 			def.setFaceSkins(new int[faceCount]);
 		}
 
-		def.setFaceColors(new short[faceCount]);
 		stream1.position(offsetOfVertexFlags);
-		stream2.position(offsetOfVertexXData);
-		stream3.position(offsetOfVertexYData);
-		stream4.position(offsetOfVertexZData);
-		stream5.position(offsetOfVertexSkins);
-		int previousVertexX = 0;
-		int previousVertexY = 0;
-		int previousVertexZ = 0;
+		final byte[] vertexFlags = readByteArray(stream1, vertexCount);
 
-		for (int i = 0; i < vertexCount; ++i)
+		stream1.position(offsetOfVertexXData);
+		readVertexData(def, stream1, vertexFlags);
+
+		if (hasVertexSkins == 1)
 		{
-			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
-			int deltaX = 0;
-			if ((vertexFlags & HAS_DELTA_X) != 0)
-			{
-				deltaX = ByteBufferExtKt.readShortSmart(stream2);
-			}
-
-			int deltaY = 0;
-			if ((vertexFlags & HAS_DELTA_Y) != 0)
-			{
-				deltaY = ByteBufferExtKt.readShortSmart(stream3);
-			}
-
-			int deltaZ = 0;
-			if ((vertexFlags & HAS_DELTA_Z) != 0)
-			{
-				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
-			}
-
-			def.getVertexPositionsX()[i] = previousVertexX + deltaX;
-			def.getVertexPositionsY()[i] = previousVertexY + deltaY;
-			def.getVertexPositionsZ()[i] = previousVertexZ + deltaZ;
-			previousVertexX = def.getVertexPositionsX()[i];
-			previousVertexY = def.getVertexPositionsY()[i];
-			previousVertexZ = def.getVertexPositionsZ()[i];
-			if (hasVertexSkins == 1)
-			{
-				def.getVertexSkins()[i] = ByteBufferExtKt.readUnsignedByte(stream5);
-			}
+			stream1.position(offsetOfVertexSkins);
+			readVertexSkins(def, stream1, vertexCount);
 		}
 
-		stream1.position(offsetOfFaceColorsOrFaceTextures);
+		stream1.position(offsetOfFaceColors);
+		readFaceColors(def, stream1, faceCount);
+
+		if (faceRenderPriority == 255) {
+			stream1.position(offsetOfFaceRenderPriorities);
+			def.setFaceRenderPriorities(readByteArray(stream1, faceCount));
+		}
+
 		stream2.position(offsetOfFaceTextureFlags);
-		stream3.position(offsetOfFaceRenderPriorities);
-		stream4.position(offsetOfFaceTransparencies);
+
+		if (hasFaceTransparencies == 1) {
+			stream1.position(offsetOfFaceTransparencies);
+			def.setFaceAlphas(readByteArray(stream1, faceCount));
+		}
+
 		stream5.position(offsetOfPackedTransparencyVertexGroups);
 
 		for (int i = 0; i < faceCount; ++i)
 		{
-			def.getFaceColors()[i] = (short) ByteBufferExtKt.readUnsignedShort(stream1);
 			if (isTextured == 1)
 			{
 				int faceTextureFlags = ByteBufferExtKt.readUnsignedByte(stream2);
@@ -1325,16 +1153,6 @@ public class ModelLoader
 					def.getTextureCoordinates()[i] = -1;
 					def.getFaceTextures()[i] = -1;
 				}
-			}
-
-			if (faceRenderPriority == 255)
-			{
-				def.getFaceRenderPriorities()[i] = stream3.get();
-			}
-
-			if (hasFaceTransparencies == 1)
-			{
-				def.getFaceAlphas()[i] = stream4.get();
 			}
 
 			if (hasPackedTransparencyVertexGroups == 1)
@@ -1440,4 +1258,42 @@ public class ModelLoader
 
 	}
 
+	private void readVertexData(ModelDefinition def, ByteBuffer stream, byte[] vertexFlags) {
+		def.setVertexPositionsX(readVertexGroup(stream, vertexFlags, HAS_DELTA_X));
+		def.setVertexPositionsY(readVertexGroup(stream, vertexFlags, HAS_DELTA_Y));
+		def.setVertexPositionsZ(readVertexGroup(stream, vertexFlags, HAS_DELTA_Z));
+	}
+
+	private void readFaceColors(ModelDefinition def, ByteBuffer stream, int faceCount) {
+		final short[] faceColors = new short[faceCount];
+		stream.asShortBuffer().get(faceColors);
+		def.setFaceColors(faceColors);
+	}
+
+	private void readVertexSkins(ModelDefinition def, ByteBuffer stream, int vertexCount) {
+		final int[] vertexSkins = new int[vertexCount];
+		for (int i = 0; i < vertexCount; ++i) {
+			vertexSkins[i] = ByteBufferExtKt.readUnsignedByte(stream);
+		}
+		def.setVertexSkins(vertexSkins);
+	}
+
+	private int[] readVertexGroup(ByteBuffer stream, byte[] vertexFlags, byte deltaMask) {
+		int position = 0;
+		final int vertexCount = vertexFlags.length;
+		final int[] vertices = new int[vertexCount];
+		for (int i = 0; i < vertexCount; ++i) {
+			if ((vertexFlags[i] & deltaMask) != 0) {
+				position += ByteBufferExtKt.readShortSmart(stream);
+			}
+			vertices[i] = position;
+		}
+		return vertices;
+	}
+
+	private byte[] readByteArray(ByteBuffer stream, int length) {
+		final byte[] array = new byte[length];
+		stream.get(array);
+		return array;
+	}
 }
