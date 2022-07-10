@@ -73,7 +73,6 @@ class SceneExporter {
     }
 
     fun upload(tile: SceneTile) {
-        Intrinsics.checkParameterIsNotNull(tile, "tile")
         val sceneTilePaint = tile.tilePaint
         if (sceneTilePaint != null) {
             this.upload(sceneTilePaint)
