@@ -45,6 +45,10 @@ import java.util.Map;
 
 public class ModelLoader
 {
+	private static final byte HAS_DELTA_X = 1;
+	private static final byte HAS_DELTA_Y = 2;
+	private static final byte HAS_DELTA_Z = 4;
+
 	private final CacheLibrary cacheLibrary;
 	private final Map<Integer, ModelDefinition> modelDefinitionCache;
 
@@ -284,19 +288,19 @@ public class ModelLoader
 		{
 			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
 			int deltaX = 0;
-			if ((vertexFlags & 1) != 0)
+			if ((vertexFlags & HAS_DELTA_X) != 0)
 			{
 				deltaX = ByteBufferExtKt.readShortSmart(stream2);
 			}
 
 			int deltaY = 0;
-			if ((vertexFlags & 2) != 0)
+			if ((vertexFlags & HAS_DELTA_Y) != 0)
 			{
 				deltaY = ByteBufferExtKt.readShortSmart(stream3);
 			}
 
 			int deltaZ = 0;
-			if ((vertexFlags & 4) != 0)
+			if ((vertexFlags & HAS_DELTA_Z) != 0)
 			{
 				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
 			}
@@ -589,19 +593,19 @@ public class ModelLoader
 		{
 			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
 			int deltaX = 0;
-			if ((vertexFlags & 1) != 0)
+			if ((vertexFlags & HAS_DELTA_X) != 0)
 			{
 				deltaX = ByteBufferExtKt.readShortSmart(stream2);
 			}
 
 			int deltaY = 0;
-			if ((vertexFlags & 2) != 0)
+			if ((vertexFlags & HAS_DELTA_Y) != 0)
 			{
 				deltaY = ByteBufferExtKt.readShortSmart(stream3);
 			}
 
 			int deltaZ = 0;
-			if ((vertexFlags & 4) != 0)
+			if ((vertexFlags & HAS_DELTA_Z) != 0)
 			{
 				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
 			}
@@ -972,19 +976,19 @@ public class ModelLoader
 		{
 			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
 			int deltaX = 0;
-			if ((vertexFlags & 1) != 0)
+			if ((vertexFlags & HAS_DELTA_X) != 0)
 			{
 				deltaX = ByteBufferExtKt.readShortSmart(stream2);
 			}
 
 			int deltaY = 0;
-			if ((vertexFlags & 2) != 0)
+			if ((vertexFlags & HAS_DELTA_Y) != 0)
 			{
 				deltaY = ByteBufferExtKt.readShortSmart(stream3);
 			}
 
 			int deltaZ = 0;
-			if ((vertexFlags & 4) != 0)
+			if ((vertexFlags & HAS_DELTA_Z) != 0)
 			{
 				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
 			}
@@ -1255,19 +1259,19 @@ public class ModelLoader
 		{
 			int vertexFlags = ByteBufferExtKt.readUnsignedByte(stream1);
 			int deltaX = 0;
-			if ((vertexFlags & 1) != 0)
+			if ((vertexFlags & HAS_DELTA_X) != 0)
 			{
 				deltaX = ByteBufferExtKt.readShortSmart(stream2);
 			}
 
 			int deltaY = 0;
-			if ((vertexFlags & 2) != 0)
+			if ((vertexFlags & HAS_DELTA_Y) != 0)
 			{
 				deltaY = ByteBufferExtKt.readShortSmart(stream3);
 			}
 
 			int deltaZ = 0;
-			if ((vertexFlags & 4) != 0)
+			if ((vertexFlags & HAS_DELTA_Z) != 0)
 			{
 				deltaZ = ByteBufferExtKt.readShortSmart(stream4);
 			}
