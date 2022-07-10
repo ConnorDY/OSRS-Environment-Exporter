@@ -160,7 +160,7 @@ class CacheChooserController @Inject constructor(
 
         btnLaunch.setOnAction {
             lblStatusText.isVisible = true
-            lblStatusText.text = "Launching map editor please wait.."
+            lblStatusText.text = "Launching map editor... Please wait... (this may take a while)"
 
             GlobalScope.launch {
                 configuration.saveProp("last-cache-dir", txtCacheLocation.text)
