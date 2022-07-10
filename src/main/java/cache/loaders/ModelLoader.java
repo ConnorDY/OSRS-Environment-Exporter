@@ -184,11 +184,6 @@ public class ModelLoader
 		int hasPackedTransparencyVertexGroups = ByteBufferExtKt.readUnsignedByte(stream1);
 		int hasVertexSkins = ByteBufferExtKt.readUnsignedByte(stream1);
 		int hasAnimayaGroups = ByteBufferExtKt.readUnsignedByte(stream1);
-		int vertexXDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int vertexYDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int vertexZDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int faceIndexDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int vertexSkinsDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
 
 		def.setVertexCount(vertexCount);
 		def.setFaceCount(faceCount);
@@ -201,96 +196,35 @@ public class ModelLoader
 			def.setPriority((byte) faceRenderPriority);
 		}
 
-		byte offsetOfVertexFlags = 0;
-		int dataOffset = offsetOfVertexFlags + vertexCount;
-		int offsetOfFaceIndexCompressionTypes = dataOffset;
-		dataOffset += faceCount;
-		int offsetOfFaceRenderPriorities = dataOffset;
-		if (faceRenderPriority == 255)
-		{
-			dataOffset += faceCount;
+		stream1.rewind();
+		final byte[] vertexFlags = readByteArray(stream1, vertexCount);
+		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
+		if (faceRenderPriority == 255) {
+			def.setFaceRenderPriorities(readByteArray(stream1, faceCount));
 		}
 
-		int offsetOfPackedTransparencyVertexGroups = dataOffset;
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			dataOffset += faceCount;
+		if (hasPackedTransparencyVertexGroups == 1) {
+			readFaceSkins(def, stream1, faceCount);
 		}
 
-		int offsetOfFaceTextureFlags = dataOffset;
-		if (isTextured == 1)
-		{
-			dataOffset += faceCount;
-		}
+		readFaceTextureFlags(def, stream1, faceCount, isTextured);
 
-		int offsetOfVertexSkins = dataOffset;
-		dataOffset += vertexSkinsDataByteCount;
-		int offsetOfFaceTransparencies = dataOffset;
-		if (hasFaceTransparencies == 1)
-		{
-			dataOffset += faceCount;
-		}
-
-		int offsetOfFaceIndexData = dataOffset;
-		dataOffset += faceIndexDataByteCount;
-		int offsetOfFaceColors = dataOffset;
-		dataOffset += faceCount * 2;
-		int offsetOfTextureIndices = dataOffset;
-		dataOffset += textureCount * 6;
-		int offsetOfVertexXData = dataOffset;
-		dataOffset += vertexXDataByteCount;
-		int offsetOfVertexYData = dataOffset;
-		dataOffset += vertexYDataByteCount;
-		int offsetOfVertexZData = dataOffset;
-		stream1.position(offsetOfVertexFlags);
-		final byte[] vertexFlags = new byte[vertexCount];
-		stream1.get(vertexFlags);
-
-		stream1.position(offsetOfVertexXData);
-		readVertexData(def, stream1, vertexFlags);
-
-		if (hasVertexSkins == 1)
-		{
-			stream1.position(offsetOfVertexSkins);
+		if (hasVertexSkins == 1) {
 			readVertexSkins(def, stream1, vertexCount);
 		}
 
-		if (hasAnimayaGroups == 1)
-		{
-			readAnimayaGroups(stream1, vertexCount);
-		}
-
-		stream1.position(offsetOfFaceColors);
-		readFaceColors(def, stream1, faceCount);
-
-		if (faceRenderPriority == 255) {
-			stream1.position(offsetOfFaceRenderPriorities);
-			final byte[] faceRenderPriorities = new byte[faceCount];
-			stream1.get(faceRenderPriorities);
-			def.setFaceRenderPriorities(faceRenderPriorities);
-		}
-
 		if (hasFaceTransparencies == 1) {
-			stream1.position(offsetOfFaceTransparencies);
 			def.setFaceAlphas(readByteArray(stream1, faceCount));
 		}
-		
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			stream1.position(offsetOfPackedTransparencyVertexGroups);
-			readFaceSkins(def, stream1, faceCount);
-		}
-		
-		stream1.position(offsetOfFaceTextureFlags);
-		readFaceTextureFlags(def, stream1, faceCount, isTextured);
 
-		stream1.position(offsetOfFaceIndexCompressionTypes);
-		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
-		stream1.position(offsetOfFaceIndexData);
 		readFaceIndexData(def, stream1, faceIndexCompressionTypes);
-
-		stream1.position(offsetOfTextureIndices);
+		readFaceColors(def, stream1, faceCount);
 		readTextureTriangleVertexIndices(def, stream1, textureCount, true);
+		readVertexData(def, stream1, vertexFlags);
+
+		if (hasAnimayaGroups == 1) {
+			readAnimayaGroups(stream1, vertexCount);
+		}
 
 		discardUnusedTextures(def, faceCount, isTextured);
 	}
@@ -324,16 +258,11 @@ public class ModelLoader
 		int hasFaceTransparencies = ByteBufferExtKt.readUnsignedByte(stream1);
 		int hasPackedTransparencyVertexGroups = ByteBufferExtKt.readUnsignedByte(stream1);
 		int hasVertexSkins = ByteBufferExtKt.readUnsignedByte(stream1);
-		int vertexXDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int vertexYDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int vertezZDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int faceIndexDataByteCount = ByteBufferExtKt.readUnsignedShort(stream1);
 
 		def.setVertexCount(vertexCount);
 		def.setFaceCount(faceCount);
 		def.setTextureTriangleCount(textureCount);
-		if (textureCount > 0)
-		{
+		if (textureCount > 0) {
 			def.setTextureRenderTypes(new byte[textureCount]);
 		}
 
@@ -341,93 +270,31 @@ public class ModelLoader
 			def.setPriority((byte) faceRenderPriority);
 		}
 
-		byte offsetOfVertexFlags = 0;
-		int dataOffset = offsetOfVertexFlags + vertexCount;
-		int offsetOfFaceIndexCompressionTypes = dataOffset;
-		dataOffset += faceCount;
-		int offsetOfFaceRenderPriorities = dataOffset;
-		if (faceRenderPriority == 255)
-		{
-			dataOffset += faceCount;
-		}
-
-		int offsetOfPackedTransparencyVertexGroups = dataOffset;
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			dataOffset += faceCount;
-		}
-
-		int offsetOfFaceTextureFlags = dataOffset;
-		if (isTextured == 1)
-		{
-			dataOffset += faceCount;
-		}
-
-		int offsetOfVertexSkins = dataOffset;
-		if (hasVertexSkins == 1)
-		{
-			dataOffset += vertexCount;
-		}
-
-		int offsetOfFaceTransparencies = dataOffset;
-		if (hasFaceTransparencies == 1)
-		{
-			dataOffset += faceCount;
-		}
-
-		int offsetOfFaceIndexData = dataOffset;
-		dataOffset += faceIndexDataByteCount;
-		int offsetOfFaceColors = dataOffset;
-		dataOffset += faceCount * 2;
-		int offsetOfTextureIndices = dataOffset;
-		dataOffset += textureCount * 6;
-		int offsetOfVertexXData = dataOffset;
-		dataOffset += vertexXDataByteCount;
-		int offsetOfVertexYData = dataOffset;
-		dataOffset += vertexYDataByteCount;
-		int offsetOfVertexZData = dataOffset;
-
-		stream1.position(offsetOfVertexFlags);
+		stream1.rewind();
 		final byte[] vertexFlags = readByteArray(stream1, vertexCount);
-
-		stream1.position(offsetOfVertexXData);
-		readVertexData(def, stream1, vertexFlags);
-
-		if (hasVertexSkins == 1)
-		{
-			stream1.position(offsetOfVertexSkins);
-			readVertexSkins(def, stream1, vertexCount);
-		}
-
-		stream1.position(offsetOfFaceColors);
-		readFaceColors(def, stream1, faceCount);
-
+		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
 		if (faceRenderPriority == 255) {
-			stream1.position(offsetOfFaceRenderPriorities);
 			def.setFaceRenderPriorities(readByteArray(stream1, faceCount));
 		}
 
-		if (hasFaceTransparencies == 1) {
-			stream1.position(offsetOfFaceTransparencies);
-			def.setFaceAlphas(readByteArray(stream1, faceCount));
-		}
-
-		if (hasPackedTransparencyVertexGroups == 1)
-		{
-			stream1.position(offsetOfPackedTransparencyVertexGroups);
+		if (hasPackedTransparencyVertexGroups == 1) {
 			readFaceSkins(def, stream1, faceCount);
 		}
 
-		stream1.position(offsetOfFaceTextureFlags);
 		readFaceTextureFlags(def, stream1, faceCount, isTextured);
 
-		stream1.position(offsetOfFaceIndexCompressionTypes);
-		final byte[] faceIndexCompressionTypes = readByteArray(stream1, faceCount);
-		stream1.position(offsetOfFaceIndexData);
-		readFaceIndexData(def, stream1, faceIndexCompressionTypes);
+		if (hasVertexSkins == 1) {
+			readVertexSkins(def, stream1, vertexCount);
+		}
 
-		stream1.position(offsetOfTextureIndices);
+		if (hasFaceTransparencies == 1) {
+			def.setFaceAlphas(readByteArray(stream1, faceCount));
+		}
+
+		readFaceIndexData(def, stream1, faceIndexCompressionTypes);
+		readFaceColors(def, stream1, faceCount);
 		readTextureTriangleVertexIndices(def, stream1, textureCount, true);
+		readVertexData(def, stream1, vertexFlags);
 
 		discardUnusedTextures(def, faceCount, isTextured);
 	}
