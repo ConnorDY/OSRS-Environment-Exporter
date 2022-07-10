@@ -73,21 +73,21 @@ public class ModelLoader
 		def = new ModelDefinition();
 		def.setId(modelId);
 
-		if (b[b.length - 1] == -3 && b[b.length - 2] == -1)
-		{
-			decodeType3(def, b);
-		}
-		else if (b[b.length - 1] == -2 && b[b.length - 2] == -1)
-		{
-			decodeType2(def, b);
-		}
-		else if (b[b.length - 1] == -1 && b[b.length - 2] == -1)
-		{
-			decodeType1(def, b);
-		}
-		else
-		{
-			decodeOldFormat(def, b);
+		ByteBuffer stream = ByteBuffer.wrap(b);
+		stream.position(stream.limit() - 2);
+
+		switch (stream.getShort()) {
+			case -3:
+				decodeType3(def, stream);
+				break;
+			case -2:
+				decodeType2(def, stream);
+				break;
+			case -1:
+				decodeType1(def, stream);
+				break;
+			default:
+				decodeOldFormat(def, stream);
 		}
 
 		def.computeNormals();
@@ -98,24 +98,39 @@ public class ModelLoader
 		return new ModelDefinition(def, false, false, false);
 	}
 
-	private void decodeType3(ModelDefinition def, byte[] inputData) {
-		ByteBuffer stream1 = ByteBuffer.wrap(inputData);
-		stream1.position(inputData.length - 26);
+	private void decodeType3(ModelDefinition def, ByteBuffer stream) {
+		stream.position(stream.limit() - 26);
+		readModelCommon(def, stream, false, true);
+	}
+
+	private void decodeType2(ModelDefinition def, ByteBuffer stream) {
+		stream.position(stream.limit() - 23);
+		readModelCommon(def, stream, true, true);
+	}
+
+	private void decodeType1(ModelDefinition def, ByteBuffer stream) {
+		stream.position(stream.limit() - 23);
+		readModelCommon(def, stream, false, false);
+	}
+
+	private void decodeOldFormat(ModelDefinition def, ByteBuffer stream) {
+		stream.position(stream.limit() - 18);
+		readModelCommon(def, stream, true, false);
+	}
+
+	private void readModelCommon(ModelDefinition def, ByteBuffer stream1, boolean isOldStyleTextures, boolean canHaveAnimayaGroups) {
 		int vertexCount = ByteBufferExtKt.readUnsignedShort(stream1);
 		int faceCount = ByteBufferExtKt.readUnsignedShort(stream1);
 		int textureCount = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasFaceRenderTypes = ByteBufferExtKt.readUnsignedByte(stream1);
+		int oldStyleIsTextured = isOldStyleTextures ? ByteBufferExtKt.readUnsignedByte(stream1) : 0;
+		int hasFaceRenderTypes = !isOldStyleTextures ? ByteBufferExtKt.readUnsignedByte(stream1) : 0;
 		int faceRenderPriority = ByteBufferExtKt.readUnsignedByte(stream1);
 		int hasFaceTransparencies = ByteBufferExtKt.readUnsignedByte(stream1);
 		int hasPackedTransparencyVertexGroups = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasFaceTextures = ByteBufferExtKt.readUnsignedByte(stream1);
+		int hasFaceTextures = !isOldStyleTextures ? ByteBufferExtKt.readUnsignedByte(stream1) : 0;
 		int hasVertexSkins = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasAnimayaGroups = ByteBufferExtKt.readUnsignedByte(stream1);
+		int hasAnimayaGroups = canHaveAnimayaGroups ? ByteBufferExtKt.readUnsignedByte(stream1) : 0;
 
-		readModelCommon(def, stream1, vertexCount, faceCount, textureCount, hasFaceRenderTypes, faceRenderPriority, hasFaceTransparencies, hasPackedTransparencyVertexGroups, hasFaceTextures, hasVertexSkins, hasAnimayaGroups, -1);
-	}
-
-	private void readModelCommon(ModelDefinition def, ByteBuffer stream1, int vertexCount, int faceCount, int textureCount, int hasFaceRenderTypes, int faceRenderPriority, int hasFaceTransparencies, int hasPackedTransparencyVertexGroups, int hasFaceTextures, int hasVertexSkins, int hasAnimayaGroups, int oldStyleIsTextured) {
 		def.setVertexCount(vertexCount);
 		def.setFaceCount(faceCount);
 		def.setTextureTriangleCount(textureCount);
@@ -126,7 +141,7 @@ public class ModelLoader
 
 		stream1.rewind();
 		if (textureCount > 0) {
-			if (oldStyleIsTextured != -1) {
+			if (isOldStyleTextures) {
 				def.setTextureRenderTypes(new byte[textureCount]);
 			} else {
 				def.setTextureRenderTypes(readByteArray(stream1, textureCount));
@@ -155,7 +170,7 @@ public class ModelLoader
 			readVertexSkins(def, stream1, vertexCount);
 		}
 
-		if (hasAnimayaGroups == 1 && oldStyleIsTextured == -1) {
+		if (hasAnimayaGroups == 1 && !isOldStyleTextures) {
 			readAnimayaGroups(stream1, vertexCount);
 		}
 
@@ -173,7 +188,7 @@ public class ModelLoader
 
 		readFaceColors(def, stream1, faceCount);
 
-		if (oldStyleIsTextured == -1) {
+		if (!isOldStyleTextures) {
 			readVertexData(def, stream1, vertexFlags);
 			readTextureTriangleVertexIndices(def, stream1, textureCount, false);
 		} else {
@@ -181,61 +196,11 @@ public class ModelLoader
 			readVertexData(def, stream1, vertexFlags);
 		}
 
-		if (hasAnimayaGroups == 1 && oldStyleIsTextured != -1) {
+		if (hasAnimayaGroups == 1 && isOldStyleTextures) {
 			readAnimayaGroups(stream1, vertexCount);
 		}
 
 		discardUnusedTextures(def, faceCount, oldStyleIsTextured);
-	}
-
-	private void decodeType2(ModelDefinition def, byte[] inputData)
-	{
-		ByteBuffer stream1 = ByteBuffer.wrap(inputData);
-		stream1.position(inputData.length - 23);
-		int vertexCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int faceCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int textureCount = ByteBufferExtKt.readUnsignedByte(stream1);
-		int isTextured = ByteBufferExtKt.readUnsignedByte(stream1);
-		int faceRenderPriority = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasFaceTransparencies = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasPackedTransparencyVertexGroups = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasVertexSkins = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasAnimayaGroups = ByteBufferExtKt.readUnsignedByte(stream1);
-
-		readModelCommon(def, stream1, vertexCount, faceCount, textureCount, 0, faceRenderPriority, hasFaceTransparencies, hasPackedTransparencyVertexGroups, 0, hasVertexSkins, hasAnimayaGroups, isTextured);
-	}
-
-	private void decodeType1(ModelDefinition def, byte[] inputData)
-	{
-		ByteBuffer stream1 = ByteBuffer.wrap(inputData);
-		stream1.position(inputData.length - 23);
-		int vertexCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int faceCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int textureCount = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasFaceRenderTypes = ByteBufferExtKt.readUnsignedByte(stream1);
-		int faceRenderPriority = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasFaceTransparencies = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasPackedTransparencyVertexGroups = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasFaceTextures = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasVertexSkins = ByteBufferExtKt.readUnsignedByte(stream1);
-
-		readModelCommon(def, stream1, vertexCount, faceCount, textureCount, hasFaceRenderTypes, faceRenderPriority, hasFaceTransparencies, hasPackedTransparencyVertexGroups, hasFaceTextures, hasVertexSkins, 0, -1);
-	}
-
-	private void decodeOldFormat(ModelDefinition def, byte[] inputData)
-	{
-		ByteBuffer stream1 = ByteBuffer.wrap(inputData);
-		stream1.position(inputData.length - 18);
-		int vertexCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int faceCount = ByteBufferExtKt.readUnsignedShort(stream1);
-		int textureCount = ByteBufferExtKt.readUnsignedByte(stream1);
-		int isTextured = ByteBufferExtKt.readUnsignedByte(stream1);
-		int faceRenderPriority = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasFaceTransparencies = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasPackedTransparencyVertexGroups = ByteBufferExtKt.readUnsignedByte(stream1);
-		int hasVertexSkins = ByteBufferExtKt.readUnsignedByte(stream1);
-
-		readModelCommon(def, stream1, vertexCount, faceCount, textureCount, 0, faceRenderPriority, hasFaceTransparencies, hasPackedTransparencyVertexGroups, 0, hasVertexSkins, 0, isTextured);
 	}
 
 	private void readFaceTextureFlags(ModelDefinition def, ByteBuffer stream, int faceCount, int isTextured) {
