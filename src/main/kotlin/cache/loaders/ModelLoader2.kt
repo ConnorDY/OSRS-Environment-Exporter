@@ -26,11 +26,11 @@ class ModelLoader2 @Inject constructor(
         val archive: Archive = index.archive(modelId and 0xffff) ?: return null
 
         val var6 = archive.files[0]
-        val b = var6?.data
+        val b = var6?.data!!
         cacheLibrary.index(IndexType.MODELS.id).unCache()
         modelDefinition = ModelDefinition()
         modelDefinition.id = modelId
-        if (b!![b.size - 1].toInt() == -3 && b[b.size - 2].toInt() == -1) {
+        if (b[b.size - 1].toInt() == -3 && b[b.size - 2].toInt() == -1) {
             decodeType3(modelDefinition, b)
         } else if (b[b.size - 1].toInt() == -2 && b[b.size - 2].toInt() == -1) {
             decodeType2(modelDefinition, b)
@@ -54,7 +54,7 @@ class ModelLoader2 @Inject constructor(
         val var6 = ByteBuffer.wrap(var1)
         val var55 = ByteBuffer.wrap(var1)
         val var51 = ByteBuffer.wrap(var1)
-        var2.position(var1!!.size - 23)
+        var2.position(var1.size - 23)
         Intrinsics.checkExpressionValueIsNotNull(var2, "var2")
         val verticeCount = var2.readUnsignedShort()
         val triangleCount = var2.readUnsignedShort()
