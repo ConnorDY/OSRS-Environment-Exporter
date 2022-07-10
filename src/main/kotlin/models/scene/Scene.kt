@@ -379,7 +379,7 @@ class Scene @Inject constructor(
                 z,
                 baseX,
                 baseY,
-                false,
+                true,
                 objectDefinition.contouredGround
             )
 

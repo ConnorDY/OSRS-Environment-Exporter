@@ -102,7 +102,7 @@ class Model(
         b.buffer.put(computeObj.toArray())
     }
 
-    private fun getTileHeight(regionLoader: RegionLoader, x: Int, y: Int, z: Int): Int {
+    private fun getTileHeight(regionLoader: RegionLoader, z: Int, x: Int, y: Int): Int {
         val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
         return r.tiles[z][x % 64][y % 64]?.height ?: return 0
     }
