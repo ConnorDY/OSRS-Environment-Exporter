@@ -110,9 +110,15 @@ open class ModelDefinition {
         tag = original.tag
         vertexCount = original.vertexCount
         faceCount = original.faceCount
-        faceVertexIndices1 = original.faceVertexIndices1
-        faceVertexIndices2 = original.faceVertexIndices2
-        faceVertexIndices3 = original.faceVertexIndices3
+        if (shallowCopyVerts) {
+            faceVertexIndices1 = original.faceVertexIndices1
+            faceVertexIndices2 = original.faceVertexIndices2
+            faceVertexIndices3 = original.faceVertexIndices3
+        } else {
+            faceVertexIndices1 = original.faceVertexIndices1?.clone()
+            faceVertexIndices2 = original.faceVertexIndices2?.clone()
+            faceVertexIndices3 = original.faceVertexIndices3?.clone()
+        }
         faceRenderTypes = original.faceRenderTypes
         faceRenderPriorities = original.faceRenderPriorities
         faceAlphas = original.faceAlphas
