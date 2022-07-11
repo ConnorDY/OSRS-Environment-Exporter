@@ -16,8 +16,11 @@ import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.components.Hoverable
 import controllers.worldRenderer.components.Selectable
-import controllers.worldRenderer.entities.*
-import controllers.worldRenderer.helpers.*
+import controllers.worldRenderer.entities.Entity
+import controllers.worldRenderer.entities.Model
+import controllers.worldRenderer.entities.StaticObject
+import controllers.worldRenderer.helpers.AntiAliasingMode
+import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffers
 import controllers.worldRenderer.helpers.GLUtil.glDeleteFrameBuffer
@@ -27,12 +30,12 @@ import controllers.worldRenderer.helpers.GLUtil.glDeleteVertexArrays
 import controllers.worldRenderer.helpers.GLUtil.glGenBuffers
 import controllers.worldRenderer.helpers.GLUtil.glGenVertexArrays
 import controllers.worldRenderer.helpers.GLUtil.glGetInteger
+import controllers.worldRenderer.helpers.GpuIntBuffer
+import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
-import javafx.scene.ImageCursor
-import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import models.HoverModel
 import models.HoverObject
@@ -42,7 +45,6 @@ import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 import kotlin.math.floor
 import kotlin.math.max
@@ -791,7 +793,12 @@ class Renderer @Inject constructor(
 
     private fun uploadScene() {
         modelBuffers.clearVertUv()
-        sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer, this)
+        try {
+            sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer, this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("out of space vertexBuffer size %d".format(modelBuffers.vertexBuffer.buffer.limit()))
+        }
         modelBuffers.flipVertUv()
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer

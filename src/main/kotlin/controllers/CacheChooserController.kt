@@ -11,7 +11,6 @@ import javafx.collections.ObservableList
 import javafx.collections.transformation.FilteredList
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
-import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Button
@@ -30,10 +29,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
 import java.io.*
-import java.lang.Exception
 import java.net.URL
-import java.util.*
-import javax.net.ssl.SSLEngine
 import javax.net.ssl.SSLHandshakeException
 
 
