@@ -709,22 +709,7 @@ class Renderer @Inject constructor(
               && (z != 3 || z3ChkBtnSelected)) {
                 for (x in 0 until scene.radius * REGION_SIZE) {
                     for (y in 0 until scene.radius * REGION_SIZE) {
-                        var tile: SceneTile? = scene.getTile(z, x, y)
-                        if (tile != null) {
-                            drawTile(tile)
-                        }
-//                    tile = scene.getTile(1, x, y)
-//                    if (tile != null) {
-//                        drawTile(tile)
-//                    }
-//                    tile = scene.getTile(2, x, y)
-//                    if (tile != null) {
-//                        drawTile(tile)
-//                    }
-//                    tile = scene.getTile(3, x, y)
-//                    if (tile != null) {
-//                        drawTile(tile)
-//                    }
+                        scene.getTile(z, x, y)?.let { drawTile(it) }
                     }
                 }
             }
