@@ -164,7 +164,10 @@ public class ModelLoader
 			readFaceSkins(def, stream1, faceCount);
 		}
 
-		readFaceTextureFlags(def, stream1, faceCount, oldStyleIsTextured);
+		byte[] faceTextureFlags = null;
+		if (oldStyleIsTextured == 1) {
+			faceTextureFlags = readByteArray(stream1, faceCount);
+		}
 
 		if (hasVertexSkins == 1) {
 			readVertexSkins(def, stream1, vertexCount);
@@ -187,6 +190,7 @@ public class ModelLoader
 		}
 
 		readFaceColors(def, stream1, faceCount);
+		processFaceTextureFlags(def, faceTextureFlags, faceCount, oldStyleIsTextured);
 
 		if (!isOldStyleTextures) {
 			readVertexData(def, stream1, vertexFlags);
@@ -203,8 +207,8 @@ public class ModelLoader
 		discardUnusedTextures(def, faceCount, oldStyleIsTextured);
 	}
 
-	private void readFaceTextureFlags(ModelDefinition def, ByteBuffer stream, int faceCount, int isTextured) {
-		if (isTextured != 1) return;
+	private void processFaceTextureFlags(ModelDefinition def, byte[] faceTextureFlags, int faceCount, int isTextured) {
+		if (faceTextureFlags == null) return;
 
 		final short[] faceColors = def.getFaceColors();
 
@@ -216,16 +220,16 @@ public class ModelLoader
 		boolean usesFaceTextures = false;
 
 		for (int i = 0; i < faceCount; ++i) {
-			int faceTextureFlags = ByteBufferExtKt.readUnsignedByte(stream);
-			if ((faceTextureFlags & 1) == 1) {
+			int faceTextureFlag = faceTextureFlags[i] & 0xFF;
+			if ((faceTextureFlag & 1) == 1) {
 				faceRenderTypes[i] = 1;
 				usesFaceRenderTypes = true;
 			} else {
 				faceRenderTypes[i] = 0;
 			}
 
-			if ((faceTextureFlags & 2) == 2) {
-				textureCoordinates[i] = (byte) (faceTextureFlags >> 2);
+			if ((faceTextureFlag & 2) == 2) {
+				textureCoordinates[i] = (byte) (faceTextureFlag >> 2);
 				faceTextures[i] = faceColors[i];
 				faceColors[i] = 127;
 				if (faceTextures[i] != -1) {
