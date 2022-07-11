@@ -20,10 +20,11 @@ class glTF {
 
   fun addMesh(vertices: ArrayList<FloatArray>, filename: String) {
     val bytes = ByteBuffer.allocate(vertices.size * 3 * 4)
+    val floatBuffer = bytes.asFloatBuffer()
 
     for (vertex in vertices) {
       for (value in vertex) {
-        bytes.asFloatBuffer().put(value)
+        floatBuffer.put(value)
       }
     }
 
