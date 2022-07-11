@@ -6,10 +6,7 @@ import cache.definitions.OverlayDefinition
 import cache.definitions.RegionDefinition
 import cache.definitions.UnderlayDefinition
 import cache.definitions.converters.ObjectToModelConverter
-import cache.loaders.OverlayLoader
-import cache.loaders.RegionLoader
-import cache.loaders.TextureLoader
-import cache.loaders.UnderlayLoader
+import cache.loaders.*
 import cache.utils.ColorPalette
 import com.google.inject.Inject
 import controllers.worldRenderer.entities.Entity
@@ -203,10 +200,10 @@ class Scene @Inject constructor(
                         if (underlayId <= 0 && overlayId <= 0) {
                             continue
                         }
-                        val swHeight = getTileHeight(z, baseX + xi, baseY + yi)
-                        val seHeight = getTileHeight(z, baseX + xi + 1, baseY + yi)
-                        val neHeight = getTileHeight(z, baseX + xi + 1, baseY + yi + 1)
-                        val nwHeight = getTileHeight(z, baseX + xi, baseY + yi + 1)
+                        val swHeight = regionLoader.getTileHeight(z, baseX + xi, baseY + yi)
+                        val seHeight = regionLoader.getTileHeight(z, baseX + xi + 1, baseY + yi)
+                        val neHeight = regionLoader.getTileHeight(z, baseX + xi + 1, baseY + yi + 1)
+                        val nwHeight = regionLoader.getTileHeight(z, baseX + xi, baseY + yi + 1)
                         val swColor = sr.tileColors[xi][yi]
                         val seColor = sr.tileColors[xi + 1][yi]
                         val neColor = sr.tileColors[xi + 1][yi + 1]
@@ -357,10 +354,10 @@ class Scene @Inject constructor(
         }
         val xSize = (x shl 7) + (width shl 6)
         val ySize = (y shl 7) + (length shl 6)
-        val swHeight = getTileHeight(z, baseX + var12, baseY + var14)
-        val seHeight = getTileHeight(z, baseX + var11, baseY + var14)
-        val neHeight = getTileHeight(z, baseX + var12, baseY + var13)
-        val nwHeight = getTileHeight(z, baseX + var11, baseY + var13)
+        val swHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var14)
+        val seHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var14)
+        val neHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var13)
+        val nwHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var13)
         val height = swHeight + seHeight + neHeight + nwHeight shr 2
 
         if (entity.height == height) return
@@ -393,16 +390,6 @@ class Scene @Inject constructor(
             entity.height = height
             (entity as StaticObject).setModel(entity.getModel())
         }
-    }
-
-    private fun getTileHeight(z: Int, x: Int, y: Int): Int {
-        val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tiles[z][x % 64][y % 64]?.height ?: return 0
-    }
-
-    private fun getTileSettings(z: Int, x: Int, y: Int): Int {
-        val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tileSettings[z][x % 64][y % 64]
     }
 
     private fun hslToRgb(var0: Int, var1: Int, var2: Int): Int {

@@ -30,18 +30,18 @@ class SceneRegionBuilder @Inject constructor(
 
         val worldX = baseX + x
         val worldY = baseY + y
-        val xHeightDiff = getTileHeight(z, worldX + 1, worldY) - getTileHeight(z, worldX - 1, worldY)
-        val yHeightDiff = getTileHeight(z, worldX, worldY + 1) - getTileHeight(z, worldX, worldY - 1)
+        val xHeightDiff = regionLoader.getTileHeight(z, worldX + 1, worldY) - regionLoader.getTileHeight(z, worldX - 1, worldY)
+        val yHeightDiff = regionLoader.getTileHeight(z, worldX, worldY + 1) - regionLoader.getTileHeight(z, worldX, worldY - 1)
         val diff = sqrt(xHeightDiff * xHeightDiff + yHeightDiff * yHeightDiff + 65536.toDouble()).toInt()
         val var16 = (xHeightDiff shl 8) / diff
         val var17 = 65536 / diff
         val var18 = (yHeightDiff shl 8) / diff
         val var19 = (var16 * -50 + var18 * -50 + var17 * -10) / var10 + 96
-        val color = (getTileSettings(z, worldX - 1, worldY) shr 2) +
-                (getTileSettings(z, worldX, worldY - 1) shr 2) +
-                (getTileSettings(z, worldX + 1, worldY) shr 3) +
-                (getTileSettings(z, worldX, worldY + 1) shr 3) +
-                (getTileSettings(z, worldX, worldY) shr 1)
+        val color = (regionLoader.getTileSettings(z, worldX - 1, worldY) shr 2) +
+                (regionLoader.getTileSettings(z, worldX, worldY - 1) shr 2) +
+                (regionLoader.getTileSettings(z, worldX + 1, worldY) shr 3) +
+                (regionLoader.getTileSettings(z, worldX, worldY + 1) shr 3) +
+                (regionLoader.getTileSettings(z, worldX, worldY) shr 1)
         sceneRegion.tileColors[x][y] = var19 - color
     }
 
@@ -134,10 +134,10 @@ class SceneRegionBuilder @Inject constructor(
                             if (underlayId <= 0 && overlayId <= 0) {
                                 continue
                             }
-                            val swHeight = getTileHeight(z, baseX + xi, baseY + yi)
-                            val seHeight = getTileHeight(z, baseX + xi + 1, baseY + yi)
-                            val neHeight = getTileHeight(z, baseX + xi + 1, baseY + yi + 1)
-                            val nwHeight = getTileHeight(z, baseX + xi, baseY + yi + 1)
+                            val swHeight = regionLoader.getTileHeight(z, baseX + xi, baseY + yi)
+                            val seHeight = regionLoader.getTileHeight(z, baseX + xi + 1, baseY + yi)
+                            val neHeight = regionLoader.getTileHeight(z, baseX + xi + 1, baseY + yi + 1)
+                            val nwHeight = regionLoader.getTileHeight(z, baseX + xi, baseY + yi + 1)
                             val swColor = sceneRegion.tileColors[xi][yi]
                             val seColor = sceneRegion.tileColors[xi + 1][yi]
                             val neColor = sceneRegion.tileColors[xi + 1][yi + 1]
@@ -313,10 +313,10 @@ class SceneRegionBuilder @Inject constructor(
             }
             val xSize = (x shl 7) + (width shl 6)
             val ySize = (y shl 7) + (length shl 6)
-            val swHeight = getTileHeight(z, baseX + var12, baseY + var14)
-            val seHeight = getTileHeight(z, baseX + var11, baseY + var14)
-            val neHeight = getTileHeight(z, baseX + var12, baseY + var13)
-            val nwHeight = getTileHeight(z, baseX + var11, baseY + var13)
+            val swHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var14)
+            val seHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var14)
+            val neHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var13)
+            val nwHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var13)
             val height = swHeight + seHeight + neHeight + nwHeight shr 2
             val orientationTransform = intArrayOf(1, 2, 4, 8)
             val xTransforms = intArrayOf(1, 0, -1, 0)
@@ -423,16 +423,6 @@ class SceneRegionBuilder @Inject constructor(
         }
 
         return StaticObject(objectDefinition, model, height, type, orientation)
-    }
-
-    private fun getTileHeight(z: Int, x: Int, y: Int): Int {
-        val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tiles[z][x % 64][y % 64]?.height ?: return 0
-    }
-
-    private fun getTileSettings(z: Int, x: Int, y: Int): Int {
-        val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tileSettings[z][x % 64][y % 64]
     }
 
     private fun hslToRgb(var0: Int, var1: Int, var2: Int): Int {
