@@ -20,7 +20,6 @@ dependencies {
     implementation(files("lib/jogamp-fat.jar"))
     implementation(files("lib/dockfx-0.4-SNAPSHOT.jar"))
     implementation("com.google.inject:guice:5.0.1")
-    implementation("com.jfoenix:jfoenix:9.0.10")
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
     implementation("org.apache.commons:commons-compress:1.21")
