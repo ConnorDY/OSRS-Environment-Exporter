@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
 <?import org.dockfx.DockPane?>
+<?import javafx.scene.control.CheckBox?>
 
 <AnchorPane prefHeight="800.0" prefWidth="1600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
     <children>
@@ -34,6 +35,10 @@
                     <Button fx:id="btnTest" mnemonicParsing="false" text="Export" />
                     <Button visible="false" fx:id="btnPlace" mnemonicParsing="false" text="Place Tool" />
                     <Button visible="false" fx:id="btnDelete" mnemonicParsing="false" text="Delete Tool" />
+                    <CheckBox fx:id="z0ChkBtn" mnemonicParsing="false" text="Z0" />
+                    <CheckBox fx:id="z1ChkBtn" mnemonicParsing="false" text="Z1" />
+                    <CheckBox fx:id="z2ChkBtn" mnemonicParsing="false" text="Z2" />
+                    <CheckBox fx:id="z3ChkBtn" mnemonicParsing="false" text="Z3" />
                     <Pane HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblStatus" text="Status: N/A" visible="false" />
                     <Label fx:id="lblFps" text="FPS: -1" />

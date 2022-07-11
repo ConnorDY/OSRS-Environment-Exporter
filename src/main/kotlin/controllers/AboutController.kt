@@ -20,16 +20,13 @@ class AboutController {
     @FXML
     fun initialize() {
         linkGithub.setOnAction {
-            Desktop.getDesktop().browse(URI("https://github.com/tpetrychyn/osrs-map-editor"))
+            Desktop.getDesktop().browse(URI("https://github.com/ConnorDY/OSRS-Environment-Exporter"))
         }
-        lblAbout.text = "This application serves as a personal learning project for the purpose of becoming familiar with the OSRS cache and discovering how Runescape is built.\n" +
+        lblAbout.text = "This application enables exporting Old School RuneScape environments so they can be used in 3D modeling programs like Blender.\n" +
                 "\n" +
-                "You are currently using a very very early development build so expect many bugs.\n" +
-                "\n" +
-                "Special thanks to:\n" +
-                "Displee - for their cache tool (github.com/Displee/rs-cache-library)\n" +
-                "Explv - for their interactive OSRS map (explv.github.io)\n" +
-                "Runestats - for their OSRS cache archive (archive.runestats.com/osrs)\n" +
-                "OpenOSRS - for their cache definitions and loaders (openosrs.com)"
+                "Credits:\n" +
+                "Original idea by Trillion (twitter.com/TrillionStudios).\n" +
+                "Based on @tpetrychyn's OSRS Map Editor (github.com/tpetrychyn/osrs-map-editor).\n" +
+                "Using changes from @partyvaper's fork (github.com/partyvaper/osrs-map-editor)."
     }
 }

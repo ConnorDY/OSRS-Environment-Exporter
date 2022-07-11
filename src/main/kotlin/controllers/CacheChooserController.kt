@@ -126,7 +126,7 @@ class CacheChooserController @Inject constructor(
                 lblErrorText.isVisible = false
                 try {
                     cacheLibraryProvider.setLibraryLocation("${txtCacheLocation.text}/cache")
-                }  catch (e: Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
                     lblErrorText.text = e.message
                     lblErrorText.isVisible = true
@@ -156,7 +156,7 @@ class CacheChooserController @Inject constructor(
 
         btnLaunch.setOnAction {
             lblStatusText.isVisible = true
-            lblStatusText.text = "Launching map editor please wait.."
+            lblStatusText.text = "Launching map editor... Please wait... (this may take a while)"
 
             GlobalScope.launch {
                 configuration.saveProp("last-cache-dir", txtCacheLocation.text)
@@ -172,7 +172,7 @@ class CacheChooserController @Inject constructor(
                 val jfxScene = Scene(root)
                 Platform.runLater {
                     val stage = Stage()
-                    stage.title = "Taylor's Map Editor"
+                    stage.title = "OSRS Environment Exporter"
                     stage.scene = jfxScene
                     stage.sizeToScene()
                     stage.x = -10.0

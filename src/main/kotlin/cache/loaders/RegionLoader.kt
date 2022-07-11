@@ -12,10 +12,10 @@ import java.nio.ByteBuffer
 
 class RegionLoader(
     private val cacheLibrary: CacheLibrary,
-    private val regionDefinitionCache: HashMap<Int, RegionDefinition> = HashMap()
+    private val regionDefinitionCache: HashMap<Int, RegionDefinition?> = HashMap()
 ) {
     fun get(regionId: Int): RegionDefinition? {
-        if (regionDefinitionCache[regionId] != null) {
+        if (regionDefinitionCache.containsKey(regionId)) {
             return regionDefinitionCache[regionId]
         }
 
@@ -25,7 +25,11 @@ class RegionLoader(
     private fun loadRegion(regionId: Int): RegionDefinition? {
         val regionX = (regionId shr 8) and 0xFF
         val regionY = regionId and 0xFF
-        val map = cacheLibrary.data(IndexType.MAPS.id, "m${regionX}_${regionY}") ?: return null
+        val map = cacheLibrary.data(IndexType.MAPS.id, "m${regionX}_${regionY}")
+        if (map == null) {
+            regionDefinitionCache[regionId] = null  // Negative cache entry
+            return null
+        }
 
         val regionDefinition = RegionDefinition(regionId)
         val inputStream = ByteBuffer.wrap(map)

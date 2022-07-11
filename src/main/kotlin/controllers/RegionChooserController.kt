@@ -45,7 +45,7 @@ class RegionChooserController @Inject constructor(
             }
 
             val radius: Int? = txtRadius.text.toIntOrNull()
-            if (radius == null || (radius < 1 || radius > 8)) {
+            if (radius == null || (radius < 1 || radius > 20)) {
                 lblErrorText.text = INVALID_RADIUS_TEXT
                 lblErrorText.isVisible = true
                 return@setOnAction

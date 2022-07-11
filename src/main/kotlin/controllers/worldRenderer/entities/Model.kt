@@ -5,6 +5,7 @@ import cache.definitions.RegionDefinition
 import cache.definitions.data.FaceNormal
 import cache.definitions.data.VertexNormal
 import cache.loaders.RegionLoader
+import cache.loaders.getTileHeight
 import controllers.worldRenderer.Constants
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.helpers.GpuIntBuffer
@@ -82,25 +83,6 @@ class Model(
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
-    override fun drawDynamic(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int) {
-        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + xOff
-        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + yOff
-
-        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
-        b.ensureCapacity(13)
-
-        computeObj.idx = modelBuffers.targetBufferOffset + modelBuffers.tempOffset
-        computeObj.flags = (radius shl 12) or orientationType.id
-        computeObj.x = x
-        computeObj.y = height
-        computeObj.z = z
-        computeObj.pickerId = -2
-        b.buffer.put(computeObj.toArray())
-
-        modelBuffers.addTempOffset(computeObj.size * 3)
-        modelBuffers.addTempUvOffset(computeObj.size * 3)
-    }
-
     fun recompute(modelBuffers: ModelBuffers, height: Int) {
         val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
         b.ensureCapacity(13)
@@ -119,11 +101,6 @@ class Model(
         computeObj.y = Int.MAX_VALUE
         computeObj.z = Int.MAX_VALUE
         b.buffer.put(computeObj.toArray())
-    }
-
-    private fun getTileHeight(regionLoader: RegionLoader, x: Int, y: Int): Int {
-        val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tiles[0][x % 64][y % 64]?.height ?: return 0
     }
 
     private fun calculateBoundsCylinder() {
@@ -160,6 +137,7 @@ class Model(
         xOff: Int,
         height: Int,
         yOff: Int,
+        z: Int,
         baseX: Int,
         baseY: Int,
         deepCopy: Boolean,
@@ -177,10 +155,10 @@ class Model(
 
         // refactored to find heights from cache
         // it would not contour tiles near edge of regions
-        val topLeft = getTileHeight(regionLoader, baseX + left, baseY + top)
-        val topRight = getTileHeight(regionLoader, baseX + right, baseY + top)
-        val bottomLeft = getTileHeight(regionLoader, baseX + left, baseY + bottom)
-        val bottomRight = getTileHeight(regionLoader, baseX + right, baseY + bottom)
+        val topLeft = regionLoader.getTileHeight(z, baseX + left, baseY + top)
+        val topRight = regionLoader.getTileHeight(z, baseX + right, baseY + top)
+        val bottomLeft = regionLoader.getTileHeight(z, baseX + left, baseY + bottom)
+        val bottomRight = regionLoader.getTileHeight(z, baseX + right, baseY + bottom)
         return if (height == topLeft && height == topRight && height == bottomLeft && height == bottomRight) {
             this
         } else {
@@ -218,10 +196,10 @@ class Model(
                     var16 = var14 and 127
                     var17 = var13 shr 7
                     var18 = var14 shr 7
-                    val first = getTileHeight(regionLoader, baseX + var17, baseY + var18)
-                    val second = getTileHeight(regionLoader, baseX + var17 + 1, baseY + var18)
-                    val third = getTileHeight(regionLoader, baseX + var17, baseY + var18 + 1)
-                    val fourth = getTileHeight(regionLoader, baseX + var17 + 1, baseY + var18 + 1)
+                    val first = regionLoader.getTileHeight(z, baseX + var17, baseY + var18)
+                    val second = regionLoader.getTileHeight(z, baseX + var17 + 1, baseY + var18)
+                    val third = regionLoader.getTileHeight(z, baseX + var17, baseY + var18 + 1)
+                    val fourth = regionLoader.getTileHeight(z, baseX + var17 + 1, baseY + var18 + 1)
                     var19 = first * (128 - var15) + second * var15 shr 7
                     var20 = third * (128 - var15) + var15 * fourth shr 7
                     var21 = var19 * (128 - var16) + var20 * var16 shr 7
@@ -240,10 +218,10 @@ class Model(
                         var17 = var15 and 127
                         var18 = var14 shr 7
                         var19 = var15 shr 7
-                        val first = getTileHeight(regionLoader, baseX + var18, baseY + var19)
-                        val second = getTileHeight(regionLoader, baseX + var18 + 1, baseY + var19)
-                        val third = getTileHeight(regionLoader, baseX + var18, baseY + var19 + 1)
-                        val fourth = getTileHeight(regionLoader, baseX + var18 + 1, baseY + var19 + 1)
+                        val first = regionLoader.getTileHeight(z, baseX + var18, baseY + var19)
+                        val second = regionLoader.getTileHeight(z, baseX + var18 + 1, baseY + var19)
+                        val third = regionLoader.getTileHeight(z, baseX + var18, baseY + var19 + 1)
+                        val fourth = regionLoader.getTileHeight(z, baseX + var18 + 1, baseY + var19 + 1)
                         var20 = first * (128 - var15) + second * var15 shr 7
                         var21 = third * (128 - var15) + var15 * fourth shr 7
                         val var22 = var20 * (128 - var17) + var21 * var17 shr 7
@@ -421,9 +399,9 @@ class Model(
     companion object {
         fun method2608(var0: Int, var1: Int): Int {
             var var1 = var1
-            var1 = (var0 and 127) * var1 shr 7
+            var1 = (var0 and 0x007f) * var1 shr 7
             var1 = bound2to126(var1)
-            return (var0 and 65408) + var1
+            return (var0 and 0xff80) + var1
         }
 
         fun bound2to126(var0: Int): Int {

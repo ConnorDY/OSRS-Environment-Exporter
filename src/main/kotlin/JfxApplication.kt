@@ -11,6 +11,7 @@ import javafx.stage.Stage
 import javafx.util.Callback
 import models.ModelsModule
 import controllers.worldRenderer.WorldRendererModule
+import kotlin.system.exitProcess
 
 
 class JfxApplication : Application() {
@@ -33,5 +34,10 @@ class JfxApplication : Application() {
         stage.title = "Choose game cache version"
         stage.scene = Scene(cacheChooserRoot)
         stage.show()
+    }
+
+    override fun stop() {
+        super.stop()
+        exitProcess(0)
     }
 }

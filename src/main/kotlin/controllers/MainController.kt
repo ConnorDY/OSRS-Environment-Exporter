@@ -3,18 +3,13 @@ package controllers
 import JfxApplication.Companion.injector
 import cache.loaders.LocationsLoader
 import cache.loaders.RegionLoader
-import com.displee.cache.CacheLibrary
 import com.google.inject.Inject
 import controllers.worldRenderer.WorldRendererController
 import javafx.animation.AnimationTimer
-import javafx.beans.binding.BooleanBinding
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.Menu
-import javafx.scene.control.MenuItem
+import javafx.scene.control.*
 import javafx.stage.Stage
 import javafx.util.Callback
 import models.DebugModel
@@ -22,7 +17,6 @@ import models.scene.Scene
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
-import java.io.File
 
 class MainController @Inject constructor(
     private val debugModel: DebugModel,
@@ -48,6 +42,18 @@ class MainController @Inject constructor(
     lateinit var btnTest: Button
 
     @FXML
+    lateinit var z0ChkBtn: CheckBox
+
+    @FXML
+    lateinit var z1ChkBtn: CheckBox
+
+    @FXML
+    lateinit var z2ChkBtn: CheckBox
+
+    @FXML
+    lateinit var z3ChkBtn: CheckBox
+
+    @FXML
     lateinit var btnPlace: Button
 
     @FXML
@@ -57,19 +63,6 @@ class MainController @Inject constructor(
 
     @FXML
     fun initialize() {
-        val topdownLoader = FXMLLoader()
-        topdownLoader.controllerFactory = Callback { type: Class<*>? ->
-            injector.getInstance(type)
-        }
-        topdownLoader.location = javaClass.getResource("/views/widgets/topdown-map-widget.fxml")
-        val topdownWidget = topdownLoader.load<Parent>()
-        val topdownNode = DockNode(topdownWidget)
-        topdownNode.title = "Topdown View"
-        topdownNode.setPrefSize(600.0, 600.0)
-        topdownNode.dock(dockPane, DockPos.LEFT)
-
-
-
         val worldLoader = FXMLLoader()
         worldLoader.controllerFactory = Callback { type: Class<*>? ->
             injector.getInstance(type)
@@ -80,51 +73,40 @@ class MainController @Inject constructor(
         worldRendererControllerController = worldLoader.getController()
         val worldRendererNode = DockNode(worldRendererWidget)
         worldRendererNode.setPrefSize(800.0, 600.0)
-        worldRendererNode.dock(dockPane, DockPos.RIGHT, topdownNode)
+        worldRendererNode.dock(dockPane, DockPos.RIGHT)
         worldRendererNode.dockTitleBar.isVisible = false
-
-
-        val objectPickerLoader = FXMLLoader()
-        objectPickerLoader.controllerFactory = Callback { type: Class<*>? ->
-            injector.getInstance(type)
-        }
-        objectPickerLoader.location = javaClass.getResource("/views/object-picker.fxml")
-        val objectPickerNode = DockNode(objectPickerLoader.load<Parent>())
-        val objectPickerController: ObjectPickerController = objectPickerLoader.getController()
-        objectPickerController.setRenderer(worldRendererControllerController.renderer)
-        objectPickerNode.title = "Object Picker"
-        objectPickerNode.setPrefSize(400.0, 400.0)
-        objectPickerNode.dock(dockPane, DockPos.BOTTOM)
-
-
-
-        val inspectorLoader = FXMLLoader()
-        inspectorLoader.controllerFactory = Callback { type: Class<*>? ->
-            injector.getInstance(type)
-        }
-        inspectorLoader.location = javaClass.getResource("/views/inspector.fxml")
-        val inspectorNode = DockNode(inspectorLoader.load<Parent>())
-        inspectorNode.title = "Inspector"
-        inspectorNode.setPrefSize(400.0, 400.0)
-        inspectorNode.dock(dockPane, DockPos.RIGHT, objectPickerNode)
-        inspectorNode.dockedProperty().not().and(inspectorNode.floatingProperty().not()).addListener { _, _, newValue ->
-            if (newValue) {
-                (inspectorLoader.getController() as InspectorController).onClose()
-            }
-        }
 
 
         DockPane.initializeDefaultUserAgentStylesheet()
 
         btnTest.setOnAction {
-            File("cache-181").copyRecursively(File("cache-out"), true)
-            val sr = scene.getRegion(0,0)!!
-//            sr.locationsDefinition.locations.removeIf { it.type == 10 || it.type == 11 || it.type == 22 }
-            locationsLoader.writeLocations(CacheLibrary("cache-out"), sr.locationsDefinition)
-            regionLoader.writeRegion(CacheLibrary("cache-out"), sr.regionDefinition)
-            CacheLibrary("cache-out").close()
-            println("saved")
+            worldRendererControllerController.renderer.exportScene()
+            println("Exported OBJ's")
+            worldRendererNode.title = "Exported."
+            Alert(Alert.AlertType.NONE, "Exported OBJ's.", ButtonType.OK).show()
         }
+
+        z0ChkBtn.setOnAction {
+            worldRendererControllerController.renderer.z0ChkBtnSelected = z0ChkBtn.isSelected
+            worldRendererControllerController.renderer.isSceneUploadRequired = true
+        }
+        z1ChkBtn.setOnAction {
+            worldRendererControllerController.renderer.z1ChkBtnSelected = z1ChkBtn.isSelected
+            worldRendererControllerController.renderer.isSceneUploadRequired = true
+        }
+        z2ChkBtn.setOnAction {
+            worldRendererControllerController.renderer.z2ChkBtnSelected = z2ChkBtn.isSelected
+            worldRendererControllerController.renderer.isSceneUploadRequired = true
+        }
+        z3ChkBtn.setOnAction {
+            worldRendererControllerController.renderer.z3ChkBtnSelected = z3ChkBtn.isSelected
+            worldRendererControllerController.renderer.isSceneUploadRequired = true
+        }
+
+        z0ChkBtn.isSelected = true
+        z1ChkBtn.isSelected = true
+        z2ChkBtn.isSelected = true
+        z3ChkBtn.isSelected = true
 
         menuChangeRegion.setOnAction {
             val regionChangeLoader = FXMLLoader()

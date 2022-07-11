@@ -41,7 +41,7 @@ class SceneUploader {
         uvOffset = 0
     }
 
-    fun upload(scene: Scene, vertexbuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
+    fun upload(scene: Scene, vertexbuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer, renderer: Renderer) {
         ++sceneId
         resetOffsets()
         vertexbuffer.clear()
@@ -283,7 +283,7 @@ class SceneUploader {
 //            // copy the computeObj so that we can maintain a reference to the vertexs on the GPU
 //            // but also modify the position of this specific model
 //            model.computeObj = model.computeObj.copy()
-            return -1
+//            return -1
         }
 
         model.computeObj.offset = offset

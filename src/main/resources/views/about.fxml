@@ -7,11 +7,11 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AboutController">
+<AnchorPane prefHeight="500.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AboutController">
    <children>
-      <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="25.0">
+      <VBox prefHeight="300.0" prefWidth="100.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="25.0" AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="25.0">
          <children>
-            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Taylor's Map Editor">
+            <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="OSRS Environment Exporter">
                <font>
                   <Font size="18.0" />
                </font>
@@ -23,10 +23,10 @@
             </Label>
             <HBox alignment="CENTER" prefHeight="2.0">
                <children>
-                  <Hyperlink fx:id="linkGithub" text="github.com/tpetrychyn/osrs-map-editor" />
+                  <Hyperlink fx:id="linkGithub" text="github.com/ConnorDY/OSRS-Environment-Exporter" />
                </children>
             </HBox>
-            <Label fx:id="lblAbout" alignment="CENTER" contentDisplay="CENTER" prefHeight="268.0" prefWidth="550.0" text="is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." textAlignment="JUSTIFY" wrapText="true">
+            <Label fx:id="lblAbout" alignment="CENTER" contentDisplay="CENTER" prefHeight="368.0" prefWidth="550.0" text="is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum." textAlignment="JUSTIFY" wrapText="true">
                <font>
                   <Font size="14.0" />
                </font>

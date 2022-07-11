@@ -24,25 +24,24 @@ class SceneRegionBuilder @Inject constructor(
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
 
-    fun calcTileColor(sceneRegion: SceneRegion, x: Int, y: Int, baseX: Int, baseY: Int) {
+    fun calcTileColor(sceneRegion: SceneRegion, z: Int, x: Int, y: Int, baseX: Int, baseY: Int) {
         val var9 = sqrt(5100.0).toInt()
         val var10 = var9 * 768 shr 8
-        val z = 0
 
         val worldX = baseX + x
         val worldY = baseY + y
-        val xHeightDiff = getTileHeight(z, worldX + 1, worldY) - getTileHeight(z, worldX - 1, worldY)
-        val yHeightDiff = getTileHeight(z, worldX, worldY + 1) - getTileHeight(z, worldX, worldY - 1)
+        val xHeightDiff = regionLoader.getTileHeight(z, worldX + 1, worldY) - regionLoader.getTileHeight(z, worldX - 1, worldY)
+        val yHeightDiff = regionLoader.getTileHeight(z, worldX, worldY + 1) - regionLoader.getTileHeight(z, worldX, worldY - 1)
         val diff = sqrt(xHeightDiff * xHeightDiff + yHeightDiff * yHeightDiff + 65536.toDouble()).toInt()
         val var16 = (xHeightDiff shl 8) / diff
         val var17 = 65536 / diff
         val var18 = (yHeightDiff shl 8) / diff
         val var19 = (var16 * -50 + var18 * -50 + var17 * -10) / var10 + 96
-        val color = (getTileSettings(z, worldX - 1, worldY) shr 2) +
-                (getTileSettings(z, worldX, worldY - 1) shr 2) +
-                (getTileSettings(z, worldX + 1, worldY) shr 3) +
-                (getTileSettings(z, worldX, worldY + 1) shr 3) +
-                (getTileSettings(z, worldX, worldY) shr 1)
+        val color = (regionLoader.getTileSettings(z, worldX - 1, worldY) shr 2) +
+                (regionLoader.getTileSettings(z, worldX, worldY - 1) shr 2) +
+                (regionLoader.getTileSettings(z, worldX + 1, worldY) shr 3) +
+                (regionLoader.getTileSettings(z, worldX, worldY + 1) shr 3) +
+                (regionLoader.getTileSettings(z, worldX, worldY) shr 1)
         sceneRegion.tileColors[x][y] = var19 - color
     }
 
@@ -68,7 +67,7 @@ class SceneRegionBuilder @Inject constructor(
         for (z in 0 until RegionDefinition.Z) {
             for (x in 0 until REGION_SIZE + 1) {
                 for (y in 0 until REGION_SIZE + 1) {
-                    calcTileColor(sceneRegion, x, y, baseX, baseY)
+                    calcTileColor(sceneRegion, z, x, y, baseX, baseY)
                 }
             }
             for (xi in -blend * 2 until REGION_SIZE + blend * 2) {
@@ -135,16 +134,20 @@ class SceneRegionBuilder @Inject constructor(
                             if (underlayId <= 0 && overlayId <= 0) {
                                 continue
                             }
-                            val swHeight = getTileHeight(z, baseX + xi, baseY + yi)
-                            val seHeight = getTileHeight(z, baseX + xi + 1, baseY + yi)
-                            val neHeight = getTileHeight(z, baseX + xi + 1, baseY + yi + 1)
-                            val nwHeight = getTileHeight(z, baseX + xi, baseY + yi + 1)
+                            val swHeight = regionLoader.getTileHeight(z, baseX + xi, baseY + yi)
+                            val seHeight = regionLoader.getTileHeight(z, baseX + xi + 1, baseY + yi)
+                            val neHeight = regionLoader.getTileHeight(z, baseX + xi + 1, baseY + yi + 1)
+                            val nwHeight = regionLoader.getTileHeight(z, baseX + xi, baseY + yi + 1)
                             val swColor = sceneRegion.tileColors[xi][yi]
                             val seColor = sceneRegion.tileColors[xi + 1][yi]
                             val neColor = sceneRegion.tileColors[xi + 1][yi + 1]
                             val nwColor = sceneRegion.tileColors[xi][yi + 1]
                             var rgb = -1
                             var underlayHsl = -1
+
+                            if (runningMultiplier == 0) runningMultiplier = 1
+                            if (runningNumber == 0) runningNumber = 1
+
                             if (underlayId > 0 && runningMultiplier > 0 && runningNumber > 0) {
                                 val avgHue = runningHues * 256 / runningMultiplier
                                 val avgSat = runningSat / runningNumber
@@ -310,55 +313,69 @@ class SceneRegionBuilder @Inject constructor(
             }
             val xSize = (x shl 7) + (width shl 6)
             val ySize = (y shl 7) + (length shl 6)
-            val swHeight = getTileHeight(z, baseX + var12, baseY + var14)
-            val seHeight = getTileHeight(z, baseX + var11, baseY + var14)
-            val neHeight = getTileHeight(z, baseX + var12, baseY + var13)
-            val nwHeight = getTileHeight(z, baseX + var11, baseY + var13)
+            val swHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var14)
+            val seHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var14)
+            val neHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var13)
+            val nwHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var13)
             val height = swHeight + seHeight + neHeight + nwHeight shr 2
             val orientationTransform = intArrayOf(1, 2, 4, 8)
             val xTransforms = intArrayOf(1, 0, -1, 0)
             val yTransforms = intArrayOf(0, -1, 0, 1)
 
             val staticObject =
-                getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, baseX, baseY)
+                getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, z, baseX, baseY)
                     ?: return@forEach
 
             if (loc.type == LocationType.LENGTHWISE_WALL.id) {
                 sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
             }
 
-            if (loc.type == LocationType.WALL_CORNER.id) {
+            else if (loc.type == LocationType.WALL_CORNER.id) {
                 val entity1 =
-                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, baseX, baseY)
+                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)
                 val entity2 =
-                    getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, baseX, baseY)
+                    getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)
                 sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
             }
 
-            if (loc.type in LocationType.INTERACTABLE_WALL.id .. LocationType.DIAGONAL_WALL.id) {
+            else if (loc.type in LocationType.INTERACTABLE_WALL.id .. LocationType.DIAGONAL_WALL.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
+                return@forEach;
             }
 
-            if (loc.type == LocationType.FLOOR_DECORATION.id) {
+            else if (loc.type == LocationType.FLOOR_DECORATION.id) {
                 sceneRegion.newFloorDecoration(z, x, y, staticObject)
             }
 
-            if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
+            else if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
                 sceneRegion.newWallDecoration(z, x, y, staticObject)
             }
 
-            if (loc.type == LocationType.INTERACTABLE.id) {
+            else if (loc.type == LocationType.INTERACTABLE.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
-            if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
+            else if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
                 staticObject.getModel().orientationType = OrientationType.DIAGONAL
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
+            else if (loc.type == LocationType.TRIANGULAR_CORNER.id) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc);
+            }
+
+            else if (loc.type == LocationType.RECTANGULAR_CORNER.id) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc);
+            }
+
             // Other objects ?
-            if (loc.type in 12..21) {
+            else if (loc.type in 12..21) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
+                println("Load new object? ${loc.type}")
+            }
+
+            else {
+                println("SceneRegionLoader Loading something new? ${loc.type}")
             }
         }
 
@@ -381,6 +398,7 @@ class SceneRegionBuilder @Inject constructor(
         xSize: Int,
         height: Int,
         ySize: Int,
+        zPlane: Int,
         baseX: Int,
         baseY: Int
     ): Entity? {
@@ -396,6 +414,7 @@ class SceneRegionBuilder @Inject constructor(
                 xSize,
                 height,
                 ySize,
+                zPlane,
                 baseX,
                 baseY,
                 true,
@@ -404,16 +423,6 @@ class SceneRegionBuilder @Inject constructor(
         }
 
         return StaticObject(objectDefinition, model, height, type, orientation)
-    }
-
-    private fun getTileHeight(z: Int, x: Int, y: Int): Int {
-        val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tiles[z][x % 64][y % 64]?.height ?: return 0
-    }
-
-    private fun getTileSettings(z: Int, x: Int, y: Int): Int {
-        val r: RegionDefinition = regionLoader.findRegionForWorldCoordinates(x, y) ?: return 0
-        return r.tileSettings[z][x % 64][y % 64]
     }
 
     private fun hslToRgb(var0: Int, var1: Int, var2: Int): Int {
@@ -444,18 +453,17 @@ class SceneRegionBuilder @Inject constructor(
             }
         }
 
-        fun method4220(var0: Int, var1: Int): Int {
-            var var1 = var1
-            return if (var0 == -1) {
+        fun method4220(rgb: Int, color: Int): Int {
+            return if (rgb == -1) {
                 12345678
             } else {
-                var1 = (var0 and 127) * var1 / 128
+                var var1 = (rgb and 0x7f) * color / 0x80
                 if (var1 < 2) {
                     var1 = 2
-                } else if (var1 > 126) {
-                    var1 = 126
+                } else if (var1 > 0x7e) {
+                    var1 = 0x7e
                 }
-                (var0 and 65408) + var1
+                (rgb and 0xff80) + var1
             }
         }
 

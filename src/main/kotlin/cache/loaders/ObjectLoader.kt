@@ -186,6 +186,7 @@ class ObjectLoader @Inject constructor(
             def.contouredGround = inputStream.readUnsignedByte() * 256
         } else if (opcode == 82) {
             def.mapAreaId = inputStream.readUnsignedShort()
+        } else if (opcode == 89) {
         } else if (opcode == 92) {
             var transformVarbit: Int = inputStream.readUnsignedShort()
             if (transformVarbit == 0xFFFF) {
