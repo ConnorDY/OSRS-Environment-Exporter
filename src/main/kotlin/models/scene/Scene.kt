@@ -67,6 +67,7 @@ class Scene @Inject constructor(
                 for (y in 0 until REGION_SIZE + 1) {
                     sceneRegionBuilder.calcTileColor(
                         sceneRegion,
+                        z,
                         x,
                         y,
                         sceneRegion.regionDefinition.baseX,

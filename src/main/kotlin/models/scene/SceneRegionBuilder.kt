@@ -24,10 +24,9 @@ class SceneRegionBuilder @Inject constructor(
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
 
-    fun calcTileColor(sceneRegion: SceneRegion, x: Int, y: Int, baseX: Int, baseY: Int) {
+    fun calcTileColor(sceneRegion: SceneRegion, z: Int, x: Int, y: Int, baseX: Int, baseY: Int) {
         val var9 = sqrt(5100.0).toInt()
         val var10 = var9 * 768 shr 8
-        val z = 0
 
         val worldX = baseX + x
         val worldY = baseY + y
@@ -68,7 +67,7 @@ class SceneRegionBuilder @Inject constructor(
         for (z in 0 until RegionDefinition.Z) {
             for (x in 0 until REGION_SIZE + 1) {
                 for (y in 0 until REGION_SIZE + 1) {
-                    calcTileColor(sceneRegion, x, y, baseX, baseY)
+                    calcTileColor(sceneRegion, z, x, y, baseX, baseY)
                 }
             }
             for (xi in -blend * 2 until REGION_SIZE + blend * 2) {
