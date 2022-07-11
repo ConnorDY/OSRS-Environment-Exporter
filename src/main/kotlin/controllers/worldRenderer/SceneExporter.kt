@@ -18,8 +18,8 @@ class SceneExporter {
     var objt: Int
     var objm: Int
     var scale: Float
-    var materials: Int
-    var textures: Int
+    var materials: Boolean
+    var textures: Boolean
 
     fun exportSceneToFile(scene: Scene, renderer: Renderer) {
         Intrinsics.checkParameterIsNotNull(scene, "scene")
@@ -29,23 +29,15 @@ class SceneExporter {
         tfile.close()
         mfile.close()
         colourfile.close()
-        if (textures == 1) {
+        if (textures) {
             tfile = File("./OBJ/temp.obj").printWriter()
         }
-        if (materials == 1) {
+        if (materials) {
             mfile = File("./OBJ/materials.obj").printWriter()
         }
-        this.colourfile = File("./OBJ/col.mtl").printWriter()
-        for (rx in 0 until 98) {
-            if (rx != 54) {
-                colourfile.write("newmtl t$rx\n")
-                colourfile.write(" Kd 1.000 1.000 1.000\n")
-                colourfile.write(" d 1.0\n")
-                colourfile.write(" illum 2\n")
-                colourfile.write(" map_Kd ./Textures/$rx.png\n")
-            }
-        }
-        if (materials == 1) {
+        colourfile = File("./OBJ/col.mtl").printWriter()
+        writeMaterials(colourfile)
+        if (materials) {
             mfile.write("mtllib col.mtl\n")
         }
         ++sceneId
@@ -72,56 +64,40 @@ class SceneExporter {
         process.waitFor()
     }
 
+    private fun writeMaterials(file: PrintWriter) {
+        for (rx in 0 until 98) {
+            if (rx != 54) {
+                file.write(
+                    """newmtl t$rx
+ Kd 1.000 1.000 1.000
+ d 1.0
+ illum 2
+ map_Kd ./Textures/$rx.png
+"""
+                )
+            }
+        }
+    }
+
     fun upload(tile: SceneTile) {
-        val sceneTilePaint = tile.tilePaint
-        if (sceneTilePaint != null) {
-            this.upload(sceneTilePaint)
-        }
-        val sceneTileModel = tile.tileModel
-        if (sceneTileModel != null) {
-            this.upload(sceneTileModel)
-        }
-        val wall = tile.wall
-        if (wall != null) {
-            var entity = wall.entity
-            if (entity is StaticObject) {
-                uploadModel(entity)
-            }
-            entity = wall.entity2
-            if (entity is StaticObject) {
-                uploadModel(entity)
-            }
-        }
-        val wallDecoration = tile.wallDecoration
-        if (wallDecoration != null) {
-            val entity = wallDecoration.entity
-            if (entity is StaticObject) {
-                uploadModel(entity)
-            }
-        }
-        val floorDecoration = tile.floorDecoration
-        if (floorDecoration != null) {
-            val entity = floorDecoration.entity
-            if (entity is StaticObject) {
-                uploadModel(entity)
-            }
-        }
-        for (gameObject in tile.gameObjects) {
-            val entity = gameObject.entity
-            if (entity is StaticObject) {
-                uploadModel(entity)
-            }
-        }
+        tile.tilePaint?.let { upload(it) }
+        tile.tileModel?.let { upload(it) }
+        uploadIfStatic(tile.wall?.entity)
+        uploadIfStatic(tile.wall?.entity2)
+        uploadIfStatic(tile.wallDecoration?.entity)
+        uploadIfStatic(tile.floorDecoration?.entity)
+        tile.gameObjects.map { it.entity }.forEach(::uploadIfStatic)
+    }
+
+    private fun uploadIfStatic(entity: Entity?) {
+        if (entity is StaticObject) uploadModel(entity)
     }
 
     fun writevertex(v1: Int, v2: Int, v3: Int, c: Int) {
         if (objm != objcount) {
             objm = objcount
             mfile.write(
-                """
-    o obj${objcount}
-    
-    """.trimIndent()
+                "o obj${objcount}\n"
             )
         }
         ++vertexcountt
@@ -132,10 +108,7 @@ class SceneExporter {
         if (objt != objcount) {
             objt = objcount
             tfile.write(
-                """
-    o obj${objcount}
-    
-    """.trimIndent()
+                "o obj${objcount}\n"
             )
         }
         ++vertexcountc
@@ -145,30 +118,26 @@ class SceneExporter {
 
     fun writetexture(v1: Float, v2: Float, v3: Float, c: Float) {
         mfile.write(
-            """vt $v2 ${1f - v3}
-"""
+            "vt $v2 ${1f - v3}\n"
         )
     }
 
     fun writecolour(col: Int) {
         val color = rs2hsbToColor(col)
         colourfile.write(
-            """  Kd ${(color.red.toFloat() / 255.0f).toDouble()} ${(color.green.toFloat() / 255.0f).toDouble()} ${(color.blue.toFloat() / 255.0f).toDouble()}
-"""
+            "  Kd ${(color.red.toFloat() / 255.0f).toDouble()} ${(color.green.toFloat() / 255.0f).toDouble()} ${(color.blue.toFloat() / 255.0f).toDouble()}\n"
         )
     }
 
     fun write3facem() {
         mfile.write(
-            """f ${vertexcountt - 2}/${vertexcountt - 2} ${vertexcountt - 1}/${vertexcountt - 1} ${vertexcountt}/${vertexcountt}
-"""
+            "f ${vertexcountt - 2}/${vertexcountt - 2} ${vertexcountt - 1}/${vertexcountt - 1} ${vertexcountt}/${vertexcountt}\n"
         )
     }
 
     fun write3facet() {
         tfile.write(
-            """f ${vertexcountc - 2} ${vertexcountc - 1} ${vertexcountc}
-"""
+            "f ${vertexcountc - 2} ${vertexcountc - 1} ${vertexcountc}\n"
         )
     }
 
@@ -193,7 +162,7 @@ class SceneExporter {
             val vertexBy = 128
             if (tile.texture != -1) {
                 val tex = tile.texture.toFloat() + 1.0f
-                if (materials == 1) {
+                if (materials) {
                     writevertex(
                         vertexAx + tile.computeObj.x,
                         neHeight + tile.computeObj.y,
@@ -216,10 +185,7 @@ class SceneExporter {
                     writetexture(tex, 0.0f, 1.0f, 0.0f)
                     writetexture(tex, 1.0f, 0.0f, 0.0f)
                     mfile.write(
-                        """
-    usemtl t${(tex - 1f).toInt()}
-    
-    """.trimIndent()
+                        "usemtl t${(tex - 1f).toInt()}\n"
                     )
                     write3facem()
                     writevertex(
@@ -244,14 +210,11 @@ class SceneExporter {
                     writetexture(tex, 1.0f, 0.0f, 0.0f)
                     writetexture(tex, 0.0f, 1.0f, 0.0f)
                     mfile.write(
-                        """
-    usemtl t${(tex - 1f).toInt()}
-    
-    """.trimIndent()
+                        "usemtl t${(tex - 1f).toInt()}\n"
                     )
                     write3facem()
                 }
-            } else if (textures == 1) {
+            } else if (textures) {
                 writevertexcolor(
                     vertexAx + tile.computeObj.x,
                     neHeight + tile.computeObj.y,
@@ -295,7 +258,6 @@ class SceneExporter {
     }
 
     fun upload(tileModel: TileModel) {
-        Intrinsics.checkParameterIsNotNull(tileModel, "tileModel")
         val faceX = tileModel.faceX
         val faceY = tileModel.faceY
         val faceZ = tileModel.faceZ
@@ -324,7 +286,7 @@ class SceneExporter {
                 if (triangleTextures != null) {
                     if (triangleTextures[i] != -1) {
                         val tex = triangleTextures[i].toFloat() + 1.0f
-                        if (materials == 1) {
+                        if (materials) {
                             writevertex(
                                 vertexXA + tileModel.computeObj.x,
                                 vertexY[triangleA] + tileModel.computeObj.y,
@@ -362,14 +324,11 @@ class SceneExporter {
                                 0.0f
                             )
                             mfile.write(
-                                """
-    usemtl t${(tex - 1f).toInt()}
-    
-    """.trimIndent()
+                                "usemtl t${(tex - 1f).toInt()}\n"
                             )
                             write3facem()
                         }
-                    } else if (textures == 1) {
+                    } else if (textures) {
                         writevertexcolor(
                             vertexXA + tileModel.computeObj.x,
                             vertexY[triangleA] + tileModel.computeObj.y,
@@ -390,7 +349,7 @@ class SceneExporter {
                         )
                         write3facet()
                     }
-                } else if (textures == 1) {
+                } else if (textures) {
                     writevertexcolor(
                         vertexXA + tileModel.computeObj.x,
                         vertexY[triangleA] + tileModel.computeObj.y,
@@ -470,7 +429,7 @@ class SceneExporter {
                     val vf = var31
                     if (var31 != null && faceTextures[face].toInt() != -1) {
                         val texture = faceTextures[face].toFloat() + 1.0f
-                        if (materials == 1) {
+                        if (materials) {
                             var a = vertexX[triangleA]
                             var b = vertexY[triangleA]
                             var c = vertexZ[triangleA]
@@ -505,10 +464,7 @@ class SceneExporter {
                             var10002 = uf[2]
                             writetexture(texture, var10002, vf[2], 0.0f)
                             mfile.write(
-                                """
-    usemtl t${(texture - 1f).toInt()}
-    
-    """.trimIndent()
+                                "usemtl t${(texture - 1f).toInt()}\n"
                             )
                             write3facem()
                         }
@@ -516,7 +472,7 @@ class SceneExporter {
                     }
                 }
             }
-            if (textures == 1) {
+            if (textures) {
                 var a = vertexX[triangleA]
                 var b = vertexY[triangleA]
                 var c = vertexZ[triangleA]
@@ -546,7 +502,7 @@ class SceneExporter {
                 )
                 write3facet()
             }
-        } else if (textures == 1) {
+        } else if (textures) {
             var a = vertexX[triangleA]
             var b = vertexY[triangleA]
             var c = vertexZ[triangleA]
@@ -585,7 +541,7 @@ class SceneExporter {
         objt = -1
         objm = -1
         scale = 100.0f
-        materials = 1
-        textures = 1
+        materials = true
+        textures = true
     }
 }
