@@ -283,71 +283,49 @@ class SceneExporter {
                 val vertexZB = vertexZ[triangleB]
                 val vertexXC = vertexX[triangleC]
                 val vertexZC = vertexZ[triangleC]
-                if (triangleTextures != null) {
-                    if (triangleTextures[i] != -1) {
-                        val tex = triangleTextures[i].toFloat() + 1.0f
-                        if (materials) {
-                            writevertex(
-                                vertexXA + tileModel.computeObj.x,
-                                vertexY[triangleA] + tileModel.computeObj.y,
-                                vertexZA + tileModel.computeObj.z,
-                                colorA
-                            )
-                            writevertex(
-                                vertexXB + tileModel.computeObj.x,
-                                vertexY[triangleB] + tileModel.computeObj.y,
-                                vertexZB + tileModel.computeObj.z,
-                                colorB
-                            )
-                            writevertex(
-                                vertexXC + tileModel.computeObj.x,
-                                vertexY[triangleC] + tileModel.computeObj.y,
-                                vertexZC + tileModel.computeObj.z,
-                                colorC
-                            )
-                            writetexture(
-                                tex,
-                                vertexXA.toFloat() / 128.0f,
-                                vertexZA.toFloat() / 128.0f,
-                                0.0f
-                            )
-                            writetexture(
-                                tex,
-                                vertexXB.toFloat() / 128.0f,
-                                vertexZB.toFloat() / 128.0f,
-                                0.0f
-                            )
-                            writetexture(
-                                tex,
-                                vertexXC.toFloat() / 128.0f,
-                                vertexZC.toFloat() / 128.0f,
-                                0.0f
-                            )
-                            mfile.write(
-                                "usemtl t${(tex - 1f).toInt()}\n"
-                            )
-                            write3facem()
-                        }
-                    } else if (textures) {
-                        writevertexcolor(
+                if (triangleTextures != null && triangleTextures[i] != -1) {
+                    val tex = triangleTextures[i].toFloat() + 1.0f
+                    if (materials) {
+                        writevertex(
                             vertexXA + tileModel.computeObj.x,
                             vertexY[triangleA] + tileModel.computeObj.y,
                             vertexZA + tileModel.computeObj.z,
                             colorA
                         )
-                        writevertexcolor(
+                        writevertex(
                             vertexXB + tileModel.computeObj.x,
                             vertexY[triangleB] + tileModel.computeObj.y,
                             vertexZB + tileModel.computeObj.z,
                             colorB
                         )
-                        writevertexcolor(
+                        writevertex(
                             vertexXC + tileModel.computeObj.x,
                             vertexY[triangleC] + tileModel.computeObj.y,
                             vertexZC + tileModel.computeObj.z,
                             colorC
                         )
-                        write3facet()
+                        writetexture(
+                            tex,
+                            vertexXA.toFloat() / 128.0f,
+                            vertexZA.toFloat() / 128.0f,
+                            0.0f
+                        )
+                        writetexture(
+                            tex,
+                            vertexXB.toFloat() / 128.0f,
+                            vertexZB.toFloat() / 128.0f,
+                            0.0f
+                        )
+                        writetexture(
+                            tex,
+                            vertexXC.toFloat() / 128.0f,
+                            vertexZC.toFloat() / 128.0f,
+                            0.0f
+                        )
+                        mfile.write(
+                            "usemtl t${(tex - 1f).toInt()}\n"
+                        )
+                        write3facem()
                     }
                 } else if (textures) {
                     writevertexcolor(
@@ -472,37 +450,8 @@ class SceneExporter {
                     }
                 }
             }
-            if (textures) {
-                var a = vertexX[triangleA]
-                var b = vertexY[triangleA]
-                var c = vertexZ[triangleA]
-                writevertexcolor(
-                    a + model.computeObj.x,
-                    b + model.computeObj.y,
-                    c + model.computeObj.z,
-                    alpha or priority or color1
-                )
-                a = vertexX[triangleB]
-                b = vertexY[triangleB]
-                c = vertexZ[triangleB]
-                writevertexcolor(
-                    a + model.computeObj.x,
-                    b + model.computeObj.y,
-                    c + model.computeObj.z,
-                    alpha or priority or color2
-                )
-                a = vertexX[triangleC]
-                b = vertexY[triangleC]
-                c = vertexZ[triangleC]
-                writevertexcolor(
-                    a + model.computeObj.x,
-                    b + model.computeObj.y,
-                    c + model.computeObj.z,
-                    alpha or priority or color3
-                )
-                write3facet()
-            }
-        } else if (textures) {
+        }
+        if (textures) {
             var a = vertexX[triangleA]
             var b = vertexY[triangleA]
             var c = vertexZ[triangleA]
