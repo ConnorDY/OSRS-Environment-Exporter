@@ -403,9 +403,9 @@ class Model(
     companion object {
         fun method2608(var0: Int, var1: Int): Int {
             var var1 = var1
-            var1 = (var0 and 127) * var1 shr 7
+            var1 = (var0 and 0x007f) * var1 shr 7
             var1 = bound2to126(var1)
-            return (var0 and 65408) + var1
+            return (var0 and 0xff80) + var1
         }
 
         fun bound2to126(var0: Int): Int {
