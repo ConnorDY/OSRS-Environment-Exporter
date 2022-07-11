@@ -70,6 +70,7 @@ class SceneExporter {
                 file.write(
                     """newmtl t$rx
  Kd 1.000 1.000 1.000
+ Ks 0 0 0
  d 1.0
  illum 2
  map_Kd ./Textures/$rx.png
