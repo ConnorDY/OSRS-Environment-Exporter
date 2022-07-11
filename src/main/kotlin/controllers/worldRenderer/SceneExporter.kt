@@ -41,13 +41,8 @@ class SceneExporter {
         for (rx in 0 until scene.radius) {
             for (ry in 0 until scene.radius) {
                 val region = scene.getRegion(rx, ry) ?: continue
-                for (z in 0 until 4) {
-                    if (
-                        (z != 0 || renderer.z0ChkBtnSelected) &&
-                        (z != 1 || renderer.z1ChkBtnSelected) &&
-                        (z != 2 || renderer.z2ChkBtnSelected) &&
-                        (z != 3 || renderer.z3ChkBtnSelected)
-                    ) {
+                renderer.zLevelsSelected.forEachIndexed { z, visible ->
+                    if (visible) {
                         for (x in 0 until 64) {
                             for (y in 0 until 64) {
                                 val tile = region.tiles[z][x][y] ?: continue

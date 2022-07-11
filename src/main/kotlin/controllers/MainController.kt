@@ -61,6 +61,11 @@ class MainController @Inject constructor(
 
     private lateinit var worldRendererControllerController: WorldRendererController
 
+    private fun onZLevelSelected(z: Int, isSelected: Boolean) {
+        worldRendererControllerController.renderer.zLevelsSelected[z] = isSelected
+        worldRendererControllerController.renderer.isSceneUploadRequired = true
+    }
+
     @FXML
     fun initialize() {
         val worldLoader = FXMLLoader()
@@ -88,20 +93,16 @@ class MainController @Inject constructor(
 
         // Z checkbox handlers
         z0ChkBtn.setOnAction {
-            worldRendererControllerController.renderer.z0ChkBtnSelected = z0ChkBtn.isSelected
-            worldRendererControllerController.renderer.isSceneUploadRequired = true
+            onZLevelSelected(0, z0ChkBtn.isSelected)
         }
         z1ChkBtn.setOnAction {
-            worldRendererControllerController.renderer.z1ChkBtnSelected = z1ChkBtn.isSelected
-            worldRendererControllerController.renderer.isSceneUploadRequired = true
+            onZLevelSelected(1, z1ChkBtn.isSelected)
         }
         z2ChkBtn.setOnAction {
-            worldRendererControllerController.renderer.z2ChkBtnSelected = z2ChkBtn.isSelected
-            worldRendererControllerController.renderer.isSceneUploadRequired = true
+            onZLevelSelected(2, z2ChkBtn.isSelected)
         }
         z3ChkBtn.setOnAction {
-            worldRendererControllerController.renderer.z3ChkBtnSelected = z3ChkBtn.isSelected
-            worldRendererControllerController.renderer.isSceneUploadRequired = true
+            onZLevelSelected(3, z3ChkBtn.isSelected)
         }
 
         // Menu item handlers

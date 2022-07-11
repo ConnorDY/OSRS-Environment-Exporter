@@ -106,10 +106,7 @@ class Renderer @Inject constructor(
 
     private lateinit var modelBuffers: ModelBuffers
 
-    var z0ChkBtnSelected = true
-    var z1ChkBtnSelected = true
-    var z2ChkBtnSelected = true
-    var z3ChkBtnSelected = true
+    var zLevelsSelected = Array(REGION_HEIGHT) { true }
 
     // Uniforms
     private var uniDrawDistance = 0
@@ -564,12 +561,9 @@ class Renderer @Inject constructor(
     private fun drawTiles() {
         modelBuffers.clear()
         modelBuffers.targetBufferOffset = 0
-        for (z in 0 until REGION_HEIGHT) {
-            if ((z != 0 || z0ChkBtnSelected) &&
-                (z != 1 || z1ChkBtnSelected) &&
-                (z != 2 || z2ChkBtnSelected) &&
-                (z != 3 || z3ChkBtnSelected)
-            ) {
+
+        zLevelsSelected.forEachIndexed { z, visible ->
+            if (visible) {
                 for (x in 0 until scene.radius * REGION_SIZE) {
                     for (y in 0 until scene.radius * REGION_SIZE) {
                         scene.getTile(z, x, y)?.let { drawTile(it) }
