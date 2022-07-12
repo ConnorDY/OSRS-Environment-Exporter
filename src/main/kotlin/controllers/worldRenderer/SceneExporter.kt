@@ -5,13 +5,20 @@ import controllers.worldRenderer.entities.*
 import models.scene.Scene
 import models.scene.SceneTile
 import java.io.*
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import kotlin.jvm.internal.Intrinsics
 
 class SceneExporter {
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
-    var tfile: PrintWriter
-    var mfile: PrintWriter
-    var colourfile: PrintWriter
+    var outDir: String
+    var tfile: PrintWriter?
+    var mfile: PrintWriter?
+    var colourfile: PrintWriter?
     var vertexcountc = 0
     var vertexcountt = 0
     var objcount = 0
@@ -24,28 +31,52 @@ class SceneExporter {
     fun exportSceneToFile(scene: Scene, renderer: Renderer) {
         Intrinsics.checkParameterIsNotNull(scene, "scene")
         Intrinsics.checkParameterIsNotNull(renderer, "renderer")
+
         vertexcountc = 0
         vertexcountt = 0
-        tfile.close()
-        mfile.close()
-        colourfile.close()
+
+        // close file streams (if necessary)
+        tfile?.close()
+        mfile?.close()
+        colourfile?.close()
+
+        // use timestamped output directory
+        val timestamp = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH_mm_ss.SSSSSS")
+            .withZone(ZoneOffset.UTC)
+            .format(Instant.now())
+        outDir = "./output/${timestamp}"
+        File(outDir).mkdirs()
+
+        // open file streams
         if (textures) {
-            tfile = File("./OBJ/temp.obj").printWriter()
+            tfile = File("${outDir}/temp.obj").printWriter()
         }
+
         if (materials) {
-            mfile = File("./OBJ/materials.obj").printWriter()
+            mfile = File("${outDir}/materials.obj").printWriter()
         }
-        colourfile = File("./OBJ/col.mtl").printWriter()
-        writeMaterials(colourfile)
+
+        colourfile = File("${outDir}/col.mtl").printWriter()
+        writeMaterials(colourfile!!)
+        copyTextures()
+
         if (materials) {
-            mfile.write("mtllib col.mtl\n")
+            mfile!!.write("mtllib col.mtl\n")
         }
+
         ++sceneId
+
         for (rx in 0 until scene.radius) {
             for (ry in 0 until scene.radius) {
                 val region = scene.getRegion(rx, ry) ?: continue
                 for (z in 0 until 4) {
-                    if ((z != 0 || renderer.z0ChkBtnSelected) && (z != 1 || renderer.z1ChkBtnSelected) && (z != 2 || renderer.z2ChkBtnSelected) && (z != 3 || renderer.z3ChkBtnSelected)) {
+                    if (
+                        (z != 0 || renderer.z0ChkBtnSelected) &&
+                        (z != 1 || renderer.z1ChkBtnSelected) &&
+                        (z != 2 || renderer.z2ChkBtnSelected) &&
+                        (z != 3 || renderer.z3ChkBtnSelected)
+                    ) {
                         for (x in 0 until 64) {
                             for (y in 0 until 64) {
                                 val tile = region.tiles[z][x][y] ?: continue
@@ -56,9 +87,13 @@ class SceneExporter {
                 }
             }
         }
-        tfile.close()
-        mfile.close()
-        colourfile.close()
+
+        // close file streams
+        tfile!!.close()
+        mfile!!.close()
+        colourfile!!.close()
+
+        // use python to convert obj to ply
         val process =
             ProcessBuilder(".\\Program\\convert.exe").start()
         process.waitFor()
@@ -80,6 +115,19 @@ class SceneExporter {
         }
     }
 
+    private fun copyTextures() {
+        val src = Path.of("./output/Textures")
+        val dest = Path.of("${outDir}/Textures")
+
+        Files.walk(src).forEach {
+            Files.copy(
+                it,
+                dest.resolve(src.relativize(it)),
+                StandardCopyOption.REPLACE_EXISTING
+            )
+        }
+    }
+
     fun upload(tile: SceneTile) {
         tile.tilePaint?.let { upload(it) }
         tile.tileModel?.let { upload(it) }
@@ -97,47 +145,57 @@ class SceneExporter {
     fun writevertex(v1: Int, v2: Int, v3: Int, c: Int) {
         if (objm != objcount) {
             objm = objcount
-            mfile.write(
+            mfile!!.write(
                 "o obj${objcount}\n"
             )
         }
         ++vertexcountt
-        mfile.write("v " + v1.toFloat() / scale + " " + (-v2).toFloat() / scale + " " + (-v3).toFloat() / scale + " " + "\n")
+        mfile!!.write(
+            "v " + v1.toFloat() / scale + " "
+                    + (-v2).toFloat() / scale + " "
+                    + (-v3).toFloat() / scale + " " + "\n")
     }
 
     fun writevertexcolor(v1: Int, v2: Int, v3: Int, c: Int) {
         if (objt != objcount) {
             objt = objcount
-            tfile.write(
+            tfile!!.write(
                 "o obj${objcount}\n"
             )
         }
         ++vertexcountc
         val color = rs2hsbToColor(c)
-        tfile.write("v " + v1.toFloat() / scale + " " + (-v2).toFloat() / scale + " " + (-v3).toFloat() / scale + " " + (color.red.toFloat() / 255.0f).toDouble() + " " + (color.green.toFloat() / 255.0f).toDouble() + " " + (color.blue.toFloat() / 255.0f).toDouble() + "\n")
+        tfile!!.write(
+            "v " + v1.toFloat() / scale + " " +
+                    + (-v2).toFloat() / scale + " "
+                    + (-v3).toFloat() / scale + " "
+                    + (color.red.toFloat() / 255.0f).toDouble() + " "
+                    + (color.green.toFloat() / 255.0f).toDouble() + " "
+                    + (color.blue.toFloat() / 255.0f).toDouble() + "\n"
+        )
     }
 
     fun writetexture(v1: Float, v2: Float, v3: Float, c: Float) {
-        mfile.write(
+        mfile!!.write(
             "vt $v2 ${1f - v3}\n"
         )
     }
 
-    fun writecolour(col: Int) {
-        val color = rs2hsbToColor(col)
-        colourfile.write(
-            "  Kd ${(color.red.toFloat() / 255.0f).toDouble()} ${(color.green.toFloat() / 255.0f).toDouble()} ${(color.blue.toFloat() / 255.0f).toDouble()}\n"
-        )
-    }
+//    fun writecolour(col: Int) {
+//        val color = rs2hsbToColor(col)
+//        colourfile!!.write(
+//            "  Kd ${(color.red.toFloat() / 255.0f).toDouble()} ${(color.green.toFloat() / 255.0f).toDouble()} ${(color.blue.toFloat() / 255.0f).toDouble()}\n"
+//        )
+//    }
 
     fun write3facem() {
-        mfile.write(
+        mfile!!.write(
             "f ${vertexcountt - 2}/${vertexcountt - 2} ${vertexcountt - 1}/${vertexcountt - 1} ${vertexcountt}/${vertexcountt}\n"
         )
     }
 
     fun write3facet() {
-        tfile.write(
+        tfile!!.write(
             "f ${vertexcountc - 2} ${vertexcountc - 1} ${vertexcountc}\n"
         )
     }
@@ -185,7 +243,7 @@ class SceneExporter {
                     writetexture(tex, 1.0f, 1.0f, 0.0f)
                     writetexture(tex, 0.0f, 1.0f, 0.0f)
                     writetexture(tex, 1.0f, 0.0f, 0.0f)
-                    mfile.write(
+                    mfile!!.write(
                         "usemtl t${(tex - 1f).toInt()}\n"
                     )
                     write3facem()
@@ -210,7 +268,7 @@ class SceneExporter {
                     writetexture(tex, 0.0f, 0.0f, 0.0f)
                     writetexture(tex, 1.0f, 0.0f, 0.0f)
                     writetexture(tex, 0.0f, 1.0f, 0.0f)
-                    mfile.write(
+                    mfile!!.write(
                         "usemtl t${(tex - 1f).toInt()}\n"
                     )
                     write3facem()
@@ -323,7 +381,7 @@ class SceneExporter {
                             vertexZC.toFloat() / 128.0f,
                             0.0f
                         )
-                        mfile.write(
+                        mfile!!.write(
                             "usemtl t${(tex - 1f).toInt()}\n"
                         )
                         write3facem()
@@ -442,7 +500,7 @@ class SceneExporter {
                             writetexture(texture, var10002, vf[1], 0.0f)
                             var10002 = uf[2]
                             writetexture(texture, var10002, vf[2], 0.0f)
-                            mfile.write(
+                            mfile!!.write(
                                 "usemtl t${(texture - 1f).toInt()}\n"
                             )
                             write3facem()
@@ -485,9 +543,10 @@ class SceneExporter {
     }
 
     init {
-        tfile = File("./OBJ/temp.obj").printWriter()
-        mfile = File("./OBJ/materials.obj").printWriter()
-        colourfile = File("./OBJ/col.mtl").printWriter()
+        outDir = "./output/timestamp"
+        tfile = null
+        mfile = null
+        colourfile = null
         objt = -1
         objm = -1
         scale = 100.0f
