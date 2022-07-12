@@ -408,6 +408,8 @@ class SceneRegionBuilder @Inject constructor(
         // FIXME: nonFlatShading affects fence doors
         var model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
 
+        model = model.scaleBy(objectDefinition.modelSizeX, objectDefinition.modelSizeHeight, objectDefinition.modelSizeY)
+
         if (objectDefinition.contouredGround >= 0) {
             model = model.contourGround(
                 regionLoader,
@@ -422,7 +424,7 @@ class SceneRegionBuilder @Inject constructor(
             )
         }
 
-        return StaticObject(objectDefinition, model, height, type, orientation)
+        return StaticObject(objectDefinition, model, height + objectDefinition.offsetHeight, type, orientation)
     }
 
     private fun hslToRgb(var0: Int, var1: Int, var2: Int): Int {
