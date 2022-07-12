@@ -27,7 +27,6 @@ import AppConstants
 import cache.definitions.TextureDefinition
 import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
-import com.google.inject.Inject
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES3
 import com.jogamp.opengl.GL4
@@ -38,7 +37,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import javax.imageio.ImageIO
 
-class TextureManager @Inject constructor(
+class TextureManager constructor(
     private val spriteLoader: SpriteLoader,
     private val textureLoader: TextureLoader
 ) {

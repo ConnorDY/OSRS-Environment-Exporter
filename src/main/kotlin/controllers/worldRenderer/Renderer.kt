@@ -1,11 +1,8 @@
 package controllers.worldRenderer
 
 import cache.LocationType
-import com.google.inject.Inject
 import com.jogamp.newt.NewtFactory
-import com.jogamp.newt.event.WindowAdapter
-import com.jogamp.newt.event.WindowEvent
-import com.jogamp.newt.javafx.NewtCanvasJFX
+import com.jogamp.newt.awt.NewtCanvasAWT
 import com.jogamp.newt.opengl.GLWindow
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
@@ -36,19 +33,19 @@ import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
-import javafx.scene.Group
 import models.DebugModel
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
 import org.slf4j.LoggerFactory
+import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
-class Renderer @Inject constructor(
+class Renderer constructor(
     private val camera: Camera,
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
@@ -135,17 +132,12 @@ class Renderer @Inject constructor(
     private var lastFrameTime: Long = 0
     private var deltaTimeTarget = 0
 
-    fun reposResize(x: Int, y: Int, width: Int, height: Int) {
-        window.setPosition(x, y)
-        window.setSize(width, height)
-    }
-
     // -Dnewt.verbose=true
     // -Dnewt.debug=true
     lateinit var window: GLWindow
     lateinit var animator: Animator
-    lateinit var glCanvas: NewtCanvasJFX
-    fun initCanvas(group: Group) {
+    lateinit var glCanvas: NewtCanvasAWT
+    fun initCanvas(): NewtCanvasAWT {
         // center camera in viewport
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
@@ -175,30 +167,12 @@ class Renderer @Inject constructor(
         window.addMouseListener(inputHandler)
         inputHandler.renderer = this
 
-        glCanvas = NewtCanvasJFX(window)
-        glCanvas.width = canvasWidth.toDouble()
-        glCanvas.height = canvasHeight.toDouble()
+        glCanvas = NewtCanvasAWT(window)
+        glCanvas.size = Dimension(canvasWidth, canvasHeight)
 
         animator = Animator(window)
         animator.setUpdateFPSFrames(3, null)
         animator.start()
-
-        // Begin bad hack to fix GLWindow not releasing focus properly //
-        window.addWindowListener(object : WindowAdapter() {
-            override fun windowGainedFocus(e: WindowEvent) {
-                // when heavyweight window gains focus, also tell javafx to give focus to glCanvas
-                glCanvas.requestFocus()
-            }
-        })
-        glCanvas.focusedProperty().addListener { _, _, newValue ->
-            if (!newValue) {
-                window.isVisible = false
-                window.isVisible = true
-            }
-        }
-        // End bad hack //
-
-        group.children.add(glCanvas)
 
         lastCanvasHeight = -1
         lastCanvasWidth = lastCanvasHeight
@@ -217,6 +191,12 @@ class Renderer @Inject constructor(
                 camera.cameraZ = -2500
             }
         )
+
+        return glCanvas
+    }
+
+    fun stop() {
+        animator.stop()
     }
 
     fun loadScene() {
@@ -280,6 +260,7 @@ class Renderer @Inject constructor(
 
     var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
+    private var lastUpdate = System.nanoTime()
 
     override fun display(drawable: GLAutoDrawable?) {
         debugModel.fps.set("%.0f".format(animator.lastFPS))
@@ -290,7 +271,12 @@ class Renderer @Inject constructor(
 
         sceneUploader.resetOffsets() // to reuse uploadModel function
 
+        val thisUpdate = System.nanoTime()
+        val deltaTime = (thisUpdate - lastUpdate).toDouble() / 1_000_000
+        lastUpdate = thisUpdate
+
         redrawTiles()
+        inputHandler.tick(deltaTime)
         handleHover()
 
         if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {

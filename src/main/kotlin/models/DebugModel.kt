@@ -1,8 +1,7 @@
 package models
 
-import javafx.beans.property.SimpleStringProperty
-import javafx.beans.property.StringProperty
+import utils.ObservableValue
 
 class DebugModel {
-    val fps: StringProperty = SimpleStringProperty()
+    val fps = ObservableValue("UNKNOWN")
 }

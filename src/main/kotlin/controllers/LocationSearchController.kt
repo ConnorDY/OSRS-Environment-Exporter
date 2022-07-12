@@ -1,130 +1,146 @@
 package controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.google.inject.Inject
-import javafx.beans.value.ObservableValue
-import javafx.collections.FXCollections
-import javafx.collections.transformation.FilteredList
-import javafx.fxml.FXML
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.ListCell
-import javafx.scene.control.ListView
-import javafx.scene.control.TextField
-import javafx.scene.control.TextFormatter
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
-import javafx.scene.layout.AnchorPane
-import javafx.scene.text.TextAlignment
-import javafx.stage.Stage
 import models.locations.Location
 import models.locations.Locations
 import models.scene.Scene
+import ui.FilteredListModel
+import ui.PlaceholderTextField
+import ui.listener.FilterTextListener
 import utils.Utils
-import java.util.regex.Pattern
+import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagConstraints.ABOVE_BASELINE
+import java.awt.GridBagConstraints.BOTH
+import java.awt.GridBagConstraints.CENTER
+import java.awt.GridBagConstraints.HORIZONTAL
+import java.awt.GridBagConstraints.LINE_END
+import java.awt.GridBagConstraints.NONE
+import java.awt.GridBagConstraints.PAGE_END
+import java.awt.GridBagConstraints.PAGE_START
+import java.awt.GridBagLayout
+import java.awt.Insets
+import javax.swing.DefaultListCellRenderer
+import javax.swing.JButton
+import javax.swing.JDialog
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JScrollPane
+import javax.swing.JTextField
 
-class LocationSearchController @Inject constructor(
+class LocationSearchController constructor(
+    owner: JFrame,
+    title: String,
     private val scene: Scene
-) {
-    @FXML
-    lateinit var wrapper: AnchorPane
+) : JDialog(owner, title) {
 
-    @FXML
-    lateinit var txtSearchQuery: TextField
+    init {
+        layout = GridBagLayout()
+        preferredSize = Dimension(600, 400)
 
-    @FXML
-    lateinit var listLocations: ListView<Location>
+        val filterableLocations = FilteredListModel<Location> { it.name }
+        val listLocations = JList(filterableLocations)
+        listLocations.cellRenderer = LocationCell()
+        val txtSearchQuery = PlaceholderTextField("", "Lumbridge")
+        val txtRadius = JTextField("1")
+        val lblErrorText = JLabel("")
+        lblErrorText.foreground = Color.RED
+        val btnLoad = JButton("Load Location")
 
-    @FXML
-    lateinit var txtRadius: TextField
-
-    @FXML
-    private lateinit var btnLoad: Button
-
-    @FXML
-    private lateinit var lblErrorText: Label
-
-    private var selectedLocation: Location? = null
-
-    @FXML
-    private fun handleKeyPressed(e: KeyEvent) {
-        if (e.code == KeyCode.ENTER)
-            btnLoad.fire()
-    }
-
-    @FXML
-    private fun initialize() {
-        listLocations.setCellFactory { LocationCell() }
-
-        // setup list placeholder while loading
-        val listLocationsPlacholder = Label("Loading locations...")
-        listLocationsPlacholder.textAlignment = TextAlignment.CENTER
-        listLocations.placeholder = listLocationsPlacholder
+        val noInset = Insets(0, 0, 0, 0)
+        add(
+            JScrollPane(listLocations),
+            GridBagConstraints(1, 0, 1, 6, 1.5, 1.0, LINE_END, BOTH, noInset, 0, 0)
+        )
+        add(
+            JLabel("Search Query:"),
+            GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, PAGE_END, NONE, noInset, 0, 0)
+        )
+        add(
+            txtSearchQuery,
+            GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, noInset, 0, 0)
+        )
+        add(
+            JLabel("Radius:"),
+            GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, ABOVE_BASELINE, NONE, Insets(10, 0, 0, 0), 0, 0)
+        )
+        add(
+            txtRadius,
+            GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, noInset, 0, 0)
+        )
+        add(
+            lblErrorText,
+            GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, CENTER, NONE, noInset, 0, 0)
+        )
+        add(
+            btnLoad,
+            GridBagConstraints(0, 5, 1, 1, 1.0, 1.0, PAGE_START, NONE, noInset, 0, 0)
+        )
 
         // load locations
-        val locationMapper = ObjectMapper()
+        filterableLocations.backingList = readBuiltinLocations()
 
-        val _locations =
-            locationMapper.readValue(
-                this::class.java.getResource("/data/locations.json"),
-                Locations::class.java
-            )
-
-        val locations = FXCollections.observableArrayList<Location>()
-        locations.addAll(_locations.locations)
-
-        val filterableLocations = FilteredList(locations)
-        listLocations.items = filterableLocations
+        txtSearchQuery.document.addDocumentListener(FilterTextListener(txtSearchQuery, filterableLocations))
 
         // list view selection handler
-        listLocations.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-            if (newValue != null) {
-                selectedLocation = newValue
-                btnLoad.isDisable = false
-            }
-        }
-
-        // limit Radius input to 2 digits
-        val radiusPattern = Pattern.compile("\\d{0,2}")
-        val radiusFormatter = TextFormatter<String> { change ->
-            if (radiusPattern.matcher(change.controlNewText).matches()) change else null
-        }
-        txtRadius.textFormatter = radiusFormatter
-
-        // search handler
-        txtSearchQuery.textProperty().addListener { _: ObservableValue<out String>?, _: String?, newVal: String ->
-            val newValLowercase = newVal.lowercase()
-            filterableLocations.setPredicate { location ->
-                location.name.lowercase().contains(newValLowercase)
+        listLocations.apply {
+            addListSelectionListener {
+                if (selectedIndex != -1) {
+                    btnLoad.isEnabled = true
+                }
             }
         }
 
         // load button handler
-        btnLoad.setOnAction {
-            val regionId = regionIdForLocation(selectedLocation!!)
+        btnLoad.addActionListener {
+            val selectedLocation = listLocations.selectedValue ?: return@addActionListener
+            val regionId = regionIdForLocation(selectedLocation)
 
             val radius: Int? = txtRadius.text.toIntOrNull()
             if (radius == null || (radius < 1 || radius > 20)) {
                 lblErrorText.text = RegionChooserController.INVALID_RADIUS_TEXT
                 lblErrorText.isVisible = true
-                return@setOnAction
+                return@addActionListener
             }
-            (wrapper.scene.window as Stage).close()
+            dispose()
             scene.load(regionId, radius)
         }
+
+        pack()
     }
 
-    private class LocationCell : ListCell<Location>() {
-        override fun updateItem(item: Location?, empty: Boolean) {
-            super.updateItem(item, empty)
+    private fun readBuiltinLocations(): ArrayList<Location> {
+        val locationMapper = ObjectMapper()
 
-            if (empty || item == null) {
-                text = null
-                graphic = null
-            } else {
-                val regionId = regionIdForLocation(item)
-                this.text = "${item.name} ($regionId)"
-            }
+        val locations =
+            locationMapper.readValue(
+                this::class.java.getResource("/data/locations.json"),
+                Locations::class.java
+            )
+
+        val locations1 = locations.locations
+        return locations1
+    }
+
+    private class LocationCell : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            item: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            super.getListCellRendererComponent(list, item, index, isSelected, cellHasFocus)
+            text =
+                if (item == null) ""
+                else {
+                    val regionId = regionIdForLocation(item as Location)
+                    "${item.name} ($regionId)"
+                }
+            return this
         }
     }
 

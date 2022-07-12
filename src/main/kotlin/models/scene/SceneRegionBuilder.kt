@@ -22,10 +22,9 @@ import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
 import org.slf4j.LoggerFactory
-import javax.inject.Inject
 import kotlin.math.sqrt
 
-class SceneRegionBuilder @Inject constructor(
+class SceneRegionBuilder constructor(
     private val regionLoader: RegionLoader,
     private val locationsLoader: LocationsLoader,
     private val objectLoader: ObjectLoader,

@@ -1,35 +1,47 @@
 package controllers
 
-import com.google.inject.Inject
 import controllers.worldRenderer.Renderer
-import javafx.fxml.FXML
-import javafx.scene.control.Button
-import javafx.scene.control.CheckBox
-import javafx.scene.control.TextField
-import javafx.scene.control.TextFormatter
-import javafx.scene.layout.AnchorPane
-import javafx.stage.Stage
 import models.Configuration
-import java.util.regex.Pattern
+import java.awt.GridBagConstraints
+import java.awt.GridBagConstraints.LINE_END
+import java.awt.GridBagConstraints.LINE_START
+import java.awt.GridBagConstraints.NONE
+import java.awt.GridBagConstraints.PAGE_START
+import java.awt.GridBagLayout
+import java.awt.Insets
+import javax.swing.JButton
+import javax.swing.JCheckBox
+import javax.swing.JDialog
+import javax.swing.JFrame
+import javax.swing.JTextField
 
-class SettingsController @Inject constructor(
+class SettingsController(
+    owner: JFrame,
+    title: String,
     private val renderer: Renderer,
     private val configuration: Configuration
-) {
-    @FXML
-    lateinit var wrapper: AnchorPane
+) : JDialog(owner, title) {
+    init {
+        layout = GridBagLayout()
 
-    @FXML
-    lateinit var chkBoxLimitFps: CheckBox
+        val chkBoxLimitFps = JCheckBox("Limit FPS")
+        val txtFpsCap = JTextField("60")
+        val btnSave = JButton("Save Preferences")
 
-    @FXML
-    lateinit var txtFpsCap: TextField
+        val inset = Insets(4, 4, 4, 4)
+        add(
+            chkBoxLimitFps,
+            GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, LINE_END, NONE, inset, 0, 0)
+        )
+        add(
+            txtFpsCap,
+            GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, LINE_START, NONE, inset, 0, 0)
+        )
+        add(
+            btnSave,
+            GridBagConstraints(0, 1, 2, 1, 0.0, 0.0, PAGE_START, NONE, inset, 0, 0)
+        )
 
-    @FXML
-    lateinit var btnSave: Button
-
-    @FXML
-    private fun initialize() {
         // load current setting(s)
         val fpsCap = configuration.getProp(FPS_CAP_PROP).toIntOrNull()
 
@@ -37,23 +49,16 @@ class SettingsController @Inject constructor(
             txtFpsCap.text = fpsCap.toString()
             chkBoxLimitFps.isSelected = true
         } else {
-            txtFpsCap.isDisable = true
+            txtFpsCap.isEnabled = false
         }
 
         // FPS Limit checkbox handler
-        chkBoxLimitFps.setOnAction {
-            txtFpsCap.isDisable = !chkBoxLimitFps.isSelected
+        chkBoxLimitFps.addChangeListener {
+            txtFpsCap.isEnabled = chkBoxLimitFps.isSelected
         }
-
-        // limit FPS Cap input to 3 digits
-        val fpsCapPattern = Pattern.compile("\\d{0,3}")
-        val fpsCapFormatter = TextFormatter<String> { change ->
-            if (fpsCapPattern.matcher(change.controlNewText).matches()) change else null
-        }
-        txtFpsCap.textFormatter = fpsCapFormatter
 
         // Save Preferences button handler
-        btnSave.setOnAction {
+        btnSave.addActionListener {
             configuration.saveProp(FPS_CAP_PROP, if (chkBoxLimitFps.isSelected) txtFpsCap.text else "")
 
             var fpsCapToSet = txtFpsCap.text.toIntOrNull() ?: 0
@@ -61,8 +66,11 @@ class SettingsController @Inject constructor(
 
             renderer.setFpsTarget(fpsCapToSet)
 
-            (btnSave.scene.window as Stage).close()
+            dispose()
         }
+
+        rootPane.defaultButton = btnSave
+        pack()
     }
 
     companion object {
