@@ -15,9 +15,6 @@ class ObjectLoader @Inject constructor(
     cacheLibrary: CacheLibrary,
     private val objectDefinitionCache: HashMap<Int, ObjectDefinition> = HashMap()
 ) {
-    fun getAll(): HashMap<Int, ObjectDefinition> {
-        return objectDefinitionCache
-    }
 
     fun get(id: Int): ObjectDefinition? {
         return objectDefinitionCache[id]
@@ -39,7 +36,6 @@ class ObjectLoader @Inject constructor(
     }
 
     private fun processOp(opcode: Int, def: ObjectDefinition, inputStream: ByteBuffer) {
-        println("Processing opcode " + opcode)
         if (opcode == 1) {
             val length: Int = inputStream.readUnsignedByte()
             if (length > 0) {

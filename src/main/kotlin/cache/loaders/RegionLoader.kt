@@ -72,36 +72,4 @@ class RegionLoader(
         return get((x ushr 6) shl 8 or (y ushr 6))
     }
 
-    fun writeRegion(outputLibrary: CacheLibrary, regionDefinition: RegionDefinition) {
-        val outputStream = ByteArrayOutputStream()
-
-        for (z in 0 until Z) {
-            for (x in 0 until X) {
-                for (y in 0 until Y) {
-                    val tile: RegionDefinition.Tile = regionDefinition.tiles[z][x][y]!!
-                    if (tile.attrOpcode > 0) {
-                        outputStream.write(byteArrayOf(tile.attrOpcode.toByte(), tile.overlayId))
-                    }
-
-                    if (tile.settings > 0) {
-                        outputStream.write(byteArrayOf(tile.settings.plus(49).toByte()))
-                    }
-
-                    if (tile.underlayId > 0) {
-                        outputStream.write(byteArrayOf(tile.underlayId.plus(81).toByte()))
-                    }
-
-                    if (tile.cacheHeight != null) {
-                        outputStream.write(byteArrayOf(1, (tile.height / -8).toByte()))
-                    } else {
-                        outputStream.write(byteArrayOf(0))
-                    }
-                }
-            }
-        }
-
-        outputLibrary.put(5, "m${regionDefinition.regionX}_${regionDefinition.regionY}", outputStream.toByteArray())
-        val status = outputLibrary.index(5).update()
-        println(status)
-    }
 }

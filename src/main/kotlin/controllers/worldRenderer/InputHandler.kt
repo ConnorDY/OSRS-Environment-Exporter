@@ -6,17 +6,12 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.newt.event.MouseListener
 import javafx.animation.AnimationTimer
 import javafx.scene.input.KeyCode
-import jogamp.newt.driver.DriverClearFocus
-import models.DebugModel
-import models.ObjectsModel
 import models.scene.Scene
-import models.scene.SceneObject
 import javax.inject.Inject
 
 class InputHandler @Inject internal constructor(
     private val camera: Camera,
-    private val scene: Scene,
-    private val objectsModel: ObjectsModel
+    private val scene: Scene
 ) : KeyListener, MouseListener {
 
     var renderer: Renderer? = null
@@ -72,14 +67,6 @@ class InputHandler @Inject internal constructor(
         }
         if (keys[KeyEvent.VK_L.toInt()]) {
             scene.load(13408, 5)
-        }
-        if (keys[KeyEvent.VK_R.toInt()]) {
-            keys[KeyEvent.VK_R.toInt()] = false // debounce
-            val heldObject = objectsModel.heldObject.get()
-            objectsModel.heldObject.set(SceneObject(heldObject.objectDefinition, heldObject.type, heldObject.orientation + 1))
-        }
-        if (keys[KeyEvent.VK_ESCAPE.toInt()]) {
-            objectsModel.heldObject.set(null)
         }
     }
 

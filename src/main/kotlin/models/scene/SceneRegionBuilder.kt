@@ -51,7 +51,7 @@ class SceneRegionBuilder @Inject constructor(
     fun loadRegion(regionId: Int, isAnimationEnabled: Boolean): SceneRegion? {
         val region: RegionDefinition = regionLoader.get(regionId) ?: return null
         val locations: LocationsDefinition = locationsLoader.get(regionId) ?: return null
-        val sceneRegion = SceneRegion(region, locations)
+        val sceneRegion = SceneRegion(locations)
         val baseX: Int = region.baseX
         val baseY: Int = region.baseY
         val blend = 5
@@ -382,15 +382,6 @@ class SceneRegionBuilder @Inject constructor(
         return sceneRegion
     }
 
-    data class ModelKey(
-        val id: Int,
-        val type: Int,
-        val orientation: Int,
-        val ambient: Int,
-        val contrast: Int
-    )
-
-    private val entityCache: HashMap<ModelKey, Model> = HashMap()
     private fun getEntity(
         objectDefinition: ObjectDefinition,
         type: Int,
