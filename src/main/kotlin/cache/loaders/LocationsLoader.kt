@@ -12,10 +12,10 @@ import java.nio.ByteBuffer
 class LocationsLoader(
     private val library: CacheLibrary,
     private val xtea: XteaManager,
-    private val locationsDefinitionCache: HashMap<Int, LocationsDefinition> = HashMap()
+    private val locationsDefinitionCache: HashMap<Int, LocationsDefinition?> = HashMap()
 ) {
     fun get(regionId: Int): LocationsDefinition? {
-        if (locationsDefinitionCache[regionId] != null) {
+        if (locationsDefinitionCache.containsKey(regionId)) {
             return locationsDefinitionCache[regionId]
         }
         return loadLocations(regionId)
@@ -26,7 +26,11 @@ class LocationsLoader(
 
         val x = (regionId shr 8) and 0xFF
         val y = regionId and 0xFF
-        val landscape = library.data(5, "l${x}_${y}", xtea.getKeys(regionId)) ?: return null
+        val landscape = library.data(5, "l${x}_${y}", xtea.getKeys(regionId))
+        if (landscape == null) {
+            locationsDefinitionCache[regionId] = null
+            return null
+        }
 
         val buffer = ByteBuffer.wrap(landscape)
 
