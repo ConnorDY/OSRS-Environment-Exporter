@@ -1,5 +1,5 @@
 package controllers.worldRenderer.entities
 
 class FloorDecoration(
-    val entity: Entity?
+    val entity: Entity
 )

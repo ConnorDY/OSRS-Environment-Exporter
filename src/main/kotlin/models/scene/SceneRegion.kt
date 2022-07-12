@@ -108,13 +108,13 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         tiles[z][x][y]?.cacheTile = cacheTile
     }
 
-    fun newFloorDecoration(z: Int, x: Int, y: Int, entity: Entity?) {
+    fun newFloorDecoration(z: Int, x: Int, y: Int, entity: Entity) {
         for (iz in z downTo 0) {
             if (tiles[iz][x][y] == null) {
                 tiles[iz][x][y] = SceneTile(iz, x, y)
             }
         }
-        entity!!.getModel().xOff = Constants.LOCAL_HALF_TILE_SIZE
+        entity.getModel().xOff = Constants.LOCAL_HALF_TILE_SIZE
         entity.getModel().yOff = Constants.LOCAL_HALF_TILE_SIZE
         val floorDecoration = FloorDecoration(entity)
         tiles[z][x][y]!!.floorDecoration = floorDecoration
@@ -124,7 +124,7 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         z: Int,
         x: Int,
         y: Int,
-        entity: Entity?
+        entity: Entity
     ) {
         for (iz in z downTo 0) {
             if (tiles[iz][x][y] == null) {
@@ -132,7 +132,7 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
             }
         }
 
-        entity!!.getModel().xOff = Constants.LOCAL_HALF_TILE_SIZE
+        entity.getModel().xOff = Constants.LOCAL_HALF_TILE_SIZE
         entity.getModel().yOff = Constants.LOCAL_HALF_TILE_SIZE
         val wallDecoration = WallDecoration(entity)
         tiles[z][x][y]!!.wallDecoration = wallDecoration
@@ -144,7 +144,7 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         y: Int,
         width: Int,
         length: Int,
-        entity: Entity?,
+        entity: Entity,
         entity2: Entity?,
         location: Location
     ) {
@@ -154,7 +154,7 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
             }
         }
 
-        entity!!.getModel().xOff = width * REGION_SIZE
+        entity.getModel().xOff = width * REGION_SIZE
         entity.getModel().yOff = length * REGION_SIZE
         entity2?.getModel()?.xOff = width * REGION_SIZE
         entity2?.getModel()?.yOff = length * REGION_SIZE
@@ -168,7 +168,7 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
         y: Int,
         width: Int,
         length: Int,
-        entity: Entity?,
+        entity: Entity,
         location: Location
     ) {
         for (iz in z downTo 0) {
@@ -177,7 +177,7 @@ class SceneRegion(val regionDefinition: RegionDefinition, val locationsDefinitio
             }
         }
 
-        entity!!.getModel().xOff = width * REGION_SIZE
+        entity.getModel().xOff = width * REGION_SIZE
         entity.getModel().yOff = length * REGION_SIZE
         tiles[z][x][y]!!.gameObjects.add(GameObject(entity))
         tiles[z][x][y]!!.locations.add(location)

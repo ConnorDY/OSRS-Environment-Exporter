@@ -67,7 +67,7 @@ class InspectorController @Inject constructor(
                     LocationType.INTERACTABLE -> {
                         sb.append("entities: \n")
                         for (i in 0 until hovered.sceneTile.gameObjects.size) {
-                            sb.append("entity[$i]: ${hovered.sceneTile.gameObjects[i].entity?.height}")
+                            sb.append("entity[$i]: ${hovered.sceneTile.gameObjects[i].entity.height}")
                         }
 
                     }

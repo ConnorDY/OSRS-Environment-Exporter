@@ -38,7 +38,6 @@ import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
 import javafx.scene.input.KeyCode
 import models.HoverModel
-import models.HoverObject
 import models.ObjectsModel
 import models.scene.*
 import java.awt.event.ActionListener
@@ -46,10 +45,7 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import java.util.*
 import kotlin.collections.HashSet
-import kotlin.math.floor
-import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.sqrt
 
 class Renderer @Inject constructor(
     private val camera: Camera,
@@ -249,7 +245,7 @@ class Renderer @Inject constructor(
                         x.forEach { tile ->
                             tile?.floorDecoration?.entity?.addListener { (entity, _) -> modelRedrawList.add(entity) }
                             tile?.gameObjects?.forEach {
-                                it.entity?.addListener { (entity, _) ->
+                                it.entity.addListener { (entity, _) ->
                                     modelRedrawList.add(
                                         entity
                                     )
@@ -759,35 +755,36 @@ class Renderer @Inject constructor(
             tile.tileModel!!.draw(modelBuffers, x, y, 0, LocationType.TILE_MODEL.id)
         }
 
-        if (tile.floorDecoration != null) {
-            tile.floorDecoration!!.entity!!.getModel()
-                .draw(modelBuffers, x, y, tile.floorDecoration!!.entity!!.height, LocationType.FLOOR_DECORATION.id)
+        val floorDecorationEntity = tile.floorDecoration?.entity
+        floorDecorationEntity?.getModel()?.draw(
+            modelBuffers,
+            x,
+            y,
+            floorDecorationEntity.height, LocationType.FLOOR_DECORATION.id
+        )
+
+        val wall = tile.wall
+        if (wall != null) {
+            wall.entity.getModel().draw(modelBuffers, x, y, wall.entity.height, wall.type.id)
+            wall.entity2?.getModel()?.draw(modelBuffers, x, y, wall.entity2.height, wall.type.id)
         }
 
-        if (tile.wall != null) {
-            tile.wall!!.entity!!.getModel()
-                .draw(modelBuffers, x, y, tile.wall!!.entity!!.height, tile.wall!!.type.id)
-            tile.wall!!.entity2?.getModel()
-                ?.draw(modelBuffers, x, y, tile.wall!!.entity2!!.height, tile.wall!!.type.id)
-        }
-
-        if (tile.wallDecoration != null) {
-            tile.wallDecoration!!.entity!!.getModel().draw(
-                modelBuffers,
-                x,
-                y,
-                tile.wallDecoration!!.entity!!.height,
-                LocationType.INTERACTABLE_WALL_DECORATION.id
-            )
-        }
+        val wallDecorationEntity = tile.wallDecoration?.entity
+        wallDecorationEntity?.getModel()?.draw(
+            modelBuffers,
+            x,
+            y,
+            wallDecorationEntity.height,
+            LocationType.INTERACTABLE_WALL_DECORATION.id
+        )
 
         for (gameObject in tile.gameObjects) {
-            gameObject.entity!!.getModel()
+            gameObject.entity.getModel()
                 .draw(modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
         }
     }
 
-    public fun exportScene() {
+    fun exportScene() {
         SceneExporter().exportSceneToFile(scene, this)
     }
 
