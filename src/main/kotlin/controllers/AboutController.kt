@@ -4,10 +4,14 @@ import javafx.fxml.FXML
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
 import utils.LinkHandler
+import utils.PackageMetadata
 import java.awt.Desktop
 import java.net.URI
 
 class AboutController {
+    @FXML
+    private lateinit var lblTitle: Label
+
     @FXML
     private lateinit var lblVersion: Label
 
@@ -19,7 +23,9 @@ class AboutController {
 
     @FXML
     fun initialize() {
-        lblVersion.text = "2.0.0"
+        val metadata = PackageMetadata()
+        lblTitle.text = metadata.NAME
+        lblVersion.text = metadata.VERSION
 
         linkGithub.setOnAction {
             LinkHandler(linkGithub.text).openInBrowser()
