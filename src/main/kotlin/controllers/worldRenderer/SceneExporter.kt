@@ -58,12 +58,9 @@ class SceneExporter {
         val outDir = "${AppConstants.OUTPUT_DIRECTORY}/${timestamp}"
         File(outDir).mkdirs()
 
-        File("${outDir}/temp.obj").printWriter().use {
-            val tfile = it
-            File("${outDir}/materials.obj").printWriter().use {
-                val mfile = it
-                File("${outDir}/col.mtl").printWriter().use {
-                    val colourfile = it
+        File("${outDir}/temp.obj").printWriter().use { tfile ->
+            File("${outDir}/materials.obj").printWriter().use { mfile ->
+                File("${outDir}/col.mtl").printWriter().use { colourfile ->
                     val fileWriters = FileWriters(tfile, mfile, colourfile)
 
                     writeMaterials(fileWriters)
