@@ -138,10 +138,12 @@ class ObjectLoader @Inject constructor(
             def.blockingMask = inputStream.get().toInt()
         } else if (opcode == 70) {
             def.offsetX = inputStream.readUnsignedShort()
+            println("TODO: support offsetX, (got ${def.offsetX})")
         } else if (opcode == 71) {
-            def.offsetHeight = inputStream.readUnsignedShort()
+            def.offsetHeight = inputStream.readUnsignedShort().toShort().toInt()
         } else if (opcode == 72) {
             def.offsetY = inputStream.readUnsignedShort()
+            println("TODO: support offsetY, (got ${def.offsetY})")
         } else if (opcode == 73) {
             def.obstructsGround = true
         } else if (opcode == 74) {
