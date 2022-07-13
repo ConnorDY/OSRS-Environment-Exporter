@@ -15,11 +15,13 @@
          <children>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label text="Visit Explv's OSRS map to find region ids." />
-                  <Hyperlink fx:id="linkExplv" text="https://explv.github.io/" />
+                  <Label text="Visit Explv's OSRS Map to find Region IDs: " />
+                  <Hyperlink fx:id="linkMap" text="https://explv.github.io/" />
                </children>
             </HBox>
+
             <Label alignment="CENTER" text="Note: Higher radius will affect load time and FPS." />
+
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
                   <Label text="Region ID:" />

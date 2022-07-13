@@ -1,6 +1,8 @@
 package controllers
 
 import com.google.inject.Inject
+import javafx.event.ActionEvent
+import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink
@@ -11,6 +13,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.stage.Stage
 import models.scene.Scene
+import utils.LinkHandler
 import java.awt.Desktop
 import java.net.URI
 import java.util.regex.Pattern
@@ -30,7 +33,7 @@ class RegionChooserController @Inject constructor(
     private lateinit var lblErrorText: Label
 
     @FXML
-    private lateinit var linkExplv: Hyperlink
+    private lateinit var linkMap: Hyperlink
 
     @FXML
     private fun initialize() {
@@ -66,8 +69,9 @@ class RegionChooserController @Inject constructor(
             scene.load(regionId, radius)
         }
 
-        linkExplv.setOnAction {
-            Desktop.getDesktop().browse(URI("https://explv.github.io/"))
+        // explv map link handler
+        linkMap.setOnAction {
+            LinkHandler(linkMap.text).openInBrowser()
         }
     }
 
@@ -79,6 +83,6 @@ class RegionChooserController @Inject constructor(
 
     companion object {
         private const val INVALID_REGION_ID_TEXT = "Region Id must be between 4647 and 15522."
-        private const val INVALID_RADIUS_TEXT = "Radius must be between 1 and 8."
+        private const val INVALID_RADIUS_TEXT = "Radius must be between 1 and 20."
     }
 }
