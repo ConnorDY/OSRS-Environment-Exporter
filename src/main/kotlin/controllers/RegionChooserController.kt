@@ -1,8 +1,6 @@
 package controllers
 
 import com.google.inject.Inject
-import javafx.event.ActionEvent
-import javafx.event.EventHandler
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink
@@ -14,8 +12,6 @@ import javafx.scene.input.KeyEvent
 import javafx.stage.Stage
 import models.scene.Scene
 import utils.LinkHandler
-import java.awt.Desktop
-import java.net.URI
 import java.util.regex.Pattern
 
 class RegionChooserController @Inject constructor(
@@ -37,7 +33,19 @@ class RegionChooserController @Inject constructor(
 
     @FXML
     private fun initialize() {
-        // limit radius input to 2 digits
+        // limit Region ID input to 5 digits
+        val regionIDPattern = Pattern.compile("\\d{0,5}")
+        val regionIDFormatter = TextFormatter<String>{ change  ->
+            if (regionIDPattern.matcher(change.controlNewText).matches()) {
+                return@TextFormatter change
+            }
+            else {
+                return@TextFormatter null
+            }
+        }
+        txtRegionId.textFormatter = regionIDFormatter
+
+        // limit Radius input to 2 digits
         val radiusPattern = Pattern.compile("\\d{0,2}")
         val radiusFormatter = TextFormatter<String>{ change  ->
             if (radiusPattern.matcher(change.controlNewText).matches()) {
