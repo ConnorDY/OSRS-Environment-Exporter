@@ -9,7 +9,7 @@
 
 ### :bug: Bug Fixes
 
-- Remove specularity from all materials in `col.mtl` ([8750dd1](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/8750dd12a8a7a897e4ae054ee76c0a5ab81ef158) - @ConnorDY)
+- Remove default specularity from all materials in `col.mtl` ([8750dd1](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/8750dd12a8a7a897e4ae054ee76c0a5ab81ef158) - @ConnorDY)
 - Ensure process exists when all windows are gone ([870d24a](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/870d24a8169b74ed446c32701fd4da3dc3fd77aa) - @ScoreUnder)
 
 ### :wrench: Maintenance
