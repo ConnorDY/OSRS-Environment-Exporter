@@ -26,9 +26,11 @@
                   <TextField fx:id="txtRegionId" promptText="10038" HBox.hgrow="SOMETIMES">
                      <HBox.margin>
                         <Insets right="5.0" />
-                     </HBox.margin></TextField>
+                     </HBox.margin>
+                  </TextField>
+
                   <Label text="Radius:" />
-                  <TextField fx:id="txtRadius" promptText="1" />
+                  <TextField fx:id="txtRadius" promptText="1" text="1" />
                </children>
                <VBox.margin>
                   <Insets left="20.0" right="20.0" />

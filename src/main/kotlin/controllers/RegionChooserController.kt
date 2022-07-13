@@ -6,19 +6,18 @@ import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import javafx.scene.paint.Color
 import javafx.stage.Stage
-import models.DebugModel
 import models.scene.Scene
 import java.awt.Desktop
 import java.net.URI
+import java.util.regex.Pattern
 
 class RegionChooserController @Inject constructor(
     private val scene: Scene
 ){
-
     @FXML
     private lateinit var txtRegionId: TextField
     @FXML
@@ -35,6 +34,19 @@ class RegionChooserController @Inject constructor(
 
     @FXML
     private fun initialize() {
+        // limit radius input to 2 digits
+        val radiusPattern = Pattern.compile("\\d{0,2}")
+        val radiusFormatter = TextFormatter<String>{ change  ->
+            if (radiusPattern.matcher(change.controlNewText).matches()) {
+                return@TextFormatter change
+            }
+            else {
+                return@TextFormatter null
+            }
+        }
+        txtRadius.textFormatter = radiusFormatter
+
+        // Load Region handler
         btnLoad.setOnAction {
             lblErrorText.isVisible = false
             val regionId: Int? = txtRegionId.text.toIntOrNull()
