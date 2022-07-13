@@ -15,7 +15,7 @@ import java.time.format.DateTimeFormatter
 import kotlin.jvm.internal.Intrinsics
 
 class SceneExporter {
-    class FileWriters (
+    private class FileWriters (
         private val tfile: PrintWriter,
         private val mfile: PrintWriter,
         private val colourFile: PrintWriter
