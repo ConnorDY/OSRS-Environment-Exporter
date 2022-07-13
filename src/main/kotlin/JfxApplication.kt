@@ -2,7 +2,6 @@ import cache.CacheModule
 import cache.loaders.LoaderModule
 import com.google.inject.Guice
 import com.sun.javafx.css.StyleManager
-import controllers.MainController
 import javafx.application.Application
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
@@ -12,7 +11,6 @@ import javafx.util.Callback
 import models.ModelsModule
 import controllers.worldRenderer.WorldRendererModule
 import kotlin.system.exitProcess
-
 
 class JfxApplication : Application() {
     companion object {

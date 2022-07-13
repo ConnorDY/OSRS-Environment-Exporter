@@ -1,5 +1,6 @@
 package controllers
 
+import AppConstants
 import JfxApplication.Companion.injector
 import cache.CacheLibraryProvider
 import cache.XteaManagerProvider
@@ -147,7 +148,7 @@ class CacheChooserController @Inject constructor(
 
         btnChooseDirectory.setOnAction {
             val directoryChooser = DirectoryChooser()
-            val initDir = File("./caches")
+            val initDir = File(AppConstants.CACHES_DIRECTORY)
             initDir.mkdirs()
             directoryChooser.initialDirectory = initDir
             val f = directoryChooser.showDialog(null) ?: return@setOnAction
@@ -196,7 +197,7 @@ class CacheChooserController @Inject constructor(
         lblStatusText.isVisible = true
         lblStatusText.text = "Downloading cache $cacheName please wait.."
         txtCacheLocation.text = ""
-        val destFolder = File("caches/${cacheName.removeSuffix(".tar.gz")}")
+        val destFolder = File("${AppConstants.CACHES_DIRECTORY}/${cacheName.removeSuffix(".tar.gz")}")
 
         GlobalScope.launch {
             try {
