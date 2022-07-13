@@ -24,7 +24,6 @@ dependencies {
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
     implementation("org.apache.commons:commons-compress:1.21")
-    implementation("org.apache.commons:commons-lang3:3.12.0")
 }
 
 tasks {
