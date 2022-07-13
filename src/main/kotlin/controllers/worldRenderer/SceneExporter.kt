@@ -131,7 +131,7 @@ class SceneExporter {
         }
     }
 
-    fun upload(fileWriters: FileWriters, tile: SceneTile) {
+    private fun upload(fileWriters: FileWriters, tile: SceneTile) {
         tile.tilePaint?.let { upload(fileWriters, it) }
         tile.tileModel?.let { upload(fileWriters, it) }
         uploadIfStatic(fileWriters, tile.wall?.entity)
@@ -147,7 +147,7 @@ class SceneExporter {
         if (entity is StaticObject) uploadModel(fileWriters, entity)
     }
 
-    fun writevertex(fileWriters: FileWriters, v1: Int, v2: Int, v3: Int, c: Int) {
+    private fun writevertex(fileWriters: FileWriters, v1: Int, v2: Int, v3: Int, c: Int) {
         if (objm != objcount) {
             objm = objcount
             fileWriters.writeToMFile(
@@ -162,7 +162,7 @@ class SceneExporter {
         )
     }
 
-    fun writevertexcolor(fileWriters: FileWriters, v1: Int, v2: Int, v3: Int, c: Int) {
+    private fun writevertexcolor(fileWriters: FileWriters, v1: Int, v2: Int, v3: Int, c: Int) {
         if (objt != objcount) {
             objt = objcount
             fileWriters.writeToTFile(
@@ -181,25 +181,25 @@ class SceneExporter {
         )
     }
 
-    fun writetexture(fileWriters: FileWriters, v1: Float, v2: Float, v3: Float, c: Float) {
+    private fun writetexture(fileWriters: FileWriters, v1: Float, v2: Float, v3: Float, c: Float) {
         fileWriters.writeToMFile(
             "vt $v2 ${1f - v3}\n"
         )
     }
 
-    fun write3facem(fileWriters: FileWriters) {
+    private fun write3facem(fileWriters: FileWriters) {
         fileWriters.writeToMFile(
             "f ${vertexcountt - 2}/${vertexcountt - 2} ${vertexcountt - 1}/${vertexcountt - 1} ${vertexcountt}/${vertexcountt}\n"
         )
     }
 
-    fun write3facet(fileWriters: FileWriters) {
+    private fun write3facet(fileWriters: FileWriters) {
         fileWriters.writeToTFile(
             "f ${vertexcountc - 2} ${vertexcountc - 1} ${vertexcountc}\n"
         )
     }
 
-    fun upload(fileWriters: FileWriters, tile: TilePaint) {
+    private fun upload(fileWriters: FileWriters, tile: TilePaint) {
         Intrinsics.checkParameterIsNotNull(tile, "tile")
         val swHeight = tile.swHeight
         val seHeight = tile.seHeight
@@ -327,7 +327,7 @@ class SceneExporter {
         }
     }
 
-    fun upload(fileWriters: FileWriters, tileModel: TileModel) {
+    private fun upload(fileWriters: FileWriters, tileModel: TileModel) {
         val faceX = tileModel.faceX
         val faceY = tileModel.faceY
         val faceZ = tileModel.faceZ
