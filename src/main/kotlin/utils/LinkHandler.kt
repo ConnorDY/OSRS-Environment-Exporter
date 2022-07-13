@@ -12,17 +12,17 @@ class LinkHandler (val url: String) {
                 if (Runtime.getRuntime().exec(arrayOf("which", "xdg-open")).getInputStream().read() != 1) {
                     Runtime.getRuntime().exec(arrayOf("xdg-open", url));
                 } else {
-                    throw Error("xdg-open not found!")
+                    throw Exception("xdg-open not found!")
                 }
             } else {
                 if (Desktop.isDesktopSupported()) {
                     Desktop.getDesktop().browse(URI(url))
                 } else {
-                    throw Error("Desktop class not supported!")
+                    throw Exception("Desktop class not supported!")
                 }
             }
         } catch (e: URISyntaxException) {
-            throw Error("Invalid URL: ${url}!")
+            throw Exception("Invalid URL: ${url}!")
         }
     }
 }
