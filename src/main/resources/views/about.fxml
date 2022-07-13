@@ -5,36 +5,34 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<?import javafx.scene.layout.HBox?>
 <AnchorPane prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AboutController">
-    <children>
-        <VBox prefHeight="300.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="25.0"
-              AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="25.0">
-            <children>
-                <Label fx:id="lblTitle" text="Title"/>
-                <Label fx:id="lblVersion" text="Version"/>
+    <VBox prefHeight="300.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="25.0"
+          AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="25.0" alignment="CENTER">
+        <Label fx:id="lblTitle" text="Title" styleClass="aboutTitle"/>
 
-                <HBox alignment="CENTER" prefHeight="2.0">
-                    <children>
-                        <Hyperlink fx:id="linkGithub" text="https://github.com/ConnorDY/OSRS-Environment-Exporter"/>
-                    </children>
-                </HBox>
+        <Label fx:id="lblVersion" text="Version" styleClass="aboutText"/>
 
-                <VBox prefHeight="40"/>
+        <Hyperlink fx:id="linkGitHub" text="https://github.com/ConnorDY/OSRS-Environment-Exporter"
+                   styleClass="aboutText"/>
 
-                <Label fx:id="lblDescription" wrapText="true"
-                       text="This application enables exporting Old School RuneScape environments so they can be used in 3D modeling programs like Blender."/>
+        <VBox prefHeight="40"/>
 
-                <VBox prefHeight="40"/>
+        <Label wrapText="true"
+               text="This application enables exporting Old School RuneScape environments so they can be used in 3D modeling programs like Blender."
+               styleClass="aboutText"/>
 
-                <Label fx:id="lblCredits" text="Credits" underline="true"/>
-                <Label fx:id="lblCreditsLine1" text="Original idea by Trillion (twitter.com/TrillionStudios)."/>
-                <Label fx:id="lblCreditsLine2"
-                       text="Based on @tpetrychyn's OSRS Map Editor (github.com/tpetrychyn/osrs-map-editor)."/>
-                <Label fx:id="lblCreditsLine3"
-                       text="Using changes from @partyvaper's fork (github.com/partyvaper/osrs-map-editor)."/>
-            </children>
-        </VBox>
-    </children>
+        <VBox prefHeight="40"/>
+
+        <Label text="Credits" underline="true" styleClass="aboutText"/>
+
+        <Label text="Original idea by Trillion (twitter.com/TrillionStudios)."
+               styleClass="aboutText"/>
+        <Label
+                text="Based on @tpetrychyn's OSRS Map Editor (github.com/tpetrychyn/osrs-map-editor)."
+                styleClass="aboutText"/>
+        <Label
+                text="Using changes from @partyvaper's fork (github.com/partyvaper/osrs-map-editor)."
+                styleClass="aboutText"/>
+    </VBox>
 </AnchorPane>
