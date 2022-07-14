@@ -1,9 +1,7 @@
 package cache.definitions
 
-import cache.definitions.data.CircularAngle
 import cache.definitions.data.FaceNormal
 import cache.definitions.data.VertexNormal
-import java.util.*
 
 open class ModelDefinition {
     var id = 0
@@ -338,27 +336,6 @@ open class ModelDefinition {
         // triangleSkinValues is here
     }
 
-    fun rotate(orientation: Int) {
-        val sin: Int = CircularAngle.SINE.get(orientation)
-        val cos: Int = CircularAngle.COSINE.get(orientation)
-        assert(vertexPositionsX.size == vertexPositionsY.size)
-        assert(vertexPositionsY.size == vertexPositionsZ.size)
-        for (i in vertexPositionsX.indices) {
-            vertexPositionsX[i] = vertexPositionsX[i] * cos + vertexPositionsZ[i] * sin shr 16
-            vertexPositionsZ[i] = vertexPositionsZ[i] * cos - vertexPositionsX[i] * sin shr 16
-        }
-        reset()
-    }
-
-    fun resetAnim() {
-        if (origVX == null) {
-            return
-        }
-        System.arraycopy(origVX, 0, vertexPositionsX, 0, origVX!!.size)
-        System.arraycopy(origVY, 0, vertexPositionsY, 0, origVY.size)
-        System.arraycopy(origVZ, 0, vertexPositionsZ, 0, origVZ.size)
-    }
-
     // FrameMapDefinition = Skeleton
     // FrameDefition = Animation
 //    fun animate(frames: FramesDefinition, frame: Int) {
@@ -378,150 +355,6 @@ open class ModelDefinition {
 //            )
 //        }
 //    }
-
-    fun transform(type: Int, frameMap: IntArray, dx: Int, dy: Int, dz: Int) {
-        if (origVX == null) {
-            origVX = Arrays.copyOf(vertexPositionsX, vertexPositionsX.size)
-            origVY = Arrays.copyOf(vertexPositionsY, vertexPositionsY.size)
-            origVZ = Arrays.copyOf(vertexPositionsZ, vertexPositionsZ.size)
-        }
-        val verticesX = vertexPositionsX
-        val verticesY = vertexPositionsY
-        val verticesZ = vertexPositionsZ
-        val var6 = frameMap.size
-        var var7: Int
-        var var8: Int
-        var var11: Int
-        var var12: Int
-        if (type == 0) {
-            var7 = 0
-            animOffsetX = 0
-            animOffsetY = 0
-            animOffsetZ = 0
-            var8 = 0
-            while (var8 < var6) {
-                val var9 = frameMap[var8]
-                if (var9 < vertexGroups!!.size) {
-                    val var10 = vertexGroups!![var9]
-                    var11 = 0
-                    while (var11 < var10!!.size) {
-                        var12 = var10[var11]
-                        animOffsetX += verticesX[var12]
-                        animOffsetY += verticesY[var12]
-                        animOffsetZ += verticesZ[var12]
-                        ++var7
-                        ++var11
-                    }
-                }
-                ++var8
-            }
-            if (var7 > 0) {
-                animOffsetX = dx + animOffsetX / var7
-                animOffsetY = dy + animOffsetY / var7
-                animOffsetZ = dz + animOffsetZ / var7
-            } else {
-                animOffsetX = dx
-                animOffsetY = dy
-                animOffsetZ = dz
-            }
-        } else {
-            var var18: IntArray?
-            var var19: Int
-            if (type == 1) {
-                var7 = 0
-                while (var7 < var6) {
-                    var8 = frameMap[var7]
-                    if (var8 < vertexGroups!!.size) {
-                        var18 = vertexGroups!![var8]
-                        var19 = 0
-                        while (var19 < var18!!.size) {
-                            var11 = var18[var19]
-                            verticesX[var11] += dx
-                            verticesY[var11] += dy
-                            verticesZ[var11] += dz
-                            ++var19
-                        }
-                    }
-                    ++var7
-                }
-            } else if (type == 2) {
-                var7 = 0
-                while (var7 < var6) {
-                    var8 = frameMap[var7]
-                    if (var8 < vertexGroups!!.size) {
-                        var18 = vertexGroups!![var8]
-                        var19 = 0
-                        while (var19 < var18!!.size) {
-                            var11 = var18[var19]
-                            verticesX[var11] -= animOffsetX
-                            verticesY[var11] -= animOffsetY
-                            verticesZ[var11] -= animOffsetZ
-                            var12 = (dx and 255) * 8
-                            val var13 = (dy and 255) * 8
-                            val var14 = (dz and 255) * 8
-                            var var15: Int
-                            var var16: Int
-                            var var17: Int
-                            if (var14 != 0) {
-                                var15 = CircularAngle.SINE.get(var14)
-                                var16 = CircularAngle.COSINE.get(var14)
-                                var17 = var15 * verticesY[var11] + var16 * verticesX[var11] shr 16
-                                verticesY[var11] =
-                                    var16 * verticesY[var11] - var15 * verticesX[var11] shr 16
-                                verticesX[var11] = var17
-                            }
-                            if (var12 != 0) {
-                                var15 = CircularAngle.SINE.get(var12)
-                                var16 = CircularAngle.COSINE.get(var12)
-                                var17 = var16 * verticesY[var11] - var15 * verticesZ[var11] shr 16
-                                verticesZ[var11] =
-                                    var15 * verticesY[var11] + var16 * verticesZ[var11] shr 16
-                                verticesY[var11] = var17
-                            }
-                            if (var13 != 0) {
-                                var15 = CircularAngle.SINE.get(var13)
-                                var16 = CircularAngle.COSINE.get(var13)
-                                var17 = var15 * verticesZ[var11] + var16 * verticesX[var11] shr 16
-                                verticesZ[var11] =
-                                    var16 * verticesZ[var11] - var15 * verticesX[var11] shr 16
-                                verticesX[var11] = var17
-                            }
-                            verticesX[var11] += animOffsetX
-                            verticesY[var11] += animOffsetY
-                            verticesZ[var11] += animOffsetZ
-                            ++var19
-                        }
-                    }
-                    ++var7
-                }
-            } else if (type == 3) {
-                var7 = 0
-                while (var7 < var6) {
-                    var8 = frameMap[var7]
-                    if (var8 < vertexGroups!!.size) {
-                        var18 = vertexGroups!![var8]
-                        var19 = 0
-                        while (var19 < var18!!.size) {
-                            var11 = var18[var19]
-                            verticesX[var11] -= animOffsetX
-                            verticesY[var11] -= animOffsetY
-                            verticesZ[var11] -= animOffsetZ
-                            verticesX[var11] = dx * verticesX[var11] / 128
-                            verticesY[var11] = dy * verticesY[var11] / 128
-                            verticesZ[var11] = dz * verticesZ[var11] / 128
-                            verticesX[var11] += animOffsetX
-                            verticesY[var11] += animOffsetY
-                            verticesZ[var11] += animOffsetZ
-                            ++var19
-                        }
-                    }
-                    ++var7
-                }
-            } else if (type == 5) {
-                // alpha animation
-            }
-        }
-    }
 
     fun rotateMulti() {
         var var1: Int
@@ -573,15 +406,6 @@ open class ModelDefinition {
 //        faceTextureUCoordinates = null
     }
 
-    fun resize(var1: Int, var2: Int, var3: Int) {
-        for (var4 in 0 until vertexCount) {
-            vertexPositionsX[var4] = vertexPositionsX[var4] * var1 / 128
-            vertexPositionsY[var4] = var2 * vertexPositionsY[var4] / 128
-            vertexPositionsZ[var4] = var3 * vertexPositionsZ[var4] / 128
-        }
-        reset()
-    }
-
     fun recolor(var1: Short, var2: Short) {
         for (var3 in 0 until faceCount) {
             if (faceColors!![var3] == var1) {
@@ -596,26 +420,6 @@ open class ModelDefinition {
                 if (faceTextures!![var3] == var1) {
                     faceTextures!![var3] = var2
                 }
-            }
-        }
-    }
-
-    fun move(xOffset: Int, yOffset: Int, zOffset: Int) {
-        for (i in 0 until vertexCount) {
-            vertexPositionsX[i] += xOffset
-            vertexPositionsY[i] += yOffset
-            vertexPositionsZ[i] += zOffset
-        }
-        reset()
-    }
-
-    fun computeMaxPriority() {
-        if (faceRenderPriorities == null) {
-            return
-        }
-        for (i in 0 until faceCount) {
-            if (faceRenderPriorities!![i] > maxPriority) {
-                maxPriority = faceRenderPriorities!![i].toInt()
             }
         }
     }

@@ -1,11 +1,8 @@
 package controllers.worldRenderer.entities
 
 import controllers.worldRenderer.Constants
-import controllers.worldRenderer.components.*
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
-import utils.EventType
-import utils.Observable
 
 class TileModel(
     public var overlayPath: Int = 0,
@@ -26,15 +23,8 @@ class TileModel(
     public var neColorB: Int,
     public var nwColorB: Int,
     public val underlayRgb: Int = 0,
-    public val overlayRgb: Int = 0,
-    hoverComponent: HoverComponent = HoverComponent(),
-    selectComponent: SelectComponent = SelectComponent(),
-    clickableComponent: ClickableComponent = ClickableComponent()
-) : Observable<TileModel>(),
-    Renderable,
-    Clickable by clickableComponent,
-    Hoverable by hoverComponent,
-    Selectable by selectComponent {
+    public val overlayRgb: Int = 0
+) : Renderable {
 
     var computeObj: ComputeObj = ComputeObj()
 
@@ -45,68 +35,14 @@ class TileModel(
     lateinit var faceY: IntArray
     lateinit var faceZ: IntArray
 
-    fun setHeight(swHeight: Int, seHeight: Int, neHeight: Int, nwHeight: Int) {
-        this.swHeight = swHeight
-        this.seHeight = seHeight
-        this.neHeight = neHeight
-        this.nwHeight = nwHeight
-        calculateVertexs()
-        notifyObservers(EventType.SELECT)
-    }
-
-    fun setColor(swColor: Int, seColor: Int, neColor: Int, nwColor: Int) {
-        this.swColor = swColor
-        this.seColor = seColor
-        this.neColor = neColor
-        this.nwColor = nwColor
-        calculateVertexs()
-        notifyObservers(EventType.SELECT)
-    }
-
-    fun setBrightnessMaybe(swColor: Int, seColor: Int, neColor: Int, nwColor: Int) {
-        this.swColorB = swColor
-        this.seColorB = seColor
-        this.neColorB = neColor
-        this.nwColorB = nwColor
-        calculateVertexs()
-        notifyObservers(EventType.SELECT)
-    }
-
     var triangleColorA: IntArray = intArrayOf()
         private set
-        get() {
-            if (isSelected) {
-                return IntArray(faceCount) { Constants.SELECTED_HSL }
-            }
-            if (isHovered) {
-                return field.map { it + Constants.HOVER_HSL_ALPHA }.toIntArray()
-            }
-            return field
-        }
 
     var triangleColorB: IntArray = intArrayOf()
         private set
-        get() {
-            if (isSelected) {
-                return IntArray(faceCount) { Constants.SELECTED_HSL }
-            }
-            if (isHovered) {
-                return field.map { it + Constants.HOVER_HSL_ALPHA }.toIntArray()
-            }
-            return field
-        }
 
     var triangleColorC: IntArray = intArrayOf()
         private set
-        get() {
-            if (isSelected) {
-                return IntArray(faceCount) { Constants.SELECTED_HSL }
-            }
-            if (isHovered) {
-                return field.map { it + Constants.HOVER_HSL_ALPHA }.toIntArray()
-            }
-            return field
-        }
 
 
     var faceCount: Int = -1
@@ -146,12 +82,6 @@ class TileModel(
     }
 
     init {
-        hoverComponent.observable = this
-        selectComponent.observable = this
-        clickableComponent.onClickFunc = {
-            isSelected = true
-        }
-
         this.calculateVertexs()
     }
 
