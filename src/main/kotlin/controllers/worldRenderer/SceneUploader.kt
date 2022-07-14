@@ -94,7 +94,7 @@ class SceneUploader {
         tile.floorDecoration?.entity?.getModel()?.computeObj?.offset = -1
 
         for (gameObject in tile.gameObjects) {
-            gameObject.entity?.getModel()?.computeObj?.offset = -1
+            gameObject.entity.getModel().computeObj.offset = -1
         }
     }
 

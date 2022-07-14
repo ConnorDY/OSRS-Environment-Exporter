@@ -23,14 +23,15 @@ class RegionDefinition(
             for (x in 0 until X) {
                 for (y in 0 until Y) {
                     val tile: Tile = tiles[z][x][y]?: continue
-                    if (tile.cacheHeight == null) {
+                    val cacheHeight = tile.cacheHeight
+                    if (cacheHeight == null) {
                         if (z == 0) {
                             tile.height = -HeightCalc.calculate(baseX + x + 0xe3b7b, baseY + y + 0x87cce) * 8
                         } else {
                             tile.height = tiles[z-1][x][y]!!.height - 240
                         }
                     } else {
-                        var height: Int = tile.cacheHeight!!
+                        var height: Int = cacheHeight
                         if (height == 1) {
                             height = 0
                         }

@@ -65,24 +65,6 @@ class Model(
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
-    fun drawPersistent(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
-        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + xOff
-        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + yOff
-
-        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
-        b.ensureCapacity(13)
-
-        computeObj.idx = modelBuffers.targetBufferOffset
-        computeObj.flags = (radius shl 12) or orientationType.id
-        computeObj.x = x
-        computeObj.y = height
-        computeObj.z = z
-        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
-        b.buffer.put(computeObj.toArray())
-
-        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
-    }
-
     fun recompute(modelBuffers: ModelBuffers, height: Int) {
         val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
         b.ensureCapacity(13)

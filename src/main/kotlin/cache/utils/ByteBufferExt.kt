@@ -16,16 +16,6 @@ fun ByteBuffer.readUnsignedShort(): Int {
     return short.toInt() and 0xFFFF
 }
 
-fun ByteBuffer.writeUnsignedShortSmart(i: Int): Int {
-    return if (i < 128) {
-        put(i.toByte())
-        i.toByte().toInt()
-    } else {
-        putShort((i.toShort().toInt() + 0x8000).toShort())
-        i.toShort().toInt()
-    }
-}
-
 fun ByteBuffer.readUnsignedByte():Int {
     return get().toInt() and 0xFF
 }

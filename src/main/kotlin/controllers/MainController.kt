@@ -1,8 +1,6 @@
 package controllers
 
 import JfxApplication.Companion.injector
-import cache.loaders.LocationsLoader
-import cache.loaders.RegionLoader
 import com.google.inject.Inject
 import controllers.worldRenderer.WorldRendererController
 import javafx.animation.AnimationTimer
@@ -13,17 +11,13 @@ import javafx.scene.control.*
 import javafx.stage.Stage
 import javafx.util.Callback
 import models.DebugModel
-import models.scene.Scene
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
 import utils.Logger
 
 class MainController @Inject constructor(
-    private val debugModel: DebugModel,
-    private val scene: Scene,
-    private val locationsLoader: LocationsLoader,
-    private val regionLoader: RegionLoader
+    private val debugModel: DebugModel
 ) {
     private val logger = Logger.getLogger()
 

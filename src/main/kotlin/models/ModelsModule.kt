@@ -16,8 +16,6 @@ class ModelsModule : AbstractModule() {
     override fun configure() {
         bind(Configuration::class.java).toInstance(Configuration())
         bind(DebugModel::class.java).toInstance(DebugModel())
-        bind(ObjectsModel::class.java).toInstance(ObjectsModel())
-        bind(HoverModel::class.java).toInstance(HoverModel())
         bind(Scene::class.java).toProvider(SceneProvider::class.java)
     }
 }
@@ -32,7 +30,8 @@ internal class SceneProvider @Inject constructor(
     textureLoader: TextureLoader
 ) :
     Provider<Scene> {
-    private val scene: Scene = Scene(sceneRegionBuilder, underlayLoader, regionLoader, objectToModelConverter, overlayLoader, textureLoader)
+    private val scene: Scene = Scene(sceneRegionBuilder
+    )
     override fun get(): Scene {
         return scene
     }

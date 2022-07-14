@@ -18,10 +18,6 @@ class ObjectLoader @Inject constructor(
 ) {
     private val logger = Logger.getLogger()
 
-    fun getAll(): HashMap<Int, ObjectDefinition> {
-        return objectDefinitionCache
-    }
-
     fun get(id: Int): ObjectDefinition? {
         return objectDefinitionCache[id]
     }
