@@ -14,10 +14,13 @@ import models.DebugModel
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
+import org.slf4j.LoggerFactory
 
 class MainController @Inject constructor(
     private val debugModel: DebugModel
 ) {
+    private val logger = LoggerFactory.getLogger(MainController::class.java)
+
     @FXML
     lateinit var menuChangeRegion: MenuItem
     @FXML
@@ -75,7 +78,7 @@ class MainController @Inject constructor(
 
         btnTest.setOnAction {
             worldRendererControllerController.renderer.exportScene()
-            println("Exported OBJ's")
+            logger.info("Exported OBJ's")
             worldRendererNode.title = "Exported."
             Alert(Alert.AlertType.NONE, "Exported OBJ's.", ButtonType.OK).show()
         }

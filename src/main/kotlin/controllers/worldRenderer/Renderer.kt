@@ -30,6 +30,7 @@ import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
 import models.DebugModel
 import models.scene.*
+import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -43,6 +44,8 @@ class Renderer @Inject constructor(
     private val textureManager: TextureManager,
     private val debugModel: DebugModel
 ) : GLEventListener {
+    private val logger = LoggerFactory.getLogger(Renderer::class.java)
+
     private val MAX_TEMP_VERTICES: Int = 65535
 
     private lateinit var gl: GL4
@@ -621,13 +624,13 @@ class Renderer @Inject constructor(
             sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer, this)
         } catch (e: Exception) {
             e.printStackTrace()
-            println("out of space vertexBuffer size %d".format(modelBuffers.vertexBuffer.buffer.limit()))
+            logger.warn("out of space vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
         }
         modelBuffers.flipVertUv()
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
 
-        println("vertexBuffer size %d".format(vertexBuffer.limit()))
+        logger.debug("vertexBuffer size {}", vertexBuffer.limit())
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferId)
         gl.glBufferData(
             GL.GL_ARRAY_BUFFER,
@@ -743,7 +746,7 @@ class Renderer @Inject constructor(
         gl.glBindBuffer(GL2ES3.GL_PIXEL_PACK_BUFFER, 0)
         val status = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER)
         if (status != GL.GL_FRAMEBUFFER_COMPLETE) {
-            println("bad picker fbo")
+            logger.warn("bad picker fbo")
         }
         gl.glBindTexture(GL.GL_TEXTURE_2D, 0)
         gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0)
@@ -808,7 +811,7 @@ class Renderer @Inject constructor(
         )
         val status = gl.glCheckFramebufferStatus(GL.GL_FRAMEBUFFER)
         if (status != GL.GL_FRAMEBUFFER_COMPLETE) {
-            println("bad aaPicker fbo")
+            logger.warn("bad aaPicker fbo")
         }
 
         // Reset

@@ -2,6 +2,7 @@ package models.scene
 
 
 import com.google.inject.Inject
+import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.util.function.Consumer
 
@@ -11,6 +12,8 @@ const val REGION_HEIGHT = 4
 class Scene @Inject constructor(
     private val sceneRegionBuilder: SceneRegionBuilder
 ) {
+    private val logger = LoggerFactory.getLogger(Scene::class.java)
+
     var radius: Int = 1
 
     // NxM grid of regions to display
@@ -34,7 +37,7 @@ class Scene @Inject constructor(
         }
         for (x in 0 until radius) {
             for (y in 0 until radius) {
-                System.out.printf("Loading region %d\n", regionId)
+                logger.info("Loading region {}", regionId)
                 regions[x][y] = sceneRegionBuilder.loadRegion(regionId, true)
                 regionId++
             }
