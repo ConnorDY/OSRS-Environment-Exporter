@@ -17,6 +17,7 @@ import models.scene.Scene
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
+import utils.Logger
 
 class MainController @Inject constructor(
     private val debugModel: DebugModel,
@@ -24,6 +25,8 @@ class MainController @Inject constructor(
     private val locationsLoader: LocationsLoader,
     private val regionLoader: RegionLoader
 ) {
+    private val logger = Logger.getLogger()
+
     @FXML
     lateinit var menuChangeRegion: MenuItem
     @FXML
@@ -81,7 +84,7 @@ class MainController @Inject constructor(
 
         btnTest.setOnAction {
             worldRendererControllerController.renderer.exportScene()
-            println("Exported OBJ's")
+            logger.info("Exported OBJ's")
             worldRendererNode.title = "Exported."
             Alert(Alert.AlertType.NONE, "Exported OBJ's.", ButtonType.OK).show()
         }

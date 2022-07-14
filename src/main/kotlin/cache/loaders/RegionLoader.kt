@@ -7,6 +7,7 @@ import cache.definitions.RegionDefinition.Companion.Y
 import cache.definitions.RegionDefinition.Companion.Z
 import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
+import utils.Logger
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 
@@ -14,6 +15,8 @@ class RegionLoader(
     private val cacheLibrary: CacheLibrary,
     private val regionDefinitionCache: HashMap<Int, RegionDefinition?> = HashMap()
 ) {
+    private val logger = Logger.getLogger()
+
     fun get(regionId: Int): RegionDefinition? {
         if (regionDefinitionCache.containsKey(regionId)) {
             return regionDefinitionCache[regionId]
@@ -102,6 +105,6 @@ class RegionLoader(
 
         outputLibrary.put(5, "m${regionDefinition.regionX}_${regionDefinition.regionY}", outputStream.toByteArray())
         val status = outputLibrary.index(5).update()
-        println(status)
+        logger.debug("$status")
     }
 }

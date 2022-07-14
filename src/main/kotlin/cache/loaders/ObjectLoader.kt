@@ -9,12 +9,15 @@ import cache.utils.readUnsignedByte
 import cache.utils.readUnsignedShort
 import com.displee.cache.CacheLibrary
 import com.google.inject.Inject
+import utils.Logger
 import java.nio.ByteBuffer
 
 class ObjectLoader @Inject constructor(
     cacheLibrary: CacheLibrary,
     private val objectDefinitionCache: HashMap<Int, ObjectDefinition> = HashMap()
 ) {
+    private val logger = Logger.getLogger()
+
     fun getAll(): HashMap<Int, ObjectDefinition> {
         return objectDefinitionCache
     }
@@ -39,7 +42,7 @@ class ObjectLoader @Inject constructor(
     }
 
     private fun processOp(opcode: Int, def: ObjectDefinition, inputStream: ByteBuffer) {
-        println("Processing opcode " + opcode)
+        logger.info("Processing opcode $opcode")
         if (opcode == 1) {
             val length: Int = inputStream.readUnsignedByte()
             if (length > 0) {
@@ -138,12 +141,12 @@ class ObjectLoader @Inject constructor(
             def.blockingMask = inputStream.get().toInt()
         } else if (opcode == 70) {
             def.offsetX = inputStream.readUnsignedShort()
-            println("TODO: support offsetX, (got ${def.offsetX})")
+            logger.warn("TODO: support offsetX, (got ${def.offsetX})")
         } else if (opcode == 71) {
             def.offsetHeight = inputStream.readUnsignedShort().toShort().toInt()
         } else if (opcode == 72) {
             def.offsetY = inputStream.readUnsignedShort()
-            println("TODO: support offsetY, (got ${def.offsetY})")
+            logger.warn("TODO: support offsetY, (got ${def.offsetY})")
         } else if (opcode == 73) {
             def.obstructsGround = true
         } else if (opcode == 74) {
@@ -229,7 +232,7 @@ class ObjectLoader @Inject constructor(
             }
             def.params = params
         } else {
-            println("Unrecognized opcode: $opcode");
+            logger.warn("Unrecognized opcode: $opcode");
         }
     }
 

@@ -1,10 +1,13 @@
 package controllers.worldRenderer.helpers
 
 import com.jogamp.opengl.util.GLBuffers
+import utils.Logger
 import java.nio.BufferOverflowException
 import java.nio.IntBuffer
 
 class GpuIntBuffer {
+    private val logger = Logger.getLogger()
+
     var buffer = allocateDirect(65536)
         private set
 
@@ -36,7 +39,7 @@ class GpuIntBuffer {
             try {
                 newB.put(buffer)
             } catch(e: BufferOverflowException) {
-                println(e)
+                logger.error(e.toString())
             }
 
             buffer = newB

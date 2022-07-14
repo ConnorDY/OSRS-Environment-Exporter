@@ -9,6 +9,7 @@ import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
+import utils.Logger
 import javax.inject.Inject
 import kotlin.math.sqrt
 
@@ -21,6 +22,7 @@ class SceneRegionBuilder @Inject constructor(
     private val overlayLoader: OverlayLoader,
     private val objectToModelConverter: ObjectToModelConverter
 ) {
+    private val logger = Logger.getLogger()
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
 
@@ -371,11 +373,11 @@ class SceneRegionBuilder @Inject constructor(
             // Other objects ?
             else if (loc.type in 12..21) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-                println("Load new object? ${loc.type}")
+                logger.debug("Load new object? ${loc.type}")
             }
 
             else {
-                println("SceneRegionLoader Loading something new? ${loc.type}")
+                logger.debug("SceneRegionLoader Loading something new? ${loc.type}")
             }
         }
 

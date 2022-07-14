@@ -12,6 +12,7 @@ import com.google.inject.Inject
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.StaticObject
+import utils.Logger
 import java.awt.event.ActionListener
 import java.util.function.Consumer
 
@@ -26,6 +27,8 @@ class Scene @Inject constructor(
     private val overlayLoader: OverlayLoader,
     private val textureLoader: TextureLoader
 ) {
+    private val logger = Logger.getLogger()
+
     var radius: Int = 1
 
     // NxM grid of regions to display
@@ -49,7 +52,7 @@ class Scene @Inject constructor(
         }
         for (x in 0 until radius) {
             for (y in 0 until radius) {
-                System.out.printf("Loading region %d\n", regionId)
+                logger.info("Loading region $regionId")
                 regions[x][y] = sceneRegionBuilder.loadRegion(regionId, true)
                 regionId++
             }
