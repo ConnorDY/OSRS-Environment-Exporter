@@ -1,7 +1,7 @@
 import org.gradle.jvm.tasks.Jar
 
 plugins {
-    kotlin("jvm") version "1.3.71"
+    kotlin("jvm") version "1.7.10"
     id("org.openjfx.javafxplugin") version "0.0.8"
 }
 
