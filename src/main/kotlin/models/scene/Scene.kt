@@ -37,7 +37,7 @@ class Scene @Inject constructor(
         }
         for (x in 0 until radius) {
             for (y in 0 until radius) {
-                logger.info("Loading region $regionId")
+                logger.info("Loading region {}", regionId)
                 regions[x][y] = sceneRegionBuilder.loadRegion(regionId, true)
                 regionId++
             }

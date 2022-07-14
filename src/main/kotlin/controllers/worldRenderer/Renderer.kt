@@ -624,13 +624,13 @@ class Renderer @Inject constructor(
             sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer, this)
         } catch (e: Exception) {
             e.printStackTrace()
-            logger.warn("out of space vertexBuffer size %d".format(modelBuffers.vertexBuffer.buffer.limit()))
+            logger.warn("out of space vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
         }
         modelBuffers.flipVertUv()
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
 
-        logger.debug("vertexBuffer size %d".format(vertexBuffer.limit()))
+        logger.debug("vertexBuffer size {}", vertexBuffer.limit())
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferId)
         gl.glBufferData(
             GL.GL_ARRAY_BUFFER,
