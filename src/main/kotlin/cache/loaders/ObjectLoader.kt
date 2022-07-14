@@ -38,7 +38,7 @@ class ObjectLoader @Inject constructor(
     }
 
     private fun processOp(opcode: Int, def: ObjectDefinition, inputStream: ByteBuffer) {
-        logger.info("Processing opcode $opcode")
+        logger.debug("Processing opcode $opcode")
         if (opcode == 1) {
             val length: Int = inputStream.readUnsignedByte()
             if (length > 0) {
