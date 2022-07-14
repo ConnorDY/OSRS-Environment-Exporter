@@ -9,7 +9,7 @@ import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
-import utils.Logger
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import kotlin.math.sqrt
 
@@ -22,7 +22,7 @@ class SceneRegionBuilder @Inject constructor(
     private val overlayLoader: OverlayLoader,
     private val objectToModelConverter: ObjectToModelConverter
 ) {
-    private val logger = Logger.getLogger()
+    private val logger = LoggerFactory.getLogger(SceneRegionBuilder::class.java)
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
 
@@ -377,7 +377,7 @@ class SceneRegionBuilder @Inject constructor(
             }
 
             else {
-                logger.debug("SceneRegionLoader Loading something new? ${loc.type}")
+                logger.warn("SceneRegionLoader Loading something new? ${loc.type}")
             }
         }
 

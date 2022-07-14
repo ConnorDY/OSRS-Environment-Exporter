@@ -2,7 +2,7 @@ package models.scene
 
 
 import com.google.inject.Inject
-import utils.Logger
+import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.util.function.Consumer
 
@@ -12,7 +12,7 @@ const val REGION_HEIGHT = 4
 class Scene @Inject constructor(
     private val sceneRegionBuilder: SceneRegionBuilder
 ) {
-    private val logger = Logger.getLogger()
+    private val logger = LoggerFactory.getLogger(Scene::class.java)
 
     var radius: Int = 1
 

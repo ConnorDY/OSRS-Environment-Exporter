@@ -30,7 +30,7 @@ import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
 import models.DebugModel
 import models.scene.*
-import utils.Logger
+import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -44,7 +44,7 @@ class Renderer @Inject constructor(
     private val textureManager: TextureManager,
     private val debugModel: DebugModel
 ) : GLEventListener {
-    private val logger = Logger.getLogger()
+    private val logger = LoggerFactory.getLogger(Renderer::class.java)
 
     private val MAX_TEMP_VERTICES: Int = 65535
 

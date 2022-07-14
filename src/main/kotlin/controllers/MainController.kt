@@ -14,12 +14,12 @@ import models.DebugModel
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
-import utils.Logger
+import org.slf4j.LoggerFactory
 
 class MainController @Inject constructor(
     private val debugModel: DebugModel
 ) {
-    private val logger = Logger.getLogger()
+    private val logger = LoggerFactory.getLogger(MainController::class.java)
 
     @FXML
     lateinit var menuChangeRegion: MenuItem

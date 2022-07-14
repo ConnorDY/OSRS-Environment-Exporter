@@ -29,18 +29,17 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
-import utils.Logger
+import org.slf4j.LoggerFactory
 import java.io.*
 import java.net.URL
 import javax.net.ssl.SSLHandshakeException
-
 
 class CacheChooserController @Inject constructor(
     private val cacheLibraryProvider: CacheLibraryProvider,
     private val xteaManagerProvider: XteaManagerProvider,
     private val configuration: Configuration
 ) {
-    private val logger = Logger.getLogger()
+    private val logger = LoggerFactory.getLogger(CacheChooserController::class.java)
 
     @FXML
     private lateinit var listCaches: ListView<String>
