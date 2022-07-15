@@ -1,8 +1,6 @@
 package controllers
 
 import JfxApplication.Companion.injector
-import cache.loaders.LocationsLoader
-import cache.loaders.RegionLoader
 import com.google.inject.Inject
 import controllers.worldRenderer.WorldRendererController
 import javafx.animation.AnimationTimer
@@ -13,17 +11,16 @@ import javafx.scene.control.*
 import javafx.stage.Stage
 import javafx.util.Callback
 import models.DebugModel
-import models.scene.Scene
 import org.dockfx.DockNode
 import org.dockfx.DockPane
 import org.dockfx.DockPos
+import org.slf4j.LoggerFactory
 
 class MainController @Inject constructor(
-    private val debugModel: DebugModel,
-    private val scene: Scene,
-    private val locationsLoader: LocationsLoader,
-    private val regionLoader: RegionLoader
+    private val debugModel: DebugModel
 ) {
+    private val logger = LoggerFactory.getLogger(MainController::class.java)
+
     @FXML
     lateinit var menuChangeRegion: MenuItem
     @FXML
@@ -81,7 +78,7 @@ class MainController @Inject constructor(
 
         btnTest.setOnAction {
             worldRendererControllerController.renderer.exportScene()
-            println("Exported OBJ's")
+            logger.info("Exported OBJ's")
             worldRendererNode.title = "Exported."
             Alert(Alert.AlertType.NONE, "Exported OBJ's.", ButtonType.OK).show()
         }

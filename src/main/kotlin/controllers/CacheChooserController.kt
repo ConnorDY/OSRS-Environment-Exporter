@@ -1,5 +1,6 @@
 package controllers
 
+import AppConstants
 import JfxApplication.Companion.injector
 import cache.CacheLibraryProvider
 import cache.XteaManagerProvider
@@ -28,16 +29,17 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
+import org.slf4j.LoggerFactory
 import java.io.*
 import java.net.URL
 import javax.net.ssl.SSLHandshakeException
-
 
 class CacheChooserController @Inject constructor(
     private val cacheLibraryProvider: CacheLibraryProvider,
     private val xteaManagerProvider: XteaManagerProvider,
     private val configuration: Configuration
 ) {
+    private val logger = LoggerFactory.getLogger(CacheChooserController::class.java)
 
     @FXML
     private lateinit var listCaches: ListView<String>
@@ -68,7 +70,7 @@ class CacheChooserController @Inject constructor(
     @FXML
     private fun initialize() {
         val javaVer = System.getProperty("java.version")
-        println("Java version: $javaVer")
+        logger.info("Java version: $javaVer")
         val majorVer = javaVer.split(".")[0].toInt()
         if (majorVer < 11) {
             lblErrorText.isVisible = true
@@ -147,7 +149,7 @@ class CacheChooserController @Inject constructor(
 
         btnChooseDirectory.setOnAction {
             val directoryChooser = DirectoryChooser()
-            val initDir = File("./caches")
+            val initDir = File(AppConstants.CACHES_DIRECTORY)
             initDir.mkdirs()
             directoryChooser.initialDirectory = initDir
             val f = directoryChooser.showDialog(null) ?: return@setOnAction
@@ -196,7 +198,7 @@ class CacheChooserController @Inject constructor(
         lblStatusText.isVisible = true
         lblStatusText.text = "Downloading cache $cacheName please wait.."
         txtCacheLocation.text = ""
-        val destFolder = File("caches/${cacheName.removeSuffix(".tar.gz")}")
+        val destFolder = File("${AppConstants.CACHES_DIRECTORY}/${cacheName.removeSuffix(".tar.gz")}")
 
         GlobalScope.launch {
             try {

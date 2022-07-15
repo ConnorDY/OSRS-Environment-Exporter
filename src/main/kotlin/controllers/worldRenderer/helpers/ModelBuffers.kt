@@ -71,17 +71,11 @@ class ModelBuffers {
      * offset into the temporary scene vertex buffer
      */
     var tempOffset = 0
-    fun addTempOffset(n: Int) {
-        tempOffset += n
-    }
 
     /**
      * offset into the temporary scene uv buffer
      */
     var tempUvOffset = 0
-    fun addTempUvOffset(n: Int) {
-        tempUvOffset += n
-    }
 
     fun calcPickerId(x: Int, y: Int, objType: Int): Int {
         // pack x tile in top 13 bits, y in next 13, objectId in bottom 5

@@ -9,6 +9,7 @@ import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import kotlin.math.sqrt
 
@@ -21,6 +22,7 @@ class SceneRegionBuilder @Inject constructor(
     private val overlayLoader: OverlayLoader,
     private val objectToModelConverter: ObjectToModelConverter
 ) {
+    private val logger = LoggerFactory.getLogger(SceneRegionBuilder::class.java)
 
     private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
 
@@ -51,7 +53,7 @@ class SceneRegionBuilder @Inject constructor(
     fun loadRegion(regionId: Int, isAnimationEnabled: Boolean): SceneRegion? {
         val region: RegionDefinition = regionLoader.get(regionId) ?: return null
         val locations: LocationsDefinition = locationsLoader.get(regionId) ?: return null
-        val sceneRegion = SceneRegion(region, locations)
+        val sceneRegion = SceneRegion(locations)
         val baseX: Int = region.baseX
         val baseY: Int = region.baseY
         val blend = 5
@@ -332,7 +334,7 @@ class SceneRegionBuilder @Inject constructor(
 
             else if (loc.type == LocationType.WALL_CORNER.id) {
                 val entity1 =
-                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)
+                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)!!
                 val entity2 =
                     getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)
                 sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
@@ -371,26 +373,17 @@ class SceneRegionBuilder @Inject constructor(
             // Other objects ?
             else if (loc.type in 12..21) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-                println("Load new object? ${loc.type}")
+                logger.debug("Load new object? ${loc.type}")
             }
 
             else {
-                println("SceneRegionLoader Loading something new? ${loc.type}")
+                logger.warn("SceneRegionLoader Loading something new? ${loc.type}")
             }
         }
 
         return sceneRegion
     }
 
-    data class ModelKey(
-        val id: Int,
-        val type: Int,
-        val orientation: Int,
-        val ambient: Int,
-        val contrast: Int
-    )
-
-    private val entityCache: HashMap<ModelKey, Model> = HashMap()
     private fun getEntity(
         objectDefinition: ObjectDefinition,
         type: Int,
@@ -408,6 +401,8 @@ class SceneRegionBuilder @Inject constructor(
         // FIXME: nonFlatShading affects fence doors
         var model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
 
+        model = model.scaleBy(objectDefinition.modelSizeX, objectDefinition.modelSizeHeight, objectDefinition.modelSizeY)
+
         if (objectDefinition.contouredGround >= 0) {
             model = model.contourGround(
                 regionLoader,
@@ -422,7 +417,7 @@ class SceneRegionBuilder @Inject constructor(
             )
         }
 
-        return StaticObject(objectDefinition, model, height, type, orientation)
+        return StaticObject(objectDefinition, model, height + objectDefinition.offsetHeight, type, orientation)
     }
 
     private fun hslToRgb(var0: Int, var1: Int, var2: Int): Int {

@@ -15,20 +15,24 @@
          <children>
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label text="Visit Explv's OSRS map to find region ids." />
-                  <Hyperlink fx:id="linkExplv" text="https://explv.github.io/" />
+                  <Label text="Visit Explv's OSRS Map to find Region IDs: " />
+                  <Hyperlink fx:id="linkMap" text="https://explv.github.io/" />
                </children>
             </HBox>
+
             <Label alignment="CENTER" text="Note: Higher radius will affect load time and FPS." />
+
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
                   <Label text="Region ID:" />
                   <TextField fx:id="txtRegionId" promptText="10038" HBox.hgrow="SOMETIMES">
                      <HBox.margin>
                         <Insets right="5.0" />
-                     </HBox.margin></TextField>
+                     </HBox.margin>
+                  </TextField>
+
                   <Label text="Radius:" />
-                  <TextField fx:id="txtRadius" promptText="1" />
+                  <TextField fx:id="txtRadius" promptText="1" text="1" />
                </children>
                <VBox.margin>
                   <Insets left="20.0" right="20.0" />
