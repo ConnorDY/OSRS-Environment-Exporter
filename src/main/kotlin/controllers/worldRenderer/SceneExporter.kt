@@ -137,13 +137,13 @@ class SceneExporter {
 
     fun writeVerticesT(gltf: glTF) {
         if (verticesT.size > 0) {
-            gltf.addMesh(verticesT, objt.toString())
+            gltf.addMesh(verticesT, "t")
         }
     }
 
     fun writeVerticesM(gltf: glTF) {
         if (verticesM.size > 0) {
-            gltf.addMesh(verticesM, objm.toString())
+            gltf.addMesh(verticesM, "m")
         }
     }
 
