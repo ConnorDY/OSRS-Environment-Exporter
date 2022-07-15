@@ -3,7 +3,7 @@ package models.glTF
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class glTF {
+class glTF(private val directory: String) {
   val asset = Asset(
     "2.0",
     "OSRS-Environment-Exporter"
@@ -30,7 +30,7 @@ class glTF {
       }
     }
 
-    val buffer = Buffer(bytes.array(), filename)
+    val buffer = Buffer(bytes.array(), directory, filename)
     buffers.add(buffer)
 
     val bufferView = BufferView(buffers.size - 1, buffer.byteLength)

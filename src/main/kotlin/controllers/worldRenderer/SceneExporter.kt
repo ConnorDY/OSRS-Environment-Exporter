@@ -1,7 +1,6 @@
 package controllers.worldRenderer
 
 import AppConstants
-import cache.utils.ColorPalette.Companion.rs2hsbToColor
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import controllers.worldRenderer.entities.*
@@ -49,7 +48,7 @@ class SceneExporter {
         File(outDir).mkdirs()
 
         // init glTF builder
-        val gltf = glTF()
+        val gltf = glTF(outDir)
 
         ++sceneId
 
@@ -86,6 +85,9 @@ class SceneExporter {
         File("${outDir}/scene.gltf").printWriter().use {
             it.write(json)
         }
+
+        // copy textures
+        copyTextures(outDir)
     }
 
     private fun writeMaterials(file: PrintWriter) {
@@ -101,6 +103,19 @@ class SceneExporter {
 """
                 )
             }
+        }
+    }
+
+    private fun copyTextures(outDir: String) {
+        val src = Path.of(AppConstants.TEXTURES_DIRECTORY)
+        val dest = Path.of("${outDir}/${AppConstants.TEXTURES_DIRECTORY_NAME}")
+
+        Files.walk(src).forEach {
+            Files.copy(
+                it,
+                dest.resolve(src.relativize(it)),
+                StandardCopyOption.REPLACE_EXISTING
+            )
         }
     }
 
