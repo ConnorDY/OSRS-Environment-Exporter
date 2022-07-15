@@ -1,2 +1,2 @@
-rootProject.name = "map-editor-kts"
+rootProject.name = "osrs-environment-exporter"
 

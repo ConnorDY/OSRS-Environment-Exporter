@@ -9,19 +9,6 @@ class ObjectToModelConverter @Inject constructor(
     private val modelLoader: ModelLoader,
     private val litModelCache: HashMap<Long, ModelDefinition> = HashMap()
 ) {
-    fun toModelTypesMap(objectDefinition: ObjectDefinition): HashMap<Int, ModelDefinition?> {
-        val modelDefMap: HashMap<Int, ModelDefinition?> = HashMap()
-        if (objectDefinition.modelTypes == null) {
-            // interactable is the default
-            modelDefMap[10] = toModel(objectDefinition, 10, 0)
-        } else {
-            for (typ in objectDefinition.modelTypes!!) {
-                modelDefMap[typ] = toModel(objectDefinition, typ, 0)
-            }
-        }
-
-        return modelDefMap
-    }
 
     fun toModel(objectDefinition: ObjectDefinition, type: Int, orientation: Int): ModelDefinition? {
         val modelTag: Long = if (objectDefinition.modelTypes == null) {

@@ -1,12 +1,12 @@
 import org.gradle.jvm.tasks.Jar
 
 plugins {
-    kotlin("jvm") version "1.3.71"
+    kotlin("jvm") version "1.7.10"
     id("org.openjfx.javafxplugin") version "0.0.8"
 }
 
 group = "org.example"
-version = "0.1.1"
+version = "2.0.0"
 
 repositories {
     mavenCentral()
@@ -25,14 +25,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+    implementation("ch.qos.logback:logback-classic:1.2.11")
+    implementation("org.slf4j:slf4j-api:1.7.36")
 }
 
 tasks {
     compileKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
     compileTestKotlin {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
     }
     build {
         dependsOn(fatJar)

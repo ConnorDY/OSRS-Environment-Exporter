@@ -23,6 +23,7 @@ package controllers.worldRenderer
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import AppConstants
 import cache.definitions.TextureDefinition
 import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
@@ -134,19 +135,11 @@ class TextureManager @Inject constructor(
                 pixelBuffer
             )
 
-            var pathAsFile = File("./OBJ/")
-            if (!Files.exists(Paths.get("./OBJ/"))) {
-                pathAsFile.mkdir()
-            }
-
-            pathAsFile = File("./OBJ/Textures/")
-            if (!Files.exists(Paths.get("./OBJ/Textures/"))) {
-                pathAsFile.mkdir()
-            }
+            File(AppConstants.TEXTURES_DIRECTORY).mkdirs()
 
             val image = BufferedImage(TEXTURE_SIZE, TEXTURE_SIZE, IndexColorModel.BITMASK)
-            for(y in 0 until 128) {
-                for(x in 0 until 128) {
+            for (y in 0 until 128) {
+                for (x in 0 until 128) {
                     var p = srcPixels[x + y * 128]
                     val r = (p and 0xff000000L.toInt()).ushr(24)
                     val g = (p and 0xff0000).ushr(16)
@@ -163,8 +156,11 @@ class TextureManager @Inject constructor(
                 }
             }
 
-            ImageIO.write(image, "png", File("./OBJ/Textures/$textureId.png"))
-
+            ImageIO.write(
+                image,
+                "png",
+                File("${AppConstants.TEXTURES_DIRECTORY}/$textureId.png")
+            )
         }
     }
 

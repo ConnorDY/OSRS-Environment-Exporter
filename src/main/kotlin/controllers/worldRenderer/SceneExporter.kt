@@ -1,15 +1,17 @@
 package controllers.worldRenderer
 
+import AppConstants
 import cache.utils.ColorPalette.Companion.rs2hsbToColor
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import controllers.worldRenderer.entities.*
+import models.glTF.glTF
 import models.scene.Scene
 import models.scene.SceneTile
-import models.glTF.glTF
 import java.io.*
 import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -17,8 +19,6 @@ import kotlin.jvm.internal.Intrinsics
 
 class SceneExporter {
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
-    var gltf = glTF()
-    var timestamp = ""
     var vertexcountc = 0
     var vertexcountt = 0
     var objcount = 0
@@ -37,26 +37,36 @@ class SceneExporter {
         vertexcountc = 0
         vertexcountt = 0
 
-        timestamp = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+        // create output directory if it does not yet exist
+        File(AppConstants.OUTPUT_DIRECTORY).mkdirs()
+
+        // create timestamped output directory
+        val timestamp = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH_mm_ss.SSSSSS")
             .withZone(ZoneOffset.UTC)
             .format(Instant.now())
+        val outDir = "${AppConstants.OUTPUT_DIRECTORY}/${timestamp}"
+        File(outDir).mkdirs()
 
-        gltf = glTF()
+        // init glTF builder
+        val gltf = glTF()
 
         ++sceneId
+
         for (rx in 0 until scene.radius) {
             for (ry in 0 until scene.radius) {
                 val region = scene.getRegion(rx, ry) ?: continue
                 for (z in 0 until 4) {
-                    if ((z != 0 || renderer.z0ChkBtnSelected) &&
+                    if (
+                        (z != 0 || renderer.z0ChkBtnSelected) &&
                         (z != 1 || renderer.z1ChkBtnSelected) &&
                         (z != 2 || renderer.z2ChkBtnSelected) &&
-                        (z != 3 || renderer.z3ChkBtnSelected)) {
+                        (z != 3 || renderer.z3ChkBtnSelected)
+                    ) {
                         for (x in 0 until 64) {
                             for (y in 0 until 64) {
                                 val tile = region.tiles[z][x][y] ?: continue
-                                this.upload(tile)
+                                this.upload(gltf, tile)
                             }
                         }
                     }
@@ -64,8 +74,8 @@ class SceneExporter {
             }
         }
 
-        writeVerticesT()
-        writeVerticesM()
+        writeVerticesT(gltf)
+        writeVerticesM(gltf)
 
         // convert to JSON
         val mapper = ObjectMapper()
@@ -73,10 +83,9 @@ class SceneExporter {
         val json = mapper.writeValueAsString(gltf)
 
         // write to file
-        File("./output").mkdir()
-        val gfile = File("./output/${timestamp}.gltf").printWriter()
-        gfile.write(json)
-        gfile.close()
+        File("${outDir}/scene.gltf").printWriter().use {
+            it.write(json)
+        }
     }
 
     private fun writeMaterials(file: PrintWriter) {
@@ -88,95 +97,106 @@ class SceneExporter {
  Ks 0 0 0
  d 1.0
  illum 2
- map_Kd ./Textures/$rx.png
+ map_Kd ./${AppConstants.TEXTURES_DIRECTORY_NAME}/$rx.png
 """
                 )
             }
         }
     }
 
-    fun upload(tile: SceneTile) {
-        tile.tilePaint?.let { upload(it) }
-        tile.tileModel?.let { upload(it) }
-        uploadIfStatic(tile.wall?.entity)
-        uploadIfStatic(tile.wall?.entity2)
-        uploadIfStatic(tile.wallDecoration?.entity)
-        uploadIfStatic(tile.floorDecoration?.entity)
-        tile.gameObjects.map { it.entity }.forEach(::uploadIfStatic)
+    private fun upload(gltf: glTF, tile: SceneTile) {
+        tile.tilePaint?.let { upload(gltf, it) }
+        tile.tileModel?.let { upload(gltf, it) }
+        uploadIfStatic(gltf, tile.wall?.entity)
+        uploadIfStatic(gltf, tile.wall?.entity2)
+        uploadIfStatic(gltf, tile.wallDecoration?.entity)
+        uploadIfStatic(gltf, tile.floorDecoration?.entity)
+        tile.gameObjects.map { it.entity }.forEach {
+            uploadIfStatic(gltf, it)
+        }
     }
 
-    private fun uploadIfStatic(entity: Entity?) {
-        if (entity is StaticObject) uploadModel(entity)
+    private fun uploadIfStatic(gltf: glTF, entity: Entity?) {
+        if (entity is StaticObject) uploadModel(gltf, entity)
     }
 
-    fun writeVerticesT() {
+    fun writeVerticesT(gltf: glTF) {
         if (verticesT.size > 0) {
-            gltf.addMesh(verticesT, timestamp)
+            gltf.addMesh(verticesT, objt.toString())
         }
     }
 
-    fun writeVerticesM() {
+    fun writeVerticesM(gltf: glTF) {
         if (verticesM.size > 0) {
-            gltf.addMesh(verticesM, timestamp)
+            gltf.addMesh(verticesM, objm.toString())
         }
     }
 
-    fun writevertex(v1: Int, v2: Int, v3: Int, c: Int) {
+    private fun writevertex(gltf: glTF, v1: Int, v2: Int, v3: Int, c: Int) {
         if (objm != objcount) {
             objm = objcount
-            writeVerticesM()
+            writeVerticesM(gltf)
             verticesM = ArrayList<FloatArray>()
         }
-        verticesM.add(floatArrayOf(v1.toFloat() / scale, v2.toFloat() / scale, v3.toFloat() / scale))
+        verticesM.add(floatArrayOf(
+            v1.toFloat() / scale,
+            v2.toFloat() / scale,
+            v3.toFloat() / scale
+        ))
         ++vertexcountt
     }
 
-    fun writevertexcolor(v1: Int, v2: Int, v3: Int, c: Int) {
+    private fun writevertexcolor(gltf: glTF, v1: Int, v2: Int, v3: Int, c: Int) {
         if (objt != objcount) {
             objt = objcount
-            writeVerticesT()
+            writeVerticesT(gltf)
             verticesT = ArrayList<FloatArray>()
         }
-        verticesT.add(floatArrayOf(v1.toFloat() / scale, v2.toFloat() / scale, v3.toFloat() / scale))
+        verticesT.add(floatArrayOf(
+            v1.toFloat() / scale,
+            v2.toFloat() / scale,
+            v3.toFloat() / scale
+        ))
         ++vertexcountc
 
-//        if (objt != objcount) {
-//            objt = objcount
-//            tfile.write(
-//                "o obj${objcount}\n"
-//            )
-//        }
-//        ++vertexcountc
-//        val color = rs2hsbToColor(c)
-//        tfile.write("v " + v1.toFloat() / scale + " " + (-v2).toFloat() / scale + " " + (-v3).toFloat() / scale + " " + (color.red.toFloat() / 255.0f).toDouble() + " " + (color.green.toFloat() / 255.0f).toDouble() + " " + (color.blue.toFloat() / 255.0f).toDouble() + "\n")
+        // TODO: re-implement this
+        // previous implementation:
+        // val color = rs2hsbToColor(c)
+        // fileWriters.writeToTFile(
+        //     "v " + v1.toFloat() / scale + " " +
+        //         + (-v2).toFloat() / scale + " "
+        //         + (-v3).toFloat() / scale + " "
+        //         + (color.red.toFloat() / 255.0f).toDouble() + " "
+        //         + (color.green.toFloat() / 255.0f).toDouble() + " "
+        //         + (color.blue.toFloat() / 255.0f).toDouble() + "\n"
+        // )
     }
 
-    fun writetexture(v1: Float, v2: Float, v3: Float, c: Float) {
-//        mfile.write(
-//            "vt $v2 ${1f - v3}\n"
-//        )
+    private fun writetexture(gltf: glTF, v1: Float, v2: Float, v3: Float, c: Float) {
+        // TODO: implement this
+        // previous implementation:
+        // fileWriters.writeToMFile(
+        //     "vt $v2 ${1f - v3}\n"
+        // )
     }
 
-    fun writecolour(col: Int) {
-        val color = rs2hsbToColor(col)
-//        colourfile.write(
-//            "  Kd ${(color.red.toFloat() / 255.0f).toDouble()} ${(color.green.toFloat() / 255.0f).toDouble()} ${(color.blue.toFloat() / 255.0f).toDouble()}\n"
-//        )
+    private fun write3facem(gltf: glTF) {
+        // TODO: implement this
+        // previous implementation:
+        // fileWriters.writeToMFile(
+        //     "f ${vertexcountt - 2}/${vertexcountt - 2} ${vertexcountt - 1}/${vertexcountt - 1} ${vertexcountt}/${vertexcountt}\n"
+        // )
     }
 
-    fun write3facem() {
-//        mfile.write(
-//            "f ${vertexcountt - 2}/${vertexcountt - 2} ${vertexcountt - 1}/${vertexcountt - 1} ${vertexcountt}/${vertexcountt}\n"
-//        )
+    private fun write3facet(gltf: glTF) {
+        // TODO: implement this
+        // previous implementation:
+        // fileWriters.writeToTFile(
+        //     "f ${vertexcountc - 2} ${vertexcountc - 1} ${vertexcountc}\n"
+        // )
     }
 
-    fun write3facet() {
-//        tfile.write(
-//            "f ${vertexcountc - 2} ${vertexcountc - 1} ${vertexcountc}\n"
-//        )
-    }
-
-    fun upload(tile: TilePaint) {
+    private fun upload(gltf: glTF, tile: TilePaint) {
         Intrinsics.checkParameterIsNotNull(tile, "tile")
         val swHeight = tile.swHeight
         val seHeight = tile.seHeight
@@ -199,100 +219,116 @@ class SceneExporter {
                 val tex = tile.texture.toFloat() + 1.0f
                 if (materials) {
                     writevertex(
+                        gltf,
                         vertexAx + tile.computeObj.x,
                         neHeight + tile.computeObj.y,
                         vertexAy + tile.computeObj.z,
                         neColor
                     )
                     writevertex(
+                        gltf,
                         vertexBx + tile.computeObj.x,
                         nwHeight + tile.computeObj.y,
                         vertexBy + tile.computeObj.z,
                         nwColor
                     )
                     writevertex(
+                        gltf,
                         vertexCx + tile.computeObj.x,
                         seHeight + tile.computeObj.y,
                         vertexCy + tile.computeObj.z,
                         seColor
                     )
-                    writetexture(tex, 1.0f, 1.0f, 0.0f)
-                    writetexture(tex, 0.0f, 1.0f, 0.0f)
-                    writetexture(tex, 1.0f, 0.0f, 0.0f)
-//                    mfile.write(
-//                        "usemtl t${(tex - 1f).toInt()}\n"
-//                    )
-                    write3facem()
+                    writetexture(gltf, tex, 1.0f, 1.0f, 0.0f)
+                    writetexture(gltf, tex, 0.0f, 1.0f, 0.0f)
+                    writetexture(gltf, tex, 1.0f, 0.0f, 0.0f)
+                    // TODO: implement this
+                    // previous implementation:
+                    // fileWriters.writeToMFile(
+                    //     "usemtl t${(tex - 1f).toInt()}\n"
+                    // )
+                    write3facem(gltf)
                     writevertex(
+                        gltf,
                         vertexDx + tile.computeObj.x,
                         swHeight + tile.computeObj.y,
                         vertexDy + tile.computeObj.z,
                         swColor
                     )
                     writevertex(
+                        gltf,
                         vertexCx + tile.computeObj.x,
                         seHeight + tile.computeObj.y,
                         vertexCy + tile.computeObj.z,
                         seColor
                     )
                     writevertex(
+                        gltf,
                         vertexBx + tile.computeObj.x,
                         nwHeight + tile.computeObj.y,
                         vertexBy + tile.computeObj.z,
                         nwColor
                     )
-                    writetexture(tex, 0.0f, 0.0f, 0.0f)
-                    writetexture(tex, 1.0f, 0.0f, 0.0f)
-                    writetexture(tex, 0.0f, 1.0f, 0.0f)
-//                    mfile.write(
-//                        "usemtl t${(tex - 1f).toInt()}\n"
-//                    )
-                    write3facem()
+                    writetexture(gltf, tex, 0.0f, 0.0f, 0.0f)
+                    writetexture(gltf, tex, 1.0f, 0.0f, 0.0f)
+                    writetexture(gltf, tex, 0.0f, 1.0f, 0.0f)
+                    // TODO: implement this
+                    // previous implementation:
+                    // fileWriters.writeToMFile(
+                    //     "usemtl t${(tex - 1f).toInt()}\n"
+                    // )
+                    write3facem(gltf)
                 }
             } else if (textures) {
                 writevertexcolor(
+                    gltf,
                     vertexAx + tile.computeObj.x,
                     neHeight + tile.computeObj.y,
                     vertexAy + tile.computeObj.z,
                     neColor
                 )
                 writevertexcolor(
+                    gltf,
                     vertexBx + tile.computeObj.x,
                     nwHeight + tile.computeObj.y,
                     vertexBy + tile.computeObj.z,
                     nwColor
                 )
                 writevertexcolor(
+                    gltf,
                     vertexCx + tile.computeObj.x,
                     seHeight + tile.computeObj.y,
                     vertexCy + tile.computeObj.z,
                     seColor
                 )
-                write3facet()
+                write3facet(gltf)
                 writevertexcolor(
+                    gltf,
                     vertexDx + tile.computeObj.x,
                     swHeight + tile.computeObj.y,
                     vertexDy + tile.computeObj.z,
                     swColor
                 )
                 writevertexcolor(
+                    gltf,
                     vertexCx + tile.computeObj.x,
                     seHeight + tile.computeObj.y,
                     vertexCy + tile.computeObj.z,
                     seColor
                 )
                 writevertexcolor(
+                    gltf,
                     vertexBx + tile.computeObj.x,
                     nwHeight + tile.computeObj.y,
                     vertexBy + tile.computeObj.z,
                     nwColor
                 )
-                write3facet()
+                write3facet(gltf)
             }
         }
     }
 
-    fun upload(tileModel: TileModel) {
+    private fun upload(gltf: glTF, tileModel: TileModel) {
         val faceX = tileModel.faceX
         val faceY = tileModel.faceY
         val faceZ = tileModel.faceZ
@@ -322,82 +358,93 @@ class SceneExporter {
                     val tex = triangleTextures[i].toFloat() + 1.0f
                     if (materials) {
                         writevertex(
+                            gltf,
                             vertexXA + tileModel.computeObj.x,
                             vertexY[triangleA] + tileModel.computeObj.y,
                             vertexZA + tileModel.computeObj.z,
                             colorA
                         )
                         writevertex(
+                            gltf,
                             vertexXB + tileModel.computeObj.x,
                             vertexY[triangleB] + tileModel.computeObj.y,
                             vertexZB + tileModel.computeObj.z,
                             colorB
                         )
                         writevertex(
+                            gltf,
                             vertexXC + tileModel.computeObj.x,
                             vertexY[triangleC] + tileModel.computeObj.y,
                             vertexZC + tileModel.computeObj.z,
                             colorC
                         )
                         writetexture(
+                            gltf,
                             tex,
                             vertexXA.toFloat() / 128.0f,
                             vertexZA.toFloat() / 128.0f,
                             0.0f
                         )
                         writetexture(
+                            gltf,
                             tex,
                             vertexXB.toFloat() / 128.0f,
                             vertexZB.toFloat() / 128.0f,
                             0.0f
                         )
                         writetexture(
+                            gltf,
                             tex,
                             vertexXC.toFloat() / 128.0f,
                             vertexZC.toFloat() / 128.0f,
                             0.0f
                         )
-//                        mfile.write(
-//                            "usemtl t${(tex - 1f).toInt()}\n"
-//                        )
-                        write3facem()
+                        // TODO: implement this
+                        // previous implementation:
+                        // fileWriters.writeToMFile(
+                        //     "usemtl t${(tex - 1f).toInt()}\n"
+                        // )
+                        write3facem(gltf)
                     }
                 } else if (textures) {
                     writevertexcolor(
+                        gltf,
                         vertexXA + tileModel.computeObj.x,
                         vertexY[triangleA] + tileModel.computeObj.y,
                         vertexZA + tileModel.computeObj.z,
                         colorA
                     )
                     writevertexcolor(
+                        gltf,
                         vertexXB + tileModel.computeObj.x,
                         vertexY[triangleB] + tileModel.computeObj.y,
                         vertexZB + tileModel.computeObj.z,
                         colorB
                     )
                     writevertexcolor(
+                        gltf,
                         vertexXC + tileModel.computeObj.x,
                         vertexY[triangleC] + tileModel.computeObj.y,
                         vertexZC + tileModel.computeObj.z,
                         colorC
                     )
-                    write3facet()
+                    write3facet(gltf)
                 }
             }
         }
     }
 
-    private fun uploadModel(entity: Entity) {
+    private fun uploadModel(gltf: glTF, entity: Entity) {
         val model = entity.getModel()
         if (model.computeObj.offset >= 0) {
         }
         val triangleCount = model.modelDefinition.faceCount
         for (i in 0 until triangleCount) {
-            pushFace(model, i)
+            pushFace(gltf, model, i)
         }
     }
 
-    private fun pushFace(model: Model, face: Int) {
+    private fun pushFace(gltf: glTF, model: Model, face: Int) {
         val modelDefinition = model.modelDefinition
         val vertexX = model.vertexPositionsX
         val vertexY = model.vertexPositionsY
@@ -447,6 +494,7 @@ class SceneExporter {
                             var b = vertexY[triangleA]
                             var c = vertexZ[triangleA]
                             writevertex(
+                                gltf,
                                 a + model.computeObj.x,
                                 b + model.computeObj.y,
                                 c + model.computeObj.z,
@@ -456,6 +504,7 @@ class SceneExporter {
                             b = vertexY[triangleB]
                             c = vertexZ[triangleB]
                             writevertex(
+                                gltf,
                                 a + model.computeObj.x,
                                 b + model.computeObj.y,
                                 c + model.computeObj.z,
@@ -465,21 +514,24 @@ class SceneExporter {
                             b = vertexY[triangleC]
                             c = vertexZ[triangleC]
                             writevertex(
+                                gltf,
                                 a + model.computeObj.x,
                                 b + model.computeObj.y,
                                 c + model.computeObj.z,
                                 alpha or priority or color3
                             )
                             var var10002 = uf!![0]
-                            writetexture(texture, var10002, vf!![0], 0.0f)
+                            writetexture(gltf, texture, var10002, vf!![0], 0.0f)
                             var10002 = uf[1]
-                            writetexture(texture, var10002, vf[1], 0.0f)
+                            writetexture(gltf, texture, var10002, vf[1], 0.0f)
                             var10002 = uf[2]
-                            writetexture(texture, var10002, vf[2], 0.0f)
-//                            mfile.write(
-//                                "usemtl t${(texture - 1f).toInt()}\n"
-//                            )
-                            write3facem()
+                            writetexture(gltf, texture, var10002, vf[2], 0.0f)
+                            // TODO: implement this
+                            // previous implementation:
+                            // fileWriters.writeToMFile(
+                            //     "usemtl t${(texture - 1f).toInt()}\n"
+                            // )
+                            write3facem(gltf)
                         }
                         return
                     }
@@ -491,6 +543,7 @@ class SceneExporter {
             var b = vertexY[triangleA]
             var c = vertexZ[triangleA]
             writevertexcolor(
+                gltf,
                 a + model.computeObj.x,
                 b + model.computeObj.y,
                 c + model.computeObj.z,
@@ -500,6 +553,7 @@ class SceneExporter {
             b = vertexY[triangleB]
             c = vertexZ[triangleB]
             writevertexcolor(
+                gltf,
                 a + model.computeObj.x,
                 b + model.computeObj.y,
                 c + model.computeObj.z,
@@ -509,12 +563,13 @@ class SceneExporter {
             b = vertexY[triangleC]
             c = vertexZ[triangleC]
             writevertexcolor(
+                gltf,
                 a + model.computeObj.x,
                 b + model.computeObj.y,
                 c + model.computeObj.z,
                 alpha or priority or color3
             )
-            write3facet()
+            write3facet(gltf)
         }
     }
 

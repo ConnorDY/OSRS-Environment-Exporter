@@ -65,24 +65,6 @@ class Model(
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
-    fun drawPersistent(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
-        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + xOff
-        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + yOff
-
-        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
-        b.ensureCapacity(13)
-
-        computeObj.idx = modelBuffers.targetBufferOffset
-        computeObj.flags = (radius shl 12) or orientationType.id
-        computeObj.x = x
-        computeObj.y = height
-        computeObj.z = z
-        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
-        b.buffer.put(computeObj.toArray())
-
-        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
-    }
-
     fun recompute(modelBuffers: ModelBuffers, height: Int) {
         val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
         b.ensureCapacity(13)
@@ -235,6 +217,33 @@ class Model(
             model
         }
     }
+
+    fun scaleBy(
+        x: Int,
+        y: Int,
+        z: Int
+    ): Model =
+        if (x == 128 && y == 128 && z == 128) {
+            this
+        } else {
+            val newDef = ModelDefinition(
+                modelDefinition,
+                shallowCopyVerts = false,
+                shallowCopyFaceColors = true,
+                shallowCopyFaceTextures = true
+            )
+            for (n in 0 until modelDefinition.vertexCount) {
+                newDef.vertexPositionsX[n] = newDef.vertexPositionsX[n] * x / 128
+                newDef.vertexPositionsY[n] = newDef.vertexPositionsY[n] * y / 128
+                newDef.vertexPositionsZ[n] = newDef.vertexPositionsZ[n] * z / 128
+            }
+            val model = Model(newDef)
+            model.faceColors1 = faceColors1
+            model.faceColors2 = faceColors2
+            model.faceColors3 = faceColors3
+            model.resetBounds()
+            model
+        }
 
     private fun resetBounds() {
         boundsType = 0

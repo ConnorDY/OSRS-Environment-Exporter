@@ -2,7 +2,6 @@ package models.glTF
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.FloatBuffer
 
 class glTF {
   val asset = Asset(
@@ -20,7 +19,9 @@ class glTF {
   val buffers = ArrayList<Buffer>()
 
   fun addMesh(vertices: ArrayList<FloatArray>, filename: String) {
-    val bytes = ByteBuffer.allocate(vertices.size * 3 * 4).order(ByteOrder.LITTLE_ENDIAN)
+    val bytes = ByteBuffer.allocate(
+      vertices.size * 3 * 4 // 3 vertices * 4 bytes (in a float)
+    ).order(ByteOrder.LITTLE_ENDIAN)
     val floatBuffer = bytes.asFloatBuffer()
 
     for (vertex in vertices) {

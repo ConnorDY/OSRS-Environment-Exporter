@@ -6,19 +6,17 @@ import javafx.scene.control.Button
 import javafx.scene.control.Hyperlink
 import javafx.scene.control.Label
 import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
-import javafx.scene.paint.Color
 import javafx.stage.Stage
-import models.DebugModel
 import models.scene.Scene
-import java.awt.Desktop
-import java.net.URI
+import utils.LinkHandler
+import java.util.regex.Pattern
 
 class RegionChooserController @Inject constructor(
     private val scene: Scene
 ){
-
     @FXML
     private lateinit var txtRegionId: TextField
     @FXML
@@ -31,10 +29,35 @@ class RegionChooserController @Inject constructor(
     private lateinit var lblErrorText: Label
 
     @FXML
-    private lateinit var linkExplv: Hyperlink
+    private lateinit var linkMap: Hyperlink
 
     @FXML
     private fun initialize() {
+        // limit Region ID input to 5 digits
+        val regionIDPattern = Pattern.compile("\\d{0,5}")
+        val regionIDFormatter = TextFormatter<String>{ change  ->
+            if (regionIDPattern.matcher(change.controlNewText).matches()) {
+                return@TextFormatter change
+            }
+            else {
+                return@TextFormatter null
+            }
+        }
+        txtRegionId.textFormatter = regionIDFormatter
+
+        // limit Radius input to 2 digits
+        val radiusPattern = Pattern.compile("\\d{0,2}")
+        val radiusFormatter = TextFormatter<String>{ change  ->
+            if (radiusPattern.matcher(change.controlNewText).matches()) {
+                return@TextFormatter change
+            }
+            else {
+                return@TextFormatter null
+            }
+        }
+        txtRadius.textFormatter = radiusFormatter
+
+        // Load Region handler
         btnLoad.setOnAction {
             lblErrorText.isVisible = false
             val regionId: Int? = txtRegionId.text.toIntOrNull()
@@ -54,8 +77,9 @@ class RegionChooserController @Inject constructor(
             scene.load(regionId, radius)
         }
 
-        linkExplv.setOnAction {
-            Desktop.getDesktop().browse(URI("https://explv.github.io/"))
+        // explv map link handler
+        linkMap.setOnAction {
+            LinkHandler(linkMap.text).openInBrowser()
         }
     }
 
@@ -67,6 +91,6 @@ class RegionChooserController @Inject constructor(
 
     companion object {
         private const val INVALID_REGION_ID_TEXT = "Region Id must be between 4647 and 15522."
-        private const val INVALID_RADIUS_TEXT = "Radius must be between 1 and 8."
+        private const val INVALID_RADIUS_TEXT = "Radius must be between 1 and 20."
     }
 }
