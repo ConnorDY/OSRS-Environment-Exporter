@@ -1,6 +1,5 @@
 package models.glTF
 
-class BufferView (val buffer: Int, val byteLength: Int) {
-    val byteOffset = 0
+class BufferView (val buffer: Int, val byteOffset: Int, val byteLength: Int) {
     val target = BufferTarget.ARRAY_BUFFER.value
 }

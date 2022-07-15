@@ -21,8 +21,6 @@ class SceneExporter {
     var vertexcountc = 0
     var vertexcountt = 0
     var objcount = 0
-    var objt: Int
-    var objm: Int
     var scale: Float
     var materials: Boolean
     var textures: Boolean
@@ -50,6 +48,10 @@ class SceneExporter {
         // init glTF builder
         val gltf = glTF(outDir)
 
+        if (materials) {
+            writeMaterials(gltf)
+        }
+
         ++sceneId
 
         for (rx in 0 until scene.radius) {
@@ -74,14 +76,17 @@ class SceneExporter {
         }
 
         writeVerticesT(gltf)
-        writeVerticesM(gltf)
+        writeVerticesM(gltf, null)
 
         // convert to JSON
         val mapper = ObjectMapper()
         mapper.enable(SerializationFeature.INDENT_OUTPUT)
         val json = mapper.writeValueAsString(gltf)
 
-        // write to file
+        // write buffers to files
+        gltf.writeBuffersToFiles()
+
+        // write glTf file
         File("${outDir}/scene.gltf").printWriter().use {
             it.write(json)
         }
@@ -90,18 +95,19 @@ class SceneExporter {
         copyTextures(outDir)
     }
 
-    private fun writeMaterials(file: PrintWriter) {
+    private fun writeMaterials(gltf: glTF) {
         for (rx in 0 until 98) {
             if (rx != 54) {
-                file.write(
-                    """newmtl t$rx
- Kd 1.000 1.000 1.000
- Ks 0 0 0
- d 1.0
- illum 2
- map_Kd ./${AppConstants.TEXTURES_DIRECTORY_NAME}/$rx.png
-"""
-                )
+                gltf.addTextureMaterial("./${AppConstants.TEXTURES_DIRECTORY_NAME}/$rx.png")
+//                file.write(
+//                    """newmtl t$rx
+// Kd 1.000 1.000 1.000
+// Ks 0 0 0
+// d 1.0
+// illum 2
+// map_Kd {AppConstants.TEXTURES_DIRECTORY_NAME}/$rx.png
+//"""
+//                )
             }
         }
     }
@@ -137,22 +143,19 @@ class SceneExporter {
 
     fun writeVerticesT(gltf: glTF) {
         if (verticesT.size > 0) {
-            gltf.addMesh(verticesT, "t")
+            gltf.addMesh(verticesT, "t", null)
+            verticesT.clear()
         }
     }
 
-    fun writeVerticesM(gltf: glTF) {
+    fun writeVerticesM(gltf: glTF, material: Int?) {
         if (verticesM.size > 0) {
-            gltf.addMesh(verticesM, "m")
+            gltf.addMesh(verticesM, "m", material)
+            verticesM.clear()
         }
     }
 
     private fun writevertex(gltf: glTF, v1: Int, v2: Int, v3: Int, c: Int) {
-        if (objm != objcount) {
-            objm = objcount
-            writeVerticesM(gltf)
-            verticesM = ArrayList<FloatArray>()
-        }
         verticesM.add(floatArrayOf(
             v1.toFloat() / scale,
             v2.toFloat() / scale,
@@ -162,11 +165,6 @@ class SceneExporter {
     }
 
     private fun writevertexcolor(gltf: glTF, v1: Int, v2: Int, v3: Int, c: Int) {
-        if (objt != objcount) {
-            objt = objcount
-            writeVerticesT(gltf)
-            verticesT = ArrayList<FloatArray>()
-        }
         verticesT.add(floatArrayOf(
             v1.toFloat() / scale,
             v2.toFloat() / scale,
@@ -257,11 +255,7 @@ class SceneExporter {
                     writetexture(gltf, tex, 1.0f, 1.0f, 0.0f)
                     writetexture(gltf, tex, 0.0f, 1.0f, 0.0f)
                     writetexture(gltf, tex, 1.0f, 0.0f, 0.0f)
-                    // TODO: implement this
-                    // previous implementation:
-                    // fileWriters.writeToMFile(
-                    //     "usemtl t${(tex - 1f).toInt()}\n"
-                    // )
+                    writeVerticesM(gltf, (tex - 1f).toInt())
                     write3facem(gltf)
                     writevertex(
                         gltf,
@@ -287,11 +281,7 @@ class SceneExporter {
                     writetexture(gltf, tex, 0.0f, 0.0f, 0.0f)
                     writetexture(gltf, tex, 1.0f, 0.0f, 0.0f)
                     writetexture(gltf, tex, 0.0f, 1.0f, 0.0f)
-                    // TODO: implement this
-                    // previous implementation:
-                    // fileWriters.writeToMFile(
-                    //     "usemtl t${(tex - 1f).toInt()}\n"
-                    // )
+                    writeVerticesM(gltf, (tex - 1f).toInt())
                     write3facem(gltf)
                 }
             } else if (textures) {
@@ -414,11 +404,7 @@ class SceneExporter {
                             vertexZC.toFloat() / 128.0f,
                             0.0f
                         )
-                        // TODO: implement this
-                        // previous implementation:
-                        // fileWriters.writeToMFile(
-                        //     "usemtl t${(tex - 1f).toInt()}\n"
-                        // )
+                        writeVerticesM(gltf, (tex - 1f).toInt())
                         write3facem(gltf)
                     }
                 } else if (textures) {
@@ -541,11 +527,7 @@ class SceneExporter {
                             writetexture(gltf, texture, var10002, vf[1], 0.0f)
                             var10002 = uf[2]
                             writetexture(gltf, texture, var10002, vf[2], 0.0f)
-                            // TODO: implement this
-                            // previous implementation:
-                            // fileWriters.writeToMFile(
-                            //     "usemtl t${(texture - 1f).toInt()}\n"
-                            // )
+                            writeVerticesM(gltf, (texture - 1f).toInt())
                             write3facem(gltf)
                         }
                         return
@@ -589,8 +571,6 @@ class SceneExporter {
     }
 
     init {
-        objt = -1
-        objm = -1
         scale = 100.0f
         materials = true
         textures = true
