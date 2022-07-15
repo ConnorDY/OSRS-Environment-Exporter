@@ -20,7 +20,7 @@ class glTF {
 
   fun addMesh(vertices: ArrayList<FloatArray>, filename: String) {
     val bytes = ByteBuffer.allocate(
-      vertices.size * 3 * 4 // 3 vertices * 4 bytes (in a float)
+      vertices.size * 3 * 4 // 3 coordinates per vertex * 4 bytes (in a float)
     ).order(ByteOrder.LITTLE_ENDIAN)
     val floatBuffer = bytes.asFloatBuffer()
 
