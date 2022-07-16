@@ -185,7 +185,7 @@ class SceneExporter {
         // )
     }
 
-    private fun writetexture(gltf: glTF, v1: Float, v2: Float, v3: Float, c: Float) {
+    private fun writetexture(gltf: glTF, v1: Float, v2: Float, v3: Float) {
         // TODO: implement this
         // previous implementation:
         // fileWriters.writeToMFile(
@@ -252,9 +252,9 @@ class SceneExporter {
                         vertexCy + tile.computeObj.z,
                         seColor
                     )
-                    writetexture(gltf, tex, 1.0f, 1.0f, 0.0f)
-                    writetexture(gltf, tex, 0.0f, 1.0f, 0.0f)
-                    writetexture(gltf, tex, 1.0f, 0.0f, 0.0f)
+                    writetexture(gltf, tex, 1.0f, 1.0f)
+                    writetexture(gltf, tex, 0.0f, 1.0f)
+                    writetexture(gltf, tex, 1.0f, 0.0f)
                     writeVerticesM(gltf, (tex - 1f).toInt())
                     write3facem(gltf)
                     writevertex(
@@ -278,9 +278,9 @@ class SceneExporter {
                         vertexBy + tile.computeObj.z,
                         nwColor
                     )
-                    writetexture(gltf, tex, 0.0f, 0.0f, 0.0f)
-                    writetexture(gltf, tex, 1.0f, 0.0f, 0.0f)
-                    writetexture(gltf, tex, 0.0f, 1.0f, 0.0f)
+                    writetexture(gltf, tex, 0.0f, 0.0f)
+                    writetexture(gltf, tex, 1.0f, 0.0f)
+                    writetexture(gltf, tex, 0.0f, 1.0f)
                     writeVerticesM(gltf, (tex - 1f).toInt())
                     write3facem(gltf)
                 }
@@ -387,22 +387,19 @@ class SceneExporter {
                             gltf,
                             tex,
                             vertexXA.toFloat() / 128.0f,
-                            vertexZA.toFloat() / 128.0f,
-                            0.0f
+                            vertexZA.toFloat() / 128.0f
                         )
                         writetexture(
                             gltf,
                             tex,
                             vertexXB.toFloat() / 128.0f,
-                            vertexZB.toFloat() / 128.0f,
-                            0.0f
+                            vertexZB.toFloat() / 128.0f
                         )
                         writetexture(
                             gltf,
                             tex,
                             vertexXC.toFloat() / 128.0f,
-                            vertexZC.toFloat() / 128.0f,
-                            0.0f
+                            vertexZC.toFloat() / 128.0f
                         )
                         writeVerticesM(gltf, (tex - 1f).toInt())
                         write3facem(gltf)
@@ -521,12 +518,9 @@ class SceneExporter {
                                 c + model.computeObj.z,
                                 alpha or priority or color3
                             )
-                            var var10002 = uf!![0]
-                            writetexture(gltf, texture, var10002, vf!![0], 0.0f)
-                            var10002 = uf[1]
-                            writetexture(gltf, texture, var10002, vf[1], 0.0f)
-                            var10002 = uf[2]
-                            writetexture(gltf, texture, var10002, vf[2], 0.0f)
+                            writetexture(gltf, texture, uf!![0], vf!![0])
+                            writetexture(gltf, texture, uf[1], vf[1])
+                            writetexture(gltf, texture, uf[2], vf[2])
                             writeVerticesM(gltf, (texture - 1f).toInt())
                             write3facem(gltf)
                         }
