@@ -40,76 +40,59 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 class ModelLoader(private val cacheLibrary: CacheLibrary) {
-    private val modelDefinitionCache: MutableMap<Int, ModelDefinition>
-
-    init {
-        modelDefinitionCache = HashMap()
-    }
+    private val modelDefinitionCache: MutableMap<Int, ModelDefinition> =
+        HashMap()
 
     @Throws(IOException::class)
     operator fun get(modelId: Int): ModelDefinition? {
         var def = modelDefinitionCache[modelId]
-        if (def != null) return ModelDefinition(def, false, false, false)
-        val index = cacheLibrary.index(IndexType.MODELS.id)
-        val archive = index.archive(modelId and 0xffff) ?: return null
-        val file = archive.files[0]
-        val b = file!!.data
-        archive.restore() // Drop cached archive
-        def = ModelDefinition()
-        def.id = modelId
-        val stream = ByteBuffer.wrap(b)
-        stream.position(stream.limit() - 2)
-        when (stream.short) {
-            -3 -> decodeType3(def, stream)
-            -2 -> decodeType2(def, stream)
-            -1 -> decodeType1(def, stream)
-            else -> decodeOldFormat(def, stream)
+        if (def == null) {
+            val index = cacheLibrary.index(IndexType.MODELS.id)
+            val archive = index.archive(modelId and 0xffff) ?: return null
+            val stream = ByteBuffer.wrap(archive.files[0]!!.data)
+            archive.restore() // Drop cached archive
+            def = ModelDefinition()
+            def.id = modelId
+            stream.position(stream.limit() - 2)
+            when (stream.short.toInt()) {
+                -3 -> readModelCommon(def, stream, 26, true, true)
+                -2 -> readModelCommon(def, stream, 23, false, true)
+                -1 -> readModelCommon(def, stream, 23, true, false)
+                else -> readModelCommon(def, stream, 18, false, false)
+            }
+            def.computeNormals()
+            def.computeTextureUVCoordinates()
+            def.computeAnimationTables()
+            modelDefinitionCache[modelId] = def
         }
-        def.computeNormals()
-        def.computeTextureUVCoordinates()
-        def.computeAnimationTables()
-        modelDefinitionCache[modelId] = def
-        return ModelDefinition(def, false, false, false)
-    }
-
-    private fun decodeType3(def: ModelDefinition, stream: ByteBuffer) {
-        stream.position(stream.limit() - 26)
-        readModelCommon(def, stream, false, true)
-    }
-
-    private fun decodeType2(def: ModelDefinition, stream: ByteBuffer) {
-        stream.position(stream.limit() - 23)
-        readModelCommon(def, stream, true, true)
-    }
-
-    private fun decodeType1(def: ModelDefinition, stream: ByteBuffer) {
-        stream.position(stream.limit() - 23)
-        readModelCommon(def, stream, false, false)
-    }
-
-    private fun decodeOldFormat(def: ModelDefinition, stream: ByteBuffer) {
-        stream.position(stream.limit() - 18)
-        readModelCommon(def, stream, true, false)
+        return ModelDefinition(
+            def,
+            shallowCopyVerts = false,
+            shallowCopyFaceColors = false,
+            shallowCopyFaceTextures = false
+        )
     }
 
     private fun readModelCommon(
         def: ModelDefinition,
         stream1: ByteBuffer,
-        isOldStyleTextures: Boolean,
+        headerOffset: Int,
+        isNewStyleTextures: Boolean,
         canHaveAnimayaGroups: Boolean
     ) {
+        stream1.position(stream1.limit() - headerOffset)
         val vertexCount = stream1.readUnsignedShort()
         val faceCount = stream1.readUnsignedShort()
         val textureCount = stream1.readUnsignedByte()
         val oldStyleIsTextured =
-            if (isOldStyleTextures) stream1.readUnsignedByte() else 0
+            if (!isNewStyleTextures) stream1.readUnsignedByte() else 0
         val hasFaceRenderTypes =
-            if (!isOldStyleTextures) stream1.readUnsignedByte() else 0
+            if (isNewStyleTextures) stream1.readUnsignedByte() else 0
         val faceRenderPriority = stream1.readUnsignedByte()
         val hasFaceTransparencies = stream1.readUnsignedByte()
         val hasPackedTransparencyVertexGroups = stream1.readUnsignedByte()
         val hasFaceTextures =
-            if (!isOldStyleTextures) stream1.readUnsignedByte() else 0
+            if (isNewStyleTextures) stream1.readUnsignedByte() else 0
         val hasVertexSkins = stream1.readUnsignedByte()
         val hasAnimayaGroups =
             if (canHaveAnimayaGroups) stream1.readUnsignedByte() else 0
@@ -121,7 +104,7 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
         }
         stream1.rewind()
         if (textureCount > 0) {
-            if (isOldStyleTextures) {
+            if (!isNewStyleTextures) {
                 def.textureRenderTypes = ByteArray(textureCount)
             } else {
                 def.textureRenderTypes = readByteArray(stream1, textureCount)
@@ -145,7 +128,7 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
         if (hasVertexSkins == 1) {
             readVertexSkins(def, stream1, vertexCount)
         }
-        if (hasAnimayaGroups == 1 && !isOldStyleTextures) {
+        if (hasAnimayaGroups == 1 && isNewStyleTextures) {
             readAnimayaGroups(stream1, vertexCount)
         }
         if (hasFaceTransparencies == 1) {
@@ -159,7 +142,7 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
                     def,
                     stream1,
                     faceCount,
-                    def.faceTextures
+                    def.faceTextures!!
                 )
             }
         }
@@ -167,17 +150,16 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
         processFaceTextureFlags(
             def,
             faceTextureFlags,
-            faceCount,
-            oldStyleIsTextured
+            faceCount
         )
-        if (!isOldStyleTextures) {
+        if (isNewStyleTextures) {
             readVertexData(def, stream1, vertexFlags)
             readTextureTriangleVertexIndices(def, stream1, textureCount, false)
         } else {
             readTextureTriangleVertexIndices(def, stream1, textureCount, true)
             readVertexData(def, stream1, vertexFlags)
         }
-        if (hasAnimayaGroups == 1 && isOldStyleTextures) {
+        if (hasAnimayaGroups == 1 && !isNewStyleTextures) {
             readAnimayaGroups(stream1, vertexCount)
         }
         discardUnusedTextures(def, faceCount, oldStyleIsTextured)
@@ -186,11 +168,10 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
     private fun processFaceTextureFlags(
         def: ModelDefinition,
         faceTextureFlags: ByteArray?,
-        faceCount: Int,
-        isTextured: Int
+        faceCount: Int
     ) {
         if (faceTextureFlags == null) return
-        val faceColors = def.faceColors
+        val faceColors = def.faceColors!!
         val faceTextures = ShortArray(faceCount)
         val faceRenderTypes = ByteArray(faceCount)
         val textureCoordinates = ByteArray(faceCount)
@@ -206,7 +187,7 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
             }
             if (faceTextureFlag and 2 == 2) {
                 textureCoordinates[i] = (faceTextureFlag shr 2).toByte()
-                faceTextures[i] = faceColors!![i]
+                faceTextures[i] = faceColors[i]
                 faceColors[i] = 127
                 if (faceTextures[i].toInt() != -1) {
                     usesFaceTextures = true
@@ -232,17 +213,17 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
     ) {
         if (isTextured != 1) return
         var usesTextureCoords = false
-        val textureCoordinates = def.textureCoordinates
-        val fvi1 = def.faceVertexIndices1
-        val fvi2 = def.faceVertexIndices2
-        val fvi3 = def.faceVertexIndices3
-        val tvi1 = def.textureTriangleVertexIndices1
-        val tvi2 = def.textureTriangleVertexIndices2
-        val tvi3 = def.textureTriangleVertexIndices3
+        val textureCoordinates = def.textureCoordinates!!
+        val fvi1 = def.faceVertexIndices1!!
+        val fvi2 = def.faceVertexIndices2!!
+        val fvi3 = def.faceVertexIndices3!!
+        val tvi1 = def.textureTriangleVertexIndices1!!
+        val tvi2 = def.textureTriangleVertexIndices2!!
+        val tvi3 = def.textureTriangleVertexIndices3!!
         for (i in 0 until faceCount) {
-            val coord = textureCoordinates!![i].toInt() and 255
+            val coord = textureCoordinates[i].toInt() and 255
             if (coord != 255) {
-                if ((fvi1!![i] == tvi1!![coord].toInt() and 0xffff && fvi2!![i] == tvi2!![coord].toInt() and 0xffff && fvi3!![i] == tvi3!![coord].toInt()) and 0xffff) {
+                if (fvi1[i] == tvi1[coord].toInt() and 0xffff && fvi2[i] == tvi2[coord].toInt() and 0xffff && fvi3[i] == tvi3[coord].toInt() and 0xffff) {
                     textureCoordinates[i] = -1
                 } else {
                     usesTextureCoords = true
@@ -267,8 +248,7 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
         var previousIndex2 = 0
         var previousIndex3 = 0
         for (i in 0 until faceCount) {
-            val faceIndexCompressionType = faceIndexCompressionTypes[i].toInt()
-            when (faceIndexCompressionType) {
+            when (faceIndexCompressionTypes[i].toInt()) {
                 1 -> {
                     previousIndex1 = stream1.readShortSmart() + previousIndex3
                     previousIndex2 = stream1.readShortSmart() + previousIndex1
@@ -378,11 +358,11 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
         def: ModelDefinition,
         stream: ByteBuffer,
         faceCount: Int,
-        faceTextures: ShortArray?
+        faceTextures: ShortArray
     ) {
         val textureCoordinates = ByteArray(faceCount)
         for (i in 0 until faceCount) {
-            if (faceTextures!![i].toInt() != -1) {
+            if (faceTextures[i].toInt() != -1) {
                 textureCoordinates[i] = (stream.readUnsignedByte() - 1).toByte()
             }
         }
@@ -390,24 +370,28 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
     }
 
     private fun readAnimayaGroups(stream: ByteBuffer, vertexCount: Int) {
-/*
-		final int[][] animayaGroups = new int[vertexCount][];
-		final int[][] animayaScales = new int[vertexCount][];
+        /*
+        val animayaGroups = arrayOfNulls<IntArray>(vertexCount)
+        val animayaScales = arrayOfNulls<IntArray>(vertexCount)
 
-		for (int i = 0; i < vertexCount; ++i) {
-			int animayaLength = ByteBufferExtKt.readUnsignedByte(stream);
-			animayaGroups[i] = new int[animayaLength];
-			animayaScales[i] = new int[animayaLength];
+        for (i in 0 until vertexCount) {
+            val animayaLength = stream.readUnsignedByte()
+            val thisAnimayaGroup = IntArray(animayaLength)
+            val thisAnimayaScale = IntArray(animayaLength)
 
-			for (int j = 0; j < animayaLength; ++j) {
-				animayaGroups[i][j] = ByteBufferExtKt.readUnsignedByte(stream);
-				animayaScales[i][j] = ByteBufferExtKt.readUnsignedByte(stream);
-			}
-		}
+            for (j in 0 until animayaLength) {
+                thisAnimayaGroup[j] = stream.readUnsignedByte()
+                thisAnimayaScale[j] = stream.readUnsignedByte()
+            }
 
-		def.setAnimayaGroups(animayaGroups);
-		def.setAnimayaScales(animayaScales);
-*/
+            animayaGroups[i] = thisAnimayaGroup
+            animayaScales[i] = thisAnimayaScale
+        }
+
+        def.animayaGroups = animayaGroups
+        def.animayaScales = animayaScales
+         */
+
         // Dummy implementation
         for (i in 0 until vertexCount) {
             val animayaLength = stream.readUnsignedByte()
@@ -425,11 +409,13 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
         val textureTriangleVertexIndices1 = ShortArray(textureCount)
         val textureTriangleVertexIndices2 = ShortArray(textureCount)
         val textureTriangleVertexIndices3 = ShortArray(textureCount)
-        for (i in 0 until textureCount) {
-            if (always || textureRenderTypes!![i].toInt() and 255 == 0) {
-                textureTriangleVertexIndices1[i] = stream.short
-                textureTriangleVertexIndices2[i] = stream.short
-                textureTriangleVertexIndices3[i] = stream.short
+        if (textureRenderTypes != null) {
+            for (i in 0 until textureCount) {
+                if (always || textureRenderTypes[i].toInt() and 255 == 0) {
+                    textureTriangleVertexIndices1[i] = stream.short
+                    textureTriangleVertexIndices2[i] = stream.short
+                    textureTriangleVertexIndices3[i] = stream.short
+                }
             }
         }
         def.textureTriangleVertexIndices1 = textureTriangleVertexIndices1
