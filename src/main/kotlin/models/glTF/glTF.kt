@@ -27,6 +27,7 @@ class glTF {
     val extensionsUsed = arrayOf("KHR_materials_specular")
 
     private val materialMap = HashMap<Int, MaterialBuffers>()
+    private val rsIndexToMaterialIndex = HashMap<Int, Int>()
 
     fun addMesh(material: Int, buffer: Buffer) {
         val materialBuffer = materialMap.get(material)!!
@@ -46,7 +47,7 @@ class glTF {
 
         // primitive
         val primitives = ArrayList<Primitive>()
-        primitives.add(Primitive(attributes, if (material != -1) material else null))
+        primitives.add(Primitive(attributes, rsIndexToMaterialIndex[material]))
 
         // mesh
         val mesh = Mesh(primitives)
@@ -104,7 +105,8 @@ class glTF {
         MaterialBuffers(materialId >= 0)
     }
 
-    fun addTextureMaterial(imagePath: String) {
+    fun addTextureMaterial(rsIndex: Int, imagePath: String) {
+        rsIndexToMaterialIndex[rsIndex] = materials.size
         val material = Material(materials.size)
         materials.add(material)
 

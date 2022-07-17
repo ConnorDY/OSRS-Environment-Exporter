@@ -65,7 +65,7 @@ class SceneExporter {
     private fun writeMaterials(gltf: glTF) {
         for (rx in 0 until 98) {
             if (rx != 54) {
-                gltf.addTextureMaterial("./${AppConstants.TEXTURES_DIRECTORY_NAME}/$rx.png")
+                gltf.addTextureMaterial(rx, "./${AppConstants.TEXTURES_DIRECTORY_NAME}/$rx.png")
             }
         }
     }
