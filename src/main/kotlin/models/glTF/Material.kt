@@ -9,6 +9,8 @@ class Material (texture: Int) {
         class BaseColorTexture (val index: Int)
 
         val baseColorTexture = BaseColorTexture(texture)
+
+        val metallicFactor = 0.0f
     }
 
     val pbrMetallicRoughness = PbrMetallicRoughness(texture)
