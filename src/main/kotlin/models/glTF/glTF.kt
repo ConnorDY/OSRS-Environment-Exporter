@@ -91,7 +91,7 @@ class glTF {
     private fun floatListToByteArray(floats: ArrayList<Float>, dims: Int): ByteArray {
         // convert to byte array
         val byteBuffer = ByteBuffer.allocate(
-            floats.size * dims * 4 // 4 bytes in a float
+            floats.size * 4 // 4 bytes in a float
         ).order(ByteOrder.LITTLE_ENDIAN)
         val floatBuffer = byteBuffer.asFloatBuffer()
 
