@@ -1,6 +1,5 @@
 package models.scene
 
-
 import com.google.inject.Inject
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
@@ -21,11 +20,13 @@ class Scene @Inject constructor(
     val sceneChangeListeners: ArrayList<ActionListener> = ArrayList()
 
     private fun reload() {
-        sceneChangeListeners.forEach(Consumer {
-            it.actionPerformed(
-                null
-            )
-        })
+        sceneChangeListeners.forEach(
+            Consumer {
+                it.actionPerformed(
+                    null
+                )
+            }
+        )
     }
 
     fun load(centerRegionId: Int, radius: Int) {

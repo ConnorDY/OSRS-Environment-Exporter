@@ -1,12 +1,12 @@
 package controllers.worldRenderer
 
 import cache.definitions.RegionDefinition
-import models.scene.REGION_SIZE
-import models.scene.Scene
-import models.scene.SceneTile
 import controllers.worldRenderer.entities.*
 import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
+import models.scene.REGION_SIZE
+import models.scene.Scene
+import models.scene.SceneTile
 
 /*
  * Copyright (c) 2018, Adam <Adam@sigterm.info>
@@ -77,11 +77,11 @@ class SceneUploader {
     }
 
     private fun reset(tile: SceneTile) {
-//		Tile bridge = tile.getBridge();
-//		if (bridge != null)
-//		{
-//			reset(bridge);
-//		}
+// 		Tile bridge = tile.getBridge();
+// 		if (bridge != null)
+// 		{
+// 			reset(bridge);
+// 		}
         tile.tilePaint?.computeObj?.offset = -1
 
         tile.tileModel?.computeObj?.offset = -1
@@ -99,11 +99,11 @@ class SceneUploader {
     }
 
     fun upload(tile: SceneTile, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
-//		Tile bridge = tile.getBridge();
-//		if (bridge != null)
-//		{
-//			upload(bridge, vertexBuffer, uvBuffer);
-//		}
+// 		Tile bridge = tile.getBridge();
+// 		if (bridge != null)
+// 		{
+// 			upload(bridge, vertexBuffer, uvBuffer);
+// 		}
         val sceneTilePaint = tile.tilePaint
         if (sceneTilePaint != null) {
             sceneTilePaint.computeObj.offset = offset

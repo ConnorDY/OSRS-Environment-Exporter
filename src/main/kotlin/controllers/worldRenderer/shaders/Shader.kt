@@ -7,7 +7,6 @@ import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glGetProgramInfoLog
 import java.util.*
 
-
 class Shader {
     private val units: MutableList<Unit> = ArrayList()
 
@@ -65,9 +64,9 @@ class Shader {
 
     companion object {
         const val LINUX_VERSION_HEADER = "#version 420\n" +
-                "#extension GL_ARB_compute_shader : require\n" +
-                "#extension GL_ARB_shader_storage_buffer_object : require\n" +
-                "#extension GL_ARB_explicit_attrib_location : require\n"
+            "#extension GL_ARB_compute_shader : require\n" +
+            "#extension GL_ARB_shader_storage_buffer_object : require\n" +
+            "#extension GL_ARB_explicit_attrib_location : require\n"
         const val WINDOWS_VERSION_HEADER = "#version 430\n"
         val PROGRAM = Shader()
             .add(GL4.GL_VERTEX_SHADER, "/gpu/vert.glsl")

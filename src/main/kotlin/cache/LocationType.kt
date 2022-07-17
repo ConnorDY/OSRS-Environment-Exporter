@@ -51,13 +51,10 @@ enum class LocationType(val id: Int) {
      */
     FLOOR_DECORATION(22),
 
-
     TILE_PAINT(30),
     TILE_MODEL(31);
 
     companion object {
-        fun fromId(id: Int) =  values().firstOrNull { it.id == id }
+        fun fromId(id: Int) = values().firstOrNull { it.id == id }
     }
 }
-
-    

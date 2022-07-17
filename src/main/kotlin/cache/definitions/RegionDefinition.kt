@@ -22,13 +22,13 @@ class RegionDefinition(
         for (z in 0 until Z) {
             for (x in 0 until X) {
                 for (y in 0 until Y) {
-                    val tile: Tile = tiles[z][x][y]?: continue
+                    val tile: Tile = tiles[z][x][y] ?: continue
                     val cacheHeight = tile.cacheHeight
                     if (cacheHeight == null) {
                         if (z == 0) {
                             tile.height = -HeightCalc.calculate(baseX + x + 0xe3b7b, baseY + y + 0x87cce) * 8
                         } else {
-                            tile.height = tiles[z-1][x][y]!!.height - 240
+                            tile.height = tiles[z - 1][x][y]!!.height - 240
                         }
                     } else {
                         var height: Int = cacheHeight
@@ -39,7 +39,7 @@ class RegionDefinition(
                         if (z == 0) {
                             tiles[0][x][y]!!.height = -height * 8
                         } else {
-                            tiles[z][x][y]!!.height = (tiles[z-1][x][y]?.height ?: 0) - height * 8
+                            tiles[z][x][y]!!.height = (tiles[z - 1][x][y]?.height ?: 0) - height * 8
                         }
                     }
                     overlayIds[z][x][y] = tile.overlayId.toInt()
@@ -69,4 +69,3 @@ class RegionDefinition(
         const val Y = 64
     }
 }
-

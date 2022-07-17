@@ -21,5 +21,4 @@ class SceneTile(val z: Int, var x: Int, var y: Int) {
     var wallDecoration: WallDecoration? = null
     var wall: WallObject? = null
     val gameObjects: ArrayList<GameObject> = ArrayList()
-
 }

@@ -26,7 +26,7 @@ class SceneExporter {
             .ofPattern("yyyy-MM-dd HH_mm_ss.SSSSSS")
             .withZone(ZoneOffset.UTC)
             .format(Instant.now())
-        val outDir = "${AppConstants.OUTPUT_DIRECTORY}/${timestamp}"
+        val outDir = "${AppConstants.OUTPUT_DIRECTORY}/$timestamp"
         File(outDir).mkdirs()
 
         // init glTF builder
@@ -73,7 +73,7 @@ class SceneExporter {
 
     private fun copyTextures(outDir: String) {
         val src = Path.of(AppConstants.TEXTURES_DIRECTORY)
-        val dest = Path.of("${outDir}/${AppConstants.TEXTURES_DIRECTORY_NAME}")
+        val dest = Path.of("$outDir/${AppConstants.TEXTURES_DIRECTORY_NAME}")
 
         Files.walk(src).forEach {
             Files.copy(

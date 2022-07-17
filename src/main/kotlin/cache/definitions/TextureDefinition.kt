@@ -2,7 +2,6 @@ package cache.definitions
 
 import cache.loaders.SpriteLoader
 import cache.utils.ColorPalette
-import kotlin.math.pow
 
 class TextureDefinition {
     var field1777 = 0

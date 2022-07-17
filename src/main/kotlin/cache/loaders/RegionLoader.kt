@@ -24,9 +24,9 @@ class RegionLoader(
     private fun loadRegion(regionId: Int): RegionDefinition? {
         val regionX = (regionId shr 8) and 0xFF
         val regionY = regionId and 0xFF
-        val map = cacheLibrary.data(IndexType.MAPS.id, "m${regionX}_${regionY}")
+        val map = cacheLibrary.data(IndexType.MAPS.id, "m${regionX}_$regionY")
         if (map == null) {
-            regionDefinitionCache[regionId] = null  // Negative cache entry
+            regionDefinitionCache[regionId] = null // Negative cache entry
             return null
         }
 

@@ -73,7 +73,6 @@ class MainController @Inject constructor(
         worldRendererNode.dock(dockPane, DockPos.RIGHT)
         worldRendererNode.dockTitleBar.isVisible = false
 
-
         DockPane.initializeDefaultUserAgentStylesheet()
 
         btnTest.setOnAction {

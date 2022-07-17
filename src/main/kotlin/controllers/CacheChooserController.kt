@@ -86,10 +86,11 @@ class CacheChooserController @Inject constructor(
 
         try {
             val doc = Jsoup.connect(RUNESTATS_URL).get()
-            entries.addAll(doc.select("a")
-                .map { col -> col.attr("href") }
-                .filter { it.length > 10 } // get rid of ../ and ./types
-                .reversed()
+            entries.addAll(
+                doc.select("a")
+                    .map { col -> col.attr("href") }
+                    .filter { it.length > 10 } // get rid of ../ and ./types
+                    .reversed()
             )
         } catch (e: Exception) {
             e.printStackTrace()

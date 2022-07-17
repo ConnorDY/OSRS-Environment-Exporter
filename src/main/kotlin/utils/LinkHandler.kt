@@ -13,7 +13,7 @@ class LinkHandler(val url: String) {
 
     private fun openLinkForLinux(): Boolean {
         try {
-            Runtime.getRuntime().exec(arrayOf("xdg-open", url));
+            Runtime.getRuntime().exec(arrayOf("xdg-open", url))
             return true
         } catch (e: SecurityException) {
         } catch (e: IOException) {
