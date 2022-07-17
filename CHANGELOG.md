@@ -7,11 +7,12 @@
 - Export using glTF format instead of OBJ/PLY – [#28](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/28) @ConnorDY
   - Allowed us to enable alpha textures and remove default specularity
   - Removed the need for a Python script that was previously used to convert OBJ to PLY
+  - Greatly reduced load times when importing versus the old OBJ/PLY format
 
 - Create a unique, timestamped output directory for each export – [#10](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/10) @ConnorDY
   - Ensures new exports do not overwrite old ones
 
-- Improved load times **significantly** by implementing negative region caching – [d2fd490](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/d2fd490a79044a9d9df28d816308e08716734cb3) @ScoreUnder
+- Reduced load times **significantly** by implementing negative region caching – [d2fd490](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/d2fd490a79044a9d9df28d816308e08716734cb3) @ScoreUnder
   - Load times that would previously take almost a minute are now instantaneous (*on our machines*)
 
 ### :bug: Bug Fixes
