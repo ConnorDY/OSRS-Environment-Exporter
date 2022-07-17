@@ -33,8 +33,10 @@ object HeightCalc {
     private val COS = IntArray(JAGEX_CIRCULAR_ANGLE)
     fun calculate(x: Int, y: Int): Int {
         var n =
-            (interpolateNoise(x + 45365, y + 91923, 4) - 128 + (interpolateNoise(10294 + x, y + 37821, 2) - 128 shr 1)
-                    + (interpolateNoise(x, y, 1) - 128 shr 2))
+            (
+                interpolateNoise(x + 45365, y + 91923, 4) - 128 + (interpolateNoise(10294 + x, y + 37821, 2) - 128 shr 1) +
+                    (interpolateNoise(x, y, 1) - 128 shr 2)
+                )
         n = 35 + (n.toDouble() * 0.3).toInt()
         if (n < 10) {
             n = 10

@@ -88,5 +88,4 @@ class ModelBuffers {
         const val MAX_TRIANGLE = 4096
         const val SMALL_TRIANGLE_COUNT = 512
     }
-
 }

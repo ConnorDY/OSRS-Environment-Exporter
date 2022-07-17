@@ -1,9 +1,21 @@
 package models.scene
 
 import cache.LocationType
-import cache.definitions.*
+import cache.definitions.LocationsDefinition
+import cache.definitions.ModelDefinition
+import cache.definitions.ObjectDefinition
+import cache.definitions.OverlayDefinition
+import cache.definitions.RegionDefinition
+import cache.definitions.UnderlayDefinition
 import cache.definitions.converters.ObjectToModelConverter
-import cache.loaders.*
+import cache.loaders.LocationsLoader
+import cache.loaders.ObjectLoader
+import cache.loaders.OverlayLoader
+import cache.loaders.RegionLoader
+import cache.loaders.TextureLoader
+import cache.loaders.UnderlayLoader
+import cache.loaders.getTileHeight
+import cache.loaders.getTileSettings
 import cache.utils.ColorPalette
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
@@ -40,10 +52,10 @@ class SceneRegionBuilder @Inject constructor(
         val var18 = (yHeightDiff shl 8) / diff
         val var19 = (var16 * -50 + var18 * -50 + var17 * -10) / var10 + 96
         val color = (regionLoader.getTileSettings(z, worldX - 1, worldY) shr 2) +
-                (regionLoader.getTileSettings(z, worldX, worldY - 1) shr 2) +
-                (regionLoader.getTileSettings(z, worldX + 1, worldY) shr 3) +
-                (regionLoader.getTileSettings(z, worldX, worldY + 1) shr 3) +
-                (regionLoader.getTileSettings(z, worldX, worldY) shr 1)
+            (regionLoader.getTileSettings(z, worldX, worldY - 1) shr 2) +
+            (regionLoader.getTileSettings(z, worldX + 1, worldY) shr 3) +
+            (regionLoader.getTileSettings(z, worldX, worldY + 1) shr 3) +
+            (regionLoader.getTileSettings(z, worldX, worldY) shr 1)
         sceneRegion.tileColors[x][y] = var19 - color
     }
 
@@ -330,53 +342,35 @@ class SceneRegionBuilder @Inject constructor(
 
             if (loc.type == LocationType.LENGTHWISE_WALL.id) {
                 sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
-            }
-
-            else if (loc.type == LocationType.WALL_CORNER.id) {
+            } else if (loc.type == LocationType.WALL_CORNER.id) {
                 val entity1 =
                     getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)!!
                 val entity2 =
                     getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)
                 sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
-            }
-
-            else if (loc.type in LocationType.INTERACTABLE_WALL.id .. LocationType.DIAGONAL_WALL.id) {
+            } else if (loc.type in LocationType.INTERACTABLE_WALL.id..LocationType.DIAGONAL_WALL.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-                return@forEach;
-            }
-
-            else if (loc.type == LocationType.FLOOR_DECORATION.id) {
+                return@forEach
+            } else if (loc.type == LocationType.FLOOR_DECORATION.id) {
                 sceneRegion.newFloorDecoration(z, x, y, staticObject)
-            }
-
-            else if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
+            } else if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
                 sceneRegion.newWallDecoration(z, x, y, staticObject)
-            }
-
-            else if (loc.type == LocationType.INTERACTABLE.id) {
+            } else if (loc.type == LocationType.INTERACTABLE.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-            }
-
-            else if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
+            } else if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
                 staticObject.getModel().orientationType = OrientationType.DIAGONAL
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-            }
-
-            else if (loc.type == LocationType.TRIANGULAR_CORNER.id) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc);
-            }
-
-            else if (loc.type == LocationType.RECTANGULAR_CORNER.id) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc);
+            } else if (loc.type == LocationType.TRIANGULAR_CORNER.id) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
+            } else if (loc.type == LocationType.RECTANGULAR_CORNER.id) {
+                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             }
 
             // Other objects ?
             else if (loc.type in 12..21) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
                 logger.debug("Load new object? ${loc.type}")
-            }
-
-            else {
+            } else {
                 logger.warn("SceneRegionLoader Loading something new? ${loc.type}")
             }
         }

@@ -4,7 +4,12 @@ import cache.definitions.Location
 import cache.definitions.OverlayDefinition
 import cache.definitions.RegionDefinition
 import cache.definitions.UnderlayDefinition
-import controllers.worldRenderer.entities.*
+import controllers.worldRenderer.entities.FloorDecoration
+import controllers.worldRenderer.entities.GameObject
+import controllers.worldRenderer.entities.TileModel
+import controllers.worldRenderer.entities.TilePaint
+import controllers.worldRenderer.entities.WallDecoration
+import controllers.worldRenderer.entities.WallObject
 import kotlin.collections.ArrayList
 
 class SceneTile(val z: Int, var x: Int, var y: Int) {
@@ -21,5 +26,4 @@ class SceneTile(val z: Int, var x: Int, var y: Int) {
     var wallDecoration: WallDecoration? = null
     var wall: WallObject? = null
     val gameObjects: ArrayList<GameObject> = ArrayList()
-
 }

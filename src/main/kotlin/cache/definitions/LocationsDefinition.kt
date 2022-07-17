@@ -1,7 +1,5 @@
 package cache.definitions
 
-import java.util.*
-
 data class LocationsDefinition(
     val regionId: Int = 0,
     val locations: ArrayList<Location> = ArrayList<Location>()

@@ -1,5 +1,5 @@
 package models.glTF
 
-class Node (
+class Node(
     val mesh: Int
 )

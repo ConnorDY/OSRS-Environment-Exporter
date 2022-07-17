@@ -1,3 +1,3 @@
 package models.glTF
 
-class Texture (val source: Int)
+class Texture(val source: Int)

@@ -1,9 +1,19 @@
 package models.scene
 
 import cache.LocationType
-import cache.definitions.*
+import cache.definitions.Location
+import cache.definitions.LocationsDefinition
+import cache.definitions.OverlayDefinition
+import cache.definitions.RegionDefinition
+import cache.definitions.UnderlayDefinition
 import controllers.worldRenderer.Constants
-import controllers.worldRenderer.entities.*
+import controllers.worldRenderer.entities.Entity
+import controllers.worldRenderer.entities.FloorDecoration
+import controllers.worldRenderer.entities.GameObject
+import controllers.worldRenderer.entities.TileModel
+import controllers.worldRenderer.entities.TilePaint
+import controllers.worldRenderer.entities.WallDecoration
+import controllers.worldRenderer.entities.WallObject
 
 class SceneRegion(val locationsDefinition: LocationsDefinition) {
     val tiles = Array(RegionDefinition.Z) { Array(RegionDefinition.X) { arrayOfNulls<SceneTile>(RegionDefinition.Y) } }

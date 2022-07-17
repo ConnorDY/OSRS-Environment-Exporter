@@ -36,8 +36,6 @@ import java.awt.image.BufferedImage
 import java.awt.image.IndexColorModel
 import java.io.File
 import java.nio.ByteBuffer
-import java.nio.file.Files
-import java.nio.file.Paths
 import javax.imageio.ImageIO
 
 class TextureManager @Inject constructor(
@@ -64,11 +62,11 @@ class TextureManager @Inject constructor(
         gl.glTexParameteri(GL2ES3.GL_TEXTURE_2D_ARRAY, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
 
         // Set brightness to 1.0d to upload unmodified textures to GPU
-//		double save = textureProvider.getBrightness();
-//		textureProvider.setBrightness(1.0d);
+// 		double save = textureProvider.getBrightness();
+// 		textureProvider.setBrightness(1.0d);
         updateTextures(gl, textureArrayId)
 
-//		textureProvider.setBrightness(save);
+// 		textureProvider.setBrightness(save);
         gl.glActiveTexture(GL.GL_TEXTURE1)
         gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
         gl.glActiveTexture(GL.GL_TEXTURE0)
@@ -91,7 +89,7 @@ class TextureManager @Inject constructor(
             return false
         }
         for (textureId in textures.indices) {
-            val texture: TextureDefinition = textures[textureId]?: continue
+            val texture: TextureDefinition = textures[textureId] ?: continue
             val loaded = texture.loadPixels(0.8, 128, spriteLoader)
             if (!loaded) {
                 return false
@@ -105,8 +103,8 @@ class TextureManager @Inject constructor(
         gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
         var cnt = 0
         for (textureId in textures.indices) {
-            val texture: TextureDefinition = textures[textureId]?: continue
-            val srcPixels: IntArray = textureLoader.get(textureId)?.pixels ?: continue  // this can't happen
+            val texture: TextureDefinition = textures[textureId] ?: continue
+            val srcPixels: IntArray = textureLoader.get(textureId)?.pixels ?: continue // this can't happen
             ++cnt
             if (srcPixels.size != TEXTURE_SIZE * TEXTURE_SIZE) {
                 // The texture storage is 128x128 bytes, and will only work correctly with the

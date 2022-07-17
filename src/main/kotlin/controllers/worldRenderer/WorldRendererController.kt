@@ -7,7 +7,8 @@ import javafx.fxml.FXML
 import javafx.geometry.Bounds
 import javafx.scene.Group
 import javafx.scene.layout.AnchorPane
-import java.util.*
+import java.util.Timer
+import java.util.TimerTask
 
 class WorldRendererController @Inject constructor(val renderer: Renderer) {
     @FXML
@@ -35,7 +36,7 @@ class WorldRendererController @Inject constructor(val renderer: Renderer) {
 
     // create a listener
     private val listener: ChangeListener<Bounds?> = object : ChangeListener<Bounds?> {
-        val timer: Timer = Timer() // uses a timer to call your resize method
+        val timer = Timer() // uses a timer to call your resize method
         var task: TimerTask? = null // task to execute after defined delay
         val delayTime: Long = 2 // delay that has to pass in order to consider an operation done
         override fun changed(
