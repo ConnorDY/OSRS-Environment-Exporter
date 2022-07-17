@@ -28,7 +28,7 @@
 
 - Added a [GitHub Workflow](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/12) for automating and archiving builds – [#12](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/12) @ScoreUnder
 
-- Added automated linting tool: [ktlint](https://ktlint.github.io/) – [#32](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/32) @ConnorDY
+- Added the automated linting tool, [ktlint](https://ktlint.github.io/) – [#32](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/32) @ConnorDY
 
 - Replaced `println()` calls with [Logback](https://github.com/qos-ch/logback) for logging – [#19](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/19) @ConnorDY
 
