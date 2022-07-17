@@ -78,9 +78,9 @@ class MainController @Inject constructor(
 
         btnTest.setOnAction {
             worldRendererControllerController.renderer.exportScene()
-            logger.info("Exported OBJ's")
-            worldRendererNode.title = "Exported."
-            Alert(Alert.AlertType.NONE, "Exported OBJ's.", ButtonType.OK).show()
+            logger.info("Exported as glTF!")
+            worldRendererNode.title = "Export Completed"
+            Alert(Alert.AlertType.NONE, "Exported as glTF!", ButtonType.OK).show()
         }
 
         z0ChkBtn.setOnAction {
