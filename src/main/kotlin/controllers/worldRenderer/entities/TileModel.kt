@@ -317,19 +317,21 @@ class TileModel(
         )
         val pathShapes: Array<IntArray> = arrayOf(
             // 1. black (0) or white (1) shape, 2.,3.,4., - vertexes (https://i.imgur.com/FR83Q42.png)
-            intArrayOf(0, 1, 2, 3, 0, 0, 1, 3),
-            intArrayOf(1, 1, 2, 3, 1, 0, 1, 3),
-            intArrayOf(0, 1, 2, 3, 1, 0, 1, 3),
-            intArrayOf(0, 0, 1, 2, 0, 0, 2, 4, 1, 0, 4, 3),
-            intArrayOf(0, 0, 1, 4, 0, 0, 4, 3, 1, 1, 2, 4),
-            intArrayOf(0, 0, 4, 3, 1, 0, 1, 2, 1, 0, 2, 4),
-            intArrayOf(0, 1, 2, 4, 1, 0, 1, 4, 1, 0, 4, 3),
-            intArrayOf(0, 4, 1, 2, 0, 4, 2, 5, 1, 0, 4, 5, 1, 0, 5, 3),
-            intArrayOf(0, 4, 1, 2, 0, 4, 2, 3, 0, 4, 3, 5, 1, 0, 4, 5),
-            intArrayOf(0, 0, 4, 5, 1, 4, 1, 2, 1, 4, 2, 3, 1, 4, 3, 5),
-            intArrayOf(0, 0, 1, 5, 0, 1, 4, 5, 0, 1, 2, 4, 1, 0, 5, 3, 1, 5, 4, 3, 1, 4, 2, 3),
-            intArrayOf(1, 0, 1, 5, 1, 1, 4, 5, 1, 1, 2, 4, 0, 0, 5, 3, 0, 5, 4, 3, 0, 4, 2, 3),
-            intArrayOf(1, 0, 5, 4, 1, 0, 1, 5, 0, 0, 4, 3, 0, 4, 5, 3, 0, 5, 2, 3, 0, 1, 2, 5)
+            /* ktlint-disable no-multi-spaces */
+            intArrayOf(0, 1, 2, 3,  0, 0, 1, 3),
+            intArrayOf(1, 1, 2, 3,  1, 0, 1, 3),
+            intArrayOf(0, 1, 2, 3,  1, 0, 1, 3),
+            intArrayOf(0, 0, 1, 2,  0, 0, 2, 4,  1, 0, 4, 3),
+            intArrayOf(0, 0, 1, 4,  0, 0, 4, 3,  1, 1, 2, 4),
+            intArrayOf(0, 0, 4, 3,  1, 0, 1, 2,  1, 0, 2, 4),
+            intArrayOf(0, 1, 2, 4,  1, 0, 1, 4,  1, 0, 4, 3),
+            intArrayOf(0, 4, 1, 2,  0, 4, 2, 5,  1, 0, 4, 5,  1, 0, 5, 3),
+            intArrayOf(0, 4, 1, 2,  0, 4, 2, 3,  0, 4, 3, 5,  1, 0, 4, 5),
+            intArrayOf(0, 0, 4, 5,  1, 4, 1, 2,  1, 4, 2, 3,  1, 4, 3, 5),
+            intArrayOf(0, 0, 1, 5,  0, 1, 4, 5,  0, 1, 2, 4,  1, 0, 5, 3,  1, 5, 4, 3,  1, 4, 2, 3),
+            intArrayOf(1, 0, 1, 5,  1, 1, 4, 5,  1, 1, 2, 4,  0, 0, 5, 3,  0, 5, 4, 3,  0, 4, 2, 3),
+            intArrayOf(1, 0, 5, 4,  1, 0, 1, 5,  0, 0, 4, 3,  0, 4, 5, 3,  0, 5, 2, 3,  0, 1, 2, 5)
+            /* ktlint-enable no-multi-spaces */
         )
 
 //        var field1615: IntArray
