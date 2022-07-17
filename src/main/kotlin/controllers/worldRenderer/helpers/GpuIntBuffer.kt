@@ -38,7 +38,7 @@ class GpuIntBuffer {
             buffer.flip()
             try {
                 newB.put(buffer)
-            } catch(e: BufferOverflowException) {
+            } catch (e: BufferOverflowException) {
                 logger.error("Could not append to GPU buffer", e)
             }
 

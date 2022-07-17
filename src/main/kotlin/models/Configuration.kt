@@ -2,7 +2,7 @@ package models
 
 import java.io.File
 import java.io.FileWriter
-import java.util.*
+import java.util.Properties
 
 class Configuration {
     private val properties = Properties()

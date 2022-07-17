@@ -7,7 +7,16 @@ import com.jogamp.newt.event.WindowAdapter
 import com.jogamp.newt.event.WindowEvent
 import com.jogamp.newt.javafx.NewtCanvasJFX
 import com.jogamp.newt.opengl.GLWindow
-import com.jogamp.opengl.*
+import com.jogamp.opengl.GL
+import com.jogamp.opengl.GL2ES2
+import com.jogamp.opengl.GL2ES3
+import com.jogamp.opengl.GL2GL3
+import com.jogamp.opengl.GL3ES3
+import com.jogamp.opengl.GL4
+import com.jogamp.opengl.GLAutoDrawable
+import com.jogamp.opengl.GLCapabilities
+import com.jogamp.opengl.GLEventListener
+import com.jogamp.opengl.GLProfile
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.entities.Entity
@@ -29,7 +38,10 @@ import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
 import models.DebugModel
-import models.scene.*
+import models.scene.REGION_HEIGHT
+import models.scene.REGION_SIZE
+import models.scene.Scene
+import models.scene.SceneTile
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
@@ -73,16 +85,16 @@ class Renderer @Inject constructor(
     // scene uv buffer id
     private var uvBufferId = 0
 
-    private var tmpBufferId = 0// temporary scene vertex buffer
-    private var tmpUvBufferId = 0// temporary scene uv buffer
+    private var tmpBufferId = 0 // temporary scene vertex buffer
+    private var tmpUvBufferId = 0 // temporary scene uv buffer
     private var tmpModelBufferId = 0 // scene model buffer, large
-    private var tmpModelBufferSmallId = 0// scene model buffer, small
+    private var tmpModelBufferSmallId = 0 // scene model buffer, small
 
     private var tmpModelBufferUnorderedId = 0
     private var tmpOutBufferId = 0 // target vertex buffer for compute shaders
-    private var tmpOutUvBufferId = 0// target uv buffer for compute shaders
-    private var colorPickerBufferId = 0// buffer for unique picker id
-    private var animFrameBufferId = 0// which frame the model should display on
+    private var tmpOutUvBufferId = 0 // target uv buffer for compute shaders
+    private var colorPickerBufferId = 0 // buffer for unique picker id
+    private var animFrameBufferId = 0 // which frame the model should display on
     private var selectedIdsBufferId = 0
 
     private var hoverId = 0
@@ -129,8 +141,8 @@ class Renderer @Inject constructor(
         window.setSize(width, height)
     }
 
-    //-Dnewt.verbose=true
-    //-Dnewt.debug=true
+    // -Dnewt.verbose=true
+    // -Dnewt.debug=true
     lateinit var window: GLWindow
     lateinit var animator: Animator
     lateinit var glCanvas: NewtCanvasJFX
@@ -198,12 +210,14 @@ class Renderer @Inject constructor(
         lastAntiAliasingMode = null
         textureArrayId = -1
 
-        scene.sceneChangeListeners.add(ActionListener {
-            isSceneUploadRequired = true
-            camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
-            camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
-            camera.cameraZ = -2500
-        })
+        scene.sceneChangeListeners.add(
+            ActionListener {
+                isSceneUploadRequired = true
+                camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
+                camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
+                camera.cameraZ = -2500
+            }
+        )
     }
 
     fun loadScene() {
@@ -384,7 +398,7 @@ class Renderer @Inject constructor(
             .put(camera.centerX)
             .put(camera.centerY)
             .put(camera.scale)
-            .put(camera.cameraX) //x
+            .put(camera.cameraX) // x
             .put(camera.cameraZ) // z
             .put(camera.cameraY) // y
             .put(clientCycle) // currFrame
@@ -428,7 +442,7 @@ class Renderer @Inject constructor(
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, tmpOutBufferId) // vout[]
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, tmpOutUvBufferId) //uvout[]
+            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, tmpOutUvBufferId) // uvout[]
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
             gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, colorPickerBufferId)
@@ -457,7 +471,7 @@ class Renderer @Inject constructor(
 //            val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
             gl.glUseProgram(glProgram)
             // Brightness happens to also be stored in the texture provider, so we use that
-            gl.glUniform1f(uniBrightness, 0.7f) //(float) textureProvider.getBrightness());
+            gl.glUniform1f(uniBrightness, 0.7f) // (float) textureProvider.getBrightness());
             gl.glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
             gl.glUniform1f(uniSmoothBanding, 1f)
 
@@ -531,10 +545,11 @@ class Renderer @Inject constructor(
         modelBuffers.clear()
         modelBuffers.targetBufferOffset = 0
         for (z in 0 until REGION_HEIGHT) {
-            if ((z != 0 || z0ChkBtnSelected)
-              && (z != 1 || z1ChkBtnSelected)
-              && (z != 2 || z2ChkBtnSelected)
-              && (z != 3 || z3ChkBtnSelected)) {
+            if ((z != 0 || z0ChkBtnSelected) &&
+                (z != 1 || z1ChkBtnSelected) &&
+                (z != 2 || z2ChkBtnSelected) &&
+                (z != 3 || z3ChkBtnSelected)
+            ) {
                 for (x in 0 until scene.radius * REGION_SIZE) {
                     for (y in 0 until scene.radius * REGION_SIZE) {
                         scene.getTile(z, x, y)?.let { drawTile(it) }

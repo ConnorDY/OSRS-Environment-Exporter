@@ -2,7 +2,9 @@ package cache.loaders
 
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
-import com.google.inject.*
+import com.google.inject.AbstractModule
+import com.google.inject.Inject
+import com.google.inject.Provider
 import javax.inject.Singleton
 
 class LoaderModule : AbstractModule() {

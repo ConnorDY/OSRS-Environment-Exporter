@@ -30,7 +30,11 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-import java.io.*
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.net.URL
 import javax.net.ssl.SSLHandshakeException
 
@@ -86,10 +90,11 @@ class CacheChooserController @Inject constructor(
 
         try {
             val doc = Jsoup.connect(RUNESTATS_URL).get()
-            entries.addAll(doc.select("a")
-                .map { col -> col.attr("href") }
-                .filter { it.length > 10 } // get rid of ../ and ./types
-                .reversed()
+            entries.addAll(
+                doc.select("a")
+                    .map { col -> col.attr("href") }
+                    .filter { it.length > 10 } // get rid of ../ and ./types
+                    .reversed()
             )
         } catch (e: Exception) {
             e.printStackTrace()

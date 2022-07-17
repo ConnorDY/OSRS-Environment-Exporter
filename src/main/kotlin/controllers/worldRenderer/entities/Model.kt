@@ -1,17 +1,14 @@
 package controllers.worldRenderer.entities
 
 import cache.definitions.ModelDefinition
-import cache.definitions.RegionDefinition
 import cache.definitions.data.FaceNormal
 import cache.definitions.data.VertexNormal
 import cache.loaders.RegionLoader
 import cache.loaders.getTileHeight
 import controllers.worldRenderer.Constants
-import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.helpers.ModelBuffers.Companion.MAX_TRIANGLE
-import java.nio.IntBuffer
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -425,6 +422,6 @@ class Model(
     }
 
     override fun toString(): String {
-        return "Model(${super.toString()}, x: $x y: $y, orientation: $orientation, definition: ${modelDefinition})"
+        return "Model(${super.toString()}, x: $x y: $y, orientation: $orientation, definition: $modelDefinition)"
     }
 }

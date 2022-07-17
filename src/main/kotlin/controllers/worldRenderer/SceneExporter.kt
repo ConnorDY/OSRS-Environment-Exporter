@@ -1,12 +1,16 @@
 package controllers.worldRenderer
 
 import AppConstants
-import controllers.worldRenderer.entities.*
+import controllers.worldRenderer.entities.Entity
+import controllers.worldRenderer.entities.Model
+import controllers.worldRenderer.entities.StaticObject
+import controllers.worldRenderer.entities.TileModel
+import controllers.worldRenderer.entities.TilePaint
 import models.glTF.MaterialBuffers
 import models.glTF.glTF
 import models.scene.Scene
 import models.scene.SceneTile
-import java.io.*
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -26,7 +30,7 @@ class SceneExporter {
             .ofPattern("yyyy-MM-dd HH_mm_ss.SSSSSS")
             .withZone(ZoneOffset.UTC)
             .format(Instant.now())
-        val outDir = "${AppConstants.OUTPUT_DIRECTORY}/${timestamp}"
+        val outDir = "${AppConstants.OUTPUT_DIRECTORY}/$timestamp"
         File(outDir).mkdirs()
 
         // init glTF builder
@@ -73,7 +77,7 @@ class SceneExporter {
 
     private fun copyTextures(outDir: String) {
         val src = Path.of(AppConstants.TEXTURES_DIRECTORY)
-        val dest = Path.of("${outDir}/${AppConstants.TEXTURES_DIRECTORY_NAME}")
+        val dest = Path.of("$outDir/${AppConstants.TEXTURES_DIRECTORY_NAME}")
 
         Files.walk(src).forEach {
             Files.copy(

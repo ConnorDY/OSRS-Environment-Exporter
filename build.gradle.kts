@@ -3,6 +3,7 @@ import org.gradle.jvm.tasks.Jar
 plugins {
     kotlin("jvm") version "1.7.10"
     id("org.openjfx.javafxplugin") version "0.0.8"
+    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
 }
 
 group = "org.example"

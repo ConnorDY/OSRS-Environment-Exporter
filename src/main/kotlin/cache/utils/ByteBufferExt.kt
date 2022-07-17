@@ -16,7 +16,7 @@ fun ByteBuffer.readUnsignedShort(): Int {
     return short.toInt() and 0xFFFF
 }
 
-fun ByteBuffer.readUnsignedByte():Int {
+fun ByteBuffer.readUnsignedByte(): Int {
     return get().toInt() and 0xFF
 }
 

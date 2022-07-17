@@ -24,7 +24,7 @@ class LocationsLoader(
 
         val x = (regionId shr 8) and 0xFF
         val y = regionId and 0xFF
-        val landscape = library.data(5, "l${x}_${y}", xtea.getKeys(regionId))
+        val landscape = library.data(5, "l${x}_$y", xtea.getKeys(regionId))
         if (landscape == null) {
             locationsDefinitionCache[regionId] = null
             return null
@@ -70,5 +70,4 @@ class LocationsLoader(
         locationsDefinitionCache[regionId] = locationsDefinition
         return locationsDefinition
     }
-
 }

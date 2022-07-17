@@ -1,9 +1,8 @@
 package controllers.worldRenderer.shaders
 
 import java.io.InputStream
-import java.util.*
+import java.util.Scanner
 import java.util.function.Function
-
 
 class Template {
     private val resourceLoaders: MutableList<Function<String, String?>> = ArrayList()
@@ -41,14 +40,16 @@ class Template {
     }
 
     fun addInclude(clazz: Class<*>): Template {
-        return add(Function { f: String? ->
-            val inputStream = clazz.getResourceAsStream(f!!)
-            if (inputStream != null) {
-                inputStreamToString(inputStream)
-            } else {
-                null
+        return add(
+            Function { f: String? ->
+                val inputStream = clazz.getResourceAsStream(f!!)
+                if (inputStream != null) {
+                    inputStreamToString(inputStream)
+                } else {
+                    null
+                }
             }
-        })
+        )
     }
 
     companion object {
@@ -59,12 +60,14 @@ class Template {
     }
 
     init {
-        add(Function { key: String? ->
-            if ("version_header" == key) {
-                Shader.WINDOWS_VERSION_HEADER
-            } else {
-                null
+        add(
+            Function { key: String? ->
+                if ("version_header" == key) {
+                    Shader.WINDOWS_VERSION_HEADER
+                } else {
+                    null
+                }
             }
-        })
+        )
     }
 }

@@ -228,7 +228,7 @@ class ObjectLoader @Inject constructor(
             }
             def.params = params
         } else {
-            logger.warn("Unrecognized opcode: $opcode");
+            logger.warn("Unrecognized opcode: $opcode")
         }
     }
 

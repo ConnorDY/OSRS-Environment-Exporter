@@ -16,7 +16,7 @@ import java.util.regex.Pattern
 
 class RegionChooserController @Inject constructor(
     private val scene: Scene
-){
+) {
     @FXML
     private lateinit var txtRegionId: TextField
     @FXML
@@ -35,11 +35,10 @@ class RegionChooserController @Inject constructor(
     private fun initialize() {
         // limit Region ID input to 5 digits
         val regionIDPattern = Pattern.compile("\\d{0,5}")
-        val regionIDFormatter = TextFormatter<String>{ change  ->
+        val regionIDFormatter = TextFormatter<String> { change ->
             if (regionIDPattern.matcher(change.controlNewText).matches()) {
                 return@TextFormatter change
-            }
-            else {
+            } else {
                 return@TextFormatter null
             }
         }
@@ -47,11 +46,10 @@ class RegionChooserController @Inject constructor(
 
         // limit Radius input to 2 digits
         val radiusPattern = Pattern.compile("\\d{0,2}")
-        val radiusFormatter = TextFormatter<String>{ change  ->
+        val radiusFormatter = TextFormatter<String> { change ->
             if (radiusPattern.matcher(change.controlNewText).matches()) {
                 return@TextFormatter change
-            }
-            else {
+            } else {
                 return@TextFormatter null
             }
         }
@@ -61,7 +59,7 @@ class RegionChooserController @Inject constructor(
         btnLoad.setOnAction {
             lblErrorText.isVisible = false
             val regionId: Int? = txtRegionId.text.toIntOrNull()
-            if (regionId == null ||(regionId < 4647 || regionId > 15522)) {
+            if (regionId == null || (regionId < 4647 || regionId > 15522)) {
                 lblErrorText.text = INVALID_REGION_ID_TEXT
                 lblErrorText.isVisible = true
                 return@setOnAction

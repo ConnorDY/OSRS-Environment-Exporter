@@ -16,7 +16,7 @@ class TilePaint(
     nwColor: Int,
     var texture: Int,
     var rgb: Int
-): Renderable {
+) : Renderable {
     var swHeight: Int = swHeight
         private set
 

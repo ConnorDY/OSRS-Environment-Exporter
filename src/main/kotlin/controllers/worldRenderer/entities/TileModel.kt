@@ -44,7 +44,6 @@ class TileModel(
     var triangleColorC: IntArray = intArrayOf()
         private set
 
-
     var faceCount: Int = -1
     var triangleTextureId: IntArray? = null
     var isFlat = true
@@ -239,7 +238,7 @@ class TileModel(
         // var currentFace = 0 // can be rewritten to single var, by changing loop incrementer?
         var faceIndex = 0 // can be rewritten to single var, by changing loop incrementer?
         while (faceIndex < faceCount) {
-            val currentFace = faceIndex * 4;
+            val currentFace = faceIndex * 4
             val vc = pathShape[currentFace]
             var v1 = pathShape[currentFace + 1]
             var v2 = pathShape[currentFace + 2]
@@ -318,6 +317,7 @@ class TileModel(
         )
         val pathShapes: Array<IntArray> = arrayOf(
             // 1. black (0) or white (1) shape, 2.,3.,4., - vertexes (https://i.imgur.com/FR83Q42.png)
+            /* ktlint-disable no-multi-spaces */
             intArrayOf(0, 1, 2, 3,  0, 0, 1, 3),
             intArrayOf(1, 1, 2, 3,  1, 0, 1, 3),
             intArrayOf(0, 1, 2, 3,  1, 0, 1, 3),
@@ -331,6 +331,7 @@ class TileModel(
             intArrayOf(0, 0, 1, 5,  0, 1, 4, 5,  0, 1, 2, 4,  1, 0, 5, 3,  1, 5, 4, 3,  1, 4, 2, 3),
             intArrayOf(1, 0, 1, 5,  1, 1, 4, 5,  1, 1, 2, 4,  0, 0, 5, 3,  0, 5, 4, 3,  0, 4, 2, 3),
             intArrayOf(1, 0, 5, 4,  1, 0, 1, 5,  0, 0, 4, 3,  0, 4, 5, 3,  0, 5, 2, 3,  0, 1, 2, 5)
+            /* ktlint-enable no-multi-spaces */
         )
 
 //        var field1615: IntArray
