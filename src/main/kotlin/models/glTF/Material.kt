@@ -19,7 +19,7 @@ class Material(texture: Int) {
 
     val doubleSided = true
     val alphaMode = "MASK"
-    val alphaCutoff = 0f
+    val alphaCutoff = 0.2f
 
     val extensions = Extensions()
 
