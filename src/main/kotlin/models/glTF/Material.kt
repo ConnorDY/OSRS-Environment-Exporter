@@ -15,5 +15,5 @@ class Material (texture: Int) {
 
     val doubleSided = true
     val alphaMode = "MASK"
-    val alphaCutOff = 0.0f
+    val alphaCutoff = 0.0f
 }
