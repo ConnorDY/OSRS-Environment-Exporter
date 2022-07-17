@@ -79,7 +79,7 @@ class glTF {
         val min = (0 until dims).map { n -> groupedByDimensions.minOf { it[n] } }.toFloatArray()
         val max = (0 until dims).map { n -> groupedByDimensions.maxOf { it[n] } }.toFloatArray()
 
-        val accessor = Accessor(bufferViews.size - 1, accessorType, floatValues.size, min, max)
+        val accessor = Accessor(bufferViews.size - 1, accessorType, floatValues.size / dims, min, max)
         accessors.add(accessor)
 
         return accessors.size - 1
