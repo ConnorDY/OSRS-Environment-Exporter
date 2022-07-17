@@ -1,7 +1,7 @@
 package models.glTF
 
-class Accessor (val bufferView: Int, val count: Int, val min: FloatArray, val max: FloatArray) {
+class Accessor(val bufferView: Int, _type: AccessorType, val count: Int, val min: FloatArray, val max: FloatArray) {
     val byteOffset = 0
+    val type = _type.value
     val componentType = ComponentType.FLOAT.value
-    val type = AccessorType.VEC3.value
 }

@@ -27,6 +27,8 @@ class Material {
 
     var pbrMetallicRoughness: PbrMetallicRoughness
 
+    val doubleSided = true
+
     constructor(color: Array<Float>) {
        this.pbrMetallicRoughness = PbrMetallicRoughness(color)
     }
