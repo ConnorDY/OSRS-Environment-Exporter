@@ -7,7 +7,7 @@
 - Export using glTF format instead of OBJ/PLY – [#28](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/28) @ConnorDY
   - Allowed us to enable alpha textures and remove default specularity
   - Removed the need for a Python script that was previously used to convert OBJ to PLY
-  - Greatly reduced load times when importing versus the old OBJ/PLY format
+  - Greatly reduced load times when importing in Blender compared to the old OBJ/PLY format
 
 - Create a unique, timestamped output directory for each export – [#10](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/10) @ConnorDY
   - Ensures new exports do not overwrite old ones
