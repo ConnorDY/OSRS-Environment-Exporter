@@ -30,7 +30,8 @@ internal class SceneProvider @Inject constructor(
     textureLoader: TextureLoader
 ) :
     Provider<Scene> {
-    private val scene: Scene = Scene(sceneRegionBuilder
+    private val scene: Scene = Scene(
+        sceneRegionBuilder
     )
     override fun get(): Scene {
         return scene

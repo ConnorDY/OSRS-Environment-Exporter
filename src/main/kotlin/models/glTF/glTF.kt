@@ -129,7 +129,7 @@ class glTF {
         }
 
         // write buffer to files
-        File("${directory}/${buffer.uri}").writeBytes(buffer.bytes)
+        File("$directory/${buffer.uri}").writeBytes(buffer.bytes)
 
         // convert to JSON
         val mapper = ObjectMapper()
@@ -137,7 +137,7 @@ class glTF {
         val json = mapper.writeValueAsString(this)
 
         // write glTf file
-        File("${directory}/scene.gltf").printWriter().use {
+        File("$directory/scene.gltf").printWriter().use {
             it.write(json)
         }
     }

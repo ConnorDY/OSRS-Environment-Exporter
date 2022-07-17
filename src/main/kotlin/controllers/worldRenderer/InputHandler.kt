@@ -71,7 +71,7 @@ class InputHandler @Inject internal constructor(
     }
 
     fun isKeyDown(keyCode: KeyCode): Boolean {
-        return keys[keyCode.code-1]
+        return keys[keyCode.code - 1]
     }
 
     override fun keyPressed(e: KeyEvent) {
@@ -97,7 +97,6 @@ class InputHandler @Inject internal constructor(
         if (e.button == MouseEvent.BUTTON1) {
             mouseClicked = true
         }
-
     }
 
     override fun mouseEntered(e: MouseEvent) {}

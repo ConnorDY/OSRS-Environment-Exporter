@@ -1,5 +1,5 @@
 package models.glTF
 
-class Scene (
+class Scene(
     val nodes: ArrayList<Int>
 )
