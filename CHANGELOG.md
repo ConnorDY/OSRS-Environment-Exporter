@@ -18,7 +18,7 @@
 ### :bug: Bug Fixes
 
 - Scale models and offset height values when requested – [#15](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/15) @ScoreUnder
-    - Fixed weird height/floating issues seen in areas like Falador or the Slayer Tower
+    - This fixed weird height/floating issues seen in areas like Falador or the Slayer Tower
 
 - Ensure process exits when all windows are closed – [870d24a](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/870d24a8169b74ed446c32701fd4da3dc3fd77aa) @ScoreUnder
 
