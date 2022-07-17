@@ -60,13 +60,13 @@ class glTF {
         buffer: Buffer,
         dims: Int
     ): Int {
-        val positionsByteArray = floatListToByteArray(floatValues, dims)
+        val floatsByteArray = floatListToByteArray(floatValues, dims)
 
         // buffer view
-        val bufferView = BufferView(0, buffer.getByteLength(), positionsByteArray.size)
+        val bufferView = BufferView(0, buffer.getByteLength(), floatsByteArray.size)
         bufferViews.add(bufferView)
 
-        buffer.addBytes(positionsByteArray)
+        buffer.addBytes(floatsByteArray)
 
         // accessor
         val accessorType = when (dims) {
