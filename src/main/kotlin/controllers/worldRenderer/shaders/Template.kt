@@ -1,7 +1,7 @@
 package controllers.worldRenderer.shaders
 
 import java.io.InputStream
-import java.util.*
+import java.util.Scanner
 import java.util.function.Function
 
 class Template {

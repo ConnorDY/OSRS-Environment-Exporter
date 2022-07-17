@@ -5,7 +5,6 @@ import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL4
 import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glGetProgramInfoLog
-import java.util.*
 
 class Shader {
     private val units: MutableList<Unit> = ArrayList()

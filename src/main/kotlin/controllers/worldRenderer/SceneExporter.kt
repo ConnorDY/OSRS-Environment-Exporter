@@ -1,12 +1,16 @@
 package controllers.worldRenderer
 
 import AppConstants
-import controllers.worldRenderer.entities.*
+import controllers.worldRenderer.entities.Entity
+import controllers.worldRenderer.entities.Model
+import controllers.worldRenderer.entities.StaticObject
+import controllers.worldRenderer.entities.TileModel
+import controllers.worldRenderer.entities.TilePaint
 import models.glTF.MaterialBuffers
 import models.glTF.glTF
 import models.scene.Scene
 import models.scene.SceneTile
-import java.io.*
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption

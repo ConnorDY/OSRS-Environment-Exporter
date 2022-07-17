@@ -1,9 +1,21 @@
 package models.scene
 
 import cache.LocationType
-import cache.definitions.*
+import cache.definitions.LocationsDefinition
+import cache.definitions.ModelDefinition
+import cache.definitions.ObjectDefinition
+import cache.definitions.OverlayDefinition
+import cache.definitions.RegionDefinition
+import cache.definitions.UnderlayDefinition
 import cache.definitions.converters.ObjectToModelConverter
-import cache.loaders.*
+import cache.loaders.LocationsLoader
+import cache.loaders.ObjectLoader
+import cache.loaders.OverlayLoader
+import cache.loaders.RegionLoader
+import cache.loaders.TextureLoader
+import cache.loaders.UnderlayLoader
+import cache.loaders.getTileHeight
+import cache.loaders.getTileSettings
 import cache.utils.ColorPalette
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model

@@ -1,7 +1,11 @@
 package controllers.worldRenderer
 
 import cache.definitions.RegionDefinition
-import controllers.worldRenderer.entities.*
+import controllers.worldRenderer.entities.Entity
+import controllers.worldRenderer.entities.Model
+import controllers.worldRenderer.entities.StaticObject
+import controllers.worldRenderer.entities.TileModel
+import controllers.worldRenderer.entities.TilePaint
 import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import models.scene.REGION_SIZE

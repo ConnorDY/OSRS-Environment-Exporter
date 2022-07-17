@@ -7,7 +7,12 @@ import javafx.animation.AnimationTimer
 import javafx.fxml.FXML
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
-import javafx.scene.control.*
+import javafx.scene.control.Alert
+import javafx.scene.control.Button
+import javafx.scene.control.ButtonType
+import javafx.scene.control.CheckBox
+import javafx.scene.control.Label
+import javafx.scene.control.MenuItem
 import javafx.stage.Stage
 import javafx.util.Callback
 import models.DebugModel
