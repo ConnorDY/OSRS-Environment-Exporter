@@ -28,6 +28,8 @@ class Material {
     var pbrMetallicRoughness: PbrMetallicRoughness
 
     val doubleSided = true
+    val alphaMode = "MASK"
+    val alphaCutOff = 0.0f
 
     constructor(color: Array<Float>) {
        this.pbrMetallicRoughness = PbrMetallicRoughness(color)
