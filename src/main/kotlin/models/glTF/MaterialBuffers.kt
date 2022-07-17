@@ -26,8 +26,8 @@ class MaterialBuffers(isTextured: Boolean) {
         rs2color: Int
     ) {
         positions.add(positionX)
-        positions.add(positionY)
-        positions.add(positionZ)
+        positions.add(-positionY)
+        positions.add(-positionZ)
 
         if (colors != null) {
             val color = rs2hsbToColor(rs2color)
