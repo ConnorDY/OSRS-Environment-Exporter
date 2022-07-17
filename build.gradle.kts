@@ -25,6 +25,7 @@ dependencies {
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7")
     implementation("org.apache.commons:commons-compress:1.21")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("org.slf4j:slf4j-api:1.7.36")
 }
