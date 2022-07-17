@@ -106,7 +106,9 @@ class glTF {
     }
 
     fun addTextureMaterial(rsIndex: Int, imagePath: String) {
+        if (rsIndexToMaterialIndex.containsKey(rsIndex)) return
         rsIndexToMaterialIndex[rsIndex] = materials.size
+
         val material = Material(materials.size)
         materials.add(material)
 

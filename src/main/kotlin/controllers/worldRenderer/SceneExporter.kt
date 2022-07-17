@@ -2,6 +2,7 @@ package controllers.worldRenderer
 
 import AppConstants
 import controllers.worldRenderer.entities.*
+import models.glTF.MaterialBuffers
 import models.glTF.glTF
 import models.scene.Scene
 import models.scene.SceneTile
@@ -30,8 +31,6 @@ class SceneExporter {
 
         // init glTF builder
         val gltf = glTF()
-
-        writeMaterials(gltf)
 
         ++sceneId
 
@@ -62,12 +61,14 @@ class SceneExporter {
         copyTextures(outDir)
     }
 
-    private fun writeMaterials(gltf: glTF) {
-        for (rx in 0 until 98) {
-            if (rx != 54) {
-                gltf.addTextureMaterial(rx, "./${AppConstants.TEXTURES_DIRECTORY_NAME}/$rx.png")
-            }
+    private fun glTF.getMaterialBuffersAndAddTexture(textureId: Int): MaterialBuffers {
+        if (textureId != -1) {
+            addTextureMaterial(
+                textureId,
+                "./${AppConstants.TEXTURES_DIRECTORY_NAME}/$textureId.png"
+            )
         }
+        return getOrCreateBuffersForMaterial(textureId)
     }
 
     private fun copyTextures(outDir: String) {
@@ -123,7 +124,7 @@ class SceneExporter {
             val vertexBx = 0
             val vertexBy = 128
 
-            val materialBuffer = gltf.getOrCreateBuffersForMaterial(tile.texture)
+            val materialBuffer = gltf.getMaterialBuffersAndAddTexture(tile.texture)
 
             materialBuffer.addVertex(
                 (vertexAx + tile.computeObj.x).toFloat() / scale,
@@ -199,7 +200,7 @@ class SceneExporter {
                 val vertexZC = vertexZ[triangleC]
 
                 val textureId = if (triangleTextures != null) triangleTextures[i] else -1
-                val materialBuffer = gltf.getOrCreateBuffersForMaterial(textureId)
+                val materialBuffer = gltf.getMaterialBuffersAndAddTexture(textureId)
 
                 materialBuffer.addVertex(
                     (vertexXA + tileModel.computeObj.x).toFloat() / scale,
@@ -286,7 +287,7 @@ class SceneExporter {
         val v = modelDefinition.faceTextureVCoordinates
 
         val textureId = if (faceTextures != null) faceTextures[face].toInt() else -1
-        val materialBuffer = gltf.getOrCreateBuffersForMaterial(textureId)
+        val materialBuffer = gltf.getMaterialBuffersAndAddTexture(textureId)
 
         var uf = floatArrayOf(0f, 0f, 0f)
         var vf = floatArrayOf(0f, 0f, 0f)
