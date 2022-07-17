@@ -7,7 +7,7 @@ class Buffer (filename: String) {
 
     fun getByteLength() = bytes.size
 
-    // TODO: replace with ByteBuffer
+    // TODO: replace this with something more efficient
     var bytes = ByteArray(0)
     @JsonIgnore get
 
