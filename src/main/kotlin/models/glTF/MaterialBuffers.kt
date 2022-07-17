@@ -1,7 +1,6 @@
 package models.glTF
 
 import cache.utils.ColorPalette
-import cache.utils.ColorPalette.Companion.rs2hsbToColor
 import java.awt.Color
 
 class MaterialBuffers(isTextured: Boolean) {
@@ -46,6 +45,6 @@ class MaterialBuffers(isTextured: Boolean) {
     }
 
     companion object {
-        val pal = ColorPalette(0.7, 0, 512).colorPalette
+        val pal = ColorPalette(1.0, 0, 512).colorPalette
     }
 }
