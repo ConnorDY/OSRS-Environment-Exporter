@@ -24,6 +24,8 @@ class glTF {
     val bufferViews = ArrayList<BufferView>()
     val buffers = ArrayList<Buffer>()
 
+    val extensionsUsed = arrayOf("KHR_materials_specular")
+
     private val materialMap = HashMap<Int, MaterialBuffers>()
 
     fun addMesh(material: Int, buffer: Buffer) {
