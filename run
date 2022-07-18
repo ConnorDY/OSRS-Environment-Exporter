@@ -1,2 +1,2 @@
-#!/bin/bash
-java -XX:+SuppressFatalErrorMessage --add-opens java.base/java.lang=ALL-UNNAMED -Djavafx.verbose=true -jar ./build/libs/osrs-environment-exporter-fat-2.0.0.jar
+#!/bin/sh
+exec java --add-opens java.base/java.lang=ALL-UNNAMED -jar ./build/libs/osrs-environment-exporter-fat-2.0.0.jar "$@"
