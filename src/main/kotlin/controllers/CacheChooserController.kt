@@ -27,7 +27,6 @@ import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JList
-import javax.swing.JOptionPane
 import javax.swing.JScrollPane
 import javax.swing.JTextField
 import javax.swing.LayoutStyle.ComponentPlacement
@@ -45,7 +44,6 @@ class CacheChooserController(
     var xteaAndCache: Pair<XteaManager, CacheLibrary>? = null
 
     init {
-        checkJavaVersion()
         defaultCloseOperation = DISPOSE_ON_CLOSE
         preferredSize = Dimension(750, 400)
         val groups = GroupLayout(contentPane)
@@ -305,21 +303,6 @@ class CacheChooserController(
                 e.printStackTrace()
             }
         }.start()
-    }
-
-    private fun checkJavaVersion() {
-        val javaVer = System.getProperty("java.version")
-        println("Java version: $javaVer")
-        val majorVer = javaVer.split(".")[0].toInt()
-        if (majorVer < 11) {
-            JOptionPane.showMessageDialog(
-                this,
-                "Java version detected ($javaVer) is too low, please update Java to at least version 11.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE or JOptionPane.OK_OPTION
-            )
-            dispose()
-        }
     }
 
     inner class CacheLocationUpdateListener(
