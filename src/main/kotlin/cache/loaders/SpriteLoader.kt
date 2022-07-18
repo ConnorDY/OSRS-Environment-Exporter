@@ -84,9 +84,7 @@ class SpriteLoader(
             val flags: Int = inputStream.readUnsignedByte()
             if (flags and FLAG_VERTICAL == 0) {
                 // read horizontally
-                for (j in 0 until dimension) {
-                    pixelPaletteIndicies[j] = inputStream.get()
-                }
+                inputStream.get(pixelPaletteIndicies)
             } else {
                 // read vertically
                 for (j in 0 until spriteWidth) {
@@ -100,9 +98,7 @@ class SpriteLoader(
             if (flags and FLAG_ALPHA != 0) {
                 if (flags and FLAG_VERTICAL == 0) {
                     // read horizontally
-                    for (j in 0 until dimension) {
-                        pixelAlphas[j] = inputStream.get()
-                    }
+                    inputStream.get(pixelAlphas)
                 } else {
                     // read vertically
                     for (j in 0 until spriteWidth) {
