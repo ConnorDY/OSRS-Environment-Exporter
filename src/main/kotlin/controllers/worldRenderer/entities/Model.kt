@@ -143,12 +143,7 @@ class Model(
         } else {
             val model: Model
             if (deepCopy) {
-                val newDef = ModelDefinition(
-                    modelDefinition,
-                    shallowCopyVerts = true,
-                    shallowCopyFaceColors = true,
-                    shallowCopyFaceTextures = true
-                )
+                val newDef = ModelDefinition(modelDefinition)
                 model = Model(newDef)
                 model.faceColors1 = faceColors1
                 model.faceColors2 = faceColors2
@@ -223,12 +218,7 @@ class Model(
         if (x == 128 && y == 128 && z == 128) {
             this
         } else {
-            val newDef = ModelDefinition(
-                modelDefinition,
-                shallowCopyVerts = false,
-                shallowCopyFaceColors = true,
-                shallowCopyFaceTextures = true
-            )
+            val newDef = ModelDefinition(modelDefinition)
             for (n in 0 until modelDefinition.vertexCount) {
                 newDef.vertexPositionsX[n] = newDef.vertexPositionsX[n] * x / 128
                 newDef.vertexPositionsY[n] = newDef.vertexPositionsY[n] * y / 128
