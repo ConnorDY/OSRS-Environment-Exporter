@@ -3,8 +3,8 @@ package models.glTF
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import java.io.File
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import kotlin.math.max
+import kotlin.math.min
 
 class glTF {
     val asset = Asset(
@@ -32,14 +32,14 @@ class glTF {
     fun addMesh(material: Int, buffer: Buffer) {
         val materialBuffer = materialMap.get(material)!!
 
-        val positionsAccessor = addAccessorForFloats(materialBuffer.positions, buffer, 3)
+        val positionsAccessor = addAccessorForFloats(materialBuffer.positions, buffer)
         var texCoordsAccessor: Int? = null
         var colorsAccessor: Int? = null
 
         if (material != -1) {
-            texCoordsAccessor = addAccessorForFloats(materialBuffer.texcoords!!, buffer, 2)
+            texCoordsAccessor = addAccessorForFloats(materialBuffer.texcoords!!, buffer)
         } else {
-            colorsAccessor = addAccessorForFloats(materialBuffer.colors!!, buffer, 3)
+            colorsAccessor = addAccessorForFloats(materialBuffer.colors!!, buffer)
         }
 
         // primitive attributes
@@ -59,11 +59,10 @@ class glTF {
     }
 
     private fun addAccessorForFloats(
-        floatValues: ArrayList<Float>,
-        buffer: Buffer,
-        dims: Int
+        floatBuffer: FloatVectorBuffer,
+        buffer: Buffer
     ): Int {
-        val floatsByteArray = floatListToByteArray(floatValues, dims)
+        val floatsByteArray = floatBuffer.getBytes()
 
         // buffer view
         val bufferView = BufferView(0, buffer.getByteLength(), floatsByteArray.size)
@@ -72,33 +71,22 @@ class glTF {
         buffer.addBytes(floatsByteArray)
 
         // accessor
-        val accessorType = when (dims) {
+        val accessorType = when (floatBuffer.dims) {
             3 -> AccessorType.VEC3
             2 -> AccessorType.VEC2
             else -> throw UnsupportedOperationException()
         }
 
-        val groupedByDimensions = floatValues.chunked(dims)
-        val min = (0 until dims).map { n -> groupedByDimensions.minOf { it[n] } }.toFloatArray()
-        val max = (0 until dims).map { n -> groupedByDimensions.maxOf { it[n] } }.toFloatArray()
-
-        val accessor = Accessor(bufferViews.size - 1, accessorType, floatValues.size / dims, min, max)
+        val accessor = Accessor(
+            bufferViews.size - 1,
+            accessorType,
+            floatBuffer.size,
+            floatBuffer.min,
+            floatBuffer.max
+        )
         accessors.add(accessor)
 
         return accessors.size - 1
-    }
-
-    private fun floatListToByteArray(floats: ArrayList<Float>, dims: Int): ByteArray {
-        // convert to byte array
-        val byteBuffer = ByteBuffer.allocate(
-            floats.size * 4 // 4 bytes in a float
-        ).order(ByteOrder.LITTLE_ENDIAN)
-        val floatBuffer = byteBuffer.asFloatBuffer()
-
-        for (value in floats) {
-            floatBuffer.put(value)
-        }
-        return byteBuffer.array()
     }
 
     fun getOrCreateBuffersForMaterial(materialId: Int) = materialMap.getOrPut(materialId) {
