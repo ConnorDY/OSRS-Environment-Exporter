@@ -25,7 +25,7 @@
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
                   <Label text="Region ID:" />
-                  <TextField fx:id="txtRegionId" promptText="10038" HBox.hgrow="SOMETIMES">
+                  <TextField fx:id="txtRegionId" promptText="10038">
                      <HBox.margin>
                         <Insets right="5.0" />
                      </HBox.margin>
