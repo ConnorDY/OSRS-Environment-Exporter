@@ -66,57 +66,23 @@ open class ModelDefinition {
 
     constructor()
     constructor(
-        original: ModelDefinition,
-        shallowCopyVerts: Boolean,
-        shallowCopyFaceColors: Boolean,
-        shallowCopyFaceTextures: Boolean
+        original: ModelDefinition
     ) {
         vertexCount = original.vertexCount
         faceCount = original.faceCount
         textureTriangleCount = original.textureTriangleCount
-        if (shallowCopyVerts) {
-            vertexPositionsX = original.vertexPositionsX
-            vertexPositionsY = original.vertexPositionsY
-            vertexPositionsZ = original.vertexPositionsZ
-        } else {
-            vertexPositionsX = IntArray(vertexCount)
-            vertexPositionsY = IntArray(vertexCount)
-            vertexPositionsZ = IntArray(vertexCount)
-            for (i in 0 until vertexCount) {
-                vertexPositionsX[i] = original.vertexPositionsX[i]
-                vertexPositionsY[i] = original.vertexPositionsY[i]
-                vertexPositionsZ[i] = original.vertexPositionsZ[i]
-            }
-        }
-        if (shallowCopyFaceColors) {
-            faceColors = original.faceColors
-        } else {
-            faceColors = ShortArray(faceCount)
-            for (i in 0 until faceCount) {
-                faceColors!![i] = original.faceColors!![i]
-            }
-        }
-        if (!shallowCopyFaceTextures && faceTextures != null) {
-            faceTextures = ShortArray(faceCount)
-            for (i in 0 until faceCount) {
-                faceTextures!![i] = original.faceTextures!![i]
-            }
-        } else {
-            faceTextures = original.faceTextures
-        }
+        vertexPositionsX = original.vertexPositionsX.clone()
+        vertexPositionsY = original.vertexPositionsY.clone()
+        vertexPositionsZ = original.vertexPositionsZ.clone()
+        faceColors = original.faceColors?.clone()
+        faceTextures = original.faceTextures?.clone()
         id = original.id
         tag = original.tag
         vertexCount = original.vertexCount
         faceCount = original.faceCount
-        if (shallowCopyVerts) {
-            faceVertexIndices1 = original.faceVertexIndices1
-            faceVertexIndices2 = original.faceVertexIndices2
-            faceVertexIndices3 = original.faceVertexIndices3
-        } else {
-            faceVertexIndices1 = original.faceVertexIndices1?.clone()
-            faceVertexIndices2 = original.faceVertexIndices2?.clone()
-            faceVertexIndices3 = original.faceVertexIndices3?.clone()
-        }
+        faceVertexIndices1 = original.faceVertexIndices1?.clone()
+        faceVertexIndices2 = original.faceVertexIndices2?.clone()
+        faceVertexIndices3 = original.faceVertexIndices3?.clone()
         faceRenderTypes = original.faceRenderTypes
         faceRenderPriorities = original.faceRenderPriorities
         faceAlphas = original.faceAlphas

@@ -65,12 +65,7 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
             def.computeAnimationTables()
             modelDefinitionCache[modelId] = def
         }
-        return ModelDefinition(
-            def,
-            shallowCopyVerts = false,
-            shallowCopyFaceColors = false,
-            shallowCopyFaceTextures = false
-        )
+        return ModelDefinition(def)
     }
 
     private fun readModelCommon(
