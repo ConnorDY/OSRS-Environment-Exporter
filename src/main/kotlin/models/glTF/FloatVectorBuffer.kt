@@ -16,9 +16,11 @@ class FloatVectorBuffer(val dims: Int) {
 
     // Position in the vector we are writing to (e.g. 0th, 1st, or 2nd dimension)
     private var pos = 0
+
     // Total valid size of this buffer as a whole, in vectors
     var size = 0
         private set
+
     // Total valid size of the current chunk, in vectors
     private var innerSize = 0
 
@@ -26,7 +28,11 @@ class FloatVectorBuffer(val dims: Int) {
         ByteBuffer.wrap(chunk).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
 
     private fun refreshBuffer() {
-        buffer.addBytes(chunk)
+        val innerBytes = innerSize * dims * BYTES_IN_A_FLOAT
+        val chunkToAdd =
+            if (innerBytes == chunk.size) chunk
+            else chunk.copyOf(innerBytes)
+        buffer.addBytes(chunkToAdd)
         innerSize = 0
         chunk = ByteArray(INITIAL_CAPACITY + size * dims * BYTES_IN_A_FLOAT)
         chunkWrapped = wrapBytes(chunk)
@@ -57,6 +63,7 @@ class FloatVectorBuffer(val dims: Int) {
             // Ensure no further writes succeed
             chunk = USELESS_ARRAY
             chunkWrapped = wrapBytes(chunk)
+            innerSize = 0
         }
         return buffer.getBytes()
     }
