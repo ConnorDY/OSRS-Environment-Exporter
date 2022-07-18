@@ -129,7 +129,7 @@ class glTF {
         }
 
         // write buffer to files
-        File("$directory/${buffer.uri}").writeBytes(buffer.bytes)
+        File("$directory/${buffer.uri}").writeBytes(buffer.getBytes())
 
         // convert to JSON
         val mapper = ObjectMapper()
