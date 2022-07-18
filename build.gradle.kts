@@ -48,9 +48,9 @@ javafx {
 }
 
 val fatJar = task("fatJar", type = Jar::class) {
-    baseName = "${project.name}-fat"
+    archiveBaseName.set("${project.name}-fat")
     manifest {
-        attributes["Implementation-Version"] = version
+        attributes["Implementation-Version"] = archiveVersion.get()
         attributes["Main-Class"] = "AppKt"
     }
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
