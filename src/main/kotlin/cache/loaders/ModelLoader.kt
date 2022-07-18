@@ -32,6 +32,7 @@ package cache.loaders
 
 import cache.IndexType
 import cache.definitions.ModelDefinition
+import cache.utils.readByteArray
 import cache.utils.readShortSmart
 import cache.utils.readUnsignedByte
 import cache.utils.readUnsignedShort
@@ -102,23 +103,23 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
             if (!isNewStyleTextures) {
                 def.textureRenderTypes = ByteArray(textureCount)
             } else {
-                def.textureRenderTypes = readByteArray(stream1, textureCount)
+                def.textureRenderTypes = stream1.readByteArray(textureCount)
             }
         }
-        val vertexFlags = readByteArray(stream1, vertexCount)
+        val vertexFlags = stream1.readByteArray(vertexCount)
         if (hasFaceRenderTypes == 1) {
-            def.faceRenderTypes = readByteArray(stream1, faceCount)
+            def.faceRenderTypes = stream1.readByteArray(faceCount)
         }
-        val faceIndexCompressionTypes = readByteArray(stream1, faceCount)
+        val faceIndexCompressionTypes = stream1.readByteArray(faceCount)
         if (faceRenderPriority == 255) {
-            def.faceRenderPriorities = readByteArray(stream1, faceCount)
+            def.faceRenderPriorities = stream1.readByteArray(faceCount)
         }
         if (hasPackedTransparencyVertexGroups == 1) {
             readFaceSkins(def, stream1, faceCount)
         }
         var faceTextureFlags: ByteArray? = null
         if (oldStyleIsTextured == 1) {
-            faceTextureFlags = readByteArray(stream1, faceCount)
+            faceTextureFlags = stream1.readByteArray(faceCount)
         }
         if (hasVertexSkins == 1) {
             readVertexSkins(def, stream1, vertexCount)
@@ -127,7 +128,7 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
             readAnimayaGroups(stream1, vertexCount)
         }
         if (hasFaceTransparencies == 1) {
-            def.faceAlphas = readByteArray(stream1, faceCount)
+            def.faceAlphas = stream1.readByteArray(faceCount)
         }
         readFaceIndexData(def, stream1, faceIndexCompressionTypes)
         if (hasFaceTextures == 1) {
@@ -416,12 +417,6 @@ class ModelLoader(private val cacheLibrary: CacheLibrary) {
         def.textureTriangleVertexIndices1 = textureTriangleVertexIndices1
         def.textureTriangleVertexIndices2 = textureTriangleVertexIndices2
         def.textureTriangleVertexIndices3 = textureTriangleVertexIndices3
-    }
-
-    private fun readByteArray(stream: ByteBuffer, length: Int): ByteArray {
-        val array = ByteArray(length)
-        stream[array]
-        return array
     }
 
     companion object {
