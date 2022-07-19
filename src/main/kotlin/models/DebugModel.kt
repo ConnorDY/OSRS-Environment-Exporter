@@ -5,5 +5,4 @@ import javafx.beans.property.StringProperty
 
 class DebugModel {
     val fps: StringProperty = SimpleStringProperty()
-    val deltaTime: StringProperty = SimpleStringProperty()
 }

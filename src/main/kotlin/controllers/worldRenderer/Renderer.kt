@@ -279,16 +279,11 @@ class Renderer @Inject constructor(
         gl.glViewport(x, y, width, height)
     }
 
-    public var isSceneUploadRequired = true
+    var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
-    private var lastUpdate: Long = System.nanoTime()
-    var deltaTime: Double = 0.0
+
     override fun display(drawable: GLAutoDrawable?) {
         debugModel.fps.set("%.0f".format(animator.lastFPS))
-        debugModel.deltaTime.set("%.2f".format(deltaTime))
-        //
-        deltaTime = (System.nanoTime().toDouble() - lastUpdate.toDouble()) / 1000 / 1000
-        lastUpdate = System.nanoTime()
 
         if (isSceneUploadRequired) {
             uploadScene()

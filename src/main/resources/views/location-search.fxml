@@ -13,36 +13,30 @@
 <AnchorPane fx:id="wrapper" onKeyPressed="#handleKeyPressed" prefHeight="400.0" prefWidth="600.0"
             xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.LocationSearchController">
-    <children>
-        <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0"
-              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <children>
-                <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
-                    <children>
-                        <Label text="Search Query:"/>
-                        <TextField fx:id="txtSearchQuery" promptText="Lumbridge"/>
+    <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+            <padding>
+                <Insets left="15.0" right="15.0"/>
+            </padding>
 
-                        <Region prefHeight="20.0"/>
+            <Label text="Search Query:"/>
+            <TextField fx:id="txtSearchQuery" promptText="Lumbridge"/>
 
-                        <Label text="Radius:"/>
-                        <TextField fx:id="txtRadius" promptText="1" text="1"/>
+            <Region prefHeight="20.0"/>
 
-                        <Region prefHeight="20.0"/>
+            <Label text="Radius:"/>
+            <TextField fx:id="txtRadius" promptText="1" text="1"/>
 
-                        <Button fx:id="btnLoad" text="Load Location" disable="true"/>
+            <Region prefHeight="20.0"/>
 
-                        <Label fx:id="lblErrorText" text="Error Message." textFill="RED" visible="false"/>
-                    </children>
+            <Button fx:id="btnLoad" text="Load Location" disable="true"/>
 
-                    <padding>
-                        <Insets top="10.0" bottom="10.0" left="10.0" right="10.0"/>
-                    </padding>
-                </VBox>
+            <Label fx:id="lblErrorText" text="Error Message." textFill="RED" visible="false"/>
+        </VBox>
 
-                <VBox prefWidth="360.0">
-                    <ListView fx:id="listLocations" VBox.vgrow="ALWAYS"/>
-                </VBox>
-            </children>
-        </HBox>
-    </children>
+        <VBox prefWidth="360.0">
+            <ListView fx:id="listLocations" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </HBox>
 </AnchorPane>

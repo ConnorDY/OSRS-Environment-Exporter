@@ -17,7 +17,6 @@ import javafx.scene.input.KeyEvent
 import javafx.scene.layout.AnchorPane
 import javafx.scene.text.TextAlignment
 import javafx.stage.Stage
-import javafx.util.Callback
 import models.locations.Location
 import models.locations.Locations
 import models.scene.Scene
@@ -55,7 +54,7 @@ class LocationSearchController @Inject constructor(
 
     @FXML
     private fun initialize() {
-        listLocations.cellFactory = LocationCellFactory()
+        listLocations.setCellFactory { LocationCell() }
 
         // setup list placeholder while loading
         val listLocationsPlacholder = Label("Loading locations...")
@@ -88,18 +87,15 @@ class LocationSearchController @Inject constructor(
         // limit Radius input to 2 digits
         val radiusPattern = Pattern.compile("\\d{0,2}")
         val radiusFormatter = TextFormatter<String> { change ->
-            if (radiusPattern.matcher(change.controlNewText).matches()) {
-                return@TextFormatter change
-            } else {
-                return@TextFormatter null
-            }
+            if (radiusPattern.matcher(change.controlNewText).matches()) change else null
         }
         txtRadius.textFormatter = radiusFormatter
 
         // search handler
         txtSearchQuery.textProperty().addListener { _: ObservableValue<out String>?, _: String?, newVal: String ->
+            val newValLowercase = newVal.lowercase()
             filterableLocations.setPredicate { location ->
-                location.name.lowercase().contains(newVal.lowercase())
+                location.name.lowercase().contains(newValLowercase)
             }
         }
 
@@ -129,12 +125,6 @@ class LocationSearchController @Inject constructor(
                 val regionId = regionIdForLocation(item)
                 this.text = "${item.name} ($regionId)"
             }
-        }
-    }
-
-    private class LocationCellFactory : Callback<ListView<Location>, ListCell<Location>> {
-        override fun call(listview: ListView<Location>): ListCell<Location> {
-            return LocationCell()
         }
     }
 
