@@ -14,7 +14,9 @@ import javafx.scene.control.TextField
 import javafx.scene.control.TextFormatter
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.layout.AnchorPane
 import javafx.scene.text.TextAlignment
+import javafx.stage.Stage
 import javafx.util.Callback
 import models.locations.Location
 import models.locations.Locations
@@ -25,6 +27,9 @@ import java.util.regex.Pattern
 class LocationSearchController @Inject constructor(
     private val scene: Scene
 ) {
+    @FXML
+    lateinit var wrapper: AnchorPane
+
     @FXML
     lateinit var txtSearchQuery: TextField
 
@@ -108,7 +113,7 @@ class LocationSearchController @Inject constructor(
                 lblErrorText.isVisible = true
                 return@setOnAction
             }
-
+            (wrapper.scene.window as Stage).close()
             scene.load(regionId, radius)
         }
     }
