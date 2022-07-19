@@ -9,6 +9,9 @@
   - Removed the need for a Python script that was previously used to convert OBJ to PLY
   - Greatly reduced load times when importing in Blender compared to the old OBJ/PLY format
 
+- Add new "Location Search" feature – [#41](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/41) @ConnorDY
+  - Allows users to select a location from a searchable list
+
 - Create a unique, timestamped output directory for each export – [#10](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/10) @ConnorDY
   - Ensures new exports do not overwrite old ones
 
