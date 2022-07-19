@@ -84,35 +84,31 @@ class ObjectToModelConverter @Inject constructor(
             return null
         }
 
-        val copy = ModelDefinition(
-            modelDefinition,
-            orientation == 0,
-            recolorToFind == null,
-            retextureToFind == null
-        )
-
         orientation = orientation and 0x3
         when (orientation) {
             1 -> {
-                copy.rotateY90Ccw()
+                modelDefinition.rotateY90Ccw()
             }
             2 -> {
-                copy.rotateY180()
+                modelDefinition.rotateY180()
             }
             3 -> {
-                copy.rotateY270Ccw()
+                modelDefinition.rotateY270Ccw()
             }
         }
         if (recolorToFind != null) {
             for (i in recolorToFind!!.indices) {
-                copy.recolor(recolorToFind!![i], recolorToReplace[i])
+                modelDefinition.recolor(recolorToFind!![i], recolorToReplace[i])
             }
         }
         if (retextureToFind != null) {
             for (i in retextureToFind!!.indices) {
-                copy.retexture(retextureToFind!![i], textureToReplace!![i])
+                modelDefinition.retexture(
+                    retextureToFind!![i],
+                    textureToReplace!![i]
+                )
             }
         }
-        return copy
+        return modelDefinition
     }
 }

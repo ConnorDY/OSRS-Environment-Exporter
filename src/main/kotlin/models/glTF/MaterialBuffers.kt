@@ -4,16 +4,16 @@ import cache.utils.ColorPalette
 import java.awt.Color
 
 class MaterialBuffers(isTextured: Boolean) {
-    val positions = ArrayList<Float>()
-    val texcoords: ArrayList<Float>?
-    val colors: ArrayList<Float>?
+    val positions = FloatVectorBuffer(3)
+    val texcoords: FloatVectorBuffer?
+    val colors: FloatVectorBuffer?
 
     init {
         if (isTextured) {
-            texcoords = ArrayList()
+            texcoords = FloatVectorBuffer(2)
             colors = null
         } else {
-            colors = ArrayList()
+            colors = FloatVectorBuffer(3)
             texcoords = null
         }
     }
