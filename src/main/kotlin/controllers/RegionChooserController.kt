@@ -19,6 +19,7 @@ class RegionChooserController @Inject constructor(
 ) {
     @FXML
     private lateinit var txtRegionId: TextField
+
     @FXML
     private lateinit var txtRadius: TextField
 

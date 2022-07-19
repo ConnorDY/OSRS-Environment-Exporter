@@ -30,6 +30,9 @@ class MainController @Inject constructor(
     lateinit var menuChangeRegion: MenuItem
 
     @FXML
+    lateinit var menuLocationSearch: MenuItem
+
+    @FXML
     lateinit var menuAbout: MenuItem
 
     @FXML
@@ -101,6 +104,10 @@ class MainController @Inject constructor(
         // Menu item handlers
         menuChangeRegion.setOnAction {
             openWindow("region-chooser", "Region Chooser")
+        }
+
+        menuLocationSearch.setOnAction {
+            openWindow("location-search", "Location Search")
         }
 
         menuAbout.setOnAction {

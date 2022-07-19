@@ -25,6 +25,7 @@
                         <Menu mnemonicParsing="false" text="World">
                             <items>
                                 <MenuItem fx:id="menuChangeRegion" mnemonicParsing="false" text="Change Region"/>
+                                <MenuItem fx:id="menuLocationSearch" mnemonicParsing="false" text="Location Search"/>
                             </items>
                         </Menu>
 
