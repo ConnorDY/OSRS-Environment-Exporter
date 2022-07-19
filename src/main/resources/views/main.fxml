@@ -16,69 +16,59 @@
 
 <AnchorPane prefHeight="800.0" prefWidth="1600.0" xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController">
-    <children>
-        <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <children>
-                <MenuBar>
-                    <menus>
-                        <Menu mnemonicParsing="false" text="World">
-                            <items>
-                                <MenuItem fx:id="menuChangeRegion" mnemonicParsing="false" text="Change Region"/>
-                                <MenuItem fx:id="menuLocationSearch" mnemonicParsing="false" text="Location Search"/>
-                            </items>
-                        </Menu>
+    <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+          AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <MenuBar>
+            <Menu mnemonicParsing="false" text="World">
+                <MenuItem fx:id="menuChangeRegion" mnemonicParsing="false" text="Change Region"/>
+                <MenuItem fx:id="menuLocationSearch" mnemonicParsing="false" text="Location Search"/>
+            </Menu>
 
-                        <Menu mnemonicParsing="false" text="Help">
-                            <items>
-                                <MenuItem mnemonicParsing="false" text="About" fx:id="menuAbout"/>
-                            </items>
-                        </Menu>
-                    </menus>
-                </MenuBar>
+            <Menu mnemonicParsing="false" text="Help">
+                <MenuItem mnemonicParsing="false" text="About" fx:id="menuAbout"/>
+            </Menu>
+        </MenuBar>
 
-                <ToolBar prefHeight="40.0" prefWidth="200.0">
-                    <Button fx:id="btnExport" mnemonicParsing="false" text="Export">
-                        <HBox.margin>
-                            <Insets right="10.0"/>
-                        </HBox.margin>
-                    </Button>
+        <ToolBar prefHeight="40.0" prefWidth="200.0">
+            <Button fx:id="btnExport" mnemonicParsing="false" text="Export">
+                <HBox.margin>
+                    <Insets right="10.0"/>
+                </HBox.margin>
+            </Button>
 
-                    <Pane HBox.hgrow="ALWAYS"/>
+            <Pane HBox.hgrow="ALWAYS"/>
 
-                    <Label text="Z Layers:">
-                        <HBox.margin>
-                            <Insets right="4.0"/>
-                        </HBox.margin>
-                    </Label>
+            <Label text="Z Layers:">
+                <HBox.margin>
+                    <Insets right="4.0"/>
+                </HBox.margin>
+            </Label>
 
-                    <CheckBox fx:id="z0ChkBtn" mnemonicParsing="false" text="Z0" selected="true">
-                        <HBox.margin>
-                            <Insets right="6.0"/>
-                        </HBox.margin>
-                    </CheckBox>
+            <CheckBox fx:id="z0ChkBtn" mnemonicParsing="false" text="Z0" selected="true">
+                <HBox.margin>
+                    <Insets right="6.0"/>
+                </HBox.margin>
+            </CheckBox>
 
-                    <CheckBox fx:id="z1ChkBtn" mnemonicParsing="false" text="Z1" selected="true">
-                        <HBox.margin>
-                            <Insets right="6.0"/>
-                        </HBox.margin>
-                    </CheckBox>
+            <CheckBox fx:id="z1ChkBtn" mnemonicParsing="false" text="Z1" selected="true">
+                <HBox.margin>
+                    <Insets right="6.0"/>
+                </HBox.margin>
+            </CheckBox>
 
-                    <CheckBox fx:id="z2ChkBtn" mnemonicParsing="false" text="Z2" selected="true">
-                        <HBox.margin>
-                            <Insets right="6.0"/>
-                        </HBox.margin>
-                    </CheckBox>
+            <CheckBox fx:id="z2ChkBtn" mnemonicParsing="false" text="Z2" selected="true">
+                <HBox.margin>
+                    <Insets right="6.0"/>
+                </HBox.margin>
+            </CheckBox>
 
-                    <CheckBox fx:id="z3ChkBtn" mnemonicParsing="false" text="Z3" selected="true"/>
+            <CheckBox fx:id="z3ChkBtn" mnemonicParsing="false" text="Z3" selected="true"/>
 
-                    <Pane HBox.hgrow="ALWAYS"/>
+            <Pane HBox.hgrow="ALWAYS"/>
 
-                    <Label fx:id="lblFps" text="FPS: -1"/>
-                </ToolBar>
+            <Label fx:id="lblFps" text="FPS: -1"/>
+        </ToolBar>
 
-                <DockPane fx:id="dockPane" VBox.vgrow="ALWAYS"/>
-            </children>
-        </VBox>
-    </children>
+        <DockPane fx:id="dockPane" VBox.vgrow="ALWAYS"/>
+    </VBox>
 </AnchorPane>
