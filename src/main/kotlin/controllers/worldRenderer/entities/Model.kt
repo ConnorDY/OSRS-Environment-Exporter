@@ -13,7 +13,7 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 class Model(
-    var modelDefinition: ModelDefinition,
+    val modelDefinition: ModelDefinition,
 
     var orientation: Int = 0,
     var orientationType: OrientationType = OrientationType.STRAIGHT,
@@ -22,15 +22,14 @@ class Model(
     var yOff: Int = 0,
     var xOff: Int = 0,
     var height: Int = 0,
-    var computeObj: ComputeObj = ComputeObj()
+    val computeObj: ComputeObj = ComputeObj(),
+    val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
+    val faceColors2: IntArray = IntArray(modelDefinition.faceCount),
+    val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
 ) : Renderable {
-
-    var faceColors1: IntArray? = null
-    var faceColors2: IntArray? = null
-    var faceColors3: IntArray? = null
-    var vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
-    var vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
-    var vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ.clone()
+    val vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
+    val vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
+    val vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ.clone()
 
     var field1840: ByteArray? = null
     var field1852 = 0
@@ -141,16 +140,12 @@ class Model(
         return if (height == topLeft && height == topRight && height == bottomLeft && height == bottomRight) {
             this
         } else {
-            val model: Model
-            if (deepCopy) {
-                val newDef = ModelDefinition(modelDefinition)
-                model = Model(newDef)
-                model.faceColors1 = faceColors1
-                model.faceColors2 = faceColors2
-                model.faceColors3 = faceColors3
-            } else {
-                model = this
-            }
+            val model: Model = if (deepCopy) Model(
+                ModelDefinition(modelDefinition),
+                faceColors1 = faceColors1,
+                faceColors2 = faceColors2,
+                faceColors3 = faceColors3
+            ) else this
             var var12: Int
             var var13: Int
             var var14: Int
@@ -224,12 +219,12 @@ class Model(
                 newDef.vertexPositionsY[n] = newDef.vertexPositionsY[n] * y / 128
                 newDef.vertexPositionsZ[n] = newDef.vertexPositionsZ[n] * z / 128
             }
-            val model = Model(newDef)
-            model.faceColors1 = faceColors1
-            model.faceColors2 = faceColors2
-            model.faceColors3 = faceColors3
-            model.resetBounds()
-            model
+            Model(
+                newDef,
+                faceColors1 = faceColors1,
+                faceColors2 = faceColors2,
+                faceColors3 = faceColors3
+            )
         }
 
     private fun resetBounds() {
@@ -246,23 +241,20 @@ class Model(
         def.computeTextureUVCoordinates()
         val somethingMagnitude = sqrt(z * z + x * x + (y * y).toDouble()).toInt()
         val var7 = somethingMagnitude * contrast shr 8
-        faceColors1 = IntArray(def.faceCount)
-        faceColors2 = IntArray(def.faceCount)
-        faceColors3 = IntArray(def.faceCount)
-        if (def.textureTriangleCount > 0 && def.textureCoordinates != null) {
+        val origTextureCoordinates = def.textureCoordinates
+        if (def.textureTriangleCount > 0 && origTextureCoordinates != null) {
             val var9 = IntArray(def.textureTriangleCount)
             var var10 = 0
             while (var10 < def.faceCount) {
-                if (def.textureCoordinates!![var10].toInt() != -1) {
-                    ++var9[def.textureCoordinates!![var10].toInt() and 255]
+                if (origTextureCoordinates[var10].toInt() != -1) {
+                    ++var9[origTextureCoordinates[var10].toInt() and 255]
                 }
                 ++var10
             }
             field1852 = 0
             var10 = 0
-            val textureRenderTypes = def.textureRenderTypes!!
             while (var10 < def.textureTriangleCount) {
-                if (var9[var10] > 0 && textureRenderTypes[var10].toInt() == 0) {
+                if (var9[var10] > 0 && def.textureRenderTypes[var10].toInt() == 0) {
                     ++field1852
                 }
                 ++var10
@@ -272,124 +264,108 @@ class Model(
             field1846 = IntArray(field1852)
             var10 = 0
             for (i in 0 until def.textureTriangleCount) {
-                if (var9[i] > 0 && textureRenderTypes[i].toInt() == 0) {
-                    field1844!![var10] = def.textureTriangleVertexIndices1!![i].toInt() and '\uffff'.toInt()
-                    field1865!![var10] = def.textureTriangleVertexIndices2!![i].toInt() and '\uffff'.toInt()
-                    field1846!![var10] = def.textureTriangleVertexIndices3!![i].toInt() and '\uffff'.toInt()
+                if (var9[i] > 0 && def.textureRenderTypes[i].toInt() == 0) {
+                    field1844!![var10] = def.textureTriangleVertexIndices1[i].toInt() and 0xffff
+                    field1865!![var10] = def.textureTriangleVertexIndices2[i].toInt() and 0xffff
+                    field1846!![var10] = def.textureTriangleVertexIndices3[i].toInt() and 0xffff
                     var9[i] = var10++
                 } else {
                     var9[i] = -1
                 }
             }
-            field1840 = ByteArray(def.faceCount)
-            for (i in 0 until def.faceCount) {
-                if (def.textureCoordinates!![i].toInt() != -1) {
-                    field1840!![i] = var9[def.textureCoordinates!![i].toInt() and 255].toByte()
-                } else {
-                    field1840!![i] = -1
-                }
+            field1840 = ByteArray(def.faceCount) { i ->
+                val coord = origTextureCoordinates[i].toInt()
+                if (coord == -1) -1
+                else var9[coord and 255].toByte()
             }
         }
+        val origFaceAlphas = def.faceAlphas
         for (faceIdx in 0 until def.faceCount) {
-            var faceType: Byte
-            faceType = if (def.faceRenderTypes == null) {
-                0
-            } else {
-                def.faceRenderTypes!![faceIdx]
-            }
-            val faceAlpha: Byte = if (def.faceAlphas == null) {
-                0
-            } else {
-                def.faceAlphas!![faceIdx]
-            }
-            val faceTexture: Short = if (def.faceTextures == null) {
-                -1
-            } else {
-                def.faceTextures!![faceIdx]
-            }
-            if (faceAlpha.toInt() == -2) {
-                faceType = 3
-            }
-            if (faceAlpha.toInt() == -1) {
-                faceType = 2
+            val faceRenderTypes = def.faceRenderTypes
+            var faceType =
+                if (faceRenderTypes == null) 0
+                else faceRenderTypes[faceIdx]
+            val faceTextures = def.faceTextures
+            val faceTexture: Short =
+                if (faceTextures == null) -1
+                else faceTextures[faceIdx]
+            if (origFaceAlphas != null) {
+                when (origFaceAlphas[faceIdx].toInt()) {
+                    -1 -> faceType = 2
+                    -2 -> faceType = 3
+                }
             }
             var vertexNormal: VertexNormal
             var tmp: Int
             var faceNormal: FaceNormal
             if (faceTexture.toInt() == -1) {
-                if (faceType.toInt() != 0) {
-                    when {
-                        faceType.toInt() == 1 -> {
-                            faceNormal = def.faceNormals!![faceIdx]!!
-                            tmp =
-                                (y * faceNormal.y + z * faceNormal.z + x * faceNormal.x) / (var7 / 2 + var7) + ambient
-                            faceColors1!![faceIdx] =
-                                method2608(def.faceColors!![faceIdx].toInt() and '\uffff'.toInt(), tmp)
-                            faceColors3!![faceIdx] = -1
-                        }
-                        faceType.toInt() == 3 -> {
-                            faceColors1!![faceIdx] = 128
-                            faceColors3!![faceIdx] = -1
-                        }
-                        else -> {
-                            faceColors3!![faceIdx] = -2
-                        }
+                when (faceType.toInt()) {
+                    0 -> {
+                        val var15: Int = def.faceColors[faceIdx].toInt() and 0xffff
+                        vertexNormal = def.vertexNormals!![def.faceVertexIndices1[faceIdx]]!!
+                        tmp =
+                            (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
+                        faceColors1[faceIdx] = method2608(var15, tmp)
+                        vertexNormal = def.vertexNormals!![def.faceVertexIndices2[faceIdx]]!!
+                        tmp =
+                            (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
+                        faceColors2[faceIdx] = method2608(var15, tmp)
+                        vertexNormal = def.vertexNormals!![def.faceVertexIndices3[faceIdx]]!!
+                        tmp =
+                            (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
+                        faceColors3[faceIdx] = method2608(var15, tmp)
                     }
-                } else {
-                    val var15: Int = def.faceColors!![faceIdx].toInt() and '\uffff'.toInt()
-                    vertexNormal = def.vertexNormals!![def.faceVertexIndices1!![faceIdx]]!!
-                    tmp =
-                        (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                    faceColors1!![faceIdx] = method2608(var15, tmp)
-                    vertexNormal = def.vertexNormals!![def.faceVertexIndices2!![faceIdx]]!!
-                    tmp =
-                        (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                    faceColors2!![faceIdx] = method2608(var15, tmp)
-                    vertexNormal = def.vertexNormals!![def.faceVertexIndices3!![faceIdx]]!!
-                    tmp =
-                        (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                    faceColors3!![faceIdx] = method2608(var15, tmp)
-                }
-            } else if (faceType.toInt() != 0) {
-                if (faceType.toInt() == 1) {
-                    faceNormal = def.faceNormals!![faceIdx]!!
-                    tmp = (y * faceNormal.y + z * faceNormal.z + x * faceNormal.x) / (var7 / 2 + var7) + ambient
-                    faceColors1!![faceIdx] = bound2to126(tmp)
-                    faceColors3!![faceIdx] = -1
-                } else {
-                    faceColors3!![faceIdx] = -2
+                    1 -> {
+                        faceNormal = def.faceNormals!![faceIdx]!!
+                        tmp =
+                            (y * faceNormal.y + z * faceNormal.z + x * faceNormal.x) / (var7 / 2 + var7) + ambient
+                        faceColors1[faceIdx] =
+                            method2608(
+                                def.faceColors[faceIdx].toInt() and 0xffff,
+                                tmp
+                            )
+                        faceColors3[faceIdx] = -1
+                    }
+                    3 -> {
+                        faceColors1[faceIdx] = 128
+                        faceColors3[faceIdx] = -1
+                    }
+                    else -> {
+                        faceColors3[faceIdx] = -2
+                    }
                 }
             } else {
-                vertexNormal = def.vertexNormals!![def.faceVertexIndices1!![faceIdx]]!!
-                tmp =
-                    (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                faceColors1!![faceIdx] = bound2to126(tmp)
-                vertexNormal = def.vertexNormals!![def.faceVertexIndices2!![faceIdx]]!!
-                tmp =
-                    (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                faceColors2!![faceIdx] = bound2to126(tmp)
-                vertexNormal = def.vertexNormals!![def.faceVertexIndices3!![faceIdx]]!!
-                tmp =
-                    (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                faceColors3!![faceIdx] = bound2to126(tmp)
+                when (faceType.toInt()) {
+                    0 -> {
+                        vertexNormal =
+                            def.vertexNormals!![def.faceVertexIndices1[faceIdx]]!!
+                        tmp =
+                            (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
+                        faceColors1[faceIdx] = bound2to126(tmp)
+                        vertexNormal =
+                            def.vertexNormals!![def.faceVertexIndices2[faceIdx]]!!
+                        tmp =
+                            (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
+                        faceColors2[faceIdx] = bound2to126(tmp)
+                        vertexNormal =
+                            def.vertexNormals!![def.faceVertexIndices3[faceIdx]]!!
+                        tmp =
+                            (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
+                        faceColors3[faceIdx] = bound2to126(tmp)
+                    }
+                    1 -> {
+                        faceNormal = def.faceNormals!![faceIdx]!!
+                        tmp =
+                            (y * faceNormal.y + z * faceNormal.z + x * faceNormal.x) / (var7 / 2 + var7) + ambient
+                        faceColors1[faceIdx] = bound2to126(tmp)
+                        faceColors3[faceIdx] = -1
+                    }
+                    else -> {
+                        faceColors3[faceIdx] = -2
+                    }
+                }
             }
         }
-        modelDefinition.id = def.id
-        modelDefinition.tag = def.tag
-        modelDefinition.vertexCount = def.vertexCount
-        modelDefinition.vertexPositionsX = def.vertexPositionsX
-        modelDefinition.vertexPositionsY = def.vertexPositionsY
-        modelDefinition.vertexPositionsZ = def.vertexPositionsZ
-        modelDefinition.faceCount = def.faceCount
-        modelDefinition.faceVertexIndices1 = def.faceVertexIndices1
-        modelDefinition.faceVertexIndices2 = def.faceVertexIndices2
-        modelDefinition.faceVertexIndices3 = def.faceVertexIndices3
-        modelDefinition.faceRenderPriorities = def.faceRenderPriorities
-        modelDefinition.faceTextureUCoordinates = def.faceTextureUCoordinates
-        modelDefinition.faceTextureVCoordinates = def.faceTextureVCoordinates
-        modelDefinition.faceAlphas = def.faceAlphas
-        modelDefinition.priority = def.priority
-        modelDefinition.faceTextures = def.faceTextures
     }
 
     companion object {
