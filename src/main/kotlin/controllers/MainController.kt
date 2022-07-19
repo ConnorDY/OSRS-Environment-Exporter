@@ -28,6 +28,10 @@ class MainController @Inject constructor(
 
     @FXML
     lateinit var menuChangeRegion: MenuItem
+
+    @FXML
+    lateinit var menuLocationSearch: MenuItem
+
     @FXML
     lateinit var menuAbout: MenuItem
 
@@ -38,10 +42,7 @@ class MainController @Inject constructor(
     lateinit var lblFps: Label
 
     @FXML
-    lateinit var lblStatus: Label
-
-    @FXML
-    lateinit var btnTest: Button
+    lateinit var btnExport: Button
 
     @FXML
     lateinit var z0ChkBtn: CheckBox
@@ -54,12 +55,6 @@ class MainController @Inject constructor(
 
     @FXML
     lateinit var z3ChkBtn: CheckBox
-
-    @FXML
-    lateinit var btnPlace: Button
-
-    @FXML
-    lateinit var btnDelete: Button
 
     private lateinit var worldRendererControllerController: WorldRendererController
 
@@ -80,13 +75,15 @@ class MainController @Inject constructor(
 
         DockPane.initializeDefaultUserAgentStylesheet()
 
-        btnTest.setOnAction {
+        // Export button handler
+        btnExport.setOnAction {
             worldRendererControllerController.renderer.exportScene()
             logger.info("Exported as glTF!")
             worldRendererNode.title = "Export Completed"
             Alert(Alert.AlertType.NONE, "Exported as glTF!", ButtonType.OK).show()
         }
 
+        // Z checkbox handlers
         z0ChkBtn.setOnAction {
             worldRendererControllerController.renderer.z0ChkBtnSelected = z0ChkBtn.isSelected
             worldRendererControllerController.renderer.isSceneUploadRequired = true
@@ -104,46 +101,43 @@ class MainController @Inject constructor(
             worldRendererControllerController.renderer.isSceneUploadRequired = true
         }
 
-        z0ChkBtn.isSelected = true
-        z1ChkBtn.isSelected = true
-        z2ChkBtn.isSelected = true
-        z3ChkBtn.isSelected = true
-
+        // Menu item handlers
         menuChangeRegion.setOnAction {
-            val regionChangeLoader = FXMLLoader()
-            regionChangeLoader.controllerFactory = Callback { type: Class<*>? ->
-                injector.getInstance(type)
-            }
-            regionChangeLoader.location = javaClass.getResource("/views/region-chooser.fxml")
-            val regionChangeRoot = regionChangeLoader.load<Parent>()
-            val stage = Stage()
-            stage.title = "Region Chooser"
-            stage.scene = javafx.scene.Scene(regionChangeRoot)
-            stage.show()
+            openWindow("region-chooser", "Region Chooser")
+        }
+
+        menuLocationSearch.setOnAction {
+            openWindow("location-search", "Location Search")
         }
 
         menuAbout.setOnAction {
-
-            val aboutLoader = FXMLLoader()
-            aboutLoader.controllerFactory = Callback { type: Class<*>? ->
-                injector.getInstance(type)
-            }
-            aboutLoader.location = javaClass.getResource("/views/about.fxml")
-            val aboutRoot = aboutLoader.load<Parent>()
-            val stage = Stage()
-            stage.title = "About"
-            stage.scene = javafx.scene.Scene(aboutRoot)
-            stage.show()
+            openWindow("about", "About")
         }
 
+        // FPS updater
         object : AnimationTimer() {
             override fun handle(now: Long) {
-                lblFps.text = "FPS: ${debugModel.fps.get()} - DT: ${debugModel.deltaTime.get()}"
+                lblFps.text = "FPS: ${debugModel.fps.get()}"
             }
         }.start()
     }
 
     fun forceRefresh() {
         worldRendererControllerController.forceRefresh()
+    }
+
+    private fun openWindow(view: String, title: String) {
+        val locationSearchLoader = FXMLLoader()
+        locationSearchLoader.controllerFactory = Callback { type: Class<*>? ->
+            injector.getInstance(type)
+        }
+        locationSearchLoader.location = javaClass.getResource("/views/$view.fxml")
+
+        val regionChangeRoot = locationSearchLoader.load<Parent>()
+        val stage = Stage()
+
+        stage.title = title
+        stage.scene = javafx.scene.Scene(regionChangeRoot)
+        stage.show()
     }
 }

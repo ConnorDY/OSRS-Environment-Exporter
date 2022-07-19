@@ -9,38 +9,36 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="150.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.RegionChooserController">
-   <children>
-      <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <children>
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-               <children>
-                  <Label text="Visit Explv's OSRS Map to find Region IDs: " />
-                  <Hyperlink fx:id="linkMap" text="https://explv.github.io/" />
-               </children>
-            </HBox>
+<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="150.0" prefWidth="500.0"
+            xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controllers.RegionChooserController">
+    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0"
+          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+            <Label text="Visit Explv's OSRS Map to find Region IDs: "/>
+            <Hyperlink fx:id="linkMap" text="https://explv.github.io/"/>
+        </HBox>
 
-            <Label alignment="CENTER" text="Note: Higher radius will affect load time and FPS." />
+        <Label alignment="CENTER" text="Note: Higher radius will affect load time and FPS."/>
 
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-               <children>
-                  <Label text="Region ID:" />
-                  <TextField fx:id="txtRegionId" promptText="10038" HBox.hgrow="SOMETIMES">
-                     <HBox.margin>
-                        <Insets right="5.0" />
-                     </HBox.margin>
-                  </TextField>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
 
-                  <Label text="Radius:" />
-                  <TextField fx:id="txtRadius" promptText="1" text="1" />
-               </children>
-               <VBox.margin>
-                  <Insets left="20.0" right="20.0" />
-               </VBox.margin>
-            </HBox>
-            <Button fx:id="btnLoad" text="Load Region" />
-            <Label fx:id="lblErrorText" text="Error Message." textFill="RED" visible="false" />
-         </children>
-      </VBox>
-   </children>
+            <Label text="Region ID:"/>
+            <TextField fx:id="txtRegionId" promptText="10038">
+                <HBox.margin>
+                    <Insets right="5.0"/>
+                </HBox.margin>
+            </TextField>
+
+            <Label text="Radius:"/>
+            <TextField fx:id="txtRadius" promptText="1" text="1"/>
+        </HBox>
+
+        <Button fx:id="btnLoad" text="Load Region(s)"/>
+
+        <Label fx:id="lblErrorText" text="Error Message." textFill="RED" visible="false"/>
+    </VBox>
 </AnchorPane>
