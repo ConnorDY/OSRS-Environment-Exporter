@@ -7,6 +7,7 @@ import cache.definitions.RegionDefinition.Companion.Y
 import cache.definitions.RegionDefinition.Companion.Z
 import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
+import utils.Utils
 import java.nio.ByteBuffer
 
 class RegionLoader(
@@ -68,6 +69,6 @@ class RegionLoader(
     }
 
     fun findRegionForWorldCoordinates(x: Int, y: Int): RegionDefinition? {
-        return get((x ushr 6) shl 8 or (y ushr 6))
+        return get(Utils.worldCoordinatesToRegionId(x, y))
     }
 }

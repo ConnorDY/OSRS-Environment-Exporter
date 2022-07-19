@@ -2,13 +2,16 @@ package controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.google.inject.Inject
+import javafx.beans.value.ObservableValue
 import javafx.collections.FXCollections
+import javafx.collections.transformation.FilteredList
 import javafx.fxml.FXML
 import javafx.scene.control.Button
 import javafx.scene.control.Label
 import javafx.scene.control.ListCell
 import javafx.scene.control.ListView
 import javafx.scene.control.TextField
+import javafx.scene.control.TextFormatter
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.text.TextAlignment
@@ -16,20 +19,28 @@ import javafx.util.Callback
 import models.locations.Location
 import models.locations.Locations
 import models.scene.Scene
+import utils.Utils
+import java.util.regex.Pattern
 
 class LocationSearchController @Inject constructor(
     private val scene: Scene
 ) {
     @FXML
-    lateinit var txtSearchPrompt: TextField
+    lateinit var txtSearchQuery: TextField
 
     @FXML
     lateinit var listLocations: ListView<Location>
 
     @FXML
+    lateinit var txtRadius: TextField
+
+    @FXML
     private lateinit var btnLoad: Button
 
-    private var locations = FXCollections.observableArrayList<Location>()
+    @FXML
+    private lateinit var lblErrorText: Label
+
+    private var selectedLocation: Location? = null
 
     @FXML
     private fun handleKeyPressed(e: KeyEvent) {
@@ -40,7 +51,6 @@ class LocationSearchController @Inject constructor(
     @FXML
     private fun initialize() {
         listLocations.cellFactory = LocationCellFactory()
-        listLocations.items = locations
 
         // setup list placeholder while loading
         val listLocationsPlacholder = Label("Loading locations...")
@@ -56,7 +66,51 @@ class LocationSearchController @Inject constructor(
                 Locations::class.java
             )
 
+        val locations = FXCollections.observableArrayList<Location>()
         locations.addAll(_locations.locations)
+
+        val filterableLocations = FilteredList(locations)
+        listLocations.items = filterableLocations
+
+        // list view selection handler
+        listLocations.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+            if (newValue != null) {
+                selectedLocation = newValue
+                btnLoad.isDisable = false
+            }
+        }
+
+        // limit Radius input to 2 digits
+        val radiusPattern = Pattern.compile("\\d{0,2}")
+        val radiusFormatter = TextFormatter<String> { change ->
+            if (radiusPattern.matcher(change.controlNewText).matches()) {
+                return@TextFormatter change
+            } else {
+                return@TextFormatter null
+            }
+        }
+        txtRadius.textFormatter = radiusFormatter
+
+        // search handler
+        txtSearchQuery.textProperty().addListener { _: ObservableValue<out String>?, _: String?, newVal: String ->
+            filterableLocations.setPredicate { location ->
+                location.name.lowercase().contains(newVal.lowercase())
+            }
+        }
+
+        // load button handler
+        btnLoad.setOnAction {
+            val regionId = regionIdForLocation(selectedLocation!!)
+
+            val radius: Int? = txtRadius.text.toIntOrNull()
+            if (radius == null || (radius < 1 || radius > 20)) {
+                lblErrorText.text = RegionChooserController.INVALID_RADIUS_TEXT
+                lblErrorText.isVisible = true
+                return@setOnAction
+            }
+
+            scene.load(regionId, radius)
+        }
     }
 
     private class LocationCell : ListCell<Location>() {
@@ -67,7 +121,8 @@ class LocationSearchController @Inject constructor(
                 text = null
                 graphic = null
             } else {
-                this.text = item.name
+                val regionId = regionIdForLocation(item)
+                this.text = "${item.name} ($regionId)"
             }
         }
     }
@@ -75,6 +130,13 @@ class LocationSearchController @Inject constructor(
     private class LocationCellFactory : Callback<ListView<Location>, ListCell<Location>> {
         override fun call(listview: ListView<Location>): ListCell<Location> {
             return LocationCell()
+        }
+    }
+
+    companion object {
+        fun regionIdForLocation(location: Location): Int {
+            val (x, y) = location.coords
+            return Utils.worldCoordinatesToRegionId(x, y)
         }
     }
 }

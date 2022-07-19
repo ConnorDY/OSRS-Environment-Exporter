@@ -9,28 +9,40 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import javafx.scene.control.ListView?>
-<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="150.0" prefWidth="500.0"
+<AnchorPane onKeyPressed="#handleKeyPressed" prefHeight="400.0" prefWidth="500.0"
             xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="controllers.LocationSearchController">
     <children>
-        <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0"
+        <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0"
               AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <HBox alignment="CENTER">
+                <VBox>
                     <children>
-                        <Label text="Prompt:"/>
-                        <TextField fx:id="txtSearchPrompt" promptText="Lumbridge">
+                        <HBox alignment="CENTER">
+                            <children>
+                                <Label text="Search Query:"/>
+                                <TextField fx:id="txtSearchQuery" promptText="Lumbridge"/>
+                            </children>
                             <HBox.margin>
-                                <Insets right="5.0"/>
+                                <Insets bottom="5.0"/>
                             </HBox.margin>
-                        </TextField>
+                        </HBox>
+
+                        <HBox alignment="CENTER">
+                            <children>
+                                <Label text="Radius:"/>
+                                <TextField fx:id="txtRadius" promptText="1" text="1"/>
+                            </children>
+                        </HBox>
+
+                        <Button fx:id="btnLoad" text="Load Location" disable="true"/>
+
+                        <Label fx:id="lblErrorText" text="Error Message." textFill="RED" visible="false"/>
                     </children>
-                </HBox>
+                </VBox>
 
                 <ListView fx:id="listLocations"/>
-
-                <Button fx:id="btnLoad" text="Load Location"/>
             </children>
-        </VBox>
+        </HBox>
     </children>
 </AnchorPane>
