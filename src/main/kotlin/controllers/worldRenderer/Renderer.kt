@@ -547,7 +547,7 @@ class Renderer @Inject constructor(
                 )
                 endFrameTime + sleepTime
             } else {
-                endFrameTime + deltaTimeTarget
+                endFrameTime
             }
         }
     }
