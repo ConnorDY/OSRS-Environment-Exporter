@@ -19,6 +19,7 @@ import com.jogamp.opengl.GLEventListener
 import com.jogamp.opengl.GLProfile
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
+import controllers.SettingsController
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GLUtil
@@ -37,6 +38,7 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
+import models.Configuration
 import models.DebugModel
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
@@ -46,14 +48,17 @@ import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
+import javax.inject.Singleton
 import kotlin.math.min
 
+@Singleton
 class Renderer @Inject constructor(
     private val camera: Camera,
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
     private val inputHandler: InputHandler,
     private val textureManager: TextureManager,
+    private val configuration: Configuration,
     private val debugModel: DebugModel
 ) : GLEventListener {
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
@@ -264,6 +269,8 @@ class Renderer @Inject constructor(
             initPickerBuffer()
             initVao()
 
+            checkFpsCap()
+
             // disable vsync
 //            gl.swapInterval = 0
         } catch (e: ShaderException) {
@@ -410,7 +417,7 @@ class Renderer @Inject constructor(
 
         val textureProvider = ""
         // Draw 3d scene
-        if (textureProvider != null && bufferId != -1) {
+        if (bufferId != -1) {
             gl.glUniformBlockBinding(glSmallComputeProgram, uniBlockSmall, 0)
             gl.glUniformBlockBinding(glComputeProgram, uniBlockLarge, 0)
             gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
@@ -657,7 +664,7 @@ class Renderer @Inject constructor(
     private fun uploadScene() {
         modelBuffers.clearVertUv()
         try {
-            sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer, this)
+            sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
         } catch (e: Exception) {
             e.printStackTrace()
             logger.warn("out of space vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
@@ -1020,6 +1027,14 @@ class Renderer @Inject constructor(
             rboDepthMain = -1
         }
         glDeleteBuffers(gl, pboIds)
+    }
+
+    private fun checkFpsCap() {
+        val fpsCap = configuration.getProp(SettingsController.FPS_CAP_PROP).toIntOrNull()
+
+        if (fpsCap != null) {
+            setFpsTarget(fpsCap)
+        }
     }
 
     companion object {

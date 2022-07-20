@@ -37,22 +37,14 @@ class RegionChooserController @Inject constructor(
         // limit Region ID input to 5 digits
         val regionIDPattern = Pattern.compile("\\d{0,5}")
         val regionIDFormatter = TextFormatter<String> { change ->
-            if (regionIDPattern.matcher(change.controlNewText).matches()) {
-                return@TextFormatter change
-            } else {
-                return@TextFormatter null
-            }
+            if (regionIDPattern.matcher(change.controlNewText).matches()) change else null
         }
         txtRegionId.textFormatter = regionIDFormatter
 
         // limit Radius input to 2 digits
         val radiusPattern = Pattern.compile("\\d{0,2}")
         val radiusFormatter = TextFormatter<String> { change ->
-            if (radiusPattern.matcher(change.controlNewText).matches()) {
-                return@TextFormatter change
-            } else {
-                return@TextFormatter null
-            }
+            if (radiusPattern.matcher(change.controlNewText).matches()) change else null
         }
         txtRadius.textFormatter = radiusFormatter
 

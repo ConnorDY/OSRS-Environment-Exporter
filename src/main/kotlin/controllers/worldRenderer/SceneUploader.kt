@@ -45,7 +45,7 @@ class SceneUploader {
         uvOffset = 0
     }
 
-    fun upload(scene: Scene, vertexbuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer, renderer: Renderer) {
+    fun upload(scene: Scene, vertexbuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
         ++sceneId
         resetOffsets()
         vertexbuffer.clear()
