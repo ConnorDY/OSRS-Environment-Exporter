@@ -4,6 +4,7 @@ import cache.XteaManager
 import cache.definitions.Location
 import cache.definitions.LocationsDefinition
 import cache.utils.readUnsignedShortSmart
+import cache.utils.readUnsignedSmartShortExtended
 import com.displee.cache.CacheLibrary
 import java.nio.ByteBuffer
 
@@ -33,7 +34,7 @@ class LocationsLoader(
         val buffer = ByteBuffer.wrap(landscape)
 
         var objId = -1
-        var idOffset = buffer.readUnsignedShortSmart()
+        var idOffset = buffer.readUnsignedSmartShortExtended()
         while (idOffset != 0) {
             objId += idOffset
 
