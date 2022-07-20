@@ -33,7 +33,7 @@
                 </HBox.margin>
             </HBox>
 
-            <TextField fx:id="txtFpsCap" text="60">
+            <TextField fx:id="txtFpsCap" text="60" prefColumnCount="3">
                 <HBox.margin>
                     <Insets left="6.0"/>
                 </HBox.margin>

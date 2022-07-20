@@ -45,8 +45,8 @@ class SettingsController @Inject constructor(
             txtFpsCap.isDisable = !chkBoxLimitFps.isSelected
         }
 
-        // limit FPS Cap input to 2 digits
-        val fpsCapPattern = Pattern.compile("\\d{0,2}")
+        // limit FPS Cap input to 3 digits
+        val fpsCapPattern = Pattern.compile("\\d{0,3}")
         val fpsCapFormatter = TextFormatter<String> { change ->
             if (fpsCapPattern.matcher(change.controlNewText).matches()) change else null
         }
