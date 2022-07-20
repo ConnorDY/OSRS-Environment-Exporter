@@ -17,7 +17,7 @@ class SpriteLoader(
             val data = cacheLibrary.data(IndexType.SPRITES.id, archive) ?: continue
             val defs = load(archive, data)
             for (def in defs) {
-                spriteDefinitionCache[def!!.id] = def
+                spriteDefinitionCache[def.id] = def
             }
         }
         cacheLibrary.index(IndexType.SPRITES.id).unCache() // free memory
@@ -27,11 +27,10 @@ class SpriteLoader(
         return spriteDefinitionCache[id]
     }
 
-    private fun load(id: Int, b: ByteArray): Array<SpriteDefinition?> {
+    private fun load(id: Int, b: ByteArray): Array<SpriteDefinition> {
         val inputStream = ByteBuffer.wrap(b)
         inputStream.position(inputStream.limit() - 2)
         val spriteCount: Int = inputStream.readUnsignedShort()
-        val sprites: Array<SpriteDefinition?> = arrayOfNulls(spriteCount)
 
         // 2 for size
         // 5 for width, height, palette length
@@ -42,24 +41,25 @@ class SpriteLoader(
         val width: Int = inputStream.readUnsignedShort()
         val height: Int = inputStream.readUnsignedShort()
         val paletteLength: Int = inputStream.readUnsignedByte() + 1
-        for (i in 0 until spriteCount) {
-            sprites[i] = SpriteDefinition()
-            sprites[i]!!.id = id
-            sprites[i]!!.frame = i
-            sprites[i]!!.maxWidth = width
-            sprites[i]!!.maxHeight = height
+        val sprites = Array(spriteCount) { i ->
+            SpriteDefinition().apply {
+                this.id = id
+                frame = i
+                maxWidth = width
+                maxHeight = height
+            }
         }
         for (i in 0 until spriteCount) {
-            sprites[i]!!.offsetX = inputStream.readUnsignedShort()
+            sprites[i].offsetX = inputStream.readUnsignedShort()
         }
         for (i in 0 until spriteCount) {
-            sprites[i]!!.offsetY = inputStream.readUnsignedShort()
+            sprites[i].offsetY = inputStream.readUnsignedShort()
         }
         for (i in 0 until spriteCount) {
-            sprites[i]!!.width = inputStream.readUnsignedShort()
+            sprites[i].width = inputStream.readUnsignedShort()
         }
         for (i in 0 until spriteCount) {
-            sprites[i]!!.height = inputStream.readUnsignedShort()
+            sprites[i].height = inputStream.readUnsignedShort()
         }
 
         // same as above + 3 bytes for each palette entry, except for the first one (which is transparent)
@@ -73,7 +73,7 @@ class SpriteLoader(
         }
         inputStream.position(0)
         for (i in 0 until spriteCount) {
-            val def: SpriteDefinition = sprites[i]!!
+            val def: SpriteDefinition = sprites[i]
             val spriteWidth: Int = def.width
             val spriteHeight: Int = def.height
             val dimension = spriteWidth * spriteHeight
@@ -84,9 +84,7 @@ class SpriteLoader(
             val flags: Int = inputStream.readUnsignedByte()
             if (flags and FLAG_VERTICAL == 0) {
                 // read horizontally
-                for (j in 0 until dimension) {
-                    pixelPaletteIndicies[j] = inputStream.get()
-                }
+                inputStream.get(pixelPaletteIndicies)
             } else {
                 // read vertically
                 for (j in 0 until spriteWidth) {
@@ -100,9 +98,7 @@ class SpriteLoader(
             if (flags and FLAG_ALPHA != 0) {
                 if (flags and FLAG_VERTICAL == 0) {
                     // read horizontally
-                    for (j in 0 until dimension) {
-                        pixelAlphas[j] = inputStream.get()
-                    }
+                    inputStream.get(pixelAlphas)
                 } else {
                     // read vertically
                     for (j in 0 until spriteWidth) {

@@ -50,6 +50,12 @@ fun ByteBuffer.readString(): String? {
     return sb.toString()
 }
 
+fun ByteBuffer.readByteArray(length: Int): ByteArray {
+    val array = ByteArray(length)
+    get(array)
+    return array
+}
+
 private val CHARACTERS = charArrayOf(
     '\u20ac', '\u0000', '\u201a', '\u0192', '\u201e', '\u2026',
     '\u2020', '\u2021', '\u02c6', '\u2030', '\u0160', '\u2039',

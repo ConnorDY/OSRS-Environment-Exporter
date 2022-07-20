@@ -13,16 +13,23 @@ import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 
 class ObjectLoader @Inject constructor(
-    cacheLibrary: CacheLibrary,
-    private val objectDefinitionCache: HashMap<Int, ObjectDefinition> = HashMap()
+    private val cacheLibrary: CacheLibrary,
+    private val objectDefinitionCache: HashMap<Int, ObjectDefinition?> = HashMap()
 ) {
     private val logger = LoggerFactory.getLogger(ObjectLoader::class.java)
 
     fun get(id: Int): ObjectDefinition? {
-        return objectDefinitionCache[id]
+        return objectDefinitionCache.getOrPut(id) { load(id) }
     }
 
-    fun load(id: Int, b: ByteArray?): ObjectDefinition {
+    fun load(id: Int): ObjectDefinition? {
+        val index = cacheLibrary.index(IndexType.CONFIGS.id)
+        val archive = index.archive(ConfigType.OBJECT.id)
+        val data = archive?.file(id)?.data ?: return null
+        return load(id, data)
+    }
+
+    fun load(id: Int, b: ByteArray): ObjectDefinition {
         val def = ObjectDefinition()
         val inputStream = ByteBuffer.wrap(b)
         def.id = id
@@ -247,16 +254,5 @@ class ObjectLoader @Inject constructor(
         if (def.supportsItems == -1) {
             def.supportsItems = if (def.interactType != 0) 1 else 0
         }
-    }
-
-    init {
-        val index = cacheLibrary.index(IndexType.CONFIGS.id)
-        val archive = index.archive(ConfigType.OBJECT.id)
-        for (file in archive!!.fileIds()) {
-            val data = cacheLibrary.data(IndexType.CONFIGS.id, ConfigType.OBJECT.id, file)
-            val def = load(file, data)
-            objectDefinitionCache[def.id] = def
-        }
-        index.unCache()
     }
 }
