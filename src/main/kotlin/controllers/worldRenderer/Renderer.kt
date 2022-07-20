@@ -552,6 +552,10 @@ class Renderer @Inject constructor(
         }
     }
 
+    /** Sets the FPS target for this renderer.
+     *  It may vary above and below the actual value.
+     *  @param target The FPS target, or 0 for unlimited.
+     */
     fun setFpsTarget(target: Int) {
         deltaTimeTarget =
             if (target > 0) SECOND_IN_NANOS / target
