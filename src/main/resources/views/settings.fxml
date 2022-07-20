@@ -21,12 +21,12 @@
 
         <HBox alignment="CENTER">
             <HBox>
-                <CheckBox fx:id="chkBoxLimitFps" selected="false">
+                <CheckBox fx:id="chkBoxLimitFps">
                     <HBox.margin>
                         <Insets right="6.0"/>
                     </HBox.margin>
                 </CheckBox>
-                <Label text="Limit FPS"/>
+                <Label text="Limit FPS:"/>
 
                 <HBox.margin>
                     <Insets top="4.0"/>
