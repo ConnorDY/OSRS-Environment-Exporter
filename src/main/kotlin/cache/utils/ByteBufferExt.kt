@@ -2,6 +2,15 @@ package cache.utils
 
 import java.nio.ByteBuffer
 
+fun ByteBuffer.readUnsignedSmartShortExtended(): Int {
+    var acc = 0
+    do {
+        val curr = readUnsignedShortSmart()
+        acc += curr
+    } while (curr == 0x7FFF)
+    return acc
+}
+
 fun ByteBuffer.readUnsignedShortSmart(): Int {
     val peek = peek()
     return if (peek < 128) get().toInt() else readUnsignedShort() - 0x8000
