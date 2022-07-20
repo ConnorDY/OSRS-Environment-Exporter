@@ -6,6 +6,7 @@ import cache.definitions.LocationsDefinition
 import cache.utils.readUnsignedShortSmart
 import cache.utils.readUnsignedSmartShortExtended
 import com.displee.cache.CacheLibrary
+import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 
 class LocationsLoader(
@@ -17,7 +18,12 @@ class LocationsLoader(
         if (locationsDefinitionCache.containsKey(regionId)) {
             return locationsDefinitionCache[regionId]
         }
-        return loadLocations(regionId)
+        return try {
+            loadLocations(regionId)
+        } catch (e: BufferUnderflowException) {
+            e.printStackTrace() // Alert an attentive user that an issue has occurred
+            null
+        }
     }
 
     private fun loadLocations(regionId: Int): LocationsDefinition? {
