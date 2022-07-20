@@ -135,6 +135,8 @@ class Renderer @Inject constructor(
     private var lastStretchedCanvasWidth = 0
     private var lastStretchedCanvasHeight = 0
     private var lastAntiAliasingMode: AntiAliasingMode? = null
+    private var lastFrameTime: Long = 0
+    private var deltaTimeTarget = 0
 
     fun reposResize(x: Int, y: Int, width: Int, height: Int) {
         window.setPosition(x, y)
@@ -534,6 +536,26 @@ class Renderer @Inject constructor(
 
         modelBuffers.clearVertUv()
         modelBuffers.clear()
+
+        if (deltaTimeTarget != 0) {
+            val endFrameTime = System.nanoTime()
+            val sleepTime = deltaTimeTarget + (lastFrameTime - endFrameTime)
+            lastFrameTime = if (sleepTime in 0..SECOND_IN_NANOS) {
+                Thread.sleep(
+                    sleepTime / MILLISECOND_IN_NANOS,
+                    (sleepTime % MILLISECOND_IN_NANOS).toInt()
+                )
+                endFrameTime + sleepTime
+            } else {
+                endFrameTime + deltaTimeTarget
+            }
+        }
+    }
+
+    fun setFpsTarget(target: Int) {
+        deltaTimeTarget =
+            if (target > 0) SECOND_IN_NANOS / target
+            else 0
     }
 
     private fun drawTiles() {
@@ -994,5 +1016,10 @@ class Renderer @Inject constructor(
             rboDepthMain = -1
         }
         glDeleteBuffers(gl, pboIds)
+    }
+
+    companion object {
+        const val SECOND_IN_NANOS = 1_000_000_000
+        const val MILLISECOND_IN_NANOS = 1_000_000
     }
 }
