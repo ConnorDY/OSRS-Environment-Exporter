@@ -27,6 +27,7 @@
         <Label fx:id="txtDescription"
                text="This application enables exporting Old School RuneScape environments so they can be used in 3D modeling programs like Blender."
                wrapText="true"
+               prefHeight="80"
                styleClass="aboutText"/>
 
         <VBox prefHeight="40"/>
