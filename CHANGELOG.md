@@ -18,10 +18,16 @@
 - Reduced load times **significantly** by implementing negative region caching – [d2fd490](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/d2fd490a79044a9d9df28d816308e08716734cb3) @ScoreUnder
   - Load times that would previously take almost a minute are now instantaneous (*on our machines*)
 
+- Add a setting for limiting the frame rate – [#48](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/48) @ConnorDY
+  - This can be used to reduce power consumption
+
 ### :bug: Bug Fixes
 
 - Scale models and offset height values when requested – [#15](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/15) @ScoreUnder
-    - This fixed weird height/floating issues seen in areas like Falador or the Slayer Tower
+  - This fixed weird height/floating issues seen in areas like Falador or the Slayer Tower
+
+- Fix buffer underflow when loading certain regions – [#44](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/44) @ScoreUnder
+  - This also made it possible to skip loading regions that would previously cause the tool to crash
 
 - Ensure process exits when all windows are closed – [870d24a](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/870d24a8169b74ed446c32701fd4da3dc3fd77aa) @ScoreUnder
 
