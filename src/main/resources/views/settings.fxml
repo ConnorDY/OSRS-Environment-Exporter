@@ -6,7 +6,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 
 <?import javafx.scene.layout.Region?>
@@ -21,15 +20,10 @@
 
         <HBox alignment="CENTER">
             <HBox>
-                <CheckBox fx:id="chkBoxLimitFps">
-                    <HBox.margin>
-                        <Insets right="6.0"/>
-                    </HBox.margin>
-                </CheckBox>
-                <Label text="Limit FPS:"/>
+                <CheckBox fx:id="chkBoxLimitFps" text="Limit FPS"/>
 
                 <HBox.margin>
-                    <Insets top="4.0"/>
+                    <Insets top="5.0" right="4.0"/>
                 </HBox.margin>
             </HBox>
 

@@ -39,6 +39,10 @@
     -fx-text-fill: white;
 }
 
+.check-box {
+    -fx-padding: 0 4 0 0;
+}
+
 .hyperlink {
     -fx-text-fill: #8af5ff;
     -fx-border-color: transparent;
