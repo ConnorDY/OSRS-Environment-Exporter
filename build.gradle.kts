@@ -32,7 +32,6 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.displee:rs-cache-library:6.8.1")
-    implementation("org.bitbucket.akornilov.kotlin:binary-streams:0.33")
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
