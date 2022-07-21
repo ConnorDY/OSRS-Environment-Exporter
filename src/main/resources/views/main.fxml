@@ -24,6 +24,10 @@
                 <MenuItem fx:id="menuLocationSearch" mnemonicParsing="false" text="Location Search"/>
             </Menu>
 
+            <Menu mnemonicParsing="false" text="Edit">
+                <MenuItem mnemonicParsing="false" text="Preferences" fx:id="menuSettings"/>
+            </Menu>
+
             <Menu mnemonicParsing="false" text="Help">
                 <MenuItem mnemonicParsing="false" text="About" fx:id="menuAbout"/>
             </Menu>

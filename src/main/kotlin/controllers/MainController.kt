@@ -33,6 +33,9 @@ class MainController @Inject constructor(
     lateinit var menuLocationSearch: MenuItem
 
     @FXML
+    lateinit var menuSettings: MenuItem
+
+    @FXML
     lateinit var menuAbout: MenuItem
 
     @FXML
@@ -110,6 +113,10 @@ class MainController @Inject constructor(
             openWindow("location-search", "Location Search")
         }
 
+        menuSettings.setOnAction {
+            openWindow("settings", "Preferences")
+        }
+
         menuAbout.setOnAction {
             openWindow("about", "About")
         }
@@ -127,13 +134,13 @@ class MainController @Inject constructor(
     }
 
     private fun openWindow(view: String, title: String) {
-        val locationSearchLoader = FXMLLoader()
-        locationSearchLoader.controllerFactory = Callback { type: Class<*>? ->
+        val windowLoader = FXMLLoader()
+        windowLoader.controllerFactory = Callback { type: Class<*>? ->
             injector.getInstance(type)
         }
-        locationSearchLoader.location = javaClass.getResource("/views/$view.fxml")
+        windowLoader.location = javaClass.getResource("/views/$view.fxml")
 
-        val regionChangeRoot = locationSearchLoader.load<Parent>()
+        val regionChangeRoot = windowLoader.load<Parent>()
         val stage = Stage()
 
         stage.title = title

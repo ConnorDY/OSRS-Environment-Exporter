@@ -106,10 +106,10 @@ class Renderer @Inject constructor(
 
     private lateinit var modelBuffers: ModelBuffers
 
-    public var z0ChkBtnSelected = true
-    public var z1ChkBtnSelected = true
-    public var z2ChkBtnSelected = true
-    public var z3ChkBtnSelected = true
+    var z0ChkBtnSelected = true
+    var z1ChkBtnSelected = true
+    var z2ChkBtnSelected = true
+    var z3ChkBtnSelected = true
 
     // Uniforms
     private var uniDrawDistance = 0
@@ -135,6 +135,8 @@ class Renderer @Inject constructor(
     private var lastStretchedCanvasWidth = 0
     private var lastStretchedCanvasHeight = 0
     private var lastAntiAliasingMode: AntiAliasingMode? = null
+    private var lastFrameTime: Long = 0
+    private var deltaTimeTarget = 0
 
     fun reposResize(x: Int, y: Int, width: Int, height: Int) {
         window.setPosition(x, y)
@@ -406,9 +408,8 @@ class Renderer @Inject constructor(
         )
         gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
 
-        val textureProvider = ""
         // Draw 3d scene
-        if (textureProvider != null && bufferId != -1) {
+        if (bufferId != -1) {
             gl.glUniformBlockBinding(glSmallComputeProgram, uniBlockSmall, 0)
             gl.glUniformBlockBinding(glComputeProgram, uniBlockLarge, 0)
             gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
@@ -534,6 +535,30 @@ class Renderer @Inject constructor(
 
         modelBuffers.clearVertUv()
         modelBuffers.clear()
+
+        if (deltaTimeTarget != 0) {
+            val endFrameTime = System.nanoTime()
+            val sleepTime = deltaTimeTarget + (lastFrameTime - endFrameTime)
+            lastFrameTime = if (sleepTime in 0..SECOND_IN_NANOS) {
+                Thread.sleep(
+                    sleepTime / MILLISECOND_IN_NANOS,
+                    (sleepTime % MILLISECOND_IN_NANOS).toInt()
+                )
+                endFrameTime + sleepTime
+            } else {
+                endFrameTime
+            }
+        }
+    }
+
+    /** Sets the FPS target for this renderer.
+     *  It may vary above and below the actual value.
+     *  @param target The FPS target, or 0 for unlimited.
+     */
+    fun setFpsTarget(target: Int) {
+        deltaTimeTarget =
+            if (target > 0) SECOND_IN_NANOS / target
+            else 0
     }
 
     private fun drawTiles() {
@@ -631,7 +656,7 @@ class Renderer @Inject constructor(
     private fun uploadScene() {
         modelBuffers.clearVertUv()
         try {
-            sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer, this)
+            sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
         } catch (e: Exception) {
             e.printStackTrace()
             logger.warn("out of space vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
@@ -994,5 +1019,10 @@ class Renderer @Inject constructor(
             rboDepthMain = -1
         }
         glDeleteBuffers(gl, pboIds)
+    }
+
+    companion object {
+        const val SECOND_IN_NANOS = 1_000_000_000
+        const val MILLISECOND_IN_NANOS = 1_000_000
     }
 }
