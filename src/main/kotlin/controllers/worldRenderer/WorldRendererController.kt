@@ -1,6 +1,8 @@
 package controllers.worldRenderer
 
 import com.jogamp.newt.awt.NewtCanvasAWT
+import com.jogamp.newt.event.MouseAdapter
+import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GLAutoDrawable
 import com.jogamp.opengl.GLEventListener
 import controllers.SettingsController
@@ -25,8 +27,15 @@ class WorldRendererController constructor(
 
         addComponentListener(Listener())
 
-        renderer.window.requestFocus()
-        renderer.window.addGLEventListener(GLInitialResizeHack())
+        renderer.window.apply {
+            requestFocus()
+            addGLEventListener(GLInitialResizeHack())
+            addMouseListener(object : MouseAdapter() {
+                override fun mousePressed(p0: MouseEvent?) {
+                    requestFocus()
+                }
+            })
+        }
 
         checkFpsCap()
     }
