@@ -64,7 +64,7 @@ class SceneRegionBuilder @Inject constructor(
     // int regionId = (x >>> 6 << 8) | y >>> 6;
     fun loadRegion(regionId: Int, isAnimationEnabled: Boolean): SceneRegion? {
         val region: RegionDefinition = regionLoader.get(regionId) ?: return null
-        val locations: LocationsDefinition = locationsLoader.get(regionId) ?: return null
+        val locations: LocationsDefinition = locationsLoader.get(regionId) ?: fakeLocationsDefinition(regionId)
         val sceneRegion = SceneRegion(locations)
         val baseX: Int = region.baseX
         val baseY: Int = region.baseY
@@ -376,6 +376,11 @@ class SceneRegionBuilder @Inject constructor(
         }
 
         return sceneRegion
+    }
+
+    private fun fakeLocationsDefinition(regionId: Int): LocationsDefinition {
+        logger.warn("Could not find location (entity) data for region $regionId")
+        return LocationsDefinition(regionId)
     }
 
     private fun getEntity(

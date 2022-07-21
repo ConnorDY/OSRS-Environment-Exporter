@@ -6,6 +6,7 @@ import cache.definitions.LocationsDefinition
 import cache.utils.readUnsignedShortSmart
 import cache.utils.readUnsignedSmartShortExtended
 import com.displee.cache.CacheLibrary
+import org.slf4j.LoggerFactory
 import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 
@@ -14,16 +15,20 @@ class LocationsLoader(
     private val xtea: XteaManager,
     private val locationsDefinitionCache: HashMap<Int, LocationsDefinition?> = HashMap()
 ) {
+    private val logger = LoggerFactory.getLogger(LocationsLoader::class.java)
+
     fun get(regionId: Int): LocationsDefinition? {
         if (locationsDefinitionCache.containsKey(regionId)) {
             return locationsDefinitionCache[regionId]
         }
-        return try {
+        val location = try {
             loadLocations(regionId)
         } catch (e: BufferUnderflowException) {
             e.printStackTrace() // Alert an attentive user that an issue has occurred
             null
         }
+        locationsDefinitionCache[regionId] = location
+        return location
     }
 
     private fun loadLocations(regionId: Int): LocationsDefinition? {
@@ -31,11 +36,13 @@ class LocationsLoader(
 
         val x = (regionId shr 8) and 0xFF
         val y = regionId and 0xFF
-        val landscape = library.data(5, "l${x}_$y", xtea.getKeys(regionId))
-        if (landscape == null) {
-            locationsDefinitionCache[regionId] = null
+        val xteaKeys = xtea.getKeys(regionId)
+        if (xteaKeys == null) {
+            logger.warn("Could not get xtea keys for region $regionId ($x, $y)")
             return null
         }
+
+        val landscape = library.data(5, "l${x}_$y", xteaKeys) ?: return null
 
         val buffer = ByteBuffer.wrap(landscape)
 
@@ -74,7 +81,6 @@ class LocationsLoader(
             idOffset = buffer.readUnsignedShortSmart()
         }
 
-        locationsDefinitionCache[regionId] = locationsDefinition
         return locationsDefinition
     }
 }
