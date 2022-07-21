@@ -46,10 +46,8 @@ import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
-import javax.inject.Singleton
 import kotlin.math.min
 
-@Singleton
 class Renderer @Inject constructor(
     private val camera: Camera,
     private val scene: Scene,
