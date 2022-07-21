@@ -37,6 +37,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("org.slf4j:slf4j-api:1.7.36")
+    implementation("org.pushing-pixels:radiance-theming:5.0.0")
 
     // Jogamp and dependencies thereof
     implementation("org.jogamp.jogl:gluegen:2.4.0-rc-20210111")
