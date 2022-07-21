@@ -4,7 +4,9 @@ import cache.XteaManager
 import cache.definitions.Location
 import cache.definitions.LocationsDefinition
 import cache.utils.readUnsignedShortSmart
+import cache.utils.readUnsignedSmartShortExtended
 import com.displee.cache.CacheLibrary
+import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 
 class LocationsLoader(
@@ -16,7 +18,12 @@ class LocationsLoader(
         if (locationsDefinitionCache.containsKey(regionId)) {
             return locationsDefinitionCache[regionId]
         }
-        return loadLocations(regionId)
+        return try {
+            loadLocations(regionId)
+        } catch (e: BufferUnderflowException) {
+            e.printStackTrace() // Alert an attentive user that an issue has occurred
+            null
+        }
     }
 
     private fun loadLocations(regionId: Int): LocationsDefinition? {
@@ -33,7 +40,7 @@ class LocationsLoader(
         val buffer = ByteBuffer.wrap(landscape)
 
         var objId = -1
-        var idOffset = buffer.readUnsignedShortSmart()
+        var idOffset = buffer.readUnsignedSmartShortExtended()
         while (idOffset != 0) {
             objId += idOffset
 

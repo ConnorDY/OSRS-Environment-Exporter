@@ -3,102 +3,81 @@ package cache.definitions
 import cache.definitions.data.FaceNormal
 import cache.definitions.data.VertexNormal
 
-open class ModelDefinition {
-    var id = 0
+open class ModelDefinition(
+    val id: Int,
+    val vertexCount: Int,
+    val vertexPositionsX: IntArray,
+    val vertexPositionsY: IntArray,
+    val vertexPositionsZ: IntArray,
+    val faceCount: Int,
+    val faceVertexIndices1: IntArray,
+    val faceVertexIndices2: IntArray,
+    val faceVertexIndices3: IntArray,
+    val faceAlphas: ByteArray?,
+    val faceColors: ShortArray,
+    val faceRenderPriorities: ByteArray?,
+    val faceRenderTypes: ByteArray?,
+    val textureTriangleCount: Int,
+    val textureTriangleVertexIndices1: ShortArray,
+    val textureTriangleVertexIndices2: ShortArray,
+    val textureTriangleVertexIndices3: ShortArray,
+    val faceTextures: ShortArray?,
+    val textureCoordinates: ByteArray?,
+    val textureRenderTypes: ByteArray,
+    var vertexSkins: IntArray?,
+    val faceSkins: IntArray?,
+    val priority: Byte
+) {
     var tag: Long = 0
-    var vertexCount = 0
-    var vertexPositionsX: IntArray = IntArray(0)
-    var vertexPositionsY: IntArray = IntArray(0)
-    var vertexPositionsZ: IntArray = IntArray(0)
 
     @Transient
     var vertexNormals: Array<VertexNormal?>? = null
-    var faceCount = 0
-    var faceVertexIndices1: IntArray? = null
-    var faceVertexIndices2: IntArray? = null
-    var faceVertexIndices3: IntArray? = null
-    var faceAlphas: ByteArray? = null
-    var faceColors: ShortArray? = null
-    var faceRenderPriorities: ByteArray? = null
-    var faceRenderTypes: ByteArray? = null
 
     @Transient
     var faceNormals: Array<FaceNormal?>? = null
-    var textureTriangleCount = 0
-    var textureTriangleVertexIndices1: ShortArray? = null
-    var textureTriangleVertexIndices2: ShortArray? = null
-    var textureTriangleVertexIndices3: ShortArray? = null
 
     @Transient
     var faceTextureUCoordinates: Array<FloatArray?>? = null
 
     @Transient
     var faceTextureVCoordinates: Array<FloatArray?>? = null
-    var texturePrimaryColors: ShortArray? = null
-    var faceTextures: ShortArray? = null
-    var textureCoordinates: ByteArray? = null
-    var textureRenderTypes: ByteArray? = null
-    var vertexSkins: IntArray? = null
-    var faceSkins: IntArray? = null
-    var priority: Byte = 0
 
     @Transient
     private var vertexGroups: Array<IntArray?>? = null
 
-    @Transient
-    private var origVX: IntArray? = null
-
-    @Transient
-    private lateinit var origVY: IntArray
-
-    @Transient
-    private lateinit var origVZ: IntArray
-
-    @Transient
-    var maxPriority = 0
-
-    lateinit var aShortArray2574: ShortArray
-    lateinit var aShortArray2575: ShortArray
-    lateinit var aShortArray2577: ShortArray
-    lateinit var aShortArray2578: ShortArray
-    lateinit var aByteArray2580: ByteArray
-    lateinit var aShortArray2586: ShortArray
-
-    constructor()
     constructor(
         original: ModelDefinition
-    ) {
-        vertexCount = original.vertexCount
-        faceCount = original.faceCount
-        textureTriangleCount = original.textureTriangleCount
-        vertexPositionsX = original.vertexPositionsX.clone()
-        vertexPositionsY = original.vertexPositionsY.clone()
-        vertexPositionsZ = original.vertexPositionsZ.clone()
-        faceColors = original.faceColors?.clone()
-        faceTextures = original.faceTextures?.clone()
-        id = original.id
-        tag = original.tag
-        vertexCount = original.vertexCount
-        faceCount = original.faceCount
-        faceVertexIndices1 = original.faceVertexIndices1?.clone()
-        faceVertexIndices2 = original.faceVertexIndices2?.clone()
-        faceVertexIndices3 = original.faceVertexIndices3?.clone()
-        faceRenderTypes = original.faceRenderTypes
-        faceRenderPriorities = original.faceRenderPriorities
-        faceAlphas = original.faceAlphas
+    ) : this(
+        id = original.id,
+        vertexCount = original.vertexCount,
+        vertexPositionsX = original.vertexPositionsX.clone(),
+        vertexPositionsY = original.vertexPositionsY.clone(),
+        vertexPositionsZ = original.vertexPositionsZ.clone(),
+        faceCount = original.faceCount,
+        faceVertexIndices1 = original.faceVertexIndices1.clone(),
+        faceVertexIndices2 = original.faceVertexIndices2.clone(),
+        faceVertexIndices3 = original.faceVertexIndices3.clone(),
+        faceAlphas = original.faceAlphas,
+        faceColors = original.faceColors.clone(),
+        faceRenderPriorities = original.faceRenderPriorities,
+        faceRenderTypes = original.faceRenderTypes,
+        textureTriangleCount = original.textureTriangleCount,
+        textureTriangleVertexIndices1 = original.textureTriangleVertexIndices1,
+        textureTriangleVertexIndices2 = original.textureTriangleVertexIndices2,
+        textureTriangleVertexIndices3 = original.textureTriangleVertexIndices3,
+        faceTextures = original.faceTextures?.clone(),
+        textureCoordinates = original.textureCoordinates,
+        textureRenderTypes = original.textureRenderTypes,
+        vertexSkins = original.vertexSkins,
+        faceSkins = original.faceSkins,
         priority = original.priority
-        textureTriangleVertexIndices1 = original.textureTriangleVertexIndices1
-        textureTriangleVertexIndices2 = original.textureTriangleVertexIndices2
-        textureTriangleVertexIndices3 = original.textureTriangleVertexIndices3
+    ) {
+        tag = original.tag
         faceTextureUCoordinates = original.faceTextureUCoordinates
         faceTextureVCoordinates = original.faceTextureVCoordinates
         vertexNormals = original.vertexNormals
         faceNormals = original.faceNormals
-        textureCoordinates = original.textureCoordinates
-        vertexSkins = original.vertexSkins
         vertexGroups = original.vertexGroups
-        faceSkins = original.faceSkins
-        textureRenderTypes = original.textureRenderTypes
     }
 
     fun computeNormals() {
@@ -106,17 +85,16 @@ open class ModelDefinition {
             return
         }
         vertexNormals = arrayOfNulls(vertexCount)
-        var var1: Int
-        var1 = 0
+        var var1 = 0
         while (var1 < vertexCount) {
             vertexNormals!![var1] = VertexNormal()
             ++var1
         }
         var1 = 0
         while (var1 < faceCount) {
-            val vertexA = faceVertexIndices1!![var1]
-            val vertexB = faceVertexIndices2!![var1]
-            val vertexC = faceVertexIndices3!![var1]
+            val vertexA = faceVertexIndices1[var1]
+            val vertexB = faceVertexIndices2[var1]
+            val vertexC = faceVertexIndices3[var1]
             val xA = vertexPositionsX[vertexB] - vertexPositionsX[vertexA]
             val yA = vertexPositionsY[vertexB] - vertexPositionsY[vertexA]
             val zA = vertexPositionsZ[vertexB] - vertexPositionsZ[vertexA]
@@ -141,12 +119,10 @@ open class ModelDefinition {
             var11 = var11 * 256 / length
             var12 = var12 * 256 / length
             var13 = var13 * 256 / length
-            var var15: Byte
-            var15 = if (faceRenderTypes == null) {
-                0
-            } else {
-                faceRenderTypes!![var1]
-            }
+            val faceRenderTypes = faceRenderTypes
+            val var15: Byte =
+                if (faceRenderTypes == null) 0
+                else faceRenderTypes[var1]
             if (var15.toInt() == 0) {
                 var var16: VertexNormal = vertexNormals!![vertexA]!!
                 var16.x += var11
@@ -189,13 +165,13 @@ open class ModelDefinition {
             textureCoordinate = if (textureCoordinates == null) {
                 -1
             } else {
-                textureCoordinates!![i].toInt()
+                textureCoordinates[i].toInt()
             }
             var textureIdx: Int
             if (faceTextures == null) {
                 textureIdx = -1
             } else {
-                textureIdx = faceTextures!![i].toInt() and 0xFFFF
+                textureIdx = faceTextures[i].toInt() and 0xFFFF
             }
             if (textureIdx != -1) {
                 val u = FloatArray(3)
@@ -209,17 +185,14 @@ open class ModelDefinition {
                     v[2] = 0.0f
                 } else {
                     textureCoordinate = textureCoordinate and 0xFF
-                    var textureRenderType: Byte = 0
-                    if (textureRenderTypes != null) {
-                        textureRenderType = textureRenderTypes!![textureCoordinate]
-                    }
+                    val textureRenderType: Byte = textureRenderTypes[textureCoordinate]
                     if (textureRenderType.toInt() == 0) {
-                        val faceVertexIdx1 = faceVertexIndices1!![i]
-                        val faceVertexIdx2 = faceVertexIndices2!![i]
-                        val faceVertexIdx3 = faceVertexIndices3!![i]
-                        val triangleVertexIdx1 = textureTriangleVertexIndices1!![textureCoordinate]
-                        val triangleVertexIdx2 = textureTriangleVertexIndices2!![textureCoordinate]
-                        val triangleVertexIdx3 = textureTriangleVertexIndices3!![textureCoordinate]
+                        val faceVertexIdx1 = faceVertexIndices1[i]
+                        val faceVertexIdx2 = faceVertexIndices2[i]
+                        val faceVertexIdx3 = faceVertexIndices3[i]
+                        val triangleVertexIdx1 = textureTriangleVertexIndices1[textureCoordinate]
+                        val triangleVertexIdx2 = textureTriangleVertexIndices2[textureCoordinate]
+                        val triangleVertexIdx3 = textureTriangleVertexIndices3[textureCoordinate]
                         val triangleX = vertexPositionsX[triangleVertexIdx1.toInt()].toFloat()
                         val triangleY = vertexPositionsY[triangleVertexIdx1.toInt()].toFloat()
                         val triangleZ = vertexPositionsZ[triangleVertexIdx1.toInt()].toFloat()
@@ -272,29 +245,22 @@ open class ModelDefinition {
     fun computeAnimationTables() {
         if (vertexSkins != null) {
             val groupCounts = IntArray(256)
-            var numGroups = 0
-            var var3: Int
-            var var4: Int
-            var3 = 0
-            while (var3 < vertexCount) {
-                var4 = vertexSkins!![var3]
-                ++groupCounts[var4]
-                if (var4 > numGroups) {
-                    numGroups = var4
+            var maxGroupIndex = 0
+            for (var3 in 0 until vertexCount) {
+                val groupIndex = vertexSkins!![var3]
+                ++groupCounts[groupIndex]
+                if (groupIndex > maxGroupIndex) {
+                    maxGroupIndex = groupIndex
                 }
-                ++var3
             }
-            vertexGroups = arrayOfNulls(numGroups + 1)
-            var3 = 0
-            while (var3 <= numGroups) {
-                vertexGroups!![var3] = IntArray(groupCounts[var3])
-                groupCounts[var3] = 0
-                ++var3
+            vertexGroups = Array(maxGroupIndex + 1) {
+                val item = IntArray(groupCounts[it])
+                groupCounts[it] = 0
+                item
             }
-            var3 = 0
-            while (var3 < vertexCount) {
-                var4 = vertexSkins!![var3]
-                vertexGroups!![var4]!![groupCounts[var4]++] = var3++
+            for (var3 in 0 until vertexCount) {
+                val var4 = vertexSkins!![var3]
+                vertexGroups!![var4]!![groupCounts[var4]++] = var3
             }
             vertexSkins = null
         }
@@ -323,18 +289,13 @@ open class ModelDefinition {
 //    }
 
     fun rotateMulti() {
-        var var1: Int
-        var1 = 0
-        while (var1 < vertexCount) {
+        for (var1 in 0 until vertexCount) {
             vertexPositionsZ[var1] = -vertexPositionsZ[var1]
-            ++var1
         }
-        var1 = 0
-        while (var1 < faceCount) {
-            val var2 = faceVertexIndices1!![var1]
-            faceVertexIndices1!![var1] = faceVertexIndices3!![var1]
-            faceVertexIndices3!![var1] = var2
-            ++var1
+        for (var1 in 0 until faceCount) {
+            val var2 = faceVertexIndices1[var1]
+            faceVertexIndices1[var1] = faceVertexIndices3[var1]
+            faceVertexIndices3[var1] = var2
         }
         reset()
     }
@@ -373,32 +334,23 @@ open class ModelDefinition {
     }
 
     fun recolor(var1: Short, var2: Short) {
+        val faceColors = faceColors
         for (var3 in 0 until faceCount) {
-            if (faceColors!![var3] == var1) {
-                faceColors!![var3] = var2
+            if (faceColors[var3] == var1) {
+                faceColors[var3] = var2
             }
         }
     }
 
     fun retexture(var1: Short, var2: Short) {
+        val faceTextures = faceTextures
         if (faceTextures != null) {
             for (var3 in 0 until faceCount) {
-                if (faceTextures!![var3] == var1) {
-                    faceTextures!![var3] = var2
+                if (faceTextures[var3] == var1) {
+                    faceTextures[var3] = var2
                 }
             }
         }
-    }
-
-    companion object {
-        @Transient
-        var animOffsetX = 0
-
-        @Transient
-        var animOffsetY = 0
-
-        @Transient
-        var animOffsetZ = 0
     }
 
     override fun toString(): String {

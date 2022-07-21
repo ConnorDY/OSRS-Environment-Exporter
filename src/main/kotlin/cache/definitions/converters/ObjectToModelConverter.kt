@@ -29,72 +29,41 @@ class ObjectToModelConverter @Inject constructor(
         return litModel
     }
 
-    private fun ObjectDefinition.getModelDefinition(type: Int, orientation: Int): ModelDefinition? {
-        var orientation = orientation
+    private fun ObjectDefinition.getModelDefinition(
+        type: Int,
+        orientation: Int
+    ): ModelDefinition? {
+        val modelIds = modelIds
+        val modelTypes = modelTypes
         var modelDefinition: ModelDefinition? = null
         if (modelTypes == null) {
             if (type != 10 || modelIds == null) {
                 return null
             }
-            val modelLen = modelIds!!.size
+            val modelLen = modelIds.size
             for (i in 0 until modelLen) {
-                var modelId = modelIds!![i]
-                if (isRotated) {
-                    modelId += 65536
-                }
-                modelDefinition = modelLoader.get(modelId)
-                if (modelDefinition == null) {
-                    return null
-                }
-
-                if (isRotated) {
-                    modelDefinition.rotateMulti()
-                }
+                modelDefinition = getAndRotateModel(i, isRotated, modelIds)
             }
             if (modelLen > 1) {
-                modelDefinition = ModelDefinition()
+                // TODO: Combine models?
+                return null
             }
         } else {
-            var modelIdx = -1
-            for (i in modelTypes!!.indices) {
-                if (modelTypes!![i] == type) {
-                    modelIdx = i
-                    break
-                }
-            }
+            val modelIdx = modelTypes.indexOf(type)
             if (modelIdx == -1) {
                 return null
             }
-            var modelId = modelIds!![modelIdx]
             val isRotated = isRotated xor (orientation > 3)
-            if (isRotated) {
-                modelId += 65536
-            }
-            modelDefinition = modelLoader.get(modelId)
-
-            if (modelDefinition == null) {
-                return null
-            }
-
-            if (isRotated) {
-                modelDefinition.rotateMulti()
-            }
+            modelDefinition = getAndRotateModel(modelIdx, isRotated, modelIds!!)
         }
         if (modelDefinition == null) {
             return null
         }
 
-        orientation = orientation and 0x3
-        when (orientation) {
-            1 -> {
-                modelDefinition.rotateY90Ccw()
-            }
-            2 -> {
-                modelDefinition.rotateY180()
-            }
-            3 -> {
-                modelDefinition.rotateY270Ccw()
-            }
+        when (orientation and 3) {
+            1 -> modelDefinition.rotateY90Ccw()
+            2 -> modelDefinition.rotateY180()
+            3 -> modelDefinition.rotateY270Ccw()
         }
         if (recolorToFind != null) {
             for (i in recolorToFind!!.indices) {
@@ -108,6 +77,19 @@ class ObjectToModelConverter @Inject constructor(
                     textureToReplace!![i]
                 )
             }
+        }
+        return modelDefinition
+    }
+
+    private fun getAndRotateModel(modelIdx: Int, isRotated: Boolean, modelIds: IntArray): ModelDefinition? {
+        var modelId = modelIds[modelIdx]
+        if (isRotated) {
+            modelId += 65536
+        }
+        val modelDefinition = modelLoader[modelId] ?: return null
+
+        if (isRotated) {
+            modelDefinition.rotateMulti()
         }
         return modelDefinition
     }
