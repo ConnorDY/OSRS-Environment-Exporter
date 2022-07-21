@@ -2,7 +2,7 @@ package cache.definitions
 
 data class LocationsDefinition(
     val regionId: Int = 0,
-    val locations: ArrayList<Location> = ArrayList<Location>()
+    val locations: ArrayList<Location> = ArrayList()
 )
 
 data class Location(

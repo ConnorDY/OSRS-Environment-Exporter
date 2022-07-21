@@ -7,6 +7,7 @@ import cache.definitions.RegionDefinition.Companion.Y
 import cache.definitions.RegionDefinition.Companion.Z
 import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
+import org.slf4j.LoggerFactory
 import utils.Utils
 import java.nio.ByteBuffer
 
@@ -14,6 +15,8 @@ class RegionLoader(
     private val cacheLibrary: CacheLibrary,
     private val regionDefinitionCache: HashMap<Int, RegionDefinition?> = HashMap()
 ) {
+    private val logger = LoggerFactory.getLogger(RegionLoader::class.java)
+
     fun get(regionId: Int): RegionDefinition? {
         if (regionDefinitionCache.containsKey(regionId)) {
             return regionDefinitionCache[regionId]
@@ -27,6 +30,7 @@ class RegionLoader(
         val regionY = regionId and 0xFF
         val map = cacheLibrary.data(IndexType.MAPS.id, "m${regionX}_$regionY")
         if (map == null) {
+            logger.warn("Could not load region (tile) data for $regionId")
             regionDefinitionCache[regionId] = null // Negative cache entry
             return null
         }
