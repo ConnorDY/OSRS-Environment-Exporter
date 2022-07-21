@@ -29,7 +29,7 @@
 - Fix buffer underflow when loading certain regions – [#44](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/44) @ScoreUnder
   - This also made it possible to skip loading regions that would previously cause the tool to crash
 
-- Load region tile data even when region xtea keys are missing - [#49](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/49) @ScoreUnder
+- Load region tile data even when region xtea keys are missing – [#49](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/49) @ScoreUnder
 
 - Ensure process exits when all windows are closed – [870d24a](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/870d24a8169b74ed446c32701fd4da3dc3fd77aa) @ScoreUnder
 
