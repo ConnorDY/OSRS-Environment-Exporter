@@ -121,7 +121,7 @@ class MainController constructor(
                 addActionListener(::exportClicked)
             }.let(::add)
             JToolBar.Separator().let(::add)
-            Box.createHorizontalGlue().let(::add)
+            Box.createGlue().let(::add)
 
             JLabel("Z Layers:").let(::add)
             worldRendererController.renderer.zLevelsSelected.forEachIndexed { z, visible ->
@@ -132,7 +132,7 @@ class MainController constructor(
                 }.let(::add)
             }
 
-            Box.createHorizontalGlue().let(::add)
+            Box.createGlue().let(::add)
             lblFps.let(::add)
         }.let { add(it, BorderLayout.NORTH) }
 
