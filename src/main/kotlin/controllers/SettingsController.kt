@@ -57,7 +57,7 @@ class SettingsController @Inject constructor(
             configuration.saveProp(FPS_CAP_PROP, if (chkBoxLimitFps.isSelected) txtFpsCap.text else "")
 
             var fpsCapToSet = txtFpsCap.text.toIntOrNull() ?: 0
-            if (!chkBoxLimitFps.isDisable) fpsCapToSet = 0
+            if (!chkBoxLimitFps.isSelected) fpsCapToSet = 0
 
             renderer.setFpsTarget(fpsCapToSet)
 
