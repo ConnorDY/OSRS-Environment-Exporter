@@ -1,16 +1,21 @@
 package controllers.worldRenderer
 
 import com.google.inject.Inject
+import controllers.SettingsController
 import javafx.beans.value.ChangeListener
 import javafx.beans.value.ObservableValue
 import javafx.fxml.FXML
 import javafx.geometry.Bounds
 import javafx.scene.Group
 import javafx.scene.layout.AnchorPane
+import models.Configuration
 import java.util.Timer
 import java.util.TimerTask
 
-class WorldRendererController @Inject constructor(val renderer: Renderer) {
+class WorldRendererController @Inject constructor(
+    private val renderer: Renderer,
+    private val configuration: Configuration,
+) {
     @FXML
     lateinit var anchorPane: AnchorPane
 
@@ -26,12 +31,22 @@ class WorldRendererController @Inject constructor(val renderer: Renderer) {
 
         renderer.window.requestFocus()
         group.requestFocus()
+
+        checkFpsCap()
     }
 
     fun forceRefresh() {
         val bounds = anchorPane.localToScene(anchorPane.boundsInLocal)
         // 26 is the size of the hidden DockTitleBar
         renderer.reposResize(bounds.minX.toInt(), bounds.minY.toInt() - 26, bounds.width.toInt(), bounds.height.toInt() + 26)
+    }
+
+    private fun checkFpsCap() {
+        val fpsCap = configuration.getProp(SettingsController.FPS_CAP_PROP).toIntOrNull()
+
+        if (fpsCap != null) {
+            renderer.setFpsTarget(fpsCap)
+        }
     }
 
     // create a listener

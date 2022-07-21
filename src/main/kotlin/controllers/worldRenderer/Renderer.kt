@@ -19,7 +19,6 @@ import com.jogamp.opengl.GLEventListener
 import com.jogamp.opengl.GLProfile
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
-import controllers.SettingsController
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GLUtil
@@ -38,7 +37,6 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import javafx.scene.Group
-import models.Configuration
 import models.DebugModel
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
@@ -58,7 +56,6 @@ class Renderer @Inject constructor(
     private val sceneUploader: SceneUploader,
     private val inputHandler: InputHandler,
     private val textureManager: TextureManager,
-    private val configuration: Configuration,
     private val debugModel: DebugModel
 ) : GLEventListener {
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
@@ -111,10 +108,10 @@ class Renderer @Inject constructor(
 
     private lateinit var modelBuffers: ModelBuffers
 
-    public var z0ChkBtnSelected = true
-    public var z1ChkBtnSelected = true
-    public var z2ChkBtnSelected = true
-    public var z3ChkBtnSelected = true
+    var z0ChkBtnSelected = true
+    var z1ChkBtnSelected = true
+    var z2ChkBtnSelected = true
+    var z3ChkBtnSelected = true
 
     // Uniforms
     private var uniDrawDistance = 0
@@ -269,8 +266,6 @@ class Renderer @Inject constructor(
             initPickerBuffer()
             initVao()
 
-            checkFpsCap()
-
             // disable vsync
 //            gl.swapInterval = 0
         } catch (e: ShaderException) {
@@ -415,7 +410,6 @@ class Renderer @Inject constructor(
         )
         gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
 
-        val textureProvider = ""
         // Draw 3d scene
         if (bufferId != -1) {
             gl.glUniformBlockBinding(glSmallComputeProgram, uniBlockSmall, 0)
@@ -1027,14 +1021,6 @@ class Renderer @Inject constructor(
             rboDepthMain = -1
         }
         glDeleteBuffers(gl, pboIds)
-    }
-
-    private fun checkFpsCap() {
-        val fpsCap = configuration.getProp(SettingsController.FPS_CAP_PROP).toIntOrNull()
-
-        if (fpsCap != null) {
-            setFpsTarget(fpsCap)
-        }
     }
 
     companion object {
