@@ -18,7 +18,7 @@
 - Reduced load times **significantly** by implementing negative region caching – [d2fd490](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/6/commits/d2fd490a79044a9d9df28d816308e08716734cb3) @ScoreUnder
   - Load times that would previously take almost a minute are now instantaneous (*on our machines*)
 
-- Add a setting for limiting the frame rate – [#48](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/48) @ConnorDY
+- Add a setting for limiting the frame rate – [#48](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/48) @ScoreUnder & @ConnorDY
   - This can be used to reduce power consumption
 
 ### :bug: Bug Fixes
