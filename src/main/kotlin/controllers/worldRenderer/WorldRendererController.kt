@@ -1,6 +1,8 @@
 package controllers.worldRenderer
 
 import com.jogamp.newt.awt.NewtCanvasAWT
+import com.jogamp.opengl.GLAutoDrawable
+import com.jogamp.opengl.GLEventListener
 import controllers.SettingsController
 import models.Configuration
 import java.awt.Dimension
@@ -8,6 +10,7 @@ import java.awt.Rectangle
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 
 class WorldRendererController constructor(
     val renderer: Renderer,
@@ -16,15 +19,14 @@ class WorldRendererController constructor(
     private val canvas: NewtCanvasAWT
     init {
         preferredSize = Dimension(800, 600)
-        maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
 
         canvas = renderer.initCanvas()
         canvas.let(::add)
 
         addComponentListener(Listener())
 
-        forceRefresh()
         renderer.window.requestFocus()
+        renderer.window.addGLEventListener(GLInitialResizeHack())
 
         checkFpsCap()
     }
@@ -46,6 +48,22 @@ class WorldRendererController constructor(
         if (fpsCap != null) {
             renderer.setFpsTarget(fpsCap)
         }
+    }
+
+    private inner class GLInitialResizeHack : GLEventListener {
+        private var frames = 0
+
+        override fun init(p0: GLAutoDrawable?) {}
+        override fun dispose(p0: GLAutoDrawable?) {}
+        override fun display(p0: GLAutoDrawable?) {
+            if (frames++ == 1) {
+                renderer.window.removeGLEventListener(this)
+                SwingUtilities.invokeLater {
+                    forceRefresh()
+                }
+            }
+        }
+        override fun reshape(p0: GLAutoDrawable?, p1: Int, p2: Int, p3: Int, p4: Int) {}
     }
 
     private inner class Listener : ComponentAdapter() {
