@@ -3,36 +3,53 @@
 <?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1"
+<AnchorPane prefWidth="600.0" prefHeight="300.0" xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AboutController">
-    <VBox prefHeight="300.0" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="25.0"
+    <VBox fx:id="wrapper" AnchorPane.bottomAnchor="25.0" AnchorPane.leftAnchor="25.0"
           AnchorPane.rightAnchor="25.0" AnchorPane.topAnchor="25.0" alignment="CENTER">
-        <Label fx:id="lblTitle" text="Title" styleClass="aboutTitle"/>
+        <padding>
+            <Insets left="15.0" right="15.0"/>
+        </padding>
 
-        <Label fx:id="lblVersion" text="Version" styleClass="aboutText"/>
+        <Label fx:id="txtTitle" text="Title" styleClass="aboutTitle"/>
+
+        <Label fx:id="txtVersion" text="Version" styleClass="aboutText"/>
 
         <Hyperlink fx:id="linkGitHub" text="https://github.com/ConnorDY/OSRS-Environment-Exporter"
                    styleClass="aboutText"/>
 
         <VBox prefHeight="40"/>
 
-        <Label wrapText="true"
+        <Label fx:id="txtDescription"
                text="This application enables exporting Old School RuneScape environments so they can be used in 3D modeling programs like Blender."
+               wrapText="true"
+               prefHeight="80"
                styleClass="aboutText"/>
 
         <VBox prefHeight="40"/>
 
         <Label text="Credits" underline="true" styleClass="aboutText"/>
 
-        <Label text="Original idea by Trillion (twitter.com/TrillionStudios)."
-               styleClass="aboutText"/>
-        <Label
-                text="Based on @tpetrychyn's OSRS Map Editor (github.com/tpetrychyn/osrs-map-editor)."
-                styleClass="aboutText"/>
-        <Label
-                text="Using changes from @partyvaper's fork (github.com/partyvaper/osrs-map-editor)."
-                styleClass="aboutText"/>
+        <HBox alignment="CENTER" styleClass="aboutText">
+            <Label text="Original idea by "/>
+            <Hyperlink fx:id="linkTrillion" text="Trillion"/>
+            <Label text="."/>
+        </HBox>
+
+        <HBox alignment="CENTER" styleClass="aboutText">
+            <Label text="Based on "/>
+            <Hyperlink fx:id="linkBasedOn" text="\@tpetrychyn's OSRS Map Editor"/>
+            <Label text="."/>
+        </HBox>
+
+        <HBox alignment="CENTER" styleClass="aboutText">
+            <Label text="Using changes from "/>
+            <Hyperlink fx:id="linkPartyVaperFork" text="\@partyvaper's fork"/>
+            <Label text="."/>
+        </HBox>
     </VBox>
 </AnchorPane>
