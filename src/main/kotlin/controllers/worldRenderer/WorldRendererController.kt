@@ -13,7 +13,7 @@ import java.util.Timer
 import java.util.TimerTask
 
 class WorldRendererController @Inject constructor(
-    private val renderer: Renderer,
+    val renderer: Renderer,
     private val configuration: Configuration,
 ) {
     @FXML
