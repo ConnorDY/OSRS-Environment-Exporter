@@ -21,6 +21,7 @@ class WorldRendererController constructor(
     private val canvas: NewtCanvasAWT
     init {
         preferredSize = Dimension(800, 600)
+        ignoreRepaint = true // we're painted by an embedded GL thing
 
         canvas = renderer.initCanvas()
         canvas.let(::add)
