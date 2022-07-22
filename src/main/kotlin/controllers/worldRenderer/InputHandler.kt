@@ -68,18 +68,23 @@ class InputHandler internal constructor(
     }
 
     fun isKeyDown(keyCode: Int): Boolean {
+        if (keyCode < 0 || keyCode >= keys.size) return false
         return keys[keyCode]
     }
 
     override fun keyPressed(e: KeyEvent) {
-        keys[e.keyCode.toInt()] = true
+        val code = e.keyCode.toInt()
+        if (code >= 0 && code < keys.size)
+            keys[code] = true
     }
 
     override fun keyReleased(e: KeyEvent) {
         if (e.isAutoRepeat) {
             return
         }
-        keys[e.keyCode.toInt()] = false
+        val code = e.keyCode.toInt()
+        if (code >= 0 && code < keys.size)
+            keys[code] = false
     }
 
     private fun handleCameraDrag(e: MouseEvent) {
