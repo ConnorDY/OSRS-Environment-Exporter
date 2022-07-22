@@ -115,6 +115,7 @@ class LocationSearchController constructor(
             scene.load(regionId, radius)
         }
 
+        rootPane.defaultButton = btnLoad
         pack()
     }
 
