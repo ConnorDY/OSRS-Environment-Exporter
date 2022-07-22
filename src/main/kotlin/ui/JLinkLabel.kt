@@ -1,6 +1,7 @@
 package ui
 
 import java.awt.Color
+import java.awt.Cursor
 import java.awt.Desktop
 import java.awt.event.KeyAdapter
 import java.awt.event.KeyEvent
@@ -13,6 +14,7 @@ import javax.swing.SwingConstants
 
 class JLinkLabel(uri: String, display: String = uri, align: Int = SwingConstants.LEADING) : JLabel(display, align) {
     init {
+        cursor = Cursor(Cursor.HAND_CURSOR)
         val realURI = if (uri.startsWith("http")) uri else "https://$uri"
         addMouseListener(
             object : MouseAdapter() {
