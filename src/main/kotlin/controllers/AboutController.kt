@@ -6,6 +6,7 @@ import java.awt.Dimension
 import java.awt.Font
 import java.awt.Frame
 import java.awt.font.TextAttribute
+import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JDialog
@@ -15,18 +16,17 @@ import javax.swing.SwingConstants
 
 class AboutController(owner: Frame, title: String) : JDialog(owner, title) {
     init {
-        preferredSize = Dimension(600, 500)
+        preferredSize = Dimension(600, 300)
         layout = BoxLayout(contentPane, BoxLayout.PAGE_AXIS)
         defaultCloseOperation = DISPOSE_ON_CLOSE
 
         Box.createGlue().let(::add)
         JLabel(PackageMetadata.NAME, SwingConstants.CENTER).apply {
             alignmentX = CENTER_ALIGNMENT
-            font = Font("sans-serif", Font.PLAIN, 18)
+            font = font.deriveFont(18f)
         }.let(::add)
         JLabel(PackageMetadata.VERSION, SwingConstants.CENTER).apply {
             alignmentX = CENTER_ALIGNMENT
-            font = Font("sans-serif", Font.PLAIN, 14)
         }.let(::add)
         JLinkLabel("https://github.com/ConnorDY/OSRS-Environment-Exporter", align = SwingConstants.CENTER).apply {
             alignmentX = CENTER_ALIGNMENT
@@ -38,8 +38,11 @@ class AboutController(owner: Frame, title: String) : JDialog(owner, title) {
             SwingConstants.CENTER
         ).apply {
             alignmentX = CENTER_ALIGNMENT
-            font = Font("sans-serif", Font.PLAIN, 14)
+            border = BorderFactory.createEmptyBorder(0, 20, 0, 20)
         }.let(::add)
+
+        Box.createRigidArea(Dimension(20, 20)).let(::add)
+
         JLabel("Credits").apply {
             font = font.deriveFont(
                 HashMap(font.attributes).apply {
