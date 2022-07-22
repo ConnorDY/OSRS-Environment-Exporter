@@ -22,6 +22,7 @@ import java.awt.GridBagConstraints.PAGE_END
 import java.awt.GridBagConstraints.PAGE_START
 import java.awt.GridBagLayout
 import java.awt.Insets
+import javax.swing.BorderFactory
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JButton
 import javax.swing.JDialog
@@ -30,6 +31,7 @@ import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JScrollPane
 import javax.swing.JTextField
+import javax.swing.UIManager
 
 class LocationSearchController constructor(
     owner: JFrame,
@@ -42,7 +44,10 @@ class LocationSearchController constructor(
         preferredSize = Dimension(600, 400)
 
         val filterableLocations = FilteredListModel<Location> { it.name }
-        val listLocations = JList(filterableLocations)
+        val listLocations = JList(filterableLocations).apply {
+            val borderColor = UIManager.getColor("InternalFrame.borderColor")
+            border = BorderFactory.createMatteBorder(0, 1, 0, 0, borderColor)
+        }
         listLocations.cellRenderer = LocationCell()
         val txtSearchQuery = PlaceholderTextField("", "Lumbridge")
         val txtRadius = JTextField("1")
@@ -135,6 +140,7 @@ class LocationSearchController constructor(
             cellHasFocus: Boolean
         ): Component {
             super.getListCellRendererComponent(list, item, index, isSelected, cellHasFocus)
+            border = BorderFactory.createEmptyBorder(0, 8, 0, 0)
             text =
                 if (item == null) ""
                 else {
