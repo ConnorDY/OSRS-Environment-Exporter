@@ -1,6 +1,6 @@
 import controllers.CacheChooserController
 import models.Configuration
-import org.pushingpixels.radiance.theming.api.skin.RadianceNightShadeLookAndFeel
+import org.pushingpixels.radiance.theming.api.skin.RadianceGraphiteAquaLookAndFeel
 import javax.swing.JPopupMenu
 import javax.swing.SwingUtilities
 import javax.swing.ToolTipManager
@@ -10,7 +10,7 @@ import javax.swing.UnsupportedLookAndFeelException
 fun main() {
     SwingUtilities.invokeLater {
         try {
-            UIManager.setLookAndFeel(RadianceNightShadeLookAndFeel())
+            UIManager.setLookAndFeel(RadianceGraphiteAquaLookAndFeel())
         } catch (_: UnsupportedLookAndFeelException) {
         } catch (_: ClassNotFoundException) {
         } catch (_: InstantiationException) {
