@@ -8,20 +8,8 @@ import ui.FilteredListModel
 import ui.PlaceholderTextField
 import ui.listener.FilterTextListener
 import utils.Utils
-import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.GridBagConstraints
-import java.awt.GridBagConstraints.ABOVE_BASELINE
-import java.awt.GridBagConstraints.BOTH
-import java.awt.GridBagConstraints.CENTER
-import java.awt.GridBagConstraints.HORIZONTAL
-import java.awt.GridBagConstraints.LINE_END
-import java.awt.GridBagConstraints.NONE
-import java.awt.GridBagConstraints.PAGE_END
-import java.awt.GridBagConstraints.PAGE_START
-import java.awt.GridBagLayout
-import java.awt.Insets
 import javax.swing.BorderFactory
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JButton
@@ -29,62 +17,33 @@ import javax.swing.JDialog
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JList
+import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextField
 import javax.swing.UIManager
 
-class LocationSearchController constructor(
+class LocationSearchController(
     owner: JFrame,
     title: String,
     private val scene: Scene
 ) : JDialog(owner, title) {
+    private lateinit var contentPane: JPanel
+    private lateinit var listLocations: JList<Location>
+    private lateinit var scrollListLocations: JScrollPane
+    private lateinit var txtSearchQuery: PlaceholderTextField
+    private lateinit var txtRadius: JTextField
+    private lateinit var lblErrorText: JLabel
+    private lateinit var btnLoad: JButton
+    private lateinit var filterableLocations: FilteredListModel<Location>
 
     init {
-        layout = GridBagLayout()
+        setContentPane(contentPane)
         preferredSize = Dimension(600, 400)
 
-        val filterableLocations = FilteredListModel<Location> { it.name }
-        val listLocations = JList(filterableLocations).apply {
+        scrollListLocations.apply {
             val borderColor = UIManager.getColor("InternalFrame.borderColor")
             border = BorderFactory.createMatteBorder(0, 1, 0, 0, borderColor)
         }
-        listLocations.cellRenderer = LocationCell()
-        val txtSearchQuery = PlaceholderTextField("", "Lumbridge")
-        val txtRadius = JTextField("1")
-        val lblErrorText = JLabel("")
-        lblErrorText.foreground = Color.RED
-        val btnLoad = JButton("Load Location")
-
-        val inset = Insets(0, 20, 0, 0)
-        val controlSepInsets = Insets(30, 20, 0, 0)
-        add(
-            JScrollPane(listLocations),
-            GridBagConstraints(1, 0, 1, 6, 1.5, 1.0, LINE_END, BOTH, inset, 0, 0)
-        )
-        add(
-            JLabel("Search Query:"),
-            GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, PAGE_END, NONE, inset, 0, 0)
-        )
-        add(
-            txtSearchQuery,
-            GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
-        )
-        add(
-            JLabel("Radius:"),
-            GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, ABOVE_BASELINE, NONE, controlSepInsets, 0, 0)
-        )
-        add(
-            txtRadius,
-            GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
-        )
-        add(
-            lblErrorText,
-            GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
-        )
-        add(
-            btnLoad,
-            GridBagConstraints(0, 5, 1, 1, 1.0, 1.0, PAGE_START, NONE, controlSepInsets, 0, 0)
-        )
 
         // load locations
         filterableLocations.backingList = readBuiltinLocations()
@@ -117,6 +76,14 @@ class LocationSearchController constructor(
 
         rootPane.defaultButton = btnLoad
         pack()
+    }
+
+    private fun createUIComponents() {
+        filterableLocations = FilteredListModel(Location::name)
+        listLocations = JList(filterableLocations).apply {
+            cellRenderer = LocationCell()
+        }
+        txtSearchQuery = PlaceholderTextField("", "Lumbridge")
     }
 
     private fun readBuiltinLocations(): ArrayList<Location> {
