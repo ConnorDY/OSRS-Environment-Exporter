@@ -50,34 +50,35 @@ class LocationSearchController constructor(
         lblErrorText.foreground = Color.RED
         val btnLoad = JButton("Load Location")
 
-        val noInset = Insets(0, 0, 0, 0)
+        val inset = Insets(0, 20, 0, 0)
+        val controlSepInsets = Insets(30, 20, 0, 0)
         add(
             JScrollPane(listLocations),
-            GridBagConstraints(1, 0, 1, 6, 1.5, 1.0, LINE_END, BOTH, noInset, 0, 0)
+            GridBagConstraints(1, 0, 1, 6, 1.5, 1.0, LINE_END, BOTH, inset, 0, 0)
         )
         add(
             JLabel("Search Query:"),
-            GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, PAGE_END, NONE, noInset, 0, 0)
+            GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, PAGE_END, NONE, inset, 0, 0)
         )
         add(
             txtSearchQuery,
-            GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, noInset, 0, 0)
+            GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
         )
         add(
             JLabel("Radius:"),
-            GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, ABOVE_BASELINE, NONE, Insets(10, 0, 0, 0), 0, 0)
+            GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, ABOVE_BASELINE, NONE, controlSepInsets, 0, 0)
         )
         add(
             txtRadius,
-            GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, noInset, 0, 0)
+            GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
         )
         add(
             lblErrorText,
-            GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, CENTER, NONE, noInset, 0, 0)
+            GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
         )
         add(
             btnLoad,
-            GridBagConstraints(0, 5, 1, 1, 1.0, 1.0, PAGE_START, NONE, noInset, 0, 0)
+            GridBagConstraints(0, 5, 1, 1, 1.0, 1.0, PAGE_START, NONE, controlSepInsets, 0, 0)
         )
 
         // load locations
