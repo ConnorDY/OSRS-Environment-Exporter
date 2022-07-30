@@ -3,7 +3,6 @@ package controllers
 import ui.JLinkLabel
 import utils.PackageMetadata
 import java.awt.Dimension
-import java.awt.Font
 import java.awt.Frame
 import java.awt.font.TextAttribute
 import javax.swing.BorderFactory
