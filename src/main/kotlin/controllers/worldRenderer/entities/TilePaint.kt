@@ -17,7 +17,7 @@ class TilePaint(
     val texture: Int,
     val rgb: Int,
 ) : Renderable {
-    val computeObj = ComputeObj()
+    internal val computeObj = ComputeObj()
 
     override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
         val x: Int = sceneX * Constants.LOCAL_TILE_SIZE
@@ -35,25 +35,5 @@ class TilePaint(
         b.buffer.put(computeObj.toArray())
 
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
-    }
-
-    fun recompute(modelBuffers: ModelBuffers) {
-        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
-        modelBuffers.incUnorderedModels()
-        b.ensureCapacity(13)
-        computeObj.flags = 0
-
-        b.buffer.put(computeObj.toArray())
-    }
-
-    override fun clearDraw(modelBuffers: ModelBuffers) {
-        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
-        modelBuffers.incUnorderedModels()
-        b.ensureCapacity(13)
-
-        computeObj.x = Int.MAX_VALUE
-        computeObj.y = Int.MAX_VALUE
-        computeObj.z = Int.MAX_VALUE
-        b.buffer.put(computeObj.toArray())
     }
 }

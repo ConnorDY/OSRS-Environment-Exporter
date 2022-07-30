@@ -90,15 +90,15 @@ class SceneUploader {
 
         tile.tileModel?.computeObj?.offset = -1
 
-        tile.wall?.entity?.getModel()?.computeObj?.offset = -1
-        tile.wall?.entity2?.getModel()?.computeObj?.offset = -1
+        tile.wall?.entity?.model?.computeObj?.offset = -1
+        tile.wall?.entity2?.model?.computeObj?.offset = -1
 
-        tile.wallDecoration?.entity?.getModel()?.computeObj?.offset = -1
+        tile.wallDecoration?.entity?.model?.computeObj?.offset = -1
 
-        tile.floorDecoration?.entity?.getModel()?.computeObj?.offset = -1
+        tile.floorDecoration?.entity?.model?.computeObj?.offset = -1
 
         for (gameObject in tile.gameObjects) {
-            gameObject.entity.getModel().computeObj.offset = -1
+            gameObject.entity.model.computeObj.offset = -1
         }
     }
 
@@ -280,7 +280,7 @@ class SceneUploader {
     }
 
     fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
-        val model = entity.getModel()
+        val model = entity.model
 
         if (model.computeObj.offset >= 0) {
 //            // this model is shared between gameobjects and has already been uploaded

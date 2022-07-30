@@ -16,7 +16,6 @@ import com.jogamp.opengl.GLEventListener
 import com.jogamp.opengl.GLProfile
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
-import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
@@ -208,26 +207,6 @@ class Renderer constructor(
         scene.load(15256, 1)
     }
 
-    private val redrawList: HashSet<SceneTile> = HashSet()
-    private val modelRedrawList: HashSet<Entity> = HashSet()
-
-    private fun redrawTiles() {
-        for (tile in redrawList) {
-            sceneUploader.upload(tile, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
-            tile.tilePaint?.recompute(modelBuffers)
-            tile.tileModel?.recompute(modelBuffers)
-        }
-        redrawList.clear()
-
-        for (e in modelRedrawList) {
-            e.getModel().recompute(modelBuffers, e.height)
-        }
-        modelRedrawList.clear()
-    }
-
-    private fun handleHover() {
-    }
-
     override fun init(drawable: GLAutoDrawable) {
         try {
             gl = drawable.gl.gL4
@@ -275,9 +254,7 @@ class Renderer constructor(
         val deltaTime = (thisUpdate - lastUpdate).toDouble() / 1_000_000
         lastUpdate = thisUpdate
 
-        redrawTiles()
         inputHandler.tick(deltaTime)
-        handleHover()
 
         if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {
             createProjectionMatrix(
@@ -601,7 +578,7 @@ class Renderer constructor(
         }
 
         val floorDecorationEntity = tile.floorDecoration?.entity
-        floorDecorationEntity?.getModel()?.draw(
+        floorDecorationEntity?.model?.draw(
             modelBuffers,
             x,
             y,
@@ -610,12 +587,12 @@ class Renderer constructor(
 
         val wall = tile.wall
         if (wall != null) {
-            wall.entity.getModel().draw(modelBuffers, x, y, wall.entity.height, wall.type.id)
-            wall.entity2?.getModel()?.draw(modelBuffers, x, y, wall.entity2.height, wall.type.id)
+            wall.entity.model.draw(modelBuffers, x, y, wall.entity.height, wall.type.id)
+            wall.entity2?.model?.draw(modelBuffers, x, y, wall.entity2.height, wall.type.id)
         }
 
         val wallDecorationEntity = tile.wallDecoration?.entity
-        wallDecorationEntity?.getModel()?.draw(
+        wallDecorationEntity?.model?.draw(
             modelBuffers,
             x,
             y,
@@ -624,7 +601,7 @@ class Renderer constructor(
         )
 
         for (gameObject in tile.gameObjects) {
-            gameObject.entity.getModel()
+            gameObject.entity.model
                 .draw(modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
         }
     }

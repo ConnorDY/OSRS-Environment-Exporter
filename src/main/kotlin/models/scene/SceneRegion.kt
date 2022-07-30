@@ -124,8 +124,8 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                 tiles[iz][x][y] = SceneTile(iz, x, y)
             }
         }
-        entity.getModel().xOff = Constants.LOCAL_HALF_TILE_SIZE
-        entity.getModel().yOff = Constants.LOCAL_HALF_TILE_SIZE
+        entity.model.xOff = Constants.LOCAL_HALF_TILE_SIZE
+        entity.model.yOff = Constants.LOCAL_HALF_TILE_SIZE
         val floorDecoration = FloorDecoration(entity)
         tiles[z][x][y]!!.floorDecoration = floorDecoration
     }
@@ -142,8 +142,8 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
             }
         }
 
-        entity.getModel().xOff = Constants.LOCAL_HALF_TILE_SIZE
-        entity.getModel().yOff = Constants.LOCAL_HALF_TILE_SIZE
+        entity.model.xOff = Constants.LOCAL_HALF_TILE_SIZE
+        entity.model.yOff = Constants.LOCAL_HALF_TILE_SIZE
         val wallDecoration = WallDecoration(entity)
         tiles[z][x][y]!!.wallDecoration = wallDecoration
     }
@@ -164,10 +164,10 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
             }
         }
 
-        entity.getModel().xOff = width * REGION_SIZE
-        entity.getModel().yOff = length * REGION_SIZE
-        entity2?.getModel()?.xOff = width * REGION_SIZE
-        entity2?.getModel()?.yOff = length * REGION_SIZE
+        entity.model.xOff = width * REGION_SIZE
+        entity.model.yOff = length * REGION_SIZE
+        entity2?.model?.xOff = width * REGION_SIZE
+        entity2?.model?.yOff = length * REGION_SIZE
         tiles[z][x][y]!!.wall = WallObject(entity, entity2, LocationType.fromId(location.type)!!)
         tiles[z][x][y]!!.locations.add(location)
     }
@@ -187,8 +187,8 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
             }
         }
 
-        entity.getModel().xOff = width * REGION_SIZE
-        entity.getModel().yOff = length * REGION_SIZE
+        entity.model.xOff = width * REGION_SIZE
+        entity.model.yOff = length * REGION_SIZE
         tiles[z][x][y]!!.gameObjects.add(GameObject(entity))
         tiles[z][x][y]!!.locations.add(location)
     }

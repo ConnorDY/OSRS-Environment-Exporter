@@ -25,8 +25,7 @@ class TileModel(
     public val underlayRgb: Int = 0,
     public val overlayRgb: Int = 0
 ) : Renderable {
-
-    var computeObj: ComputeObj = ComputeObj()
+    internal val computeObj = ComputeObj()
 
     lateinit var vertexX: IntArray
     lateinit var vertexY: IntArray
@@ -65,19 +64,6 @@ class TileModel(
         b.buffer.put(computeObj.toArray())
 
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
-    }
-
-    override fun clearDraw(modelBuffers: ModelBuffers) {
-//        TODO("Not yet implemented")
-    }
-
-    fun recompute(modelBuffers: ModelBuffers) {
-        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
-        modelBuffers.incUnorderedModels()
-        b.ensureCapacity(13)
-        computeObj.flags = 0
-
-        b.buffer.put(computeObj.toArray())
     }
 
     init {

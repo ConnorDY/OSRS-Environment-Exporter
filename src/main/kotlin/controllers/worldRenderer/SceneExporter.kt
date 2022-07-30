@@ -248,7 +248,7 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
     }
 
     private fun uploadModel(gltf: glTF, entity: Entity, tileX: Int, tileY: Int, height: Int) {
-        val model = entity.getModel()
+        val model = entity.model
         val triangleCount = model.modelDefinition.faceCount
 
         for (i in 0 until triangleCount) {

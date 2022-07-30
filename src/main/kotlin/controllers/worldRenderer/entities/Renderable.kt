@@ -4,7 +4,6 @@ import controllers.worldRenderer.helpers.ModelBuffers
 
 interface Renderable {
     fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int)
-    fun clearDraw(modelBuffers: ModelBuffers)
 }
 
 enum class OrientationType(val id: Int) {
