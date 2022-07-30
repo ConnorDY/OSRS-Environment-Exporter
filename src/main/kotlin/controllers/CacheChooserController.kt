@@ -77,13 +77,16 @@ class CacheChooserController(
         }
         val lblStatusText = JLabel()
         btnDownload.addActionListener {
-            isEnabled = false
+            btnDownload.isEnabled = false
             listCaches.selectedValue?.let {
-                downloadCache(
-                    it,
-                    lblStatusText,
-                    txtCacheLocation
-                )
+                lblStatusText.text = "Downloading cache $it, please wait.."
+                txtCacheLocation.text = ""
+
+                downloadCache(it) { path ->
+                    lblStatusText.text = ""
+                    txtCacheLocation.text = path
+                    btnDownload.isEnabled = true
+                }
             }
         }
         val lblErrorText = JLabel().apply {
@@ -164,6 +167,7 @@ class CacheChooserController(
                         )
                         .addComponent(scrollErrorText)
                         .addComponent(btnLaunch, Alignment.CENTER)
+                        .addComponent(lblStatusText, Alignment.CENTER)
                 )
         )
 
@@ -194,6 +198,7 @@ class CacheChooserController(
                         )
                         .addComponent(scrollErrorText)
                         .addComponent(btnLaunch)
+                        .addComponent(lblStatusText)
                         .addGap(0, 0, Int.MAX_VALUE)
                 )
         )
@@ -261,11 +266,8 @@ class CacheChooserController(
 
     private fun downloadCache(
         cacheName: String,
-        lblStatusText: JLabel,
-        txtCacheLocation: JTextField
+        onComplete: (String) -> Unit
     ) {
-        lblStatusText.text = "Downloading cache $cacheName, please wait.."
-        txtCacheLocation.text = ""
         val destFolder = File("${AppConstants.CACHES_DIRECTORY}/${cacheName.removeSuffix(".tar.gz")}")
 
         Thread {
@@ -299,8 +301,10 @@ class CacheChooserController(
                         tarEntry = tarIn.nextTarEntry
                     }
                     tarIn.close()
-                    lblStatusText.text = ""
-                    txtCacheLocation.text = destFolder.absolutePath
+
+                    SwingUtilities.invokeLater {
+                        onComplete(destFolder.absolutePath)
+                    }
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
