@@ -58,6 +58,7 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
 
         // copy textures
         if (textureManager.allTexturesLoaded()) {
+            textureManager.dumpTextures(File(AppConstants.TEXTURES_DIRECTORY))
             copyTextures(outDir)
         }
     }

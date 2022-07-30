@@ -23,7 +23,6 @@ package controllers.worldRenderer
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-import AppConstants
 import cache.definitions.TextureDefinition
 import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
@@ -103,15 +102,14 @@ class TextureManager constructor(
         var cnt = 0
         for (textureId in textures.indices) {
             val texture: TextureDefinition = textures[textureId] ?: continue
-            val srcPixels: IntArray = textureLoader.get(textureId)?.pixels ?: continue // this can't happen
             ++cnt
-            if (srcPixels.size != TEXTURE_SIZE * TEXTURE_SIZE) {
+            if (texture.pixels.size != TEXTURE_SIZE * TEXTURE_SIZE) {
                 // The texture storage is 128x128 bytes, and will only work correctly with the
                 // 128x128 textures from high detail mode
                 continue
             }
             val pixels = convertPixels(
-                srcPixels,
+                texture.pixels,
                 TEXTURE_SIZE,
                 TEXTURE_SIZE,
                 TEXTURE_SIZE,
@@ -131,33 +129,39 @@ class TextureManager constructor(
                 GL.GL_UNSIGNED_BYTE,
                 pixelBuffer
             )
+        }
+    }
 
-            File(AppConstants.TEXTURES_DIRECTORY).mkdirs()
+    private fun dumpSingleTexture(file: File, textureDef: TextureDefinition) {
+        val srcPixels: IntArray = textureDef.pixels
 
-            val image = BufferedImage(TEXTURE_SIZE, TEXTURE_SIZE, IndexColorModel.BITMASK)
-            for (y in 0 until 128) {
-                for (x in 0 until 128) {
-                    var p = srcPixels[x + y * 128]
-                    val r = (p and 0xff000000L.toInt()).ushr(24)
-                    val g = (p and 0xff0000).ushr(16)
-                    val b = (p and 0xff00).ushr(8)
-                    val a = p and 0xff
+        val image = BufferedImage(TEXTURE_SIZE, TEXTURE_SIZE, IndexColorModel.BITMASK)
+        for (y in 0 until 128) {
+            for (x in 0 until 128) {
+                var p = srcPixels[x + y * 128]
+                val r = (p and 0xff000000L.toInt()).ushr(24)
+                val g = (p and 0xff0000).ushr(16)
+                val b = (p and 0xff00).ushr(8)
+                val a = p and 0xff
 
-                    var alpha = 0
-                    if (g + b + a > 0) {
-                        alpha = 0xff
-                    }
-
-                    p = (alpha shl 24) or (g shl 16) or (b shl 8) or a
-                    image.setRGB(x, y, p)
+                var alpha = 0
+                if (g + b + a > 0) {
+                    alpha = 0xff
                 }
-            }
 
-            ImageIO.write(
-                image,
-                "png",
-                File("${AppConstants.TEXTURES_DIRECTORY}/$textureId.png")
-            )
+                p = (alpha shl 24) or (g shl 16) or (b shl 8) or a
+                image.setRGB(x, y, p)
+            }
+        }
+
+        ImageIO.write(image, "png", file)
+    }
+
+    fun dumpTextures(baseDir: File) {
+        baseDir.mkdirs()
+
+        textureLoader.getAll().filterNotNull().forEach { texture ->
+            dumpSingleTexture(File(baseDir, "${texture.id}.png"), texture)
         }
     }
 
