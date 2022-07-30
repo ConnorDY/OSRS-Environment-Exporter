@@ -123,6 +123,5 @@ class RegionChooserController constructor(
 
     companion object {
         private const val INVALID_REGION_ID_TEXT = "Region Id must be between 4647 and 15522."
-        const val INVALID_RADIUS_TEXT = "Radius must be between 1 and 20."
     }
 }
