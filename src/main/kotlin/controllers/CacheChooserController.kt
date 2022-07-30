@@ -206,6 +206,9 @@ class CacheChooserController(
         }
 
         pack()
+
+        btnLaunch.requestFocus()
+        rootPane.defaultButton = btnLaunch
     }
 
     private fun launch(
