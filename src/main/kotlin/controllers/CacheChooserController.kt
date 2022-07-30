@@ -1,35 +1,18 @@
 package controllers
 
 import AppConstants
-import JfxApplication.Companion.injector
-import cache.CacheLibraryProvider
-import cache.XteaManagerProvider
-import com.google.inject.Inject
-import javafx.application.Platform
-import javafx.beans.value.ObservableValue
-import javafx.collections.FXCollections
-import javafx.collections.ObservableList
-import javafx.collections.transformation.FilteredList
-import javafx.fxml.FXML
-import javafx.fxml.FXMLLoader
-import javafx.scene.Parent
-import javafx.scene.Scene
-import javafx.scene.control.Button
-import javafx.scene.control.Label
-import javafx.scene.control.ListView
-import javafx.scene.control.TextField
-import javafx.scene.text.TextAlignment
-import javafx.stage.DirectoryChooser
-import javafx.stage.Stage
-import javafx.util.Callback
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import cache.XteaManager
+import com.displee.cache.CacheLibrary
 import models.Configuration
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
-import org.slf4j.LoggerFactory
+import ui.FilteredListModel
+import ui.listener.FilterTextListener
+import java.awt.Color
+import java.awt.Component
+import java.awt.Dimension
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
@@ -37,65 +20,241 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
 import javax.net.ssl.SSLHandshakeException
+import javax.swing.GroupLayout
+import javax.swing.GroupLayout.Alignment
+import javax.swing.JButton
+import javax.swing.JFileChooser
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JList
+import javax.swing.JScrollPane
+import javax.swing.JTextField
+import javax.swing.LayoutStyle.ComponentPlacement
+import javax.swing.ListSelectionModel
+import javax.swing.ScrollPaneConstants
+import javax.swing.SwingConstants
+import javax.swing.SwingUtilities
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
-class CacheChooserController @Inject constructor(
-    private val cacheLibraryProvider: CacheLibraryProvider,
-    private val xteaManagerProvider: XteaManagerProvider,
+class CacheChooserController(
+    title: String,
     private val configuration: Configuration
-) {
-    private val logger = LoggerFactory.getLogger(CacheChooserController::class.java)
+) : JFrame(title) {
+    var xteaAndCache: Pair<XteaManager, CacheLibrary>? = null
 
-    @FXML
-    private lateinit var listCaches: ListView<String>
-    private var entries: ObservableList<String> = FXCollections.observableArrayList()
+    init {
+        defaultCloseOperation = DISPOSE_ON_CLOSE
+        preferredSize = Dimension(750, 400)
+        val groups = GroupLayout(contentPane)
+        layout = groups
 
-    @FXML
-    private lateinit var btnChooseDirectory: Button
+        val cacheListModel = FilteredListModel<String> { it }
+        val txtFilter = JTextField().apply {
+            document.addDocumentListener(
+                FilterTextListener(
+                    this,
+                    cacheListModel
+                )
+            )
+            maximumSize = Dimension(maximumSize.width, preferredSize.height)
+        }
+        val btnDownload = JButton("Download").apply {
+            isEnabled = false
+        }
+        val listCaches = JList(cacheListModel).apply {
+            isVisible = false
+            selectionMode = ListSelectionModel.SINGLE_SELECTION
+            addListSelectionListener {
+                if (selectedIndex != -1) {
+                    btnDownload.isEnabled = true
+                }
+            }
+        }
+        val txtCacheLocation = JTextField().apply {
+            isEnabled = false
+            maximumSize = Dimension(maximumSize.width, preferredSize.height)
+        }
+        val lblStatusText = JLabel()
+        btnDownload.addActionListener {
+            btnDownload.isEnabled = false
+            listCaches.selectedValue?.let {
+                lblStatusText.text = "Downloading cache $it, please wait.."
+                txtCacheLocation.text = ""
 
-    @FXML
-    private lateinit var txtCacheLocation: TextField
+                downloadCache(it) { path ->
+                    lblStatusText.text = ""
+                    txtCacheLocation.text = path
+                    btnDownload.isEnabled = true
+                }
+            }
+        }
+        val lblErrorText = JLabel().apply {
+            foreground = Color.RED
+        }
+        val scrollErrorText = JScrollPane(lblErrorText)
 
-    @FXML
-    private lateinit var txtFilter: TextField
+        lblErrorText.text = "Test Error"
+        scrollErrorText.maximumSize = Dimension(
+            Int.MAX_VALUE,
+            lblErrorText.maximumSize.height + scrollErrorText.horizontalScrollBar.maximumSize.height
+        )
+        lblErrorText.text = ""
 
-    @FXML
-    private lateinit var btnDownload: Button
+        scrollErrorText.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER
+        val listCachesPlaceholder =
+            JLabel("No downloadable caches found.", SwingConstants.CENTER)
+        val btnLaunch = JButton("Launch").apply {
+            addActionListener {
+                launch(lblStatusText, txtCacheLocation, this)
+            }
+        }
+        txtCacheLocation.document.addDocumentListener(
+            CacheLocationUpdateListener(
+                txtCacheLocation,
+                btnLaunch,
+                lblErrorText
+            )
+        )
 
-    @FXML
-    private lateinit var lblStatusText: Label
-    @FXML
-    private lateinit var lblErrorText: Label
+        val lblRuneStats = JLabel("Caches available from RuneStats")
+        val lblFilter = JLabel("Filter:")
+        val listCachesPane = JScrollPane(listCaches)
 
-    private var selectedCache: String? = null
-
-    @FXML
-    private lateinit var btnLaunch: Button
-
-    @FXML
-    private fun initialize() {
-        val javaVer = System.getProperty("java.version")
-        logger.info("Java version: $javaVer")
-        val majorVer = javaVer.split(".")[0].toInt()
-        if (majorVer < 11) {
-            lblErrorText.isVisible = true
-            lblErrorText.text = "Java version detected ($javaVer) is too low, please update Java to at least version 11."
-            btnLaunch.isDisable = true
-            return
+        val lblCacheDirectory = JLabel("Cache Directory:")
+        val btnBrowse = JButton("Browse").apply {
+            addActionListener {
+                val initDir = File(AppConstants.CACHES_DIRECTORY)
+                initDir.mkdirs()
+                JFileChooser(initDir).apply {
+                    fileSelectionMode =
+                        JFileChooser.DIRECTORIES_ONLY
+                    showOpenDialog(this@CacheChooserController)
+                    selectedFile?.absolutePath?.let {
+                        txtCacheLocation.text = it
+                    }
+                }
+            }
         }
 
-        val listCachesPlaceholder = Label("No downloadable caches found.")
-        listCachesPlaceholder.isWrapText = true
-        listCachesPlaceholder.textAlignment = TextAlignment.CENTER
-        listCaches.placeholder = listCachesPlaceholder
+        groups.setHorizontalGroup(
+            groups.createSequentialGroup()
+                .addGroup(
+                    groups.createParallelGroup()
+                        .addComponent(lblRuneStats)
+                        .addGroup(
+                            groups.createSequentialGroup()
+                                .addComponent(lblFilter)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(txtFilter)
+                        )
+                        .addComponent(listCachesPane)
+                        .addComponent(
+                            btnDownload,
+                            0,
+                            GroupLayout.PREFERRED_SIZE,
+                            Int.MAX_VALUE
+                        )
+                )
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addGroup(
+                    groups.createParallelGroup()
+                        .addComponent(lblCacheDirectory)
+                        .addGroup(
+                            groups.createSequentialGroup()
+                                .addComponent(txtCacheLocation)
+                                .addComponent(btnBrowse)
+                        )
+                        .addComponent(scrollErrorText)
+                        .addComponent(btnLaunch, Alignment.CENTER)
+                        .addComponent(lblStatusText, Alignment.CENTER)
+                )
+        )
 
+        groups.setVerticalGroup(
+            groups.createParallelGroup()
+                .addGroup(
+                    groups.createSequentialGroup()
+                        .addComponent(lblRuneStats)
+                        .addGroup(
+                            groups.createParallelGroup()
+                                .addComponent(lblFilter, Alignment.CENTER)
+                                .addComponent(txtFilter, Alignment.CENTER)
+                        )
+                        .addComponent(listCachesPane)
+                        .addComponent(btnDownload)
+                )
+                .addGroup(
+                    groups.createSequentialGroup()
+                        .addGap(0, 0, Int.MAX_VALUE)
+                        .addComponent(lblCacheDirectory)
+                        .addGroup(
+                            groups.createParallelGroup()
+                                .addComponent(
+                                    txtCacheLocation,
+                                    Alignment.CENTER
+                                )
+                                .addComponent(btnBrowse, Alignment.CENTER)
+                        )
+                        .addComponent(scrollErrorText)
+                        .addComponent(btnLaunch)
+                        .addComponent(lblStatusText)
+                        .addGap(0, 0, Int.MAX_VALUE)
+                )
+        )
+
+        populateCachesList(cacheListModel, listCaches, listCachesPlaceholder)
+        txtCacheLocation.text = configuration.getProp("last-cache-dir")
+
+        if (configuration.getProp("debug") == "true") {
+            launch(lblStatusText, txtCacheLocation, btnLaunch)
+        }
+
+        pack()
+
+        btnLaunch.requestFocus()
+        rootPane.defaultButton = btnLaunch
+    }
+
+    private fun launch(
+        lblStatusText: JLabel,
+        txtCacheLocation: JTextField,
+        btnLaunch: JButton
+    ) {
+        lblStatusText.text =
+            "Launching map editor... Please wait... (this may take a while)"
+
+        Thread() {
+            configuration.saveProp("last-cache-dir", txtCacheLocation.text)
+            btnLaunch.isEnabled = false
+            // load and open main scene
+            xteaAndCache?.let {
+                SwingUtilities.invokeLater {
+                    MainController(
+                        "OSRS Environment Exporter",
+                        configuration,
+                        it.first,
+                        it.second,
+                    ).isVisible = true
+                    dispose()
+                }
+            }
+        }.start()
+    }
+
+    private fun populateCachesList(
+        cacheListModel: FilteredListModel<String>,
+        cacheList: Component,
+        listCachesPlaceholder: JLabel
+    ) {
         try {
             val doc = Jsoup.connect(RUNESTATS_URL).get()
-            entries.addAll(
-                doc.select("a")
-                    .map { col -> col.attr("href") }
-                    .filter { it.length > 10 } // get rid of ../ and ./types
-                    .reversed()
-            )
+            cacheListModel.backingList = doc.select("a")
+                .map { col -> col.attr("href") }
+                .filter { it.length > 10 } // get rid of ../ and ./types
+                .reversed()
+            cacheList.isVisible = true
+            listCachesPlaceholder.isVisible = false
         } catch (e: Exception) {
             e.printStackTrace()
             listCachesPlaceholder.text += "\n\n${e.message}"
@@ -103,114 +262,22 @@ class CacheChooserController @Inject constructor(
                 listCachesPlaceholder.text += "\n\nSSLHandshakeException is a known bug with certain Java versions, try updating."
             }
         }
-
-        val filterableEntries = FilteredList(entries)
-
-        listCaches.items = filterableEntries
-
-        listCaches.selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-            if (newValue != null) {
-                selectedCache = newValue
-                btnDownload.isDisable = false
-            }
-        }
-
-        txtFilter.textProperty()
-            .addListener { _: ObservableValue<out String>?, _: String?, newVal: String ->
-                filterableEntries.setPredicate { obj ->
-                    newVal.isEmpty() || obj.toString().toLowerCase().contains(newVal.toLowerCase())
-                }
-            }
-
-        btnDownload.setOnAction {
-            btnDownload.isDisable = true
-            downloadCache(selectedCache!!)
-        }
-
-        txtCacheLocation.textProperty().addListener { _, _, newVal ->
-            if (newVal != "") {
-                btnLaunch.isDisable = false
-                lblErrorText.isVisible = false
-                try {
-                    cacheLibraryProvider.setLibraryLocation("${txtCacheLocation.text}/cache")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    lblErrorText.text = e.message
-                    lblErrorText.isVisible = true
-                    btnLaunch.isDisable = true
-                }
-                try {
-                    xteaManagerProvider.setXteaLocation(txtCacheLocation.text)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    lblErrorText.text = e.message
-                    lblErrorText.isVisible = true
-                    btnLaunch.isDisable = true
-                }
-            } else {
-                btnLaunch.isDisable = true
-            }
-        }
-
-        btnChooseDirectory.setOnAction {
-            val directoryChooser = DirectoryChooser()
-            val initDir = File(AppConstants.CACHES_DIRECTORY)
-            initDir.mkdirs()
-            directoryChooser.initialDirectory = initDir
-            val f = directoryChooser.showDialog(null) ?: return@setOnAction
-            txtCacheLocation.text = f.absolutePath
-        }
-
-        btnLaunch.setOnAction {
-            lblStatusText.isVisible = true
-            lblStatusText.text = "Launching map editor... Please wait... (this may take a while)"
-
-            GlobalScope.launch {
-                configuration.saveProp("last-cache-dir", txtCacheLocation.text)
-                btnLaunch.isDisable = true
-                // load and open main scene
-                val fxmlLoader = FXMLLoader()
-                fxmlLoader.controllerFactory = Callback { type: Class<*>? ->
-                    injector.getInstance(type)
-                }
-                fxmlLoader.location = javaClass.getResource("/views/main.fxml")
-                val root = fxmlLoader.load<Parent>()
-                val controller = fxmlLoader.getController<MainController>()
-                val jfxScene = Scene(root)
-                Platform.runLater {
-                    val stage = Stage()
-                    stage.title = "OSRS Environment Exporter"
-                    stage.scene = jfxScene
-                    stage.sizeToScene()
-                    stage.x = -10.0
-                    stage.y = 0.0
-                    stage.setOnShown { controller.forceRefresh() }
-                    stage.show()
-
-                    (btnLaunch.scene.window as Stage).close()
-                }
-            }
-        }
-
-        txtCacheLocation.text = configuration.getProp("last-cache-dir")
-
-        if (configuration.getProp("debug") == "true") {
-            btnLaunch.fire()
-        }
     }
 
-    private fun downloadCache(cacheName: String) {
-        lblStatusText.isVisible = true
-        lblStatusText.text = "Downloading cache $cacheName please wait.."
-        txtCacheLocation.text = ""
+    private fun downloadCache(
+        cacheName: String,
+        onComplete: (String) -> Unit
+    ) {
         val destFolder = File("${AppConstants.CACHES_DIRECTORY}/${cacheName.removeSuffix(".tar.gz")}")
 
-        GlobalScope.launch {
+        Thread {
             try {
                 val conn = URL("$RUNESTATS_URL/$cacheName").openConnection()
                 conn.addRequestProperty("User-Agent", "taylors-map-editor")
                 BufferedInputStream(conn.getInputStream()).use { inputStream ->
-                    val tarIn = TarArchiveInputStream(GzipCompressorInputStream(inputStream))
+                    val tarIn = TarArchiveInputStream(
+                        GzipCompressorInputStream(inputStream)
+                    )
                     var tarEntry: TarArchiveEntry? = tarIn.nextTarEntry
                     while (tarEntry != null) {
                         val dest = File(destFolder, tarEntry.name)
@@ -219,10 +286,13 @@ class CacheChooserController @Inject constructor(
                         } else {
                             dest.createNewFile()
                             val btoRead = ByteArray(1024)
-                            val bout = BufferedOutputStream(FileOutputStream(dest))
+                            val bout =
+                                BufferedOutputStream(FileOutputStream(dest))
                             var len: Int
 
-                            while (tarIn.read(btoRead).also { len = it } != -1) {
+                            while (tarIn.read(btoRead)
+                                .also { len = it } != -1
+                            ) {
                                 bout.write(btoRead, 0, len)
                             }
 
@@ -231,12 +301,59 @@ class CacheChooserController @Inject constructor(
                         tarEntry = tarIn.nextTarEntry
                     }
                     tarIn.close()
-                    lblStatusText.isVisible = false
-                    txtCacheLocation.text = destFolder.absolutePath
+
+                    SwingUtilities.invokeLater {
+                        onComplete(destFolder.absolutePath)
+                    }
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
             }
+        }.start()
+    }
+
+    inner class CacheLocationUpdateListener(
+        private val txtCacheLocation: JTextField,
+        private val btnLaunch: JButton,
+        private val lblErrorText: JLabel
+    ) : DocumentListener {
+        override fun insertUpdate(p0: DocumentEvent?) {
+            update()
+        }
+
+        override fun removeUpdate(p0: DocumentEvent?) {
+            update()
+        }
+
+        override fun changedUpdate(p0: DocumentEvent?) {
+            update()
+        }
+
+        fun update() {
+            if (txtCacheLocation.text.isEmpty()) {
+                btnLaunch.isEnabled = false
+                return
+            }
+
+            btnLaunch.isEnabled = true
+            lblErrorText.text = ""
+            val cacheLibrary = try {
+                CacheLibrary("${txtCacheLocation.text}/cache")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                lblErrorText.text = e.message
+                btnLaunch.isEnabled = false
+                return
+            }
+            val xtea = try {
+                XteaManager(txtCacheLocation.text)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                lblErrorText.text = e.message
+                btnLaunch.isEnabled = false
+                return
+            }
+            xteaAndCache = Pair(xtea, cacheLibrary)
         }
     }
 

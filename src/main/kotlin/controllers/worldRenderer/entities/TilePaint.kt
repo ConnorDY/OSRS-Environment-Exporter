@@ -6,42 +6,18 @@ import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.helpers.ModelBuffers.Companion.FLAG_SCENE_BUFFER
 
 class TilePaint(
-    swHeight: Int,
-    seHeight: Int,
-    neHeight: Int,
-    nwHeight: Int,
-    swColor: Int,
-    seColor: Int,
-    neColor: Int,
-    nwColor: Int,
-    var texture: Int,
-    var rgb: Int
+    val swHeight: Int,
+    val seHeight: Int,
+    val neHeight: Int,
+    val nwHeight: Int,
+    val swColor: Int,
+    val seColor: Int,
+    val neColor: Int,
+    val nwColor: Int,
+    val texture: Int,
+    val rgb: Int,
 ) : Renderable {
-    var swHeight: Int = swHeight
-        private set
-
-    var seHeight: Int = seHeight
-        private set
-
-    var neHeight: Int = neHeight
-        private set
-
-    var nwHeight: Int = nwHeight
-        private set
-
-    var swColor: Int = swColor
-        private set
-
-    var seColor: Int = seColor
-        private set
-
-    var neColor: Int = neColor
-        private set
-
-    var nwColor: Int = nwColor
-        private set
-
-    var computeObj: ComputeObj = ComputeObj()
+    val computeObj = ComputeObj()
 
     override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
         val x: Int = sceneX * Constants.LOCAL_TILE_SIZE

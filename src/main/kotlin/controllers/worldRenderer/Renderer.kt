@@ -1,11 +1,8 @@
 package controllers.worldRenderer
 
 import cache.LocationType
-import com.google.inject.Inject
 import com.jogamp.newt.NewtFactory
-import com.jogamp.newt.event.WindowAdapter
-import com.jogamp.newt.event.WindowEvent
-import com.jogamp.newt.javafx.NewtCanvasJFX
+import com.jogamp.newt.awt.NewtCanvasAWT
 import com.jogamp.newt.opengl.GLWindow
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
@@ -36,19 +33,19 @@ import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
-import javafx.scene.Group
 import models.DebugModel
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
 import org.slf4j.LoggerFactory
+import java.awt.Dimension
 import java.awt.event.ActionListener
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
-class Renderer @Inject constructor(
+class Renderer constructor(
     private val camera: Camera,
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
@@ -106,10 +103,7 @@ class Renderer @Inject constructor(
 
     private lateinit var modelBuffers: ModelBuffers
 
-    var z0ChkBtnSelected = true
-    var z1ChkBtnSelected = true
-    var z2ChkBtnSelected = true
-    var z3ChkBtnSelected = true
+    var zLevelsSelected = Array(REGION_HEIGHT) { true }
 
     // Uniforms
     private var uniDrawDistance = 0
@@ -138,17 +132,12 @@ class Renderer @Inject constructor(
     private var lastFrameTime: Long = 0
     private var deltaTimeTarget = 0
 
-    fun reposResize(x: Int, y: Int, width: Int, height: Int) {
-        window.setPosition(x, y)
-        window.setSize(width, height)
-    }
-
     // -Dnewt.verbose=true
     // -Dnewt.debug=true
     lateinit var window: GLWindow
     lateinit var animator: Animator
-    lateinit var glCanvas: NewtCanvasJFX
-    fun initCanvas(group: Group) {
+    lateinit var glCanvas: NewtCanvasAWT
+    fun initCanvas(): NewtCanvasAWT {
         // center camera in viewport
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
@@ -168,7 +157,7 @@ class Renderer @Inject constructor(
 
         val jfxNewtDisplay = NewtFactory.createDisplay(null, false)
         val screen = NewtFactory.createScreen(jfxNewtDisplay, 0)
-        val glProfile = GLProfile.get(GLProfile.GL4)
+        val glProfile = GLProfile.getMaxProgrammableCore(true)
         val glCaps = GLCapabilities(glProfile)
         glCaps.alphaBits = 8
 
@@ -178,30 +167,12 @@ class Renderer @Inject constructor(
         window.addMouseListener(inputHandler)
         inputHandler.renderer = this
 
-        glCanvas = NewtCanvasJFX(window)
-        glCanvas.width = canvasWidth.toDouble()
-        glCanvas.height = canvasHeight.toDouble()
+        glCanvas = NewtCanvasAWT(window)
+        glCanvas.size = Dimension(canvasWidth, canvasHeight)
 
         animator = Animator(window)
         animator.setUpdateFPSFrames(3, null)
         animator.start()
-
-        // Begin bad hack to fix GLWindow not releasing focus properly //
-        window.addWindowListener(object : WindowAdapter() {
-            override fun windowGainedFocus(e: WindowEvent) {
-                // when heavyweight window gains focus, also tell javafx to give focus to glCanvas
-                glCanvas.requestFocus()
-            }
-        })
-        glCanvas.focusedProperty().addListener { _, _, newValue ->
-            if (!newValue) {
-                window.isVisible = false
-                window.isVisible = true
-            }
-        }
-        // End bad hack //
-
-        group.children.add(glCanvas)
 
         lastCanvasHeight = -1
         lastCanvasWidth = lastCanvasHeight
@@ -220,6 +191,12 @@ class Renderer @Inject constructor(
                 camera.cameraZ = -2500
             }
         )
+
+        return glCanvas
+    }
+
+    fun stop() {
+        animator.stop()
     }
 
     fun loadScene() {
@@ -283,6 +260,7 @@ class Renderer @Inject constructor(
 
     var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
+    private var lastUpdate = System.nanoTime()
 
     override fun display(drawable: GLAutoDrawable?) {
         debugModel.fps.set("%.0f".format(animator.lastFPS))
@@ -293,7 +271,12 @@ class Renderer @Inject constructor(
 
         sceneUploader.resetOffsets() // to reuse uploadModel function
 
+        val thisUpdate = System.nanoTime()
+        val deltaTime = (thisUpdate - lastUpdate).toDouble() / 1_000_000
+        lastUpdate = thisUpdate
+
         redrawTiles()
+        inputHandler.tick(deltaTime)
         handleHover()
 
         if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {
@@ -564,12 +547,9 @@ class Renderer @Inject constructor(
     private fun drawTiles() {
         modelBuffers.clear()
         modelBuffers.targetBufferOffset = 0
-        for (z in 0 until REGION_HEIGHT) {
-            if ((z != 0 || z0ChkBtnSelected) &&
-                (z != 1 || z1ChkBtnSelected) &&
-                (z != 2 || z2ChkBtnSelected) &&
-                (z != 3 || z3ChkBtnSelected)
-            ) {
+
+        zLevelsSelected.forEachIndexed { z, visible ->
+            if (visible) {
                 for (x in 0 until scene.radius * REGION_SIZE) {
                     for (y in 0 until scene.radius * REGION_SIZE) {
                         scene.getTile(z, x, y)?.let { drawTile(it) }
@@ -650,7 +630,7 @@ class Renderer @Inject constructor(
     }
 
     fun exportScene() {
-        SceneExporter().exportSceneToFile(scene, this)
+        SceneExporter(textureManager).exportSceneToFile(scene, this)
     }
 
     private fun uploadScene() {
@@ -699,10 +679,16 @@ class Renderer @Inject constructor(
         val template = Template()
         template.addInclude(Shader::class.java)
 
-        glProgram = Shader.PROGRAM.compile(gl, template)
-        glComputeProgram = Shader.COMPUTE_PROGRAM.compile(gl, template)
-        glSmallComputeProgram = Shader.SMALL_COMPUTE_PROGRAM.compile(gl, template)
-        glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.compile(gl, template)
+        try {
+            glProgram = Shader.PROGRAM.compile(gl, template)
+            glComputeProgram = Shader.COMPUTE_PROGRAM.compile(gl, template)
+            glSmallComputeProgram = Shader.SMALL_COMPUTE_PROGRAM.compile(gl, template)
+            glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.compile(gl, template)
+        } catch (e: ShaderException) {
+            // This will likely destroy the renderer, but the rest of the program should
+            // still be usable.
+            e.printStackTrace()
+        }
 
         initUniforms()
     }

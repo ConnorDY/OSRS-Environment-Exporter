@@ -3,9 +3,8 @@ package cache.definitions.converters
 import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.loaders.ModelLoader
-import com.google.inject.Inject
 
-class ObjectToModelConverter @Inject constructor(
+class ObjectToModelConverter constructor(
     private val modelLoader: ModelLoader,
     private val litModelCache: HashMap<Long, ModelDefinition> = HashMap()
 ) {

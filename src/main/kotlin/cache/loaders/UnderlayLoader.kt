@@ -30,10 +30,9 @@ import cache.definitions.UnderlayDefinition
 import cache.utils.read24BitInt
 import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
-import com.google.inject.Inject
 import java.nio.ByteBuffer
 
-class UnderlayLoader @Inject constructor(
+class UnderlayLoader constructor(
     cacheLibrary: CacheLibrary,
     private val underlayDefinitionCache: HashMap<Int, UnderlayDefinition> = HashMap()
 ) {

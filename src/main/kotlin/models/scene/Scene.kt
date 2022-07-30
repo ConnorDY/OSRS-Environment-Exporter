@@ -1,6 +1,5 @@
 package models.scene
 
-import com.google.inject.Inject
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.util.function.Consumer
@@ -8,7 +7,7 @@ import java.util.function.Consumer
 const val REGION_SIZE = 64
 const val REGION_HEIGHT = 4
 
-class Scene @Inject constructor(
+class Scene constructor(
     private val sceneRegionBuilder: SceneRegionBuilder
 ) {
     private val logger = LoggerFactory.getLogger(Scene::class.java)

@@ -8,11 +8,10 @@ import cache.utils.readString
 import cache.utils.readUnsignedByte
 import cache.utils.readUnsignedShort
 import com.displee.cache.CacheLibrary
-import com.google.inject.Inject
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 
-class ObjectLoader @Inject constructor(
+class ObjectLoader(
     private val cacheLibrary: CacheLibrary,
     private val objectDefinitionCache: HashMap<Int, ObjectDefinition?> = HashMap()
 ) {

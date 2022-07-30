@@ -18,7 +18,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-class SceneExporter {
+class SceneExporter constructor(private val textureManager: TextureManager) {
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
     fun exportSceneToFile(scene: Scene, renderer: Renderer) {
@@ -41,13 +41,8 @@ class SceneExporter {
         for (rx in 0 until scene.radius) {
             for (ry in 0 until scene.radius) {
                 val region = scene.getRegion(rx, ry) ?: continue
-                for (z in 0 until 4) {
-                    if (
-                        (z != 0 || renderer.z0ChkBtnSelected) &&
-                        (z != 1 || renderer.z1ChkBtnSelected) &&
-                        (z != 2 || renderer.z2ChkBtnSelected) &&
-                        (z != 3 || renderer.z3ChkBtnSelected)
-                    ) {
+                renderer.zLevelsSelected.forEachIndexed { z, visible ->
+                    if (visible) {
                         for (x in 0 until 64) {
                             for (y in 0 until 64) {
                                 val tile = region.tiles[z][x][y] ?: continue
@@ -62,7 +57,10 @@ class SceneExporter {
         gltf.save(outDir)
 
         // copy textures
-        copyTextures(outDir)
+        if (textureManager.allTexturesLoaded()) {
+            textureManager.dumpTextures(File(AppConstants.TEXTURES_DIRECTORY))
+            copyTextures(outDir)
+        }
     }
 
     private fun glTF.getMaterialBuffersAndAddTexture(textureId: Int): MaterialBuffers {
@@ -89,25 +87,35 @@ class SceneExporter {
     }
 
     private fun upload(gltf: glTF, tile: SceneTile) {
-        tile.tilePaint?.let { upload(gltf, it) }
-        tile.tileModel?.let { upload(gltf, it) }
+        val x = tile.x
+        val y = tile.y
+        tile.tilePaint?.let { upload(gltf, it, x, y, 0) }
+        tile.tileModel?.let { upload(gltf, it, x, y, 0) }
 
-        uploadIfStatic(gltf, tile.wall?.entity)
-        uploadIfStatic(gltf, tile.wall?.entity2)
+        tile.wall?.let { wall ->
+            uploadIfStatic(gltf, wall.entity, x, y, wall.entity.height)
+            wall.entity2?.let {
+                uploadIfStatic(gltf, it, x, y, it.height)
+            }
+        }
 
-        uploadIfStatic(gltf, tile.wallDecoration?.entity)
-        uploadIfStatic(gltf, tile.floorDecoration?.entity)
+        tile.floorDecoration?.entity?.let {
+            uploadIfStatic(gltf, it, x, y, it.height)
+        }
+        tile.wallDecoration?.entity?.let {
+            uploadIfStatic(gltf, it, x, y, it.height)
+        }
 
         tile.gameObjects.map { it.entity }.forEach {
-            uploadIfStatic(gltf, it)
+            uploadIfStatic(gltf, it, x, y, it.height)
         }
     }
 
-    private fun uploadIfStatic(gltf: glTF, entity: Entity?) {
-        if (entity is StaticObject) uploadModel(gltf, entity)
+    private fun uploadIfStatic(gltf: glTF, entity: Entity?, tileX: Int, tileY: Int, height: Int) {
+        if (entity is StaticObject) uploadModel(gltf, entity, tileX, tileY, height)
     }
 
-    private fun upload(gltf: glTF, tile: TilePaint) {
+    private fun upload(gltf: glTF, tile: TilePaint, tileX: Int, tileY: Int, height: Int) {
         val swHeight = tile.swHeight
         val seHeight = tile.seHeight
         val neHeight = tile.neHeight
@@ -130,47 +138,49 @@ class SceneExporter {
 
             val materialBuffer = gltf.getMaterialBuffersAndAddTexture(tile.texture)
 
+            val x = tileX * Constants.LOCAL_TILE_SIZE
+            val z = tileY * Constants.LOCAL_TILE_SIZE
             materialBuffer.addVertex(
-                (vertexAx + tile.computeObj.x).toFloat() / scale,
-                (neHeight + tile.computeObj.y).toFloat() / scale,
-                (vertexAy + tile.computeObj.z).toFloat() / scale,
+                (vertexAx + x).toFloat() / scale,
+                (neHeight + height).toFloat() / scale,
+                (vertexAy + z).toFloat() / scale,
                 1f, 1f, neColor
             )
             materialBuffer.addVertex(
-                (vertexBx + tile.computeObj.x).toFloat() / scale,
-                (nwHeight + tile.computeObj.y).toFloat() / scale,
-                (vertexBy + tile.computeObj.z).toFloat() / scale,
+                (vertexBx + x).toFloat() / scale,
+                (nwHeight + height).toFloat() / scale,
+                (vertexBy + z).toFloat() / scale,
                 0f, 1f, nwColor
             )
             materialBuffer.addVertex(
-                (vertexCx + tile.computeObj.x).toFloat() / scale,
-                (seHeight + tile.computeObj.y).toFloat() / scale,
-                (vertexCy + tile.computeObj.z).toFloat() / scale,
+                (vertexCx + x).toFloat() / scale,
+                (seHeight + height).toFloat() / scale,
+                (vertexCy + z).toFloat() / scale,
                 1f, 0f, seColor
             )
 
             materialBuffer.addVertex(
-                (vertexDx + tile.computeObj.x).toFloat() / scale,
-                (swHeight + tile.computeObj.y).toFloat() / scale,
-                (vertexDy + tile.computeObj.z).toFloat() / scale,
+                (vertexDx + x).toFloat() / scale,
+                (swHeight + height).toFloat() / scale,
+                (vertexDy + z).toFloat() / scale,
                 0f, 0f, swColor
             )
             materialBuffer.addVertex(
-                (vertexCx + tile.computeObj.x).toFloat() / scale,
-                (seHeight + tile.computeObj.y).toFloat() / scale,
-                (vertexCy + tile.computeObj.z).toFloat() / scale,
+                (vertexCx + x).toFloat() / scale,
+                (seHeight + height).toFloat() / scale,
+                (vertexCy + z).toFloat() / scale,
                 1f, 0f, seColor
             )
             materialBuffer.addVertex(
-                (vertexBx + tile.computeObj.x).toFloat() / scale,
-                (nwHeight + tile.computeObj.y).toFloat() / scale,
-                (vertexBy + tile.computeObj.z).toFloat() / scale,
+                (vertexBx + x).toFloat() / scale,
+                (nwHeight + height).toFloat() / scale,
+                (vertexBy + z).toFloat() / scale,
                 0f, 1f, nwColor
             )
         }
     }
 
-    private fun upload(gltf: glTF, tileModel: TileModel) {
+    private fun upload(gltf: glTF, tileModel: TileModel, tileX: Int, tileY: Int, height: Int) {
         val faceX = tileModel.faceX
         val faceY = tileModel.faceY
         val faceZ = tileModel.faceZ
@@ -185,6 +195,9 @@ class SceneExporter {
         val triangleTextures = tileModel.triangleTextureId
 
         val faceCount = faceX.size
+
+        val x = tileX * Constants.LOCAL_TILE_SIZE
+        val z = tileY * Constants.LOCAL_TILE_SIZE
 
         for (i in 0 until faceCount) {
             val triangleA = faceX[i]
@@ -207,25 +220,25 @@ class SceneExporter {
                 val materialBuffer = gltf.getMaterialBuffersAndAddTexture(textureId)
 
                 materialBuffer.addVertex(
-                    (vertexXA + tileModel.computeObj.x).toFloat() / scale,
-                    (vertexY[triangleA] + tileModel.computeObj.y).toFloat() / scale,
-                    (vertexZA + tileModel.computeObj.z).toFloat() / scale,
+                    (vertexXA + x).toFloat() / scale,
+                    (vertexY[triangleA] + height).toFloat() / scale,
+                    (vertexZA + z).toFloat() / scale,
                     vertexXA.toFloat() / 128.0f,
                     vertexZA.toFloat() / 128.0f,
                     colorA
                 )
                 materialBuffer.addVertex(
-                    (vertexXB + tileModel.computeObj.x).toFloat() / scale,
-                    (vertexY[triangleB] + tileModel.computeObj.y).toFloat() / scale,
-                    (vertexZB + tileModel.computeObj.z).toFloat() / scale,
+                    (vertexXB + x).toFloat() / scale,
+                    (vertexY[triangleB] + height).toFloat() / scale,
+                    (vertexZB + z).toFloat() / scale,
                     vertexXB.toFloat() / 128.0f,
                     vertexZB.toFloat() / 128.0f,
                     colorB
                 )
                 materialBuffer.addVertex(
-                    (vertexXC + tileModel.computeObj.x).toFloat() / scale,
-                    (vertexY[triangleC] + tileModel.computeObj.y).toFloat() / scale,
-                    (vertexZC + tileModel.computeObj.z).toFloat() / scale,
+                    (vertexXC + x).toFloat() / scale,
+                    (vertexY[triangleC] + height).toFloat() / scale,
+                    (vertexZC + z).toFloat() / scale,
                     vertexXC.toFloat() / 128.0f,
                     vertexZC.toFloat() / 128.0f,
                     colorC
@@ -234,16 +247,16 @@ class SceneExporter {
         }
     }
 
-    private fun uploadModel(gltf: glTF, entity: Entity) {
+    private fun uploadModel(gltf: glTF, entity: Entity, tileX: Int, tileY: Int, height: Int) {
         val model = entity.getModel()
         val triangleCount = model.modelDefinition.faceCount
 
         for (i in 0 until triangleCount) {
-            pushFace(gltf, model, i)
+            pushFace(gltf, model, i, tileX, tileY, height)
         }
     }
 
-    private fun pushFace(gltf: glTF, model: Model, face: Int) {
+    private fun pushFace(gltf: glTF, model: Model, face: Int, tileX: Int, tileY: Int, height: Int) {
         val modelDefinition = model.modelDefinition
 
         val vertexX = model.vertexPositionsX
@@ -262,13 +275,16 @@ class SceneExporter {
         val faceTextures = modelDefinition.faceTextures
         val facePriorities = modelDefinition.faceRenderPriorities
 
-        val triangleA = trianglesX!![face]
-        val triangleB = trianglesY!![face]
-        val triangleC = trianglesZ!![face]
+        val triangleA = trianglesX[face]
+        val triangleB = trianglesY[face]
+        val triangleC = trianglesZ[face]
 
-        val color1 = color1s!![face]
-        var color2 = color2s!![face]
-        var color3 = color3s!![face]
+        val x = tileX * Constants.LOCAL_TILE_SIZE + model.xOff
+        val z = tileY * Constants.LOCAL_TILE_SIZE + model.yOff
+
+        val color1 = color1s[face]
+        var color2 = color2s[face]
+        var color3 = color3s[face]
         var alpha = 0
 
         if (transparencies != null && (faceTextures == null || faceTextures[face].toInt() == -1)) {
@@ -305,25 +321,25 @@ class SceneExporter {
         }
 
         materialBuffer.addVertex(
-            (vertexX[triangleA] + model.computeObj.x).toFloat() / scale,
-            (vertexY[triangleA] + model.computeObj.y).toFloat() / scale,
-            (vertexZ[triangleA] + model.computeObj.z).toFloat() / scale,
+            (vertexX[triangleA] + x).toFloat() / scale,
+            (vertexY[triangleA] + height).toFloat() / scale,
+            (vertexZ[triangleA] + z).toFloat() / scale,
             uf[0], vf[0],
             alpha or priority or color1
         )
 
         materialBuffer.addVertex(
-            (vertexX[triangleB] + model.computeObj.x).toFloat() / scale,
-            (vertexY[triangleB] + model.computeObj.y).toFloat() / scale,
-            (vertexZ[triangleB] + model.computeObj.z).toFloat() / scale,
+            (vertexX[triangleB] + x).toFloat() / scale,
+            (vertexY[triangleB] + height).toFloat() / scale,
+            (vertexZ[triangleB] + z).toFloat() / scale,
             uf[1], vf[1],
             alpha or priority or color2
         )
 
         materialBuffer.addVertex(
-            (vertexX[triangleC] + model.computeObj.x).toFloat() / scale,
-            (vertexY[triangleC] + model.computeObj.y).toFloat() / scale,
-            (vertexZ[triangleC] + model.computeObj.z).toFloat() / scale,
+            (vertexX[triangleC] + x).toFloat() / scale,
+            (vertexY[triangleC] + height).toFloat() / scale,
+            (vertexZ[triangleC] + z).toFloat() / scale,
             uf[2], vf[2],
             alpha or priority or color3
         )

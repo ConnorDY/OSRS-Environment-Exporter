@@ -34,16 +34,19 @@ class Camera {
 
     fun addPitch(amt: Int) {
         var newPitch = pitch + amt
-        // If camera goes below 434 tile hover stops working
-        // straight down is 434, straight up is 1500 roughly
-        if (newPitch > 434 && newPitch < 1500) {
-            return
+        // straight down is 0x200, straight up is 0x600 roughly
+        if (newPitch > 0x200 && newPitch < 0x600) {
+            if (amt > 0) {
+                newPitch = 0x200
+            } else {
+                newPitch = 0x600
+            }
         }
         if (newPitch < 0) {
-            newPitch = 2047
+            newPitch += 2048
         }
         if (newPitch > 2047) {
-            newPitch = 0
+            newPitch -= 2048
         }
         pitch = newPitch
     }

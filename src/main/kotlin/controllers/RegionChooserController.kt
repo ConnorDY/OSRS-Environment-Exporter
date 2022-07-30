@@ -1,87 +1,127 @@
 package controllers
 
-import com.google.inject.Inject
-import javafx.fxml.FXML
-import javafx.scene.control.Button
-import javafx.scene.control.Hyperlink
-import javafx.scene.control.Label
-import javafx.scene.control.TextField
-import javafx.scene.control.TextFormatter
-import javafx.scene.input.KeyCode
-import javafx.scene.input.KeyEvent
-import javafx.stage.Stage
-import models.scene.Scene
-import utils.LinkHandler
-import java.util.regex.Pattern
+import ui.JLinkLabel
+import ui.NumericTextField
+import ui.PlaceholderTextField
+import java.awt.Color
+import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagConstraints.CENTER
+import java.awt.GridBagConstraints.HORIZONTAL
+import java.awt.GridBagConstraints.LINE_START
+import java.awt.GridBagConstraints.NONE
+import java.awt.GridBagConstraints.PAGE_END
+import java.awt.GridBagConstraints.PAGE_START
+import java.awt.GridBagConstraints.REMAINDER
+import java.awt.GridBagLayout
+import java.awt.Insets
+import javax.swing.JButton
+import javax.swing.JDialog
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JPanel
 
-class RegionChooserController @Inject constructor(
-    private val scene: Scene
-) {
-    @FXML
-    private lateinit var txtRegionId: TextField
+class RegionChooserController constructor(
+    owner: JFrame,
+    title: String,
+    private var loadRegionCallback: (Int, Int) -> Unit
+) : JDialog(owner, title) {
+    private val errorMessageLabel: JLabel
 
-    @FXML
-    private lateinit var txtRadius: TextField
+    init {
+        defaultCloseOperation = DISPOSE_ON_CLOSE
+        preferredSize = Dimension(500, 250)
+        layout = GridBagLayout()
 
-    @FXML
-    private lateinit var btnLoad: Button
-
-    @FXML
-    private lateinit var lblErrorText: Label
-
-    @FXML
-    private lateinit var linkMap: Hyperlink
-
-    @FXML
-    private fun initialize() {
-        // limit Region ID input to 5 digits
-        val regionIDPattern = Pattern.compile("\\d{0,5}")
-        val regionIDFormatter = TextFormatter<String> { change ->
-            if (regionIDPattern.matcher(change.controlNewText).matches()) change else null
+        val regionIdField = PlaceholderTextField("", "10038").apply {
+            maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
-        txtRegionId.textFormatter = regionIDFormatter
-
-        // limit Radius input to 2 digits
-        val radiusPattern = Pattern.compile("\\d{0,2}")
-        val radiusFormatter = TextFormatter<String> { change ->
-            if (radiusPattern.matcher(change.controlNewText).matches()) change else null
+        val radiusField = NumericTextField.create(1, 1, 20).apply {
+            maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
-        txtRadius.textFormatter = radiusFormatter
+        errorMessageLabel = JLabel().apply {
+            foreground = Color.RED
+        }
 
-        // Load Region handler
-        btnLoad.setOnAction {
-            lblErrorText.isVisible = false
-            val regionId: Int? = txtRegionId.text.toIntOrNull()
-            if (regionId == null || (regionId < 4647 || regionId > 15522)) {
-                lblErrorText.text = INVALID_REGION_ID_TEXT
-                lblErrorText.isVisible = true
-                return@setOnAction
+        val lblExplv = JLabel("Visit Explv's OSRS map to find region ids.")
+        val lnkExplv = JLinkLabel("https://explv.github.io/")
+        val lblWarn = JLabel("Note: Higher radius will affect load time and FPS.")
+        val lblRegion = JLabel("Region ID:").apply {
+            displayedMnemonic = 'R'.code
+            labelFor = regionIdField
+        }
+        val lblRadius = JLabel("Radius:").apply {
+            displayedMnemonic = 'a'.code
+            labelFor = radiusField
+        }
+
+        val loadButton = JButton("Load Region").apply {
+            alignmentX = CENTER_ALIGNMENT
+            mnemonic = 'L'.code
+            addActionListener {
+                loadRegion(regionIdField.text, radiusField.value as Int)
             }
-
-            val radius: Int? = txtRadius.text.toIntOrNull()
-            if (radius == null || (radius < 1 || radius > 20)) {
-                lblErrorText.text = INVALID_RADIUS_TEXT
-                lblErrorText.isVisible = true
-                return@setOnAction
-            }
-            (btnLoad.scene.window as Stage).close()
-            scene.load(regionId, radius)
         }
 
-        // explv map link handler
-        linkMap.setOnAction {
-            LinkHandler(linkMap.text).openInBrowser()
+        val pnlExplv = JPanel().apply {
+            layout = FlowLayout()
+            add(lblExplv)
+            add(lnkExplv)
         }
+
+        val inset = Insets(4, 4, 4, 4)
+        add(
+            pnlExplv,
+            GridBagConstraints(0, 0, REMAINDER, 1, 1.0, 1.0, PAGE_END, NONE, inset, 0, 0)
+        )
+        add(
+            lblWarn,
+            GridBagConstraints(0, 1, REMAINDER, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
+        )
+        add(
+            lblRegion,
+            GridBagConstraints(0, 2, 1, 1, 0.0, 0.0, LINE_START, NONE, inset, 0, 0)
+        )
+        add(
+            lblRadius,
+            GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, LINE_START, NONE, inset, 0, 0)
+        )
+        add(
+            regionIdField,
+            GridBagConstraints(1, 2, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+        )
+        add(
+            radiusField,
+            GridBagConstraints(1, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+        )
+        add(
+            loadButton,
+            GridBagConstraints(0, 4, REMAINDER, 1, 0.0, 0.0, CENTER, NONE, inset, 0, 0)
+        )
+        add(
+            errorMessageLabel,
+            GridBagConstraints(0, 5, REMAINDER, 1, 1.0, 1.0, PAGE_START, NONE, inset, 0, 0)
+        )
+
+        rootPane.defaultButton = loadButton
+        pack()
     }
 
-    @FXML
-    private fun handleKeyPressed(e: KeyEvent) {
-        if (e.code == KeyCode.ENTER)
-            btnLoad.fire()
+    private fun loadRegion(regionIdStr: String, radius: Int) {
+        errorMessageLabel.text = ""
+
+        val regionId: Int? = regionIdStr.toIntOrNull()
+        if (regionId == null || (regionId < 4647 || regionId > 15522)) {
+            errorMessageLabel.text = INVALID_REGION_ID_TEXT
+            return
+        }
+
+        dispose()
+        loadRegionCallback(regionId, radius)
     }
 
     companion object {
         private const val INVALID_REGION_ID_TEXT = "Region Id must be between 4647 and 15522."
-        const val INVALID_RADIUS_TEXT = "Radius must be between 1 and 20."
     }
 }

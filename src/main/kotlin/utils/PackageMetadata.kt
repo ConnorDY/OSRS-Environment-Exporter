@@ -1,6 +1,6 @@
 package utils
 
-class PackageMetadata {
+object PackageMetadata {
     private fun getPackageInfo(f: (Package) -> String?): String? =
         try {
             javaClass.`package`?.let(f)

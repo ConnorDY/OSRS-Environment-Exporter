@@ -6,10 +6,9 @@ import cache.definitions.OverlayDefinition
 import cache.utils.read24BitInt
 import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
-import com.google.inject.Inject
 import java.nio.ByteBuffer
 
-class OverlayLoader @Inject constructor(
+class OverlayLoader constructor(
     cacheLibrary: CacheLibrary,
     private val overlayDefinitionCache: HashMap<Int, OverlayDefinition> = HashMap()
 ) {

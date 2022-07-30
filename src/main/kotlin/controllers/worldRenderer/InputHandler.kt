@@ -4,12 +4,9 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.newt.event.KeyListener
 import com.jogamp.newt.event.MouseEvent
 import com.jogamp.newt.event.MouseListener
-import javafx.animation.AnimationTimer
-import javafx.scene.input.KeyCode
 import models.scene.Scene
-import javax.inject.Inject
 
-class InputHandler @Inject internal constructor(
+class InputHandler internal constructor(
     private val camera: Camera,
     private val scene: Scene
 ) : KeyListener, MouseListener {
@@ -26,7 +23,7 @@ class InputHandler @Inject internal constructor(
     var mouseX = 0
     var mouseY = 0
 
-    private fun handleKeys(dt: Double) {
+    fun tick(dt: Double) {
         if (dt > 1000) { // big lag spike, don't send the user flying
             return
         }
@@ -70,19 +67,24 @@ class InputHandler @Inject internal constructor(
         }
     }
 
-    fun isKeyDown(keyCode: KeyCode): Boolean {
-        return keys[keyCode.code - 1]
+    fun isKeyDown(keyCode: Int): Boolean {
+        if (keyCode < 0 || keyCode >= keys.size) return false
+        return keys[keyCode]
     }
 
     override fun keyPressed(e: KeyEvent) {
-        keys[e.keyCode.toInt()] = true
+        val code = e.keyCode.toInt()
+        if (code >= 0 && code < keys.size)
+            keys[code] = true
     }
 
     override fun keyReleased(e: KeyEvent) {
         if (e.isAutoRepeat) {
             return
         }
-        keys[e.keyCode.toInt()] = false
+        val code = e.keyCode.toInt()
+        if (code >= 0 && code < keys.size)
+            keys[code] = false
     }
 
     private fun handleCameraDrag(e: MouseEvent) {
@@ -138,15 +140,4 @@ class InputHandler @Inject internal constructor(
     }
 
     override fun mouseWheelMoved(e: MouseEvent) {}
-
-    init {
-        object : AnimationTimer() {
-            var lastNanoTime = System.nanoTime()
-            override fun handle(now: Long) {
-                val dt = (now - lastNanoTime) / 1000000.toDouble()
-                lastNanoTime = now
-                handleKeys(dt)
-            }
-        }.start()
-    }
 }
