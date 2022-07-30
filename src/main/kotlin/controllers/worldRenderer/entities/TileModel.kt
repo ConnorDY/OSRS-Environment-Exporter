@@ -25,8 +25,7 @@ class TileModel(
     public val underlayRgb: Int = 0,
     public val overlayRgb: Int = 0
 ) : Renderable {
-
-    var computeObj: ComputeObj = ComputeObj()
+    internal val computeObj = ComputeObj()
 
     lateinit var vertexX: IntArray
     lateinit var vertexY: IntArray

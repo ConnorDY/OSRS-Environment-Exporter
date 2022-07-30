@@ -22,11 +22,12 @@ class Model(
     var yOff: Int = 0,
     var xOff: Int = 0,
     var height: Int = 0,
-    val computeObj: ComputeObj = ComputeObj(),
     val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors2: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
 ) : Renderable {
+    internal val computeObj = ComputeObj()
+
     val vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
     val vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
     val vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ.clone()

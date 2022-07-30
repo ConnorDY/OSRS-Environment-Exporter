@@ -17,7 +17,7 @@ class TilePaint(
     val texture: Int,
     val rgb: Int,
 ) : Renderable {
-    val computeObj = ComputeObj()
+    internal val computeObj = ComputeObj()
 
     override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
         val x: Int = sceneX * Constants.LOCAL_TILE_SIZE
