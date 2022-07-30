@@ -16,7 +16,6 @@ import com.jogamp.opengl.GLEventListener
 import com.jogamp.opengl.GLProfile
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
-import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
@@ -208,26 +207,6 @@ class Renderer constructor(
         scene.load(15256, 1)
     }
 
-    private val redrawList: HashSet<SceneTile> = HashSet()
-    private val modelRedrawList: HashSet<Entity> = HashSet()
-
-    private fun redrawTiles() {
-        for (tile in redrawList) {
-            sceneUploader.upload(tile, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
-            tile.tilePaint?.recompute(modelBuffers)
-            tile.tileModel?.recompute(modelBuffers)
-        }
-        redrawList.clear()
-
-        for (e in modelRedrawList) {
-            e.getModel().recompute(modelBuffers, e.height)
-        }
-        modelRedrawList.clear()
-    }
-
-    private fun handleHover() {
-    }
-
     override fun init(drawable: GLAutoDrawable) {
         try {
             gl = drawable.gl.gL4
@@ -275,9 +254,7 @@ class Renderer constructor(
         val deltaTime = (thisUpdate - lastUpdate).toDouble() / 1_000_000
         lastUpdate = thisUpdate
 
-        redrawTiles()
         inputHandler.tick(deltaTime)
-        handleHover()
 
         if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {
             createProjectionMatrix(

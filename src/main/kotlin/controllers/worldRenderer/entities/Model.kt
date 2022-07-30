@@ -61,26 +61,6 @@ class Model(
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
-    fun recompute(modelBuffers: ModelBuffers, height: Int) {
-        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
-        b.ensureCapacity(13)
-//        computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER or (radius shl 12) or orientationType.id
-        computeObj.y = height
-
-        b.buffer.put(computeObj.toArray())
-    }
-
-    override fun clearDraw(modelBuffers: ModelBuffers) {
-        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
-        b.ensureCapacity(13)
-
-        // FIXME: hack to make it look like the object has been removed..
-        computeObj.x = Int.MAX_VALUE
-        computeObj.y = Int.MAX_VALUE
-        computeObj.z = Int.MAX_VALUE
-        b.buffer.put(computeObj.toArray())
-    }
-
     private fun calculateBoundsCylinder() {
         if (boundsType != 1) {
             boundsType = 1

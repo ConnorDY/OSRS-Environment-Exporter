@@ -67,19 +67,6 @@ class TileModel(
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
-    override fun clearDraw(modelBuffers: ModelBuffers) {
-//        TODO("Not yet implemented")
-    }
-
-    fun recompute(modelBuffers: ModelBuffers) {
-        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
-        modelBuffers.incUnorderedModels()
-        b.ensureCapacity(13)
-        computeObj.flags = 0
-
-        b.buffer.put(computeObj.toArray())
-    }
-
     init {
         this.calculateVertexs()
     }
