@@ -82,7 +82,7 @@ class TextureManager constructor(
      * @param textureProvider
      * @return
      */
-    private fun allTexturesLoaded(): Boolean {
+    fun allTexturesLoaded(): Boolean {
         val textures: Array<TextureDefinition?> = textureLoader.getAll()
         if (textures.isEmpty()) {
             return false

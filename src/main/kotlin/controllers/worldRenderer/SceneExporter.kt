@@ -18,7 +18,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-class SceneExporter {
+class SceneExporter constructor(private val textureManager: TextureManager) {
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
     fun exportSceneToFile(scene: Scene, renderer: Renderer) {
@@ -57,7 +57,9 @@ class SceneExporter {
         gltf.save(outDir)
 
         // copy textures
-        copyTextures(outDir)
+        if (textureManager.allTexturesLoaded()) {
+            copyTextures(outDir)
+        }
     }
 
     private fun glTF.getMaterialBuffersAndAddTexture(textureId: Int): MaterialBuffers {

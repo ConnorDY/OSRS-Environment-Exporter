@@ -630,7 +630,7 @@ class Renderer constructor(
     }
 
     fun exportScene() {
-        SceneExporter().exportSceneToFile(scene, this)
+        SceneExporter(textureManager).exportSceneToFile(scene, this)
     }
 
     private fun uploadScene() {
