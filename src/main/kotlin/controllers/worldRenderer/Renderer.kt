@@ -679,10 +679,16 @@ class Renderer constructor(
         val template = Template()
         template.addInclude(Shader::class.java)
 
-        glProgram = Shader.PROGRAM.compile(gl, template)
-        glComputeProgram = Shader.COMPUTE_PROGRAM.compile(gl, template)
-        glSmallComputeProgram = Shader.SMALL_COMPUTE_PROGRAM.compile(gl, template)
-        glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.compile(gl, template)
+        try {
+            glProgram = Shader.PROGRAM.compile(gl, template)
+            glComputeProgram = Shader.COMPUTE_PROGRAM.compile(gl, template)
+            glSmallComputeProgram = Shader.SMALL_COMPUTE_PROGRAM.compile(gl, template)
+            glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.compile(gl, template)
+        } catch (e: ShaderException) {
+            // This will likely destroy the renderer, but the rest of the program should
+            // still be usable.
+            e.printStackTrace()
+        }
 
         initUniforms()
     }
