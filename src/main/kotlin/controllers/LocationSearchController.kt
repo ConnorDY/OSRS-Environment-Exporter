@@ -5,6 +5,7 @@ import models.locations.Location
 import models.locations.Locations
 import models.scene.Scene
 import ui.FilteredListModel
+import ui.NumericTextField
 import ui.PlaceholderTextField
 import ui.listener.FilterTextListener
 import utils.Utils
@@ -30,7 +31,6 @@ import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.JScrollPane
-import javax.swing.JTextField
 import javax.swing.UIManager
 
 class LocationSearchController constructor(
@@ -50,7 +50,7 @@ class LocationSearchController constructor(
         }
         listLocations.cellRenderer = LocationCell()
         val txtSearchQuery = PlaceholderTextField("", "Lumbridge")
-        val txtRadius = JTextField("1")
+        val txtRadius = NumericTextField.create(1, 1, 20)
         val lblErrorText = JLabel("")
         lblErrorText.foreground = Color.RED
         val btnLoad = JButton("Load Location")
@@ -105,14 +105,8 @@ class LocationSearchController constructor(
             val selectedLocation = listLocations.selectedValue ?: return@addActionListener
             val regionId = regionIdForLocation(selectedLocation)
 
-            val radius: Int? = txtRadius.text.toIntOrNull()
-            if (radius == null || (radius < 1 || radius > 20)) {
-                lblErrorText.text = RegionChooserController.INVALID_RADIUS_TEXT
-                lblErrorText.isVisible = true
-                return@addActionListener
-            }
             dispose()
-            scene.load(regionId, radius)
+            scene.load(regionId, txtRadius.value as Int)
         }
 
         rootPane.defaultButton = btnLoad
@@ -128,8 +122,7 @@ class LocationSearchController constructor(
                 Locations::class.java
             )
 
-        val locations1 = locations.locations
-        return locations1
+        return locations.locations
     }
 
     private class LocationCell : DefaultListCellRenderer() {

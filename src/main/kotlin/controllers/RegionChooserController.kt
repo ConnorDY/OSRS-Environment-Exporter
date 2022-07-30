@@ -1,6 +1,7 @@
 package controllers
 
 import ui.JLinkLabel
+import ui.NumericTextField
 import ui.PlaceholderTextField
 import java.awt.Color
 import java.awt.Dimension
@@ -36,7 +37,7 @@ class RegionChooserController constructor(
         val regionIdField = PlaceholderTextField("", "10038").apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
-        val radiusField = PlaceholderTextField("1", "1").apply {
+        val radiusField = NumericTextField.create(1, 1, 20).apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
         errorMessageLabel = JLabel().apply {
@@ -59,7 +60,7 @@ class RegionChooserController constructor(
             alignmentX = CENTER_ALIGNMENT
             mnemonic = 'L'.code
             addActionListener {
-                loadRegion(regionIdField.text, radiusField.text)
+                loadRegion(regionIdField.text, radiusField.value as Int)
             }
         }
 
@@ -107,7 +108,7 @@ class RegionChooserController constructor(
         pack()
     }
 
-    private fun loadRegion(regionIdStr: String, radiusStr: String) {
+    private fun loadRegion(regionIdStr: String, radius: Int) {
         errorMessageLabel.text = ""
 
         val regionId: Int? = regionIdStr.toIntOrNull()
@@ -116,11 +117,6 @@ class RegionChooserController constructor(
             return
         }
 
-        val radius: Int? = radiusStr.toIntOrNull()
-        if (radius == null || radius !in 1..20) {
-            errorMessageLabel.text = INVALID_RADIUS_TEXT
-            return
-        }
         dispose()
         loadRegionCallback(regionId, radius)
     }

@@ -2,6 +2,7 @@ package controllers
 
 import controllers.worldRenderer.Renderer
 import models.Configuration
+import ui.NumericTextField
 import java.awt.GridBagConstraints
 import java.awt.GridBagConstraints.LINE_END
 import java.awt.GridBagConstraints.LINE_START
@@ -13,7 +14,6 @@ import javax.swing.JButton
 import javax.swing.JCheckBox
 import javax.swing.JDialog
 import javax.swing.JFrame
-import javax.swing.JTextField
 
 class SettingsController(
     owner: JFrame,
@@ -25,7 +25,7 @@ class SettingsController(
         layout = GridBagLayout()
 
         val chkBoxLimitFps = JCheckBox("Limit FPS")
-        val txtFpsCap = JTextField("60")
+        val txtFpsCap = NumericTextField.create(60, 1, 9999)
         val btnSave = JButton("Save Preferences")
 
         val inset = Insets(4, 4, 4, 4)
@@ -46,7 +46,7 @@ class SettingsController(
         val fpsCap = configuration.getProp(FPS_CAP_PROP).toIntOrNull()
 
         if (fpsCap != null) {
-            txtFpsCap.text = fpsCap.toString()
+            txtFpsCap.value = fpsCap
             chkBoxLimitFps.isSelected = true
         } else {
             txtFpsCap.isEnabled = false
