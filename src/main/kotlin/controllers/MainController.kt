@@ -11,6 +11,7 @@ import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
 import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
+import com.jogamp.opengl.GLException
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.InputHandler
 import controllers.worldRenderer.Renderer
@@ -150,7 +151,16 @@ class MainController constructor(
             }
         })
 
-        pack()
+        try {
+            pack()
+        } catch (e: GLException) {
+            e.printStackTrace()
+
+            // Hack: Remove the renderer and retry.
+            // Obviously this leaves the user with no visibility, but exiting is worse.
+            worldRendererController.isVisible = false
+            pack()
+        }
     }
 
     override fun setVisible(visible: Boolean) {
