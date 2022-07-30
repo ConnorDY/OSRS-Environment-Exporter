@@ -578,7 +578,7 @@ class Renderer constructor(
         }
 
         val floorDecorationEntity = tile.floorDecoration?.entity
-        floorDecorationEntity?.getModel()?.draw(
+        floorDecorationEntity?.model?.draw(
             modelBuffers,
             x,
             y,
@@ -587,12 +587,12 @@ class Renderer constructor(
 
         val wall = tile.wall
         if (wall != null) {
-            wall.entity.getModel().draw(modelBuffers, x, y, wall.entity.height, wall.type.id)
-            wall.entity2?.getModel()?.draw(modelBuffers, x, y, wall.entity2.height, wall.type.id)
+            wall.entity.model.draw(modelBuffers, x, y, wall.entity.height, wall.type.id)
+            wall.entity2?.model?.draw(modelBuffers, x, y, wall.entity2.height, wall.type.id)
         }
 
         val wallDecorationEntity = tile.wallDecoration?.entity
-        wallDecorationEntity?.getModel()?.draw(
+        wallDecorationEntity?.model?.draw(
             modelBuffers,
             x,
             y,
@@ -601,7 +601,7 @@ class Renderer constructor(
         )
 
         for (gameObject in tile.gameObjects) {
-            gameObject.entity.getModel()
+            gameObject.entity.model
                 .draw(modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
         }
     }
