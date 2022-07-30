@@ -158,7 +158,7 @@ class MainController constructor(
 
             // Hack: Remove the renderer and retry.
             // Obviously this leaves the user with no visibility, but exiting is worse.
-            worldRendererController.isVisible = false
+            remove(worldRendererController)
             pack()
         }
     }
