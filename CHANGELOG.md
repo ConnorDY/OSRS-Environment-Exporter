@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## 2.0.0
 
 ### :sparkles: Enhancements
 
@@ -36,6 +36,8 @@
 - Include Z-level in tile colour calculation – [752c66c](https://github.com/ConnorDY/OSRS-Environment-Exporter/commit/752c66c70f0ce6e7d2a2df9210e4a6d395740558) @ScoreUnder
 
 ### :wrench: Maintenance
+
+- Replaced JavaFX with Swing – [#52](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/52) @ScoreUnder
 
 - Added a [GitHub Workflow](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/12) for automating and archiving builds – [#12](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/12) @ScoreUnder
 
