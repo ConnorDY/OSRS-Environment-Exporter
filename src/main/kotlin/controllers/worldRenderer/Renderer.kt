@@ -157,7 +157,7 @@ class Renderer constructor(
 
         val jfxNewtDisplay = NewtFactory.createDisplay(null, false)
         val screen = NewtFactory.createScreen(jfxNewtDisplay, 0)
-        val glProfile = GLProfile.get(GLProfile.GL4)
+        val glProfile = GLProfile.getMaxProgrammableCore(true)
         val glCaps = GLCapabilities(glProfile)
         glCaps.alphaBits = 8
 
