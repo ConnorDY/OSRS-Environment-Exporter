@@ -54,7 +54,7 @@ object NumericTextField {
                     false
                 }
             control.foreground =
-                if (valid) UIManager.getColor("text") as Color
+                if (valid) UIManager.getColor("TextField.foreground") as Color
                 else Color.RED
         }
 
