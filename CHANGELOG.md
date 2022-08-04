@@ -4,7 +4,7 @@
 
 ### :sparkles: Enhancements
 
-- Replace locations data with a more complete data set – [#61](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/61) @ConnorDY
+- Update locations data with a more complete data set – [#61](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/61) @ConnorDY
 
 ## 2.0.0
 
