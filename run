@@ -1,2 +1,2 @@
 #!/bin/sh
-exec java --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED -jar ./build/libs/osrs-environment-exporter-fat-2.0.0.jar "$@"
+exec java --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED -jar ./build/libs/osrs-environment-exporter-fat-2.0.1.jar "$@"
