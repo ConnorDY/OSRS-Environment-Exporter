@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### :sparkles: Enhancements
+
+- Update locations data with a more complete data set – [#61](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/61) @ConnorDY
+  - Special thanks to Uber (@LengaJenga) for finding this additional data set!
+
+### :wrench: Maintenance
+
+- Dead code removal & cleanup around `computeObjs` – [#55](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/55) @ScoreUnder
+- Use the correct `UIManager` key in `NumericTextField` – [#60](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/60) @ScoreUnder
+
 ## 2.0.0
 
 ### :sparkles: Enhancements
