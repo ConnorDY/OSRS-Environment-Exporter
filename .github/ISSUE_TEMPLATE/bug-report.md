@@ -17,7 +17,7 @@ assignees: ''
   to make sure your issue has not already been fixed.
 -->
 
-## Steps To Reproduce
+## Steps to reproduce
 
 1.
 2.
