@@ -70,7 +70,7 @@ class ColorPalette(
                 val var20 = (var15 * 256.0).toInt()
                 val var30 = (var17 * 256.0).toInt()
                 var var22 = var30 + (var20 shl 8) + (var29 shl 16)
-                var22 = adjustRGB(var22, brightness)
+                var22 = adjustForBrightness(var22, brightness)
                 if (var22 == 0) {
                     var22 = 1
                 }
@@ -85,17 +85,18 @@ class ColorPalette(
     }
 
     companion object {
-        fun adjustRGB(var0: Int, var1: Double): Int {
-            var var3 = (var0 shr 16).toDouble() / 256.0
-            var var5 = (var0 shr 8 and 255).toDouble() / 256.0
-            var var7 = (var0 and 255).toDouble() / 256.0
-            var3 = var3.pow(var1)
-            var5 = var5.pow(var1)
-            var7 = var7.pow(var1)
-            val var9 = (var3 * 256.0).toInt()
-            val var10 = (var5 * 256.0).toInt()
-            val var11 = (var7 * 256.0).toInt()
-            return var11 + (var10 shl 8) + (var9 shl 16)
+        fun adjustForBrightness(rgb: Int, brightness: Double): Int {
+            var r = (rgb shr 16).toDouble() / 256.0
+            var g = (rgb shr 8 and 255).toDouble() / 256.0
+            var b = (rgb and 255).toDouble() / 256.0
+            r = r.pow(brightness)
+            g = g.pow(brightness)
+            b = b.pow(brightness)
+            return (
+                (r * 256.0).toInt() shl 16
+                    or ((g * 256.0).toInt() shl 8)
+                    or (b * 256.0).toInt()
+                )
         }
 
         fun rs2hsbToColor(hsb: Int): Color {
