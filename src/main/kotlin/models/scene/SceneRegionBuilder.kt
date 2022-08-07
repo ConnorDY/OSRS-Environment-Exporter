@@ -35,7 +35,7 @@ class SceneRegionBuilder constructor(
 ) {
     private val logger = LoggerFactory.getLogger(SceneRegionBuilder::class.java)
 
-    private val colorPalette = ColorPalette(0.7, 0, 512).colorPalette
+    private val colorPalette = ColorPalette(0.7).colorPalette
 
     fun calcTileColor(sceneRegion: SceneRegion, z: Int, x: Int, y: Int, baseX: Int, baseY: Int) {
         val var9 = sqrt(5100.0).toInt()

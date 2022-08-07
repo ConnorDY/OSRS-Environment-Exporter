@@ -45,6 +45,6 @@ class MaterialBuffers(isTextured: Boolean) {
     }
 
     companion object {
-        val pal = ColorPalette(1.0, 0, 512).colorPalette
+        val pal = ColorPalette(1.0).colorPalette
     }
 }
