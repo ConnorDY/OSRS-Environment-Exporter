@@ -74,7 +74,7 @@ class Shader {
         val COMPUTE_PROGRAM = Shader()
             .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
         val SMALL_COMPUTE_PROGRAM = Shader()
-            .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp_small.glsl")
+            .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
         val UNORDERED_COMPUTE_PROGRAM = Shader()
             .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp_unordered.glsl")
     }

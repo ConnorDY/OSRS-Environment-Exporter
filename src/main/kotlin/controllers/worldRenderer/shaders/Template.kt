@@ -58,16 +58,4 @@ class Template {
             return scanner.next()
         }
     }
-
-    init {
-        add(
-            Function { key: String? ->
-                if ("version_header" == key) {
-                    Shader.WINDOWS_VERSION_HEADER
-                } else {
-                    null
-                }
-            }
-        )
-    }
 }
