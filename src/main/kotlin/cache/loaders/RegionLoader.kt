@@ -35,14 +35,12 @@ class RegionLoader(
             return null
         }
 
-        val regionDefinition = RegionDefinition(regionId)
         val inputStream = ByteBuffer.wrap(map)
 
-        for (z in 0 until Z) {
-            for (x in 0 until X) {
-                for (y in 0 until Y) {
+        val tiles = Array(Z) {
+            Array(X) {
+                Array(Y) {
                     val tile = RegionDefinition.Tile()
-                    regionDefinition.tiles[z][x][y] = tile
                     while (true) {
                         val attribute: Int = inputStream.readUnsignedByte()
                         if (attribute == 0) {
@@ -63,10 +61,12 @@ class RegionLoader(
                             tile.underlayId = (attribute - 81).toByte()
                         }
                     }
+                    tile
                 }
             }
         }
 
+        val regionDefinition = RegionDefinition(regionId, tiles)
         regionDefinition.calculateTerrain()
         regionDefinitionCache[regionId] = regionDefinition
         return regionDefinition

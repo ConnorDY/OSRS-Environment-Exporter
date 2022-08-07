@@ -42,10 +42,10 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         overlayRgb: Int,
         underlayDefinition: UnderlayDefinition?,
         overlayDefinition: OverlayDefinition?,
-        cacheTile: RegionDefinition.Tile?
+        cacheTile: RegionDefinition.Tile
     ) {
-        when {
-            overlayPath == 0 -> {
+        when (overlayPath) {
+            0 -> {
                 for (iz in z downTo 0) {
                     if (tiles[iz][x][y] == null) {
                         tiles[iz][x][y] = SceneTile(iz, x, y)
@@ -64,7 +64,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                     underlayRgb
                 )
             }
-            overlayPath == 1 -> {
+            1 -> {
                 for (iz in z downTo 0) {
                     if (tiles[iz][x][y] == null) {
                         tiles[iz][x][y] = SceneTile(iz, x, y)
