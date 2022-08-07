@@ -651,15 +651,36 @@ class Renderer constructor(
         shutdownAAFbo()
     }
 
+    private fun createTemplate(threadCount: Int, facesPerThread: Int): Template {
+        val versionHeader: String = Shader.WINDOWS_VERSION_HEADER
+        // if (OSType.getOSType() === OSType.Linux) LINUX_VERSION_HEADER else WINDOWS_VERSION_HEADER
+        val template = Template()
+        template.add { key ->
+            if ("version_header" == key) {
+                return@add versionHeader
+            }
+            if ("thread_config" == key) {
+                return@add """
+                #define THREAD_COUNT $threadCount
+                #define FACES_PER_THREAD $facesPerThread
+                
+                """.trimIndent()
+            }
+            null
+        }
+        template.addInclude(Shader::class.java)
+        return template
+    }
+
     @Throws(ShaderException::class)
     private fun initProgram() {
-        val template = Template()
+        val template = createTemplate(-1, -1)
         template.addInclude(Shader::class.java)
 
         try {
             glProgram = Shader.PROGRAM.compile(gl, template)
-            glComputeProgram = Shader.COMPUTE_PROGRAM.compile(gl, template)
-            glSmallComputeProgram = Shader.SMALL_COMPUTE_PROGRAM.compile(gl, template)
+            glComputeProgram = Shader.COMPUTE_PROGRAM.compile(gl, createTemplate(1024, 4))
+            glSmallComputeProgram = Shader.SMALL_COMPUTE_PROGRAM.compile(gl, createTemplate(512, 1))
             glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.compile(gl, template)
         } catch (e: ShaderException) {
             // This will likely destroy the renderer, but the rest of the program should
