@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-[ ] I am using the latest version of the exporter
+- [ ] I am using the latest version of the exporter
 
 ## Bug description
 
