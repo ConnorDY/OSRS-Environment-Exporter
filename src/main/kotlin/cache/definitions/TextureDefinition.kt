@@ -44,7 +44,7 @@ class TextureDefinition {
             }
             var11 = 0
             while (var11 < var9.size) {
-                var9[var11] = ColorPalette.adjustRGB(var9[var11], var1)
+                var9[var11] = ColorPalette.adjustForBrightness(var9[var11], var1)
                 ++var11
             }
             var11 = if (var6 == 0) {
