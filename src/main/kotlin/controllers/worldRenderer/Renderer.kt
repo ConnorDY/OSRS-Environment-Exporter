@@ -33,6 +33,7 @@ import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
+import models.Configuration
 import models.DebugModel
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
@@ -46,6 +47,7 @@ import java.nio.IntBuffer
 import kotlin.math.min
 
 class Renderer constructor(
+    private val configuration: Configuration,
     private val camera: Camera,
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
@@ -200,12 +202,10 @@ class Renderer constructor(
     }
 
     fun loadScene() {
-//        scene.load(10038, 1)
-//        scene.load(6967, 1)
-//        scene.load(12850, 3)
-//        scene.load(11828, 6)
-//        scene.load(13623, 6)
-        scene.load(15256, 1)
+        scene.load(
+            configuration.getProp("initial-region-id").toIntOrNull() ?: 15256,
+            configuration.getProp("initial-radius").toIntOrNull() ?: 1,
+        )
     }
 
     override fun init(drawable: GLAutoDrawable) {
