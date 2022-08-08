@@ -17,12 +17,12 @@ import cache.loaders.UnderlayLoader
 import cache.loaders.getTileHeight
 import cache.loaders.getTileSettings
 import cache.utils.ColorPalette
+import cache.utils.Vec3F
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
 import org.slf4j.LoggerFactory
-import kotlin.math.sqrt
 
 class SceneRegionBuilder constructor(
     private val regionLoader: RegionLoader,
@@ -38,24 +38,25 @@ class SceneRegionBuilder constructor(
     private val colorPalette = ColorPalette(0.7).colorPalette
 
     fun calcTileColor(sceneRegion: SceneRegion, z: Int, x: Int, y: Int, baseX: Int, baseY: Int) {
-        val var9 = sqrt(5100.0).toInt()
-        val var10 = var9 * 768 shr 8
+        val contrast = 768
+        val ambient = 96
+        val bias = Vec3F(-50.0f, -50.0f, -10.0f)
+        val precision = 256
 
         val worldX = baseX + x
         val worldY = baseY + y
         val xHeightDiff = regionLoader.getTileHeight(z, worldX + 1, worldY) - regionLoader.getTileHeight(z, worldX - 1, worldY)
         val yHeightDiff = regionLoader.getTileHeight(z, worldX, worldY + 1) - regionLoader.getTileHeight(z, worldX, worldY - 1)
-        val diff = sqrt(xHeightDiff * xHeightDiff + yHeightDiff * yHeightDiff + 65536.toDouble()).toInt()
-        val var16 = (xHeightDiff shl 8) / diff
-        val var17 = 65536 / diff
-        val var18 = (yHeightDiff shl 8) / diff
-        val var19 = (var16 * -50 + var18 * -50 + var17 * -10) / var10 + 96
+
+        val slopeVec = Vec3F(xHeightDiff.toFloat(), yHeightDiff.toFloat(), 256.0f)
+        val dotProductMagnitude = bias.magnitudeInt() * contrast / precision
+        val slopeColorAdjust = (precision * bias.dot(slopeVec.normalizedAsInts())).toInt() / dotProductMagnitude + ambient
         val color = (regionLoader.getTileSettings(z, worldX - 1, worldY) shr 2) +
             (regionLoader.getTileSettings(z, worldX, worldY - 1) shr 2) +
             (regionLoader.getTileSettings(z, worldX + 1, worldY) shr 3) +
             (regionLoader.getTileSettings(z, worldX, worldY + 1) shr 3) +
             (regionLoader.getTileSettings(z, worldX, worldY) shr 1)
-        sceneRegion.tileColors[x][y] = var19 - color
+        sceneRegion.tileColors[x][y] = slopeColorAdjust - color
     }
 
     // Loads a single region(rs size 64), not a scene(rs size 104)!
