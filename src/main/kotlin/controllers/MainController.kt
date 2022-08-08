@@ -135,7 +135,12 @@ class MainController constructor(
             lblFps.let(::add)
         }.let { add(it, BorderLayout.NORTH) }
 
-        worldRendererController.loadScene()
+        // load initial scene
+        scene.load(
+            configuration.getProp("initial-region-id").toIntOrNull() ?: 15256,
+            configuration.getProp("initial-radius").toIntOrNull() ?: 1,
+        )
+
         add(worldRendererController, BorderLayout.CENTER)
 
         animationTimer = Timer(500) {

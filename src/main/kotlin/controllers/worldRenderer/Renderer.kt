@@ -199,15 +199,6 @@ class Renderer constructor(
         animator.stop()
     }
 
-    fun loadScene() {
-//        scene.load(10038, 1)
-//        scene.load(6967, 1)
-//        scene.load(12850, 3)
-//        scene.load(11828, 6)
-//        scene.load(13623, 6)
-        scene.load(15256, 1)
-    }
-
     override fun init(drawable: GLAutoDrawable) {
         try {
             gl = drawable.gl.gL4
