@@ -9,6 +9,7 @@ import controllers.worldRenderer.Constants
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.helpers.ModelBuffers.Companion.MAX_TRIANGLE
+import utils.clamp
 import kotlin.math.min
 import kotlin.math.sqrt
 
@@ -322,23 +323,23 @@ class Model(
                             def.vertexNormals!![def.faceVertexIndices1[faceIdx]]!!
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                        faceColors1[faceIdx] = bound2to126(tmp)
+                        faceColors1[faceIdx] = tmp.clamp(2, 126)
                         vertexNormal =
                             def.vertexNormals!![def.faceVertexIndices2[faceIdx]]!!
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                        faceColors2[faceIdx] = bound2to126(tmp)
+                        faceColors2[faceIdx] = tmp.clamp(2, 126)
                         vertexNormal =
                             def.vertexNormals!![def.faceVertexIndices3[faceIdx]]!!
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                        faceColors3[faceIdx] = bound2to126(tmp)
+                        faceColors3[faceIdx] = tmp.clamp(2, 126)
                     }
                     1 -> {
                         faceNormal = def.faceNormals!![faceIdx]!!
                         tmp =
                             (y * faceNormal.y + z * faceNormal.z + x * faceNormal.x) / (var7 / 2 + var7) + ambient
-                        faceColors1[faceIdx] = bound2to126(tmp)
+                        faceColors1[faceIdx] = tmp.clamp(2, 126)
                         faceColors3[faceIdx] = -1
                     }
                     else -> {
@@ -353,18 +354,8 @@ class Model(
         fun method2608(var0: Int, var1: Int): Int {
             var var1 = var1
             var1 = (var0 and 0x007f) * var1 shr 7
-            var1 = bound2to126(var1)
+            var1 = var1.clamp(2, 126)
             return (var0 and 0xff80) + var1
-        }
-
-        fun bound2to126(var0: Int): Int {
-            var var0 = var0
-            if (var0 < 2) {
-                var0 = 2
-            } else if (var0 > 126) {
-                var0 = 126
-            }
-            return var0
         }
     }
 

@@ -15,7 +15,6 @@ class TilePaint(
     val neColor: Int,
     val nwColor: Int,
     val texture: Int,
-    val rgb: Int,
 ) : Renderable {
     internal val computeObj = ComputeObj()
 
