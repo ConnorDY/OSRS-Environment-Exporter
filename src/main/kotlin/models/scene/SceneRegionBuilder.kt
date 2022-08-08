@@ -28,7 +28,6 @@ class SceneRegionBuilder constructor(
     private val regionLoader: RegionLoader,
     private val locationsLoader: LocationsLoader,
     private val objectLoader: ObjectLoader,
-    private val textureLoader: TextureLoader,
     private val underlayLoader: UnderlayLoader,
     private val overlayLoader: OverlayLoader,
     private val objectToModelConverter: ObjectToModelConverter
@@ -60,14 +59,14 @@ class SceneRegionBuilder constructor(
     // Loads a single region(rs size 64), not a scene(rs size 104)!
     // worldCoords to regionId
     // int regionId = (x >>> 6 << 8) | y >>> 6;
-    fun loadRegion(regionId: Int, isAnimationEnabled: Boolean): SceneRegion? {
+    fun loadRegion(regionId: Int): SceneRegion? {
         val region: RegionDefinition = regionLoader.get(regionId) ?: return null
         val locations: LocationsDefinition = locationsLoader.get(regionId) ?: fakeLocationsDefinition(regionId)
         val sceneRegion = SceneRegion(locations)
         val baseX: Int = region.baseX
         val baseY: Int = region.baseY
         val blend = 5
-        val len: Int = REGION_SIZE * blend * 2
+        val len: Int = REGION_SIZE + blend * 2
         val hues = IntArray(len)
         val sats = IntArray(len)
         val light = IntArray(len)
@@ -199,16 +198,13 @@ class SceneRegionBuilder constructor(
                                 val overlayDefinition: OverlayDefinition? = overlayLoader.get(overlayId - 1)
                                 var overlayTexture: Int = overlayDefinition?.texture!!
                                 val overlayHsl: Int
-                                var overlayCol: Int
                                 when {
                                     overlayTexture >= 0 -> {
-                                        overlayCol = textureLoader.getAverageTextureRGB(overlayTexture)
                                         overlayHsl = -1
                                     }
                                     overlayDefinition.rgbColor == 0xFF00FF -> {
                                         overlayHsl = -2
                                         overlayTexture = -1
-                                        overlayCol = -2
                                     }
                                     else -> {
                                         overlayHsl = packHsl(
@@ -216,29 +212,7 @@ class SceneRegionBuilder constructor(
                                             overlayDefinition.saturation,
                                             overlayDefinition.lightness
                                         )
-                                        val hue: Int = overlayDefinition.hue and 255
-                                        var lightness: Int = overlayDefinition.lightness
-                                        if (lightness < 0) {
-                                            lightness = 0
-                                        } else if (lightness > 255) {
-                                            lightness = 255
-                                        }
-                                        overlayCol = packHsl(hue, overlayDefinition.saturation, lightness)
                                     }
-                                }
-                                if (overlayCol != -2) {
-                                    val var0 = adjustOverlayBrightness(overlayCol, 96)
-                                }
-                                if (overlayDefinition.secondaryRgbColor != -1) {
-                                    val hue: Int = overlayDefinition.otherHue and 255
-                                    var lightness: Int = overlayDefinition.otherLightness
-                                    if (lightness < 0) {
-                                        lightness = 0
-                                    } else if (lightness > 255) {
-                                        lightness = 255
-                                    }
-                                    overlayCol = packHsl(hue, overlayDefinition.otherSaturation, lightness)
-                                    val var0 = adjustOverlayBrightness(overlayCol, 96)
                                 }
                                 val underlay: UnderlayDefinition? = underlayLoader.get(underlayId - 1)
                                 sceneRegion.addTile(
@@ -312,9 +286,6 @@ class SceneRegionBuilder constructor(
             val neHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var13)
             val nwHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var13)
             val height = swHeight + seHeight + neHeight + nwHeight shr 2
-            val orientationTransform = intArrayOf(1, 2, 4, 8)
-            val xTransforms = intArrayOf(1, 0, -1, 0)
-            val yTransforms = intArrayOf(0, -1, 0, 1)
 
             val staticObject =
                 getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, z, baseX, baseY)

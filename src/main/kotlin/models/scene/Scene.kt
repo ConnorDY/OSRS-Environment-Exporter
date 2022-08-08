@@ -38,7 +38,7 @@ class Scene constructor(
         for (x in 0 until radius) {
             for (y in 0 until radius) {
                 logger.info("Loading region {}", regionId)
-                regions[x][y] = sceneRegionBuilder.loadRegion(regionId, true)
+                regions[x][y] = sceneRegionBuilder.loadRegion(regionId)
                 regionId++
             }
             regionId += 256 - radius // move 1 region to the right, reset to lowest y
