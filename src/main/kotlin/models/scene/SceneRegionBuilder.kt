@@ -12,7 +12,6 @@ import cache.loaders.LocationsLoader
 import cache.loaders.ObjectLoader
 import cache.loaders.OverlayLoader
 import cache.loaders.RegionLoader
-import cache.loaders.TextureLoader
 import cache.loaders.UnderlayLoader
 import cache.loaders.getTileHeight
 import cache.loaders.getTileSettings
