@@ -41,8 +41,6 @@ class WorldRendererController constructor(
         checkFpsCap()
     }
 
-    fun loadScene() = renderer.loadScene()
-
     fun stopRenderer() {
         renderer.stop()
     }
