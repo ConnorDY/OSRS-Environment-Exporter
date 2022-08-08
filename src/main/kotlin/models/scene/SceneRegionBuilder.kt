@@ -89,7 +89,7 @@ class SceneRegionBuilder constructor(
                     if (xr >= -blend && xr < REGION_SIZE + blend) {
                         val r: RegionDefinition? = regionLoader.findRegionForWorldCoordinates(baseX + xr, baseY + yi)
                         if (r != null) {
-                            val underlayId: Int = r.tiles[z][convert(xr)][convert(yi)]?.underlayId!!.toInt()
+                            val underlayId: Int = r.tiles[z][convert(xr)][convert(yi)].underlayId.toInt()
                             if (underlayId > 0) {
                                 val underlay: UnderlayDefinition = underlayLoader.get(underlayId - 1) ?: continue
                                 hues[yi + blend] += underlay.hue
@@ -104,7 +104,7 @@ class SceneRegionBuilder constructor(
                     if (xl >= -blend && xl < REGION_SIZE + blend) {
                         val r: RegionDefinition? = regionLoader.findRegionForWorldCoordinates(baseX + xl, baseY + yi)
                         if (r != null) {
-                            val underlayId: Int = r.tiles[z][convert(xl)][convert(yi)]?.underlayId!!.toInt()
+                            val underlayId: Int = r.tiles[z][convert(xl)][convert(yi)].underlayId.toInt()
                             if (underlayId > 0) {
                                 val underlay: UnderlayDefinition = underlayLoader.get(underlayId - 1) ?: continue
                                 hues[yi + blend] -= underlay.hue
@@ -142,8 +142,8 @@ class SceneRegionBuilder constructor(
                         if (yi in 0 until REGION_SIZE) {
                             val r: RegionDefinition =
                                 regionLoader.findRegionForWorldCoordinates(baseX + xi, baseY + yi) ?: continue
-                            val underlayId: Int = r.tiles[z][xi][yi]?.underlayId!!.toInt() and 0xFF
-                            val overlayId: Int = r.tiles[z][xi][yi]?.overlayId!!.toInt() and 0xFF
+                            val underlayId: Int = r.tiles[z][xi][yi].underlayId.toInt() and 0xFF
+                            val overlayId: Int = r.tiles[z][xi][yi].overlayId.toInt() and 0xFF
                             if (underlayId <= 0 && overlayId <= 0) {
                                 continue
                             }
@@ -208,8 +208,8 @@ class SceneRegionBuilder constructor(
                                     r.tiles[z][xi][yi]
                                 )
                             } else {
-                                val overlayPath: Int = r.tiles[z][xi][yi]?.overlayPath!!.toInt() + 1
-                                val overlayRotation: Int = r.tiles[z][xi][yi]?.overlayRotation!!.toInt()
+                                val overlayPath: Int = r.tiles[z][xi][yi].overlayPath.toInt() + 1
+                                val overlayRotation: Int = r.tiles[z][xi][yi].overlayRotation.toInt()
                                 val overlayDefinition: OverlayDefinition? = overlayLoader.get(overlayId - 1)
                                 var overlayTexture: Int = overlayDefinition?.texture!!
                                 val overlayHsl: Int
