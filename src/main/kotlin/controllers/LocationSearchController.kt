@@ -111,6 +111,8 @@ class LocationSearchController constructor(
 
         rootPane.defaultButton = btnLoad
         pack()
+
+        txtSearchQuery.requestFocus()
     }
 
     private fun readBuiltinLocations(): ArrayList<Location> {
