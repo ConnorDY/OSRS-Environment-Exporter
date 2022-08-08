@@ -67,7 +67,6 @@ class MainController constructor(
                 regionLoader,
                 LocationsLoader(cacheLibrary, xteaManager),
                 ObjectLoader(cacheLibrary),
-                textureLoader,
                 underlayLoader,
                 overlayLoader,
                 objectToModelConverter

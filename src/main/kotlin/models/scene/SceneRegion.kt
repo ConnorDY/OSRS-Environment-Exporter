@@ -17,7 +17,7 @@ import controllers.worldRenderer.entities.WallObject
 
 class SceneRegion(val locationsDefinition: LocationsDefinition) {
     val tiles = Array(RegionDefinition.Z) { Array(RegionDefinition.X) { arrayOfNulls<SceneTile>(RegionDefinition.Y) } }
-    val tileColors = Array(RegionDefinition.X + 1) { IntArray(RegionDefinition.Y + 1) }
+    val tileBrightness = Array(RegionDefinition.X + 1) { IntArray(RegionDefinition.Y + 1) }
 
     fun addTile(
         z: Int,
@@ -38,8 +38,6 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         seColorB: Int,
         neColorB: Int,
         nwColorB: Int,
-        underlayRgb: Int,
-        overlayRgb: Int,
         underlayDefinition: UnderlayDefinition?,
         overlayDefinition: OverlayDefinition?,
         cacheTile: RegionDefinition.Tile
@@ -60,8 +58,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                     seColor,
                     neColor,
                     nwColor,
-                    -1,
-                    underlayRgb
+                    -1
                 )
             }
             1 -> {
@@ -79,8 +76,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                     seColorB,
                     neColorB,
                     nwColorB,
-                    overlayTexture,
-                    overlayRgb
+                    overlayTexture
                 )
             }
             else -> {
@@ -107,9 +103,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                         swColorB,
                         seColorB,
                         neColorB,
-                        nwColorB,
-                        underlayRgb,
-                        overlayRgb
+                        nwColorB
                     )
             }
         }

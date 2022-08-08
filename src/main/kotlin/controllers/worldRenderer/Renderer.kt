@@ -1,6 +1,7 @@
 package controllers.worldRenderer
 
 import cache.LocationType
+import cache.utils.ColorPalette
 import com.jogamp.newt.NewtFactory
 import com.jogamp.newt.awt.NewtCanvasAWT
 import com.jogamp.newt.opengl.GLWindow
@@ -427,7 +428,7 @@ class Renderer constructor(
 //            val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
             gl.glUseProgram(glProgram)
             // Brightness happens to also be stored in the texture provider, so we use that
-            gl.glUniform1f(uniBrightness, 0.7f) // (float) textureProvider.getBrightness());
+            gl.glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
             gl.glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
             gl.glUniform1f(uniSmoothBanding, 1f)
 

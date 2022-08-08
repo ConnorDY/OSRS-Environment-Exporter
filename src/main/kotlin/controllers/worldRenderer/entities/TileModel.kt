@@ -5,25 +5,23 @@ import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 
 class TileModel(
-    public var overlayPath: Int = 0,
-    public var overlayRotation: Int = 0,
-    public var overlayTexture: Int,
-    public val x: Int,
-    public val y: Int,
-    public var swHeight: Int,
-    public var seHeight: Int,
-    public var neHeight: Int,
-    public var nwHeight: Int,
-    public var swColor: Int,
-    public var seColor: Int,
-    public var neColor: Int,
-    public var nwColor: Int,
-    public var swColorB: Int,
-    public var seColorB: Int,
-    public var neColorB: Int,
-    public var nwColorB: Int,
-    public val underlayRgb: Int = 0,
-    public val overlayRgb: Int = 0
+    var overlayPath: Int = 0,
+    var overlayRotation: Int = 0,
+    var overlayTexture: Int,
+    val x: Int,
+    val y: Int,
+    var swHeight: Int,
+    var seHeight: Int,
+    var neHeight: Int,
+    var nwHeight: Int,
+    var swColor: Int,
+    var seColor: Int,
+    var neColor: Int,
+    var nwColor: Int,
+    var swColorB: Int,
+    var seColorB: Int,
+    var neColorB: Int,
+    var nwColorB: Int
 ) : Renderable {
     internal val computeObj = ComputeObj()
 
@@ -335,6 +333,6 @@ class TileModel(
     }
 
     override fun toString(): String {
-        return "overlayPath: $overlayPath, overlayRotation: $overlayRotation, underlayRgb: $underlayRgb, overlayRgb: $overlayRgb"
+        return "overlayPath: $overlayPath, overlayRotation: $overlayRotation"
     }
 }
