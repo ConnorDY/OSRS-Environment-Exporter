@@ -106,6 +106,8 @@ class RegionChooserController constructor(
 
         rootPane.defaultButton = loadButton
         pack()
+
+        regionIdField.requestFocus()
     }
 
     private fun loadRegion(regionIdStr: String, radius: Int) {
