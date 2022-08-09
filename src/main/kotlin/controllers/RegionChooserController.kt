@@ -25,7 +25,8 @@ import javax.swing.JPanel
 class RegionChooserController constructor(
     owner: JFrame,
     title: String,
-    private var loadRegionCallback: (Int, Int) -> Unit
+    private var loadRegionCallback: (Int, Int) -> Unit,
+    private var loadRegionsCallback: (IntArray) -> Unit
 ) : JDialog(owner, title) {
     private val errorMessageLabel: JLabel
 
@@ -110,20 +111,49 @@ class RegionChooserController constructor(
         regionIdField.requestFocus()
     }
 
-    private fun loadRegion(regionIdStr: String, radius: Int) {
+    private fun loadRegion(regionIdsStr: String, radius: Int) {
         errorMessageLabel.text = ""
 
-        val regionId: Int? = regionIdStr.toIntOrNull()
-        if (regionId == null || (regionId < 4647 || regionId > 15522)) {
+        if (regionIdsStr.indexOf(" ") != -1) {
+            var invalidRegion = false
+            val regionIdStrings = regionIdsStr.split(" ")
+
+            val regionIds = IntArray(regionIdStrings.size) { i ->
+                val regionId = regionIdStrings[i].toIntOrNull()
+
+                if (!regionIdIsValid(regionId)) {
+                    invalidRegion = true
+                    return@IntArray 0
+                }
+
+                return@IntArray regionId!!
+            }
+
+            if (invalidRegion) {
+                errorMessageLabel.text = INVALID_REGION_ID_TEXT
+                return
+            }
+
+            dispose()
+            loadRegionsCallback(regionIds)
+            return
+        }
+
+        val regionId = regionIdsStr.toIntOrNull()
+        if (!regionIdIsValid(regionId)) {
             errorMessageLabel.text = INVALID_REGION_ID_TEXT
             return
         }
 
         dispose()
-        loadRegionCallback(regionId, radius)
+        loadRegionCallback(regionId!!, radius)
+    }
+
+    private fun regionIdIsValid(regionId: Int?): Boolean {
+        return (regionId != null && regionId >= 4647 && regionId <= 15522)
     }
 
     companion object {
-        private const val INVALID_REGION_ID_TEXT = "Region Id must be between 4647 and 15522."
+        private const val INVALID_REGION_ID_TEXT = "Region ID(s) must be between 4647 and 15522."
     }
 }

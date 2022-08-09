@@ -106,7 +106,7 @@ class LocationSearchController constructor(
             val regionId = regionIdForLocation(selectedLocation)
 
             dispose()
-            scene.load(regionId, txtRadius.value as Int)
+            scene.loadRadius(regionId, txtRadius.value as Int)
         }
 
         rootPane.defaultButton = btnLoad

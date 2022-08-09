@@ -3,6 +3,8 @@ package models.scene
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.util.function.Consumer
+import kotlin.math.ceil
+import kotlin.math.sqrt
 
 const val REGION_SIZE = 64
 const val REGION_HEIGHT = 4
@@ -28,7 +30,7 @@ class Scene constructor(
         )
     }
 
-    fun load(centerRegionId: Int, radius: Int) {
+    fun loadRadius(centerRegionId: Int, radius: Int) {
         this.radius = radius
         regions = Array(radius) { arrayOfNulls<SceneRegion>(radius) }
         var regionId = centerRegionId
@@ -43,6 +45,18 @@ class Scene constructor(
             }
             regionId += 256 - radius // move 1 region to the right, reset to lowest y
         }
+        reload()
+    }
+
+    fun loadRegions(regionIds: IntArray) {
+        val size = ceil(sqrt(regionIds.size.toDouble())).toInt()
+        regions = Array(size) { arrayOfNulls<SceneRegion>(size) }
+
+        for ((i, regionId) in regionIds.withIndex()) {
+            logger.info("Loading region {}", regionId)
+            regions[i / size][i % size] = sceneRegionBuilder.loadRegion(regionId)
+        }
+
         reload()
     }
 

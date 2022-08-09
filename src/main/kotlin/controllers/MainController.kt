@@ -136,7 +136,7 @@ class MainController constructor(
         }.let { add(it, BorderLayout.NORTH) }
 
         // load initial scene
-        scene.load(
+        scene.loadRadius(
             configuration.getProp("initial-region-id").toIntOrNull() ?: 15256,
             configuration.getProp("initial-radius").toIntOrNull() ?: 1,
         )
@@ -177,9 +177,15 @@ class MainController constructor(
     }
 
     private fun changeRegionClicked(event: ActionEvent) {
-        RegionChooserController(this, "Region Chooser") { regionId, radius ->
-            scene.load(regionId, radius)
-        }.display()
+        RegionChooserController(
+            this, "Region Chooser",
+            { regionId, radius ->
+                scene.loadRadius(regionId, radius)
+            },
+            { regionIds ->
+                scene.loadRegions(regionIds)
+            }
+        ).display()
     }
 
     private fun locationSearchClicked(event: ActionEvent) {
