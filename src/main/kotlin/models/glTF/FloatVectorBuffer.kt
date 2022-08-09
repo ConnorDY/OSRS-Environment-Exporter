@@ -21,19 +21,15 @@ class FloatVectorBuffer(val dims: Int) {
     var size = 0
         private set
 
-    // Total valid size of the current chunk, in vectors
-    private var innerSize = 0
-
     private fun wrapBytes(chunk: ByteArray): FloatBuffer =
         ByteBuffer.wrap(chunk).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
 
     private fun refreshBuffer() {
-        val innerBytes = innerSize * dims * BYTES_IN_A_FLOAT
+        val unflushedBytes = chunkWrapped.position() * BYTES_IN_A_FLOAT
         val chunkToAdd =
-            if (innerBytes == chunk.size) chunk
-            else chunk.copyOf(innerBytes)
+            if (unflushedBytes == chunk.size) chunk
+            else chunk.copyOf(unflushedBytes)
         buffer.addBytes(chunkToAdd)
-        innerSize = 0
         chunk = ByteArray(INITIAL_CAPACITY + size * dims * BYTES_IN_A_FLOAT)
         chunkWrapped = wrapBytes(chunk)
     }
@@ -46,9 +42,8 @@ class FloatVectorBuffer(val dims: Int) {
         if (pos == dims) {
             pos = 0
             size++
-            innerSize++
 
-            if ((innerSize + 1) * dims * BYTES_IN_A_FLOAT > chunk.size) {
+            if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.size) {
                 refreshBuffer()
             }
         }
@@ -58,19 +53,19 @@ class FloatVectorBuffer(val dims: Int) {
      *  Note that this buffer cannot be added to after this operation has taken place.
      */
     fun getBytes(): ByteArray {
-        if (innerSize != 0) {
-            buffer.addBytes(chunk.copyOf(innerSize * dims * BYTES_IN_A_FLOAT))
+        val unflushedFloats = chunkWrapped.position()
+        if (unflushedFloats != 0) {
+            buffer.addBytes(chunk.copyOf(unflushedFloats * BYTES_IN_A_FLOAT))
             // Ensure no further writes succeed
             chunk = USELESS_ARRAY
             chunkWrapped = wrapBytes(chunk)
-            innerSize = 0
         }
         return buffer.getBytes()
     }
 
     companion object {
         const val INITIAL_CAPACITY = 3 * 512 // Kind of arbitrary
-        const val BYTES_IN_A_FLOAT = 4
+        const val BYTES_IN_A_FLOAT = Float.SIZE_BYTES
         val USELESS_ARRAY = ByteArray(0)
     }
 }
