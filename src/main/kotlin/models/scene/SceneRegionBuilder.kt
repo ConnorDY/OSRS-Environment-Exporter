@@ -86,7 +86,7 @@ class SceneRegionBuilder constructor(
                     if (xr >= -blend && xr < REGION_SIZE + blend) {
                         val r: RegionDefinition? = regionLoader.findRegionForWorldCoordinates(baseX + xr, baseY + yi)
                         if (r != null) {
-                            val underlayId: Int = r.tiles[z][convert(xr)][convert(yi)].underlayId.toInt()
+                            val underlayId: Int = r.tiles[z][xr and 0x3F][yi and 0x3F].underlayId.toInt() and 0xff
                             if (underlayId > 0) {
                                 val underlay: UnderlayDefinition = underlayLoader.get(underlayId - 1) ?: continue
                                 hues[yi + blend] += underlay.hue
@@ -101,7 +101,7 @@ class SceneRegionBuilder constructor(
                     if (xl >= -blend && xl < REGION_SIZE + blend) {
                         val r: RegionDefinition? = regionLoader.findRegionForWorldCoordinates(baseX + xl, baseY + yi)
                         if (r != null) {
-                            val underlayId: Int = r.tiles[z][convert(xl)][convert(yi)].underlayId.toInt()
+                            val underlayId: Int = r.tiles[z][xl and 0x3F][yi and 0x3F].underlayId.toInt() and 0xff
                             if (underlayId > 0) {
                                 val underlay: UnderlayDefinition = underlayLoader.get(underlayId - 1) ?: continue
                                 hues[yi + blend] -= underlay.hue
@@ -388,14 +388,6 @@ class SceneRegionBuilder constructor(
 
     companion object {
         val sceneRegionCache = hashMapOf<Int, SceneRegion>()
-
-        fun convert(d: Int): Int {
-            return if (d >= 0) {
-                d % 64
-            } else {
-                64 - -(d % 64) - 1
-            }
-        }
 
         private fun multiplyHslBrightness(hsl: Int, brightness: Int): Int {
             val adjustedBrightness = ((hsl and 0x7f) * brightness) / 0x80
