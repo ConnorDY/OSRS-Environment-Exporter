@@ -273,7 +273,7 @@ class CacheChooserController(
         Thread {
             try {
                 val conn = URL("$RUNESTATS_URL/$cacheName").openConnection()
-                conn.addRequestProperty("User-Agent", "taylors-map-editor")
+                conn.addRequestProperty("User-Agent", "osrs-environment-exporter")
                 BufferedInputStream(conn.getInputStream()).use { inputStream ->
                     val tarIn = TarArchiveInputStream(
                         GzipCompressorInputStream(inputStream)
