@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.0.2
+
+### :sparkles: Enhancements
+
+- Allow setting the initial region ID + radius in config – [#74](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/74) @ConnorDY
+- Automatically focus on the first input when opening windows – [#68](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/68) @ConnorDY
+
+### :bug: Bug Fixes
+
+- Fix colour blending in the wilderness – [#75](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/75) @ScoreUnder
+
+### :wrench: Maintenance
+
+- Refactor some colour/brightness-related code – [#73](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/73) @ScoreUnder
+- Make `RegionDefinition` tile array elements not nullable – [#71](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/71) @ScoreUnder
+- Make `CalcTileColor` a little less mysterious – [#70](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/70) @ScoreUnder
+- Clean up `ColorPalette` code by merging RuneLite code into it – [#67](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/67) @ScoreUnder
+- Combine small and large comp shaders – [#65](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/65) @ConnorDY
+
 ## 2.0.1
 
 ### :sparkles: Enhancements
