@@ -18,19 +18,22 @@ class FloatVectorBuffer(val dims: Int) {
     private var pos = 0
 
     // Total valid size of this buffer as a whole, in vectors
-    var size = 0
-        private set
+    val size get() = (bufferedSize + chunkWrapped.position()) / dims
+
+    private var bufferedSize = 0
 
     private fun wrapBytes(chunk: ByteArray): FloatBuffer =
         ByteBuffer.wrap(chunk).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
 
     private fun refreshBuffer() {
-        val unflushedBytes = chunkWrapped.position() * BYTES_IN_A_FLOAT
+        val unflushedFloats = chunkWrapped.position()
+        val unflushedBytes = unflushedFloats * BYTES_IN_A_FLOAT
         val chunkToAdd =
             if (unflushedBytes == chunk.size) chunk
             else chunk.copyOf(unflushedBytes)
         buffer.addBytes(chunkToAdd)
-        chunk = ByteArray(INITIAL_CAPACITY + size * dims * BYTES_IN_A_FLOAT)
+        bufferedSize += unflushedFloats
+        chunk = ByteArray(INITIAL_CAPACITY + bufferedSize * BYTES_IN_A_FLOAT)
         chunkWrapped = wrapBytes(chunk)
     }
 
@@ -41,7 +44,6 @@ class FloatVectorBuffer(val dims: Int) {
         pos++
         if (pos == dims) {
             pos = 0
-            size++
 
             if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.size) {
                 refreshBuffer()
@@ -56,6 +58,7 @@ class FloatVectorBuffer(val dims: Int) {
         val unflushedFloats = chunkWrapped.position()
         if (unflushedFloats != 0) {
             buffer.addBytes(chunk.copyOf(unflushedFloats * BYTES_IN_A_FLOAT))
+            bufferedSize += unflushedFloats
             // Ensure no further writes succeed
             chunk = USELESS_ARRAY
             chunkWrapped = wrapBytes(chunk)
