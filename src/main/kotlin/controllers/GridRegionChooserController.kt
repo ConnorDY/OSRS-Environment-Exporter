@@ -35,9 +35,8 @@ class GridRegionChooserController constructor(
         }
 
         val sizeChangeListener = DocumentTextListener {
-            val width = gridWidthField.text.toIntOrNull()
-            val height = gridHeightField.text.toIntOrNull()
-
+            val width = gridWidthField.value as Int
+            val height = gridHeightField.value as Int
             if (width != null && height != null) resizeGrid(width, height)
         }
 
