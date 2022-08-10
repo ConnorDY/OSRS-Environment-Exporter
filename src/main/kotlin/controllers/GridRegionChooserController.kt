@@ -18,11 +18,12 @@ class GridRegionChooserController constructor(
     title: String,
     private var loadRegionsCallback: (IntArray) -> Unit
 ) : JDialog(owner, title) {
-    private var gridPanel = JPanel(GridLayout())
+    private var gridLayout = GridLayout()
+    private var gridPanel = JPanel(gridLayout)
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
-        preferredSize = Dimension(300, 500)
+        preferredSize = Dimension(500, 500)
 
         val groups = GroupLayout(contentPane)
         layout = groups
@@ -35,8 +36,8 @@ class GridRegionChooserController constructor(
         }
 
         val sizeChangeListener = DocumentTextListener {
-            val width = gridWidthField.value as Int
-            val height = gridHeightField.value as Int
+            val width = gridWidthField.text.toIntOrNull()
+            val height = gridHeightField.text.toIntOrNull()
             if (width != null && height != null) resizeGrid(width, height)
         }
 
@@ -114,10 +115,13 @@ class GridRegionChooserController constructor(
     }
 
     private fun resizeGrid(width: Int, height: Int) {
-        println("Resizing")
+        if (width == gridLayout.columns && height == gridLayout.rows) return
+
+        println("New size: $width x $height")
 
         gridPanel.removeAll()
-        gridPanel.layout = GridLayout(width, height)
+        gridLayout = GridLayout(height, width)
+        gridPanel.layout = gridLayout
 
         // add components
         for (x in 0 until width) {
