@@ -12,6 +12,7 @@ import javax.swing.JFormattedTextField
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -33,10 +34,10 @@ class GridRegionChooserController constructor(
         resizeGrid(2, 2)
 
         val gridWidthField = NumericTextField.create(gridLayout.columns, 2, MAX_WIDTH).apply {
-            maximumSize = Dimension(maximumSize.width, preferredSize.height)
+            sizeToText("888")
         }
         val gridHeightField = NumericTextField.create(gridLayout.rows, 2, MAX_HEIGHT).apply {
-            maximumSize = Dimension(maximumSize.width, preferredSize.height)
+            sizeToText("888")
         }
 
         val sizeChangeListener = DocumentTextListener {
@@ -101,10 +102,10 @@ class GridRegionChooserController constructor(
                         .addGroup(
                             groups.createSequentialGroup()
                                 .addComponent(lblGridWidth)
-                                .addComponent(gridWidthField, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(gridWidthField)
                                 .addComponent(lblGridX)
                                 .addComponent(lblGridHeight)
-                                .addComponent(gridHeightField, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(gridHeightField)
                         )
                         .addComponent(gridPanel)
                         .addComponent(loadButton)
@@ -124,6 +125,13 @@ class GridRegionChooserController constructor(
         } catch (e: ParseException) {
             null
         }
+
+    private fun JTextField.sizeToText(sizeText: String) {
+        val oldText = text
+        text = sizeText
+        maximumSize = preferredSize
+        text = oldText
+    }
 
     private fun resizeGrid(width: Int, height: Int) {
         if (width == gridLayout.columns && height == gridLayout.rows) return
