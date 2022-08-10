@@ -46,6 +46,7 @@ class CacheChooserController(
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         preferredSize = Dimension(750, 400)
+
         val groups = GroupLayout(contentPane)
         layout = groups
 
@@ -212,8 +213,8 @@ class CacheChooserController(
 
         pack()
 
-        btnLaunch.requestFocus()
         rootPane.defaultButton = btnLaunch
+        btnLaunch.requestFocus()
     }
 
     private fun launch(

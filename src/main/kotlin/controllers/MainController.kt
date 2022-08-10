@@ -95,6 +95,10 @@ class MainController constructor(
                     mnemonic = 'S'.code
                     addActionListener(::locationSearchClicked)
                 }.let(::add)
+                JMenuItem("Choose Grid Region").apply {
+                    mnemonic = 'G'.code
+                    addActionListener(::chooseGridRegionClicked)
+                }.let(::add)
             }.let(::add)
             JMenu("Edit").apply {
                 mnemonic = 'E'.code
@@ -191,6 +195,13 @@ class MainController constructor(
     private fun locationSearchClicked(event: ActionEvent) {
         LocationSearchController(this, "Location Search", scene).display()
     }
+
+    private fun chooseGridRegionClicked(event: ActionEvent) {
+        GridRegionChooserController(this, "Location Search") { regionIds ->
+            scene.loadRegions(regionIds)
+        }.display()
+    }
+
     private fun preferencesClicked(event: ActionEvent) {
         SettingsController(this, "Preferences", worldRendererController.renderer, configuration).display()
     }
