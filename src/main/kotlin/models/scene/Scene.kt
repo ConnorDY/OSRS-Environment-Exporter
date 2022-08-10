@@ -50,6 +50,7 @@ class Scene constructor(
 
     fun loadRegions(regionIds: IntArray) {
         val size = ceil(sqrt(regionIds.size.toDouble())).toInt()
+        radius = size
         regions = Array(size) { arrayOfNulls<SceneRegion>(size) }
 
         for ((i, regionId) in regionIds.withIndex()) {
