@@ -3,10 +3,12 @@ package controllers
 import ui.NumericTextField
 import java.awt.Dimension
 import java.awt.GridLayout
+import java.text.ParseException
 import javax.swing.GroupLayout
 import javax.swing.GroupLayout.Alignment
 import javax.swing.JButton
 import javax.swing.JDialog
+import javax.swing.JFormattedTextField
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
@@ -38,8 +40,8 @@ class GridRegionChooserController constructor(
         }
 
         val sizeChangeListener = DocumentTextListener {
-            val width = gridWidthField.text.toIntOrNull()
-            val height = gridHeightField.text.toIntOrNull()
+            val width = gridWidthField.calcValueOrNull() as Int?
+            val height = gridHeightField.calcValueOrNull() as Int?
             if (width != null && height != null) resizeGrid(width, height)
         }
 
@@ -115,6 +117,13 @@ class GridRegionChooserController constructor(
         rootPane.defaultButton = loadButton
         gridWidthField.requestFocus()
     }
+
+    private fun JFormattedTextField.calcValueOrNull(): Any? =
+        try {
+            formatter.stringToValue(text)
+        } catch (e: ParseException) {
+            null
+        }
 
     private fun resizeGrid(width: Int, height: Int) {
         if (width == gridLayout.columns && height == gridLayout.rows) return

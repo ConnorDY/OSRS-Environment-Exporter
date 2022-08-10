@@ -59,12 +59,9 @@ object NumericTextField {
         }
 
         private fun textChange(event: DocumentEvent) {
-            if (event.length == 0) return
-            val doc = event.document
-            val txt = doc.getText(0, doc.length)
             val valid =
                 try {
-                    control.formatter.stringToValue(txt)
+                    control.formatter.stringToValue(control.text)
                     true
                 } catch (e: ParseException) {
                     false
