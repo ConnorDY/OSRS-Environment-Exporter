@@ -32,10 +32,10 @@ class GridRegionChooserController constructor(
 
         resizeGrid(2, 2)
 
-        val gridWidthField = NumericTextField.create(gridLayout.columns, 1, 5).apply {
+        val gridWidthField = NumericTextField.create(gridLayout.columns, 2, MAX_WIDTH).apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
-        val gridHeightField = NumericTextField.create(gridLayout.rows, 1, 5).apply {
+        val gridHeightField = NumericTextField.create(gridLayout.rows, 2, MAX_HEIGHT).apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
 
@@ -158,5 +158,10 @@ class GridRegionChooserController constructor(
         }
 
         override fun changedUpdate(event: DocumentEvent?) {}
+    }
+
+    companion object {
+        const val MAX_WIDTH = 6
+        const val MAX_HEIGHT = 6
     }
 }
