@@ -138,7 +138,7 @@ class GridRegionChooserController constructor(
         for (x in 0 until width) {
             for (y in 0 until height) {
                 gridPanel.add(
-                    NumericTextField.create(0, 4647, 15522).apply {
+                    NumericTextField.createNullable(null, 4647, 15522).apply {
                         maximumSize = Dimension(maximumSize.width, preferredSize.height)
                     }
                 )
