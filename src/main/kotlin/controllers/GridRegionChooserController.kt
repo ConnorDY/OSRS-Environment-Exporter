@@ -2,18 +2,24 @@ package controllers
 
 import ui.NumericTextField
 import java.awt.Dimension
+import java.awt.GridLayout
 import javax.swing.GroupLayout
 import javax.swing.GroupLayout.Alignment
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JFrame
 import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 class GridRegionChooserController constructor(
     owner: JFrame,
     title: String,
     private var loadRegionsCallback: (IntArray) -> Unit
 ) : JDialog(owner, title) {
+    private var gridPanel = JPanel(GridLayout())
+
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         preferredSize = Dimension(300, 500)
@@ -28,12 +34,24 @@ class GridRegionChooserController constructor(
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
 
+        val sizeChangeListener = DocumentTextListener {
+            val width = gridWidthField.text.toIntOrNull()
+            val height = gridHeightField.text.toIntOrNull()
+
+            if (width != null && height != null) resizeGrid(width, height)
+        }
+
+        arrayOf(gridWidthField.document, gridHeightField.document).forEach { it -> it.addDocumentListener(sizeChangeListener) }
+
         val lblGridSize = JLabel("Size").apply {}
+
         val lblGridWidth = JLabel("W:").apply {
             displayedMnemonic = 'w'.code
             labelFor = gridWidthField
         }
+
         val lblGridX = JLabel("x").apply {}
+
         val lblGridHeight = JLabel("H:").apply {
             displayedMnemonic = 'h'.code
             labelFor = gridHeightField
@@ -52,9 +70,7 @@ class GridRegionChooserController constructor(
 
         groups.setVerticalGroup(
             groups.createSequentialGroup()
-                .addComponent(
-                    lblGridSize
-                )
+                .addComponent(lblGridSize)
                 .addGroup(
                     groups.createParallelGroup(Alignment.CENTER)
                         .addComponent(lblGridWidth)
@@ -63,6 +79,11 @@ class GridRegionChooserController constructor(
                         .addComponent(lblGridHeight)
                         .addComponent(gridHeightField)
                 )
+                .addGap(0, 0, Int.MAX_VALUE)
+                .addComponent(gridPanel)
+                .addGap(0, 0, Int.MAX_VALUE)
+                .addComponent(loadButton)
+
         )
 
         groups.setHorizontalGroup(
@@ -81,6 +102,8 @@ class GridRegionChooserController constructor(
                                 .addComponent(lblGridHeight)
                                 .addComponent(gridHeightField, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
                         )
+                        .addComponent(gridPanel)
+                        .addComponent(loadButton)
                 )
                 .addGap(0, 0, Int.MAX_VALUE)
         )
@@ -89,5 +112,37 @@ class GridRegionChooserController constructor(
 
         rootPane.defaultButton = loadButton
         gridWidthField.requestFocus()
+    }
+
+    private fun resizeGrid(width: Int, height: Int) {
+        println("Resizing")
+
+        gridPanel.removeAll()
+        gridPanel.layout = GridLayout(width, height)
+
+        // add components
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                gridPanel.add(
+                    NumericTextField.create(0, 4647, 15522).apply {
+                        maximumSize = Dimension(maximumSize.width, preferredSize.height)
+                    }
+                )
+            }
+        }
+
+        pack()
+    }
+
+    private class DocumentTextListener(private val onChange: (event: DocumentEvent) -> Unit) : DocumentListener {
+        override fun insertUpdate(event: DocumentEvent?) {
+            event?.let(onChange)
+        }
+
+        override fun removeUpdate(event: DocumentEvent?) {
+            event?.let(onChange)
+        }
+
+        override fun changedUpdate(event: DocumentEvent?) {}
     }
 }
