@@ -28,10 +28,12 @@ class GridRegionChooserController constructor(
         val groups = GroupLayout(contentPane)
         layout = groups
 
-        val gridWidthField = NumericTextField.create(2, 1, 5).apply {
+        resizeGrid(2, 2)
+
+        val gridWidthField = NumericTextField.create(gridLayout.columns, 1, 5).apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
-        val gridHeightField = NumericTextField.create(2, 1, 5).apply {
+        val gridHeightField = NumericTextField.create(gridLayout.rows, 1, 5).apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
 
