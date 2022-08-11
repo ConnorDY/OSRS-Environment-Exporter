@@ -17,6 +17,7 @@ import javax.swing.JFormattedTextField
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.JScrollPane
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -75,6 +76,8 @@ class GridRegionChooserController constructor(
 
         val chkBoxAutoPopulate = JCheckBox("Auto-populate", true)
 
+        val gridScrollPane = JScrollPane(gridPanel)
+
         val loadButton = JButton("Load Grid Regions").apply {
             alignmentX = CENTER_ALIGNMENT
             mnemonic = 'L'.code
@@ -106,7 +109,7 @@ class GridRegionChooserController constructor(
                 )
                 .addComponent(chkBoxAutoPopulate)
                 .addGap(0, 0, Int.MAX_VALUE)
-                .addComponent(gridPanel)
+                .addComponent(gridScrollPane)
                 .addGap(0, 0, Int.MAX_VALUE)
                 .addComponent(loadButton)
 
@@ -129,7 +132,7 @@ class GridRegionChooserController constructor(
                                 .addComponent(gridHeightField)
                         )
                         .addComponent(chkBoxAutoPopulate)
-                        .addComponent(gridPanel)
+                        .addComponent(gridScrollPane)
                         .addComponent(loadButton)
                 )
                 .addGap(0, 0, Int.MAX_VALUE)
