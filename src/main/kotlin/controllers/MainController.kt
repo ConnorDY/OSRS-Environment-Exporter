@@ -95,7 +95,7 @@ class MainController constructor(
                     mnemonic = 'S'.code
                     addActionListener(::locationSearchClicked)
                 }.let(::add)
-                JMenuItem("Choose Grid Region").apply {
+                JMenuItem("Load Custom Grid").apply {
                     mnemonic = 'G'.code
                     addActionListener(::chooseGridRegionClicked)
                 }.let(::add)
