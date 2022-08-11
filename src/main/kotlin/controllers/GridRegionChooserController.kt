@@ -158,11 +158,9 @@ class GridRegionChooserController constructor(
                     maximumSize = minimumSize
                 }
 
-                val changeListener = DocumentTextListener {
+                input.document.addDocumentListener(DocumentTextListener {
                     autoPopulate(x, y, input.calcValueOrNull() as Int?)
-                }
-
-                input.document.addDocumentListener(changeListener)
+                })
 
                 gridPanel.add(input)
 
