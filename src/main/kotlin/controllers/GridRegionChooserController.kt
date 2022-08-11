@@ -72,11 +72,13 @@ class GridRegionChooserController constructor(
             alignmentX = CENTER_ALIGNMENT
             mnemonic = 'L'.code
             addActionListener {
-                loadRegionsCallback(gridInputs.map { row ->
-                    row.map {
-                        it.value as Int?
-                    }
-                }.reversed())
+                loadRegionsCallback(
+                    gridInputs.map { row ->
+                        row.map {
+                            it.value as Int?
+                        }
+                    }.reversed()
+                )
                 dispose()
             }
         }

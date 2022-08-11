@@ -3,8 +3,6 @@ package models.scene
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.util.function.Consumer
-import kotlin.math.ceil
-import kotlin.math.sqrt
 
 const val REGION_SIZE = 64
 const val REGION_HEIGHT = 4
@@ -38,11 +36,13 @@ class Scene constructor(
             regionId = centerRegionId - 256 * (radius - 2) - (radius - 2)
         }
 
-        loadRegions(List(radius) { y ->
-            List(radius) { x ->
-                regionId + 256*x + y
+        loadRegions(
+            List(radius) { y ->
+                List(radius) { x ->
+                    regionId + 256 * x + y
+                }
             }
-        })
+        )
     }
 
     /** Load a list of region IDs & trigger rendering.
