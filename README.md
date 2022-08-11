@@ -37,6 +37,8 @@ Using changes from [@partyvaper](https://github.com/partyvaper)'s [fork](https:/
 
 ## Donate
 
-If you would like to financially support the primary developers ([@ScoreUnder](https://github.com/ScoreUnder) & [@ConnorDY](https://github.com/ConnorDY)) of the OSRS Environment Exporter, click the button below:
+If you would like to financially support the primary developers ([@ScoreUnder](https://github.com/ScoreUnder) & [@ConnorDY](https://github.com/ConnorDY)) of the OSRS Environment Exporter, click the button below: [^1]
 
 [![Donate](./docs/donate-button.png)](https://www.paypal.com/donate/?business=DVHHXKWFYZUJL&no_recurring=0&item_name=Donations+will+go+directly+to+the+primary+developers+%28score+and+wiz%29+of+the+OSRS+Environment+Exporter.&currency_code=USD)
+
+[^1]: Donating will not guarantee that more time is spent developing this application.
