@@ -7,6 +7,7 @@ import java.text.ParseException
 import javax.swing.GroupLayout
 import javax.swing.GroupLayout.Alignment
 import javax.swing.JButton
+import javax.swing.JCheckBox
 import javax.swing.JDialog
 import javax.swing.JFormattedTextField
 import javax.swing.JFrame
@@ -26,7 +27,7 @@ class GridRegionChooserController constructor(
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
-        preferredSize = Dimension(500, 500)
+        preferredSize = Dimension(470, 520)
 
         val groups = GroupLayout(contentPane)
         layout = groups
@@ -62,6 +63,8 @@ class GridRegionChooserController constructor(
             labelFor = gridHeightField
         }
 
+        val chkBoxAutoPopulate = JCheckBox("Auto-populate", true)
+
         val loadButton = JButton("Load Grid Regions").apply {
             alignmentX = CENTER_ALIGNMENT
             mnemonic = 'L'.code
@@ -84,6 +87,7 @@ class GridRegionChooserController constructor(
                         .addComponent(lblGridHeight)
                         .addComponent(gridHeightField)
                 )
+                .addComponent(chkBoxAutoPopulate)
                 .addGap(0, 0, Int.MAX_VALUE)
                 .addComponent(gridPanel)
                 .addGap(0, 0, Int.MAX_VALUE)
@@ -107,6 +111,7 @@ class GridRegionChooserController constructor(
                                 .addComponent(lblGridHeight)
                                 .addComponent(gridHeightField)
                         )
+                        .addComponent(chkBoxAutoPopulate)
                         .addComponent(gridPanel)
                         .addComponent(loadButton)
                 )
@@ -141,14 +146,17 @@ class GridRegionChooserController constructor(
         gridPanel.removeAll()
         gridLayout = GridLayout(height, width)
         gridPanel.layout = gridLayout
+        gridLayout.hgap = 10
+        gridLayout.vgap = 10
 
         // add components
         for (x in 0 until width) {
             for (y in 0 until height) {
                 gridPanel.add(
                     NumericTextField.createNullable(null, 4647, 15522).apply {
-                        maximumSize = Dimension(maximumSize.width, preferredSize.height)
-                    }
+                        minimumSize = Dimension(36, 36)
+                        maximumSize = minimumSize
+                    },
                 )
             }
         }
