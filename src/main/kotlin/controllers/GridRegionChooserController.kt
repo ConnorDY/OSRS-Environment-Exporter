@@ -2,7 +2,11 @@ package controllers
 
 import ui.NumericTextField
 import java.awt.Dimension
-import java.awt.GridLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagConstraints.CENTER
+import java.awt.GridBagConstraints.NONE
+import java.awt.GridBagLayout
+import java.awt.Insets
 import java.text.ParseException
 import javax.swing.GroupLayout
 import javax.swing.GroupLayout.Alignment
@@ -22,11 +26,13 @@ class GridRegionChooserController constructor(
     title: String,
     private var loadRegionsCallback: (List<List<Int?>>) -> Unit
 ) : JDialog(owner, title) {
-    private var gridLayout = GridLayout()
-    private var gridPanel = JPanel(gridLayout)
+    private var gridPanel = JPanel(GridBagLayout())
 
     private var gridInputs: Array<Array<JFormattedTextField>> = emptyArray()
     private var autoPopulating = false
+
+    private val rows get() = gridInputs.size
+    private val cols get() = if (gridInputs.isEmpty()) 0 else gridInputs[0].size
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
@@ -37,10 +43,10 @@ class GridRegionChooserController constructor(
 
         resizeGrid(2, 2)
 
-        val gridWidthField = NumericTextField.create(gridLayout.columns, 2, MAX_WIDTH).apply {
+        val gridWidthField = NumericTextField.create(cols, 2, MAX_WIDTH).apply {
             sizeToText("888")
         }
-        val gridHeightField = NumericTextField.create(gridLayout.rows, 2, MAX_HEIGHT).apply {
+        val gridHeightField = NumericTextField.create(rows, 2, MAX_HEIGHT).apply {
             sizeToText("888")
         }
 
@@ -149,21 +155,18 @@ class GridRegionChooserController constructor(
     }
 
     private fun resizeGrid(width: Int, height: Int) {
-        if (width == gridLayout.columns && height == gridLayout.rows) return
+        if (height == gridInputs.size && (height == 0 || width == gridInputs[0].size)) return
 
         println("New size: $width x $height")
 
         gridPanel.removeAll()
-        gridLayout = GridLayout(height, width)
-        gridPanel.layout = gridLayout
-        gridLayout.hgap = 10
-        gridLayout.vgap = 10
 
         gridInputs = Array(height) { y ->
             Array(width) { x ->
                 val input = NumericTextField.createNullable(null, 4647, 15522).apply {
                     minimumSize = Dimension(36, 36)
                     maximumSize = minimumSize
+                    preferredSize = maximumSize
                 }
 
                 input.document.addDocumentListener(
@@ -172,7 +175,9 @@ class GridRegionChooserController constructor(
                     }
                 )
 
-                gridPanel.add(input)
+                val constraints =
+                    GridBagConstraints(x, y, 1, 1, 0.0, 0.0, CENTER, NONE, Insets(5, 5, 5, 5), 0, 0)
+                gridPanel.add(input, constraints)
 
                 input
             }
