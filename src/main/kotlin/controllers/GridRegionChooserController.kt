@@ -174,6 +174,8 @@ class GridRegionChooserController constructor(
                     minimumSize = size
                     preferredSize = size
                     maximumSize = size
+
+                    horizontalAlignment = JTextField.CENTER
                 }
 
                 input.document.addDocumentListener(
