@@ -180,6 +180,8 @@ class GridRegionChooserController constructor(
 
         for ((xx, inputs) in gridInputs.withIndex()) {
             for ((yy, input) in inputs.withIndex()) {
+                if (xx == x && yy == y) continue
+
                 val xdiff = xx - x
                 val ydiff = yy - y
 
