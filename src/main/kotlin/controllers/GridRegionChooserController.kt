@@ -25,7 +25,7 @@ class GridRegionChooserController constructor(
     private var gridLayout = GridLayout()
     private var gridPanel = JPanel(gridLayout)
 
-    private var gridInputs: Array<Array<JFormattedTextField?>?>? = null
+    private var gridInputs: Array<Array<JFormattedTextField>> = emptyArray()
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
@@ -151,13 +151,8 @@ class GridRegionChooserController constructor(
         gridLayout.hgap = 10
         gridLayout.vgap = 10
 
-        gridInputs = arrayOfNulls<Array<JFormattedTextField?>>(width)
-
-        // add components
-        for (x in 0 until width) {
-            gridInputs!![x] = arrayOfNulls<JFormattedTextField>(height)
-
-            for (y in 0 until height) {
+        gridInputs = Array(width) { x ->
+            Array(height) { y ->
                 val input = NumericTextField.createNullable(null, 4647, 15522).apply {
                     minimumSize = Dimension(36, 36)
                     maximumSize = minimumSize
@@ -169,9 +164,9 @@ class GridRegionChooserController constructor(
 
                 input.document.addDocumentListener(changeListener)
 
-                gridInputs!![x]!![y] = input
-
                 gridPanel.add(input)
+
+                input
             }
         }
 
