@@ -26,7 +26,6 @@ class RegionChooserController constructor(
     owner: JFrame,
     title: String,
     private var loadRegionCallback: (Int, Int) -> Unit,
-    private var loadRegionsCallback: (IntArray) -> Unit
 ) : JDialog(owner, title) {
     private val errorMessageLabel: JLabel
 
@@ -113,31 +112,6 @@ class RegionChooserController constructor(
 
     private fun loadRegion(regionIdsStr: String, radius: Int) {
         errorMessageLabel.text = ""
-
-        if (regionIdsStr.indexOf(" ") != -1) {
-            var invalidRegion = false
-            val regionIdStrings = regionIdsStr.split(" ")
-
-            val regionIds = IntArray(regionIdStrings.size) { i ->
-                val regionId = regionIdStrings[i].toIntOrNull()
-
-                if (!regionIdIsValid(regionId)) {
-                    invalidRegion = true
-                    return@IntArray 0
-                }
-
-                return@IntArray regionId!!
-            }
-
-            if (invalidRegion) {
-                errorMessageLabel.text = INVALID_REGION_ID_TEXT
-                return
-            }
-
-            dispose()
-            loadRegionsCallback(regionIds)
-            return
-        }
 
         val regionId = regionIdsStr.toIntOrNull()
         if (!regionIdIsValid(regionId)) {

@@ -14,11 +14,12 @@ class Scene constructor(
 ) {
     private val logger = LoggerFactory.getLogger(Scene::class.java)
 
-    var radius: Int = 1
-
     // NxM grid of regions to display
-    private lateinit var regions: Array<Array<SceneRegion?>>
+    private var regions: Array<Array<SceneRegion?>> = emptyArray()
     val sceneChangeListeners: ArrayList<ActionListener> = ArrayList()
+
+    val rows get() = regions.size
+    val cols get() = regions[0].size
 
     private fun reload() {
         sceneChangeListeners.forEach(
@@ -31,32 +32,32 @@ class Scene constructor(
     }
 
     fun loadRadius(centerRegionId: Int, radius: Int) {
-        this.radius = radius
-        regions = Array(radius) { arrayOfNulls<SceneRegion>(radius) }
+        regions = Array(radius) { arrayOfNulls(radius) }
         var regionId = centerRegionId
         if (radius > 1) {
             regionId = centerRegionId - 256 * (radius - 2) - (radius - 2)
         }
-        for (x in 0 until radius) {
-            for (y in 0 until radius) {
-                logger.info("Loading region {}", regionId)
-                regions[x][y] = sceneRegionBuilder.loadRegion(regionId)
-                regionId++
+
+        loadRegions(List(radius) { y ->
+            List(radius) { x ->
+                regionId + 256*x + y
             }
-            regionId += 256 - radius // move 1 region to the right, reset to lowest y
-        }
-        reload()
+        })
     }
 
-    fun loadRegions(regionIds: IntArray) {
-        val size = ceil(sqrt(regionIds.size.toDouble())).toInt()
-        radius = size
-        regions = Array(size) { arrayOfNulls<SceneRegion>(size) }
-
-        for ((i, regionId) in regionIds.withIndex()) {
-            logger.info("Loading region {}", regionId)
-            regions[i / size][i % size] = sceneRegionBuilder.loadRegion(regionId)
-        }
+    /** Load a list of region IDs & trigger rendering.
+     *  @param regionIds Non-empty list of rows of region IDs
+     */
+    fun loadRegions(regionIds: List<List<Int?>>) {
+        regions = regionIds.map { row ->
+            row.map { regionId ->
+                if (regionId == null) null
+                else {
+                    logger.info("Loading region {}", regionId)
+                    sceneRegionBuilder.loadRegion(regionId)
+                }
+            }.toTypedArray()
+        }.toTypedArray()
 
         reload()
     }
@@ -69,9 +70,6 @@ class Scene constructor(
         // figure which SceneRegion(n, m) the tile exists in
         val gridX: Int = x / REGION_SIZE
         val gridY: Int = y / REGION_SIZE
-        if (gridX >= radius || gridY >= radius) {
-            return null
-        }
         val region = getRegion(gridX, gridY) ?: return null
         val regionX: Int = x % REGION_SIZE
         val regionY: Int = y % REGION_SIZE
@@ -85,8 +83,8 @@ class Scene constructor(
     }
 
     fun getRegion(gridX: Int, gridY: Int): SceneRegion? {
-        return if (gridX >= radius || gridY >= radius) {
+        return if (gridY >= rows || gridX >= cols) {
             null
-        } else regions[gridX][gridY]
+        } else regions[gridY][gridX]
     }
 }

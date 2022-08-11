@@ -182,14 +182,10 @@ class MainController constructor(
 
     private fun changeRegionClicked(event: ActionEvent) {
         RegionChooserController(
-            this, "Region Chooser",
-            { regionId, radius ->
-                scene.loadRadius(regionId, radius)
-            },
-            { regionIds ->
-                scene.loadRegions(regionIds)
-            }
-        ).display()
+            this, "Region Chooser"
+        ) { regionId, radius ->
+            scene.loadRadius(regionId, radius)
+        }.display()
     }
 
     private fun locationSearchClicked(event: ActionEvent) {

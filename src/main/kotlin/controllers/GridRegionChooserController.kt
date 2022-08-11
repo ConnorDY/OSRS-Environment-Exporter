@@ -20,7 +20,7 @@ import javax.swing.event.DocumentListener
 class GridRegionChooserController constructor(
     owner: JFrame,
     title: String,
-    private var loadRegionsCallback: (IntArray) -> Unit
+    private var loadRegionsCallback: (List<List<Int?>>) -> Unit
 ) : JDialog(owner, title) {
     private var gridLayout = GridLayout()
     private var gridPanel = JPanel(gridLayout)
@@ -72,7 +72,12 @@ class GridRegionChooserController constructor(
             alignmentX = CENTER_ALIGNMENT
             mnemonic = 'L'.code
             addActionListener {
-                // TODO: load the region grid
+                loadRegionsCallback(gridInputs.map { row ->
+                    row.map {
+                        it.value as Int?
+                    }
+                }.reversed())
+                dispose()
             }
         }
 
