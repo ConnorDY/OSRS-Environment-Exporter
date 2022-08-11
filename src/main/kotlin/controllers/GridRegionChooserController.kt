@@ -20,6 +20,7 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
+import kotlin.math.max
 
 class GridRegionChooserController constructor(
     owner: JFrame,
@@ -164,9 +165,12 @@ class GridRegionChooserController constructor(
         gridInputs = Array(height) { y ->
             Array(width) { x ->
                 val input = NumericTextField.createNullable(null, 4647, 15522).apply {
-                    minimumSize = Dimension(36, 36)
-                    maximumSize = minimumSize
-                    preferredSize = maximumSize
+                    sizeToText("888888")
+                    val maxDim = max(maximumSize.width, maximumSize.height)
+                    val size = Dimension(maxDim, maxDim)
+                    minimumSize = size
+                    preferredSize = size
+                    maximumSize = size
                 }
 
                 input.document.addDocumentListener(
