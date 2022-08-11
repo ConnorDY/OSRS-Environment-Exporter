@@ -34,7 +34,6 @@ Based on [@tpetrychyn](https://github.com/tpetrychyn)'s [OSRS Map Editor](https:
 
 Using changes from [@partyvaper](https://github.com/partyvaper)'s [fork](https://github.com/partyvaper/osrs-map-editor).
 
-
 ## Donate
 
 If you would like to financially support the primary developers ([@ScoreUnder](https://github.com/ScoreUnder) & [@ConnorDY](https://github.com/ConnorDY)) of the OSRS Environment Exporter, click the button below: [^1]
