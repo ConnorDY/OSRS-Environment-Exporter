@@ -26,6 +26,7 @@ class GridRegionChooserController constructor(
     private var gridPanel = JPanel(gridLayout)
 
     private var gridInputs: Array<Array<JFormattedTextField>> = emptyArray()
+    private var autoPopulating = false
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
@@ -158,9 +159,11 @@ class GridRegionChooserController constructor(
                     maximumSize = minimumSize
                 }
 
-                input.document.addDocumentListener(DocumentTextListener {
-                    autoPopulate(x, y, input.calcValueOrNull() as Int?)
-                })
+                input.document.addDocumentListener(
+                    DocumentTextListener {
+                        autoPopulate(x, y, input.calcValueOrNull() as Int?)
+                    }
+                )
 
                 gridPanel.add(input)
 
@@ -172,7 +175,19 @@ class GridRegionChooserController constructor(
     }
 
     private fun autoPopulate(x: Int, y: Int, regionId: Int?) {
-        println("$x, $y: $regionId")
+        if (autoPopulating || regionId == null) return
+        autoPopulating = true
+
+        for ((xx, inputs) in gridInputs.withIndex()) {
+            for ((yy, input) in inputs.withIndex()) {
+                val xdiff = xx - x
+                val ydiff = yy - y
+
+                input.value = regionId + (ydiff * 256) - xdiff
+            }
+        }
+
+        autoPopulating = false
     }
 
     private class DocumentTextListener(private val onChange: (event: DocumentEvent) -> Unit) : DocumentListener {
