@@ -152,8 +152,8 @@ class GridRegionChooserController constructor(
         gridLayout.hgap = 10
         gridLayout.vgap = 10
 
-        gridInputs = Array(width) { x ->
-            Array(height) { y ->
+        gridInputs = Array(height) { y ->
+            Array(width) { x ->
                 val input = NumericTextField.createNullable(null, 4647, 15522).apply {
                     minimumSize = Dimension(36, 36)
                     maximumSize = minimumSize
@@ -178,14 +178,14 @@ class GridRegionChooserController constructor(
         if (autoPopulating || regionId == null) return
         autoPopulating = true
 
-        for ((xx, inputs) in gridInputs.withIndex()) {
-            for ((yy, input) in inputs.withIndex()) {
+        for ((yy, inputs) in gridInputs.withIndex()) {
+            for ((xx, input) in inputs.withIndex()) {
                 if (xx == x && yy == y) continue
 
                 val xdiff = xx - x
                 val ydiff = yy - y
 
-                input.value = regionId + (ydiff * 256) - xdiff
+                input.value = regionId + (xdiff * 256) - ydiff
             }
         }
 
