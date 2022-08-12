@@ -53,7 +53,6 @@ uniform int drawDistance;
 
 uniform int hoverId;
 
-out ivec3 vPosition;
 out vec4 vColor;
 out float vHsl;
 out vec4 vUv;
@@ -61,6 +60,7 @@ out vec4 vUv;
 flat out int o_pickerId;
 
 #include hsl_to_rgb.glsl
+#include to_screen.glsl
 
 void main()
 {
@@ -71,7 +71,9 @@ void main()
 
     vec3 rgb = hslToRgb(hsl);
 
-    vPosition = ivec3(vertex.x, vertex.y, vertex.z);
+    ivec3 cameraPos = ivec3(cameraX, cameraY, cameraZ);
+    vec3 screenPos = toScreen(vertex - cameraPos, cameraYaw, cameraPitch, centerX, centerY, zoom);
+    gl_Position = vec4(screenPos, 1);
     vColor = vec4(rgb, 1.f - a);
     vHsl = float(hsl);
     vUv = uv;

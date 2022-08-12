@@ -884,7 +884,9 @@ class Renderer constructor(
 
         gl.glUseProgram(glProgram)
         val matrix = floatArrayOf(
-            2 / (right - left), 0f, 0f, 0f, 0f, 2 / (top - bottom), 0f, 0f, 0f, 0f, -2 / (far - near), 0f,
+            2 / (right - left), 0f, 0f, 0f,
+            0f, 2 / (top - bottom), 0f, 0f,
+            0f, 0f, -2 / (far - near), 0f,
             tx, ty, tz, 1f
         )
         gl.glUniformMatrix4fv(uniProjectionMatrix, 1, false, matrix, 0)
