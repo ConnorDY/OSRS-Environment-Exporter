@@ -24,9 +24,13 @@ class SettingsController(
     init {
         layout = GridBagLayout()
 
-        val chkBoxLimitFps = JCheckBox("Limit FPS")
+        val chkBoxLimitFps = JCheckBox("Limit FPS").apply {
+            mnemonic = 'F'.code
+        }
         val txtFpsCap = NumericTextField.create(60, 1, 9999)
-        val btnSave = JButton("Save Preferences")
+        val btnSave = JButton("Save Preferences").apply {
+            mnemonic = 'S'.code
+        }
 
         val inset = Insets(4, 4, 4, 4)
         add(

@@ -120,7 +120,7 @@ class MainController constructor(
 
         JToolBar().apply {
             JButton("Export").apply {
-                mnemonic = 'x'.code
+                mnemonic = 'X'.code
                 addActionListener(::exportClicked)
             }.let(::add)
             JToolBar.Separator().let(::add)
