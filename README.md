@@ -1,22 +1,40 @@
 # OSRS Environment Exporter
 
-Tool for exporting Old School RuneScape environments so they can be used in 3D modeling programs like Blender.
+Tool for exporting Old School RuneScape environments so that they can be used in 3D modeling programs like Blender.
 
-## Getting Started
+![Screenshot of the application](./docs/screenshot.png)
 
-### Building
+## Downloading
+
+Please visit the [Releases](https://github.com/ConnorDY/OSRS-Environment-Exporter/releases) page to download the application.
+
+We recommend using the latest release unless you are having issues with it.
+
+## Configuration
+
+| Config           | Type      | Default Value | Description                                                                                                  |
+|------------------|-----------|---------------|--------------------------------------------------------------------------------------------------------------|
+| `debug`          | `Boolean` | `false`       | Enabling the `debug` option will skip the cache chooser and load the most recently used cache automatically. |
+| `fps-cap`        | `Int`     | `0`           | Caps the frame rate (FPS) to the provided value.                                                             |
+| `initial-radius` | `Int`     | `1`           | The initial radius to load.                                                                                  |
+| `initial-region` | `Int`     | `15256`       | The initial region to load.                                                                                  |
+| `last-cache-dir` | `String`  | N/A           | The last cache that was used.                                                                                |
+
+## Development
+
+### Build
 
 ```bash
 ./gradlew build
 ```
 
-### Running
+### Run
 
 ```bash
 ./run
 ```
 
-### Linting
+### Lint
 
 ```bash
 ./gradlew ktlintCheck # check linting
