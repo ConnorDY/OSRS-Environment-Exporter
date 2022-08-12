@@ -14,8 +14,8 @@ class ObjectToModelConverter(
         val listener: (Any) -> Unit = {
             litModelCache.clear()
         }
-        debugOptionsModel.onlyType10Models.addListener(listener)
-        debugOptionsModel.modelSubIndex.addListener(listener)
+        debugOptionsModel.onlyType10Models.addEarlyListener(listener)
+        debugOptionsModel.modelSubIndex.addEarlyListener(listener)
     }
 
     fun toModel(objectDefinition: ObjectDefinition, type: Int, orientation: Int): ModelDefinition? {
