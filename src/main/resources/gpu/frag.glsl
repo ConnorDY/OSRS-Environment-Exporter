@@ -47,12 +47,6 @@ uniform ivec2 mouseCoords;
 #include hsl_to_rgb.glsl
 
 void main() {
-  if (frag_pickerId == -2) {
-    if (mouseCoords.x == int(gl_FragCoord.x) && mouseCoords.y == int(gl_FragCoord.y)) {
-      discard;
-    }
-  }
-
   vec4 c;
 
   if (textureId > 0) {
@@ -69,10 +63,6 @@ void main() {
     // pick interpolated hsl or rgb depending on smooth banding setting
     vec3 rgb = hslToRgb(int(fHsl)) * smoothBanding + Color.rgb * (1.f - smoothBanding);
     c = vec4(rgb, Color.a);
-  }
-
-  if (c.a < 0.1) {
-    discard;
   }
 
   fragColor = c;
