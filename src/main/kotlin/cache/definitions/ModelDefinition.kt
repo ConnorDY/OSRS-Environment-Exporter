@@ -356,4 +356,66 @@ open class ModelDefinition(
     override fun toString(): String {
         return "ModelDefinition(id: $id, tag: $tag)"
     }
+
+    companion object {
+        private fun addOrNull(first: ByteArray?, second: ByteArray?, firstLen: Int, secondLen: Int, default: Byte = 0): ByteArray? {
+            if (first == null && second == null) return null
+            return (first ?: ByteArray(firstLen) { default }) + (second ?: ByteArray(secondLen) { default })
+        }
+
+        private fun addOrNull(first: ShortArray?, second: ShortArray?, firstLen: Int, secondLen: Int, default: Short = 0): ShortArray? {
+            if (first == null && second == null) return null
+            return (first ?: ShortArray(firstLen) { default }) + (second ?: ShortArray(secondLen) { default })
+        }
+
+        private fun addOrNull(first: IntArray?, second: IntArray?): IntArray? {
+            if (first == null) return second
+            if (second == null) return first
+            return first + second
+        }
+
+        private fun concatIndices(first: IntArray, second: IntArray, shift: Int): IntArray {
+            return first + second.map { it + shift }
+        }
+
+        private fun concatIndices(first: ShortArray, second: ShortArray, shift: Int): ShortArray {
+            val shift = first.size
+            return first + second.map { (it + shift).toShort() }
+        }
+
+        fun combine(
+            first: ModelDefinition,
+            second: ModelDefinition
+        ): ModelDefinition {
+            val def = ModelDefinition(
+                id = first.id,
+                vertexCount = first.vertexCount + second.vertexCount,
+                vertexPositionsX = first.vertexPositionsX + second.vertexPositionsX,
+                vertexPositionsY = first.vertexPositionsY + second.vertexPositionsY,
+                vertexPositionsZ = first.vertexPositionsZ + second.vertexPositionsZ,
+                faceCount = first.faceCount + second.faceCount,
+                faceVertexIndices1 = concatIndices(first.faceVertexIndices1, second.faceVertexIndices1, first.vertexCount),
+                faceVertexIndices2 = concatIndices(first.faceVertexIndices2, second.faceVertexIndices2, first.vertexCount),
+                faceVertexIndices3 = concatIndices(first.faceVertexIndices3, second.faceVertexIndices3, first.vertexCount),
+                faceAlphas = addOrNull(first.faceAlphas, second.faceAlphas, first.faceCount, second.faceCount),
+                faceColors = first.faceColors + second.faceColors,
+                faceRenderPriorities = addOrNull(first.faceRenderPriorities, second.faceRenderPriorities, first.faceCount, second.faceCount),
+                faceRenderTypes = addOrNull(first.faceRenderTypes, second.faceRenderTypes, first.faceCount, second.faceCount),
+                textureTriangleCount = first.textureTriangleCount + second.textureTriangleCount,
+                textureTriangleVertexIndices1 = concatIndices(first.textureTriangleVertexIndices1, second.textureTriangleVertexIndices1, first.vertexCount),
+                textureTriangleVertexIndices2 = concatIndices(first.textureTriangleVertexIndices2, second.textureTriangleVertexIndices2, first.vertexCount),
+                textureTriangleVertexIndices3 = concatIndices(first.textureTriangleVertexIndices3, second.textureTriangleVertexIndices3, first.vertexCount),
+                faceTextures = addOrNull(first.faceTextures, second.faceTextures, first.faceCount, second.faceCount, -1),
+                textureCoordinates = addOrNull(first.textureCoordinates, second.textureCoordinates, first.faceCount, second.faceCount, -1),
+                textureRenderTypes = first.textureRenderTypes + second.textureRenderTypes,
+                vertexSkins = addOrNull(first.vertexSkins, second.vertexSkins),
+                faceSkins = addOrNull(first.faceSkins, second.faceSkins),
+                priority = first.priority
+            )
+            def.computeNormals()
+            def.computeTextureUVCoordinates()
+            def.computeAnimationTables()
+            return def
+        }
+    }
 }

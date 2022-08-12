@@ -20,6 +20,7 @@ import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
 import models.Configuration
 import models.DebugModel
+import models.DebugOptionsModel
 import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
@@ -68,8 +69,9 @@ class MainController constructor(
 
         val camera = Camera()
         val debugModel = DebugModel()
+        val debugOptions = DebugOptionsModel()
         val objectToModelConverter =
-            ObjectToModelConverter(ModelLoader(cacheLibrary))
+            ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
         val regionLoader = RegionLoader(cacheLibrary)
         val textureLoader = TextureLoader(cacheLibrary)
@@ -83,7 +85,8 @@ class MainController constructor(
                 underlayLoader,
                 overlayLoader,
                 objectToModelConverter
-            )
+            ),
+            debugOptions,
         )
         worldRendererController = WorldRendererController(
             Renderer(
@@ -92,7 +95,8 @@ class MainController constructor(
                 TextureManager(
                     SpriteLoader(cacheLibrary), textureLoader
                 ),
-                debugModel
+                debugModel,
+                debugOptions,
             ),
             configuration
         )
@@ -145,6 +149,14 @@ class MainController constructor(
                     mnemonic = z + '0'.code
                     isSelected = visible
                     addActionListener { onZLevelSelected(z, isSelected) }
+                }.let(::add)
+            }
+
+            if (configuration.getProp("debug") == "true") {
+                Box.createGlue().let(::add)
+                JButton("Debug").apply {
+                    mnemonic = 'D'.code
+                    addActionListener { DebugOptionsController(this@MainController, debugOptions).display() }
                 }.let(::add)
             }
 

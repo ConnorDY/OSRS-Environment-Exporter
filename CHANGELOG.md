@@ -10,6 +10,12 @@
 - Check if a newer version of the OSRS Environment Exporter is available after the cache chooser screen &ndash; [84](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/84) @ConnorDY
   - This check can be disabled from the "Preferences" menu.
 
+### :bug: Bug Fixes
+
+- Fix missing lava textures in the Volcanic Mine &ndash; [#83](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/83) @ScoreUnder
+  - Also fix missing torches in Falador and Lumbridge
+  - Secret debug menu to help find these problems in the first place??
+
 ## 2.0.2
 
 ### :sparkles: Enhancements

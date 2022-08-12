@@ -34,6 +34,7 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import controllers.worldRenderer.shaders.Template
 import models.DebugModel
+import models.DebugOptionsModel
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
 import models.scene.Scene
@@ -51,7 +52,8 @@ class Renderer constructor(
     private val sceneUploader: SceneUploader,
     private val inputHandler: InputHandler,
     private val textureManager: TextureManager,
-    private val debugModel: DebugModel
+    private val debugModel: DebugModel,
+    private val debugOptionsModel: DebugOptionsModel,
 ) : GLEventListener {
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
 
@@ -186,9 +188,12 @@ class Renderer constructor(
         scene.sceneChangeListeners.add(
             ActionListener {
                 isSceneUploadRequired = true
-                camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
-                camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
-                camera.cameraZ = -2500
+
+                if (debugOptionsModel.resetCameraOnSceneChange.get()) {
+                    camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
+                    camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
+                    camera.cameraZ = -2500
+                }
             }
         )
 
