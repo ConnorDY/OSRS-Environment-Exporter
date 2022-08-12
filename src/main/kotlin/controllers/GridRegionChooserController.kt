@@ -32,6 +32,7 @@ class GridRegionChooserController constructor(
 
     private var gridInputs: Array<Array<JFormattedTextField>> = emptyArray()
     private var autoPopulating = false
+    private val chkBoxAutoPopulate: JCheckBox
 
     private val rows get() = gridInputs.size
     private val cols get() = if (gridInputs.isEmpty()) 0 else gridInputs[0].size
@@ -74,7 +75,7 @@ class GridRegionChooserController constructor(
             labelFor = gridHeightField
         }
 
-        val chkBoxAutoPopulate = JCheckBox("Auto-populate", true).apply {
+        chkBoxAutoPopulate = JCheckBox("Auto-populate", true).apply {
             toolTipText = "Auto-fill grid with adjacent regions when a cell is edited"
         }
 
@@ -198,7 +199,7 @@ class GridRegionChooserController constructor(
     }
 
     private fun autoPopulate(x: Int, y: Int, regionId: Int?) {
-        if (autoPopulating || regionId == null) return
+        if (autoPopulating || regionId == null || !chkBoxAutoPopulate.isSelected) return
         autoPopulating = true
 
         for ((yy, inputs) in gridInputs.withIndex()) {
