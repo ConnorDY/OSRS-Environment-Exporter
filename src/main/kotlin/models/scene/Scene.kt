@@ -1,5 +1,6 @@
 package models.scene
 
+import models.DebugOptionsModel
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.util.function.Consumer
@@ -7,8 +8,9 @@ import java.util.function.Consumer
 const val REGION_SIZE = 64
 const val REGION_HEIGHT = 4
 
-class Scene constructor(
-    private val sceneRegionBuilder: SceneRegionBuilder
+class Scene(
+    private val sceneRegionBuilder: SceneRegionBuilder,
+    debugOptionsModel: DebugOptionsModel,
 ) {
     private val logger = LoggerFactory.getLogger(Scene::class.java)
 
@@ -18,6 +20,14 @@ class Scene constructor(
 
     val rows get() = regions.size
     val cols get() = regions[0].size
+
+    init {
+        val listener: (Any) -> Unit = {
+            reloadRegions()
+        }
+        debugOptionsModel.onlyType10Models.addListener(listener)
+        debugOptionsModel.modelSubIndex.addListener(listener)
+    }
 
     private fun reload() {
         sceneChangeListeners.forEach(
@@ -59,6 +69,17 @@ class Scene constructor(
                 }
             }.toTypedArray()
         }.toTypedArray()
+
+        reload()
+    }
+
+    fun reloadRegions() {
+        regions.forEach { row ->
+            row.indices.forEach inner@{
+                val region = row[it] ?: return@inner
+                row[it] = sceneRegionBuilder.loadRegion(region.locationsDefinition.regionId)
+            }
+        }
 
         reload()
     }

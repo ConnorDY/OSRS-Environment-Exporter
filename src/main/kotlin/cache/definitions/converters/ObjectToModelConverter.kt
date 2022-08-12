@@ -3,11 +3,20 @@ package cache.definitions.converters
 import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.loaders.ModelLoader
+import models.DebugOptionsModel
 
-class ObjectToModelConverter constructor(
+class ObjectToModelConverter(
     private val modelLoader: ModelLoader,
+    private val debugOptionsModel: DebugOptionsModel,
     private val litModelCache: HashMap<Long, ModelDefinition> = HashMap()
 ) {
+    init {
+        val listener: (Any) -> Unit = {
+            litModelCache.clear()
+        }
+        debugOptionsModel.onlyType10Models.addListener(listener)
+        debugOptionsModel.modelSubIndex.addListener(listener)
+    }
 
     fun toModel(objectDefinition: ObjectDefinition, type: Int, orientation: Int): ModelDefinition? {
         val modelTag: Long = if (objectDefinition.modelTypes == null) {
@@ -36,7 +45,7 @@ class ObjectToModelConverter constructor(
         val modelTypes = modelTypes
         var modelDefinition: ModelDefinition? = null
         if (modelTypes == null) {
-            if (type != 10 || modelIds == null) {
+            if ((type != 10 && debugOptionsModel.onlyType10Models.get()) || modelIds == null) {
                 return null
             }
             val modelLen = modelIds.size
@@ -45,6 +54,10 @@ class ObjectToModelConverter constructor(
             }
             if (modelLen > 1) {
                 // TODO: Combine models?
+                val idx = debugOptionsModel.modelSubIndex.get()
+                if (idx in 0 until modelLen) {
+                    return getAndRotateModel(idx, isRotated, modelIds)
+                }
                 return null
             }
         } else {
