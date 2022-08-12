@@ -29,7 +29,7 @@ class ModelBuffers {
     }
 
     fun bufferForTriangles(triangles: Int): GpuIntBuffer {
-        return if (triangles < SMALL_TRIANGLE_COUNT) {
+        return if (triangles <= SMALL_TRIANGLE_COUNT) {
             ++smallModelsCount
             modelBufferSmall
         } else {
