@@ -50,13 +50,13 @@ class ObjectToModelConverter(
             }
             val modelLen = modelIds.size
             for (i in 0 until modelLen) {
-                modelDefinition = getAndRotateModel(i, isRotated, modelIds)
+                modelDefinition = getAndRotateModel(i, isRotated, orientation, modelIds)
             }
             if (modelLen > 1) {
                 // TODO: Combine models?
                 val idx = debugOptionsModel.modelSubIndex.get()
                 if (idx in 0 until modelLen) {
-                    return getAndRotateModel(idx, isRotated, modelIds)
+                    return getAndRotateModel(idx, isRotated, orientation, modelIds)
                 }
                 return null
             }
@@ -66,10 +66,23 @@ class ObjectToModelConverter(
                 return null
             }
             val isRotated = isRotated xor (orientation > 3)
-            modelDefinition = getAndRotateModel(modelIdx, isRotated, modelIds!!)
+            modelDefinition = getAndRotateModel(modelIdx, isRotated, orientation, modelIds!!)
         }
         if (modelDefinition == null) {
             return null
+        }
+        return modelDefinition
+    }
+
+    private fun ObjectDefinition.getAndRotateModel(modelIdx: Int, isRotated: Boolean, orientation: Int, modelIds: IntArray): ModelDefinition? {
+        var modelId = modelIds[modelIdx]
+        if (isRotated) {
+            modelId += 65536
+        }
+        val modelDefinition = modelLoader[modelId] ?: return null
+
+        if (isRotated) {
+            modelDefinition.rotateMulti()
         }
 
         when (orientation and 3) {
@@ -89,19 +102,6 @@ class ObjectToModelConverter(
                     textureToReplace!![i]
                 )
             }
-        }
-        return modelDefinition
-    }
-
-    private fun getAndRotateModel(modelIdx: Int, isRotated: Boolean, modelIds: IntArray): ModelDefinition? {
-        var modelId = modelIds[modelIdx]
-        if (isRotated) {
-            modelId += 65536
-        }
-        val modelDefinition = modelLoader[modelId] ?: return null
-
-        if (isRotated) {
-            modelDefinition.rotateMulti()
         }
         return modelDefinition
     }
