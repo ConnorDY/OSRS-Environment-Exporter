@@ -21,6 +21,7 @@ import models.Configuration
 import models.DebugModel
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
+import ui.JLinkLabel
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.ActionEvent
@@ -49,6 +50,11 @@ class MainController constructor(
     private val worldRendererController: WorldRendererController
     val scene: Scene
 
+    val lblDownload = JLinkLabel(
+        "https://github.com/ConnorDY/OSRS-Environment-Exporter/releases",
+        "Update available! Click here to download."
+    )
+
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         layout = BorderLayout()
@@ -62,6 +68,7 @@ class MainController constructor(
         val regionLoader = RegionLoader(cacheLibrary)
         val textureLoader = TextureLoader(cacheLibrary)
         val underlayLoader = UnderlayLoader(cacheLibrary)
+
         scene = Scene(
             SceneRegionBuilder(
                 regionLoader,
@@ -114,6 +121,10 @@ class MainController constructor(
                     addActionListener(::aboutClicked)
                 }.let(::add)
             }.let(::add)
+
+            Box.createHorizontalGlue().let(::add)
+
+            lblDownload.let(::add)
         }.let { jMenuBar = it }
 
         val lblFps = JLabel("FPS: Unknown")
