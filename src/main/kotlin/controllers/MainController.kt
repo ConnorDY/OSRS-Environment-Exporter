@@ -185,7 +185,8 @@ class MainController constructor(
             pack()
         }
 
-        checkForUpdates()
+        val checkForUpdatesEnabled = configuration.getProp(SettingsController.CHECK_FOR_UPDATES_PROP).toBooleanStrictOrNull() ?: true
+        if (checkForUpdatesEnabled) checkForUpdates()
     }
 
     override fun setVisible(visible: Boolean) {
@@ -244,9 +245,6 @@ class MainController constructor(
     }
 
     private fun checkForUpdates() {
-        val enabled = configuration.getProp(SettingsController.CHECK_FOR_UPDATES_PROP).toBooleanStrictOrNull() ?: true
-        if (!enabled) return
-
         val now = System.currentTimeMillis() / 1000L
         val lastChecked = configuration.getProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP).toLongOrNull()
 
