@@ -29,7 +29,9 @@ class SettingsController(
         }
         val txtFpsCap = NumericTextField.create(60, 1, 9999)
 
-        val chkBoxCheckForUpdates = JCheckBox("Check for updates")
+        val chkBoxCheckForUpdates = JCheckBox("Check for updates").apply {
+            mnemonic = 'U'.code
+        }
 
         val btnSave = JButton("Save Preferences").apply {
             mnemonic = 'S'.code

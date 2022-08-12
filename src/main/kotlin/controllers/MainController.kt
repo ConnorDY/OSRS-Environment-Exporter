@@ -57,7 +57,7 @@ class MainController constructor(
 ) : JFrame(title) {
     private val animationTimer: Timer
     private val worldRendererController: WorldRendererController
-    private val logger = LoggerFactory.getLogger(Scene::class.java)
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     val scene: Scene
 
@@ -127,8 +127,6 @@ class MainController constructor(
                     addActionListener(::aboutClicked)
                 }.let(::add)
             }.let(::add)
-
-            Box.createHorizontalGlue().let(::add)
         }.let { jMenuBar = it }
 
         val lblFps = JLabel("FPS: Unknown")
@@ -254,6 +252,36 @@ class MainController constructor(
             return
         }
 
+        val releaseInfo = getGitHubReleaseInfo()
+
+        // map the response to an array of GitHubRelease
+        val objectMapper = ObjectMapper()
+        val releases = objectMapper.readValue<Array<GitHubRelease>>(
+            releaseInfo,
+            objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
+        )
+
+        // determine if there is a newer version available
+        val currVersion = PackageMetadata.VERSION.split(".").map { it.toInt() }
+        var newerVersionUrl = newerReleaseExists(currVersion, releases)
+
+        if (newerVersionUrl != null) {
+            // add UI elements to menu bar
+            jMenuBar.add(Box.createHorizontalGlue())
+            jMenuBar.add(
+                JLinkLabel(
+                    newerVersionUrl,
+                    "Update available! Click here to download."
+                )
+            )
+            jMenuBar.add(Box.createHorizontalStrut(4))
+            pack()
+        }
+
+        configuration.saveProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP, now.toString())
+    }
+
+    private fun getGitHubReleaseInfo(): String? {
         try {
             val url = URL("https://api.github.com/repos/ConnorDY/OSRS-Environment-Exporter/releases")
 
@@ -266,56 +294,36 @@ class MainController constructor(
 
             // capture the response
             val inputStream = conn.inputStream
-            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
             val buffer = StringBuilder()
-
-            var line: String?
-            while (true) {
-                line = bufferedReader.readLine()
-                if (line != null) buffer.append(line)
-                else break
-            }
-            val data = buffer.toString()
-
-            // map the response to an array of GitHubRelease
-            val objectMapper = ObjectMapper()
-            val releases = objectMapper.readValue<Array<GitHubRelease>>(
-                data,
-                objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
-            )
-
-            // determine if there is a newer version available
-            val currVersion = PackageMetadata.VERSION.split(".").map { it.toInt() }
-            var newerVersionUrl: String? = null
-
-            for (release in releases) {
-                val version = release.tagName.split(".").map { it.toInt() }
-
-                if (isVersionNewer(version, currVersion)) {
-                    newerVersionUrl = release.htmlURL
-                    break
+            BufferedReader(InputStreamReader(inputStream)).use { bufferedReader ->
+                var line: String?
+                while (true) {
+                    line = bufferedReader.readLine()
+                    if (line != null) buffer.append(line)
+                    else break
                 }
             }
-
-            if (newerVersionUrl != null) {
-                jMenuBar.add(
-                    JLinkLabel(
-                        newerVersionUrl,
-                        "Update available! Click here to download."
-                    )
-                )
-                jMenuBar.add(Box.createHorizontalStrut(4))
-                pack()
-            }
+            return buffer.toString()
         } catch (e: IOException) {
             e.printStackTrace()
+            return null
+        }
+    }
+
+    private fun newerReleaseExists(currVersion: List<Int>, releases: Array<GitHubRelease>): String? {
+        for (release in releases) {
+            val version = release.tagName.split(".").map { it.toInt() }
+
+            if (isVersionNewer(version, currVersion)) {
+                return release.htmlURL
+            }
         }
 
-        configuration.saveProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP, now.toString())
+        return null
     }
 
     private fun isVersionNewer(verA: List<Int>, verB: List<Int>): Boolean {
-        for ((ver1, ver2) in verA zip verB) {
+        verA.zip(verB) { ver1, ver2 ->
             if (ver1 != ver2) {
                 return ver1 > ver2
             }
