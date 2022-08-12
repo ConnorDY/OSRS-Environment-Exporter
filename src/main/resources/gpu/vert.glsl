@@ -56,7 +56,8 @@ uniform int hoverId;
 
 out vec4 Color;
 centroid out float fHsl;
-out vec4 fUv;
+flat out int textureId;
+out vec2 fUv;
 
 flat out int frag_pickerId;
 
@@ -76,7 +77,8 @@ void main()
     gl_Position = viewProjectionMatrix * vec4(vertex, 1);
     Color = vec4(rgb, 1.f - a);
     fHsl = float(hsl);
-    fUv = uv;
+    textureId = int(uv.x);
+    fUv = uv.yz;
 
     // animation logic
 //    int frame = animInfo.x;
