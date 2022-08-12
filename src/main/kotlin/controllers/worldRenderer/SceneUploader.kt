@@ -58,21 +58,10 @@ class SceneUploader {
                     for (x in 0 until REGION_SIZE) {
                         for (y in 0 until REGION_SIZE) {
                             val tile = region.tiles[z][x][y]
-                            tile?.let { reset(it) }
-                        }
-                    }
-                }
-            }
-        }
-        for (rx in 0 until scene.cols) {
-            for (ry in 0 until scene.rows) {
-                val region = scene.getRegion(rx, ry) ?: continue
-
-                for (z in 0 until RegionDefinition.Z) {
-                    for (x in 0 until REGION_SIZE) {
-                        for (y in 0 until REGION_SIZE) {
-                            val tile = region.tiles[z][x][y]
-                            tile?.let { upload(it, vertexbuffer, uvBuffer) }
+                            tile?.let {
+                                reset(it)
+                                upload(it, vertexbuffer, uvBuffer)
+                            }
                         }
                     }
                 }
@@ -102,7 +91,7 @@ class SceneUploader {
         }
     }
 
-    fun upload(tile: SceneTile, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
+    private fun upload(tile: SceneTile, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
 // 		Tile bridge = tile.getBridge();
 // 		if (bridge != null)
 // 		{
@@ -176,7 +165,7 @@ class SceneUploader {
         }
     }
 
-    fun upload(tile: TilePaint, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
+    private fun upload(tile: TilePaint, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val swHeight = tile.swHeight
         val seHeight = tile.seHeight
         val neHeight = tile.neHeight
@@ -228,7 +217,7 @@ class SceneUploader {
         return 6
     }
 
-    fun upload(tileModel: TileModel, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
+    private fun upload(tileModel: TileModel, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val faceX = tileModel.faceX
         val faceY = tileModel.faceY
         val faceZ = tileModel.faceZ
@@ -279,7 +268,7 @@ class SceneUploader {
         return cnt
     }
 
-    fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
+    private fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val model = entity.model
 
         if (model.computeObj.offset >= 0) {
@@ -312,7 +301,7 @@ class SceneUploader {
         return len
     }
 
-    fun pushFace(model: Model, face: Int, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
+    private fun pushFace(model: Model, face: Int, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val modelDefinition = model.modelDefinition
         val vertexX: IntArray = model.vertexPositionsX
         val vertexY: IntArray = model.vertexPositionsY
