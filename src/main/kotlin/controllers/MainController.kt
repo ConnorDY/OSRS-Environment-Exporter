@@ -11,6 +11,7 @@ import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
 import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
+import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.InputHandler
 import controllers.worldRenderer.Renderer
@@ -19,6 +20,7 @@ import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
 import models.Configuration
 import models.DebugModel
+import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
 import ui.JLinkLabel
@@ -27,6 +29,12 @@ import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.io.BufferedReader
+import java.io.DataOutputStream
+import java.io.IOException
+import java.io.InputStreamReader
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 import javax.swing.Box
 import javax.swing.JButton
 import javax.swing.JCheckBox
@@ -182,6 +190,8 @@ class MainController constructor(
             worldRendererController.isVisible = false
             pack()
         }
+
+        checkForUpdates()
     }
 
     override fun setVisible(visible: Boolean) {
@@ -237,5 +247,43 @@ class MainController constructor(
     private fun onZLevelSelected(z: Int, isSelected: Boolean) {
         worldRendererController.renderer.zLevelsSelected[z] = isSelected
         worldRendererController.renderer.isSceneUploadRequired = true
+    }
+
+    private fun checkForUpdates() {
+        Thread {
+            try {
+                val url = URL("https://api.github.com/repos/ConnorDY/OSRS-Environment-Exporter/releases")
+
+                val conn = url.openConnection() as HttpsURLConnection
+                conn.requestMethod = "GET"
+                conn.setRequestProperty("Accept", "application/vnd.github.manifold-preview+json")
+                conn.useCaches = false
+                conn.doOutput = true
+
+                val dataOutputStream = DataOutputStream(conn.outputStream)
+                dataOutputStream.close()
+
+                val inputStream = conn.inputStream
+                val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+                val buffer = StringBuilder()
+
+                var line: String
+                while (true) {
+                    line = bufferedReader.readLine()
+                    if (line != null) buffer.append(line)
+                    else break
+                }
+                val data = buffer.toString()
+
+                val objectMapper = ObjectMapper()
+                val releases = objectMapper.readValue<Array<GitHubRelease>>(
+                    data,
+                    objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
+                )
+                println(releases)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }.start()
     }
 }
