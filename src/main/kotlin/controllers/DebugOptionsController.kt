@@ -9,7 +9,7 @@ import javax.swing.JCheckBox
 import javax.swing.JDialog
 import javax.swing.SwingUtilities
 
-class DebugOptionsController(owner: Frame, model: DebugOptionsModel): JDialog(owner, "Debug Options", false) {
+class DebugOptionsController(owner: Frame, model: DebugOptionsModel) : JDialog(owner, "Debug Options", false) {
     init {
         layout = BoxLayout(contentPane, BoxLayout.PAGE_AXIS)
         makeDebugToggle(model.onlyType10Models, "Only type-10 models", '1').let(::add)
