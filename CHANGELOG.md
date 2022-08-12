@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.0
+
+### :sparkles: Enhancements
+
+- Provide the option to input a grid of region IDs to load &mdash; [#79](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/74) @ConnorDY & @ScoreUnder
+  - Allows more fine-grained control of the regions exported, as well as loading non-square areas.
+
 ## 2.0.2
 
 ### :sparkles: Enhancements
