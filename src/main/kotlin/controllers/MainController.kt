@@ -24,6 +24,7 @@ import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
 import ui.JLinkLabel
+import utils.PackageMetadata
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.ActionEvent
@@ -56,11 +57,6 @@ class MainController constructor(
     private val animationTimer: Timer
     private val worldRendererController: WorldRendererController
     val scene: Scene
-
-    val lblDownload = JLinkLabel(
-        "https://github.com/ConnorDY/OSRS-Environment-Exporter/releases",
-        "Update available! Click here to download."
-    )
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
@@ -130,10 +126,6 @@ class MainController constructor(
             }.let(::add)
 
             Box.createHorizontalGlue().let(::add)
-
-            lblDownload.let(::add)
-
-            Box.createHorizontalStrut(4).let(::add)
         }.let { jMenuBar = it }
 
         val lblFps = JLabel("FPS: Unknown")
@@ -249,39 +241,71 @@ class MainController constructor(
     }
 
     private fun checkForUpdates() {
-        Thread {
-            try {
-                val url = URL("https://api.github.com/repos/ConnorDY/OSRS-Environment-Exporter/releases")
+        try {
+            val url = URL("https://api.github.com/repos/ConnorDY/OSRS-Environment-Exporter/releases")
 
-                val conn = url.openConnection() as HttpsURLConnection
-                conn.requestMethod = "GET"
-                conn.setRequestProperty("Accept", "application/vnd.github.manifold-preview+json")
-                conn.useCaches = false
-                conn.doOutput = true
+            // create request
+            val conn = url.openConnection() as HttpsURLConnection
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("Accept", "application/vnd.github.manifold-preview+json")
+            conn.useCaches = false
+            conn.doOutput = true
 
-                val inputStream = conn.inputStream
-                val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-                val buffer = StringBuilder()
+            // capture the response
+            val inputStream = conn.inputStream
+            val bufferedReader = BufferedReader(InputStreamReader(inputStream))
+            val buffer = StringBuilder()
 
-                var line: String?
-                while (true) {
-                    line = bufferedReader.readLine()
-                    if (line != null) buffer.append(line)
-                    else break
-                }
-                val data = buffer.toString()
-
-                val objectMapper = ObjectMapper()
-                val releases = objectMapper.readValue<Array<GitHubRelease>>(
-                    data,
-                    objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
-                )
-                for (release in releases) {
-                    println(release)
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
+            var line: String?
+            while (true) {
+                line = bufferedReader.readLine()
+                if (line != null) buffer.append(line)
+                else break
             }
-        }.start()
+            val data = buffer.toString()
+
+            // map the response to an array of GitHubRelease
+            val objectMapper = ObjectMapper()
+            val releases = objectMapper.readValue<Array<GitHubRelease>>(
+                data,
+                objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
+            )
+
+            // determine if there is a newer version available
+            val currVersion = PackageMetadata.VERSION.split(".").map { it.toInt() }
+            var newerVersionUrl: String? = null
+
+            for (release in releases) {
+                val version = release.tagName.split(".").map { it.toInt() }
+
+                if (isVersionNewer(version, currVersion)) {
+                    newerVersionUrl = release.htmlURL
+                    break
+                }
+            }
+
+            if (newerVersionUrl != null) {
+                jMenuBar.add(
+                    JLinkLabel(
+                        newerVersionUrl,
+                        "Update available! Click here to download."
+                    )
+                )
+                jMenuBar.add(Box.createHorizontalStrut(4))
+                pack()
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun isVersionNewer(verA: List<Int>, verB: List<Int>): Boolean {
+        for ((ver1, ver2) in verA zip verB) {
+            if (ver1 != ver2) {
+                return ver1 > ver2
+            }
+        }
+
+        return false
     }
 }
