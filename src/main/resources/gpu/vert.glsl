@@ -55,7 +55,7 @@ uniform mat4 viewProjectionMatrix;
 uniform int hoverId;
 
 out vec4 Color;
-centroid out float fHsl;
+noperspective centroid out float fHsl;
 flat out int textureId;
 out vec2 fUv;
 
