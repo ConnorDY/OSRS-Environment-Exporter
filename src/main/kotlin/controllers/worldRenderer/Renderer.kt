@@ -124,6 +124,12 @@ class Renderer constructor(
         tmpOutUvBufferId = -1
         tmpOutBufferId = -1
         colorPickerBufferId = -1
+
+        colorTexSceneHandle = -1
+        depthTexSceneHandle = -1
+        fboSceneHandle = -1
+        rboSceneHandle = -1
+
         modelBuffers = ModelBuffers()
 
         val jfxNewtDisplay = NewtFactory.createDisplay(null, false)
