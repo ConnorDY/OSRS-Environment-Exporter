@@ -61,6 +61,7 @@ class CacheChooserController(
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
         val btnDownload = JButton("Download").apply {
+            mnemonic = 'O'.code
             isEnabled = false
         }
         val listCaches = JList(cacheListModel).apply {
@@ -106,6 +107,7 @@ class CacheChooserController(
         val listCachesPlaceholder =
             JLabel("No downloadable caches found.", SwingConstants.CENTER)
         val btnLaunch = JButton("Launch").apply {
+            mnemonic = 'L'.code
             addActionListener {
                 launch(lblStatusText, txtCacheLocation, this)
             }
@@ -119,11 +121,15 @@ class CacheChooserController(
         )
 
         val lblRuneStats = JLabel("Caches available from RuneStats")
-        val lblFilter = JLabel("Filter:")
+        val lblFilter = JLabel("Filter:").apply {
+            displayedMnemonic = 'F'.code
+            labelFor = txtFilter
+        }
         val listCachesPane = JScrollPane(listCaches)
 
         val lblCacheDirectory = JLabel("Cache Directory:")
         val btnBrowse = JButton("Browse").apply {
+            mnemonic = 'B'.code
             addActionListener {
                 val initDir = File(AppConstants.CACHES_DIRECTORY)
                 initDir.mkdirs()

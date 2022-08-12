@@ -66,19 +66,20 @@ class GridRegionChooserController constructor(
         val lblGridDimensions = JLabel("Grid Dimensions").apply {}
 
         val lblGridWidth = JLabel("W:").apply {
-            displayedMnemonic = 'w'.code
+            displayedMnemonic = 'W'.code
             labelFor = gridWidthField
         }
 
         val lblGridX = JLabel("x").apply {}
 
         val lblGridHeight = JLabel("H:").apply {
-            displayedMnemonic = 'h'.code
+            displayedMnemonic = 'H'.code
             labelFor = gridHeightField
         }
 
         chkBoxAutoPopulate = JCheckBox("Auto-populate", true).apply {
             toolTipText = "Auto-fill grid with adjacent regions when a cell is edited"
+            mnemonic = 'P'.code
         }
 
         val lblInstructions = JLabel("Input region ID(s) into the boxes below.").apply {}

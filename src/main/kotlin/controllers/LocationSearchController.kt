@@ -51,9 +51,19 @@ class LocationSearchController constructor(
         listLocations.cellRenderer = LocationCell()
         val txtSearchQuery = PlaceholderTextField("", "Lumbridge")
         val txtRadius = NumericTextField.create(1, 1, 20)
+        val lblSearchQuery = JLabel("Search Query:").apply {
+            displayedMnemonic = 'S'.code
+            labelFor = txtSearchQuery
+        }
+        val lblRadius = JLabel("Radius:").apply {
+            displayedMnemonic = 'A'.code
+            labelFor = txtRadius
+        }
         val lblErrorText = JLabel("")
         lblErrorText.foreground = Color.RED
-        val btnLoad = JButton("Load Location")
+        val btnLoad = JButton("Load Location").apply {
+            mnemonic = 'L'.code
+        }
 
         val inset = Insets(0, 20, 0, 0)
         val controlSepInsets = Insets(30, 20, 0, 0)
@@ -62,7 +72,7 @@ class LocationSearchController constructor(
             GridBagConstraints(1, 0, 1, 6, 1.5, 1.0, LINE_END, BOTH, inset, 0, 0)
         )
         add(
-            JLabel("Search Query:"),
+            lblSearchQuery,
             GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, PAGE_END, NONE, inset, 0, 0)
         )
         add(
@@ -70,7 +80,7 @@ class LocationSearchController constructor(
             GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
         )
         add(
-            JLabel("Radius:"),
+            lblRadius,
             GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, ABOVE_BASELINE, NONE, controlSepInsets, 0, 0)
         )
         add(

@@ -53,7 +53,7 @@ class RegionChooserController constructor(
             labelFor = regionIdField
         }
         val lblRadius = JLabel("Radius:").apply {
-            displayedMnemonic = 'a'.code
+            displayedMnemonic = 'A'.code
             labelFor = radiusField
         }
 
