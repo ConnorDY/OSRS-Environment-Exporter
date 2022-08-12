@@ -1,5 +1,6 @@
 package controllers
 
+import AppConstants
 import ui.NumericTextField
 import java.awt.Dimension
 import java.awt.GridBagConstraints
@@ -172,7 +173,7 @@ class GridRegionChooserController constructor(
 
         gridInputs = Array(height) { y ->
             Array(width) { x ->
-                val input = NumericTextField.createNullable(null, 4647, 15522).apply {
+                val input = NumericTextField.createNullable(null, AppConstants.REGION_ID_MIN, AppConstants.REGION_ID_MAX).apply {
                     sizeToText("888888")
                     val maxDim = max(maximumSize.width, maximumSize.height)
                     val size = Dimension(maxDim, maxDim)

@@ -1,5 +1,6 @@
 package controllers
 
+import AppConstants
 import ui.JLinkLabel
 import ui.NumericTextField
 import ui.PlaceholderTextField
@@ -124,10 +125,10 @@ class RegionChooserController constructor(
     }
 
     private fun regionIdIsValid(regionId: Int?): Boolean {
-        return (regionId != null && regionId >= 4647 && regionId <= 15522)
+        return (regionId != null && regionId >= AppConstants.REGION_ID_MIN && regionId <= AppConstants.REGION_ID_MAX)
     }
 
     companion object {
-        private const val INVALID_REGION_ID_TEXT = "Region ID(s) must be between 4647 and 15522."
+        private const val INVALID_REGION_ID_TEXT = "Region ID(s) must be between ${AppConstants.REGION_ID_MIN} and ${AppConstants.REGION_ID_MAX}."
     }
 }
