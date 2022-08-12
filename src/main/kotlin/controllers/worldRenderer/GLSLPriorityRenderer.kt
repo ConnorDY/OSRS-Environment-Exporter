@@ -126,30 +126,24 @@ class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
         // unordered
         gl.glUseProgram(glUnorderedComputeProgram)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferUnorderedId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, vertexOut)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, uvOut)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, pickerIdsOut)
+        bindCommonBuffers(vertexOut, uvOut, pickerIdsOut)
         gl.glDispatchCompute(modelBuffers.unorderedModelsCount, 1, 1)
 
         // small
         gl.glUseProgram(glSmallComputeProgram)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferSmallId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, vertexOut)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, uvOut)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, pickerIdsOut)
+        bindCommonBuffers(vertexOut, uvOut, pickerIdsOut)
         gl.glDispatchCompute(modelBuffers.smallModelsCount, 1, 1)
 
         // large
         gl.glUseProgram(glComputeProgram)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferId)
+        bindCommonBuffers(vertexOut, uvOut, pickerIdsOut)
+        gl.glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
+        gl.glMemoryBarrier(GL3ES3.GL_SHADER_STORAGE_BARRIER_BIT)
+    }
+
+    private fun bindCommonBuffers(vertexOut: GLBuffer, uvOut: GLBuffer, pickerIdsOut: GLBuffer) {
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, vertexOut)
@@ -157,8 +151,6 @@ class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, pickerIdsOut)
-        gl.glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
-        gl.glMemoryBarrier(GL3ES3.GL_SHADER_STORAGE_BARRIER_BIT)
     }
 
     override fun destroy() {
