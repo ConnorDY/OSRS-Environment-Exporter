@@ -260,15 +260,11 @@ class MainController constructor(
                 conn.useCaches = false
                 conn.doOutput = true
 
-                val dataOutputStream = DataOutputStream(conn.outputStream)
-                dataOutputStream.flush()
-                dataOutputStream.close()
-
                 val inputStream = conn.inputStream
                 val bufferedReader = BufferedReader(InputStreamReader(inputStream))
                 val buffer = StringBuilder()
 
-                var line: String
+                var line: String?
                 while (true) {
                     line = bufferedReader.readLine()
                     if (line != null) buffer.append(line)
