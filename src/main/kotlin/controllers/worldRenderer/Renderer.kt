@@ -186,8 +186,8 @@ class Renderer constructor(
         scene.sceneChangeListeners.add(
             ActionListener {
                 isSceneUploadRequired = true
-                camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
-                camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.radius * REGION_SIZE
+                camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
+                camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
                 camera.cameraZ = -2500
             }
         )
@@ -519,8 +519,8 @@ class Renderer constructor(
 
         zLevelsSelected.forEachIndexed { z, visible ->
             if (visible) {
-                for (x in 0 until scene.radius * REGION_SIZE) {
-                    for (y in 0 until scene.radius * REGION_SIZE) {
+                for (x in 0 until scene.cols * REGION_SIZE) {
+                    for (y in 0 until scene.rows * REGION_SIZE) {
                         scene.getTile(z, x, y)?.let { drawTile(it) }
                     }
                 }

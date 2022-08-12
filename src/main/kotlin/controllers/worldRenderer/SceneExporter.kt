@@ -38,8 +38,8 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
 
         ++sceneId
 
-        for (rx in 0 until scene.radius) {
-            for (ry in 0 until scene.radius) {
+        for (rx in 0 until scene.cols) {
+            for (ry in 0 until scene.rows) {
                 val region = scene.getRegion(rx, ry) ?: continue
                 renderer.zLevelsSelected.forEachIndexed { z, visible ->
                     if (visible) {

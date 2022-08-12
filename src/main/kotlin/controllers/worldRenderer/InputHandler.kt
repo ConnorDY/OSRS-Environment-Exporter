@@ -60,10 +60,10 @@ class InputHandler internal constructor(
             camera.addZ(dt.toInt() * speed)
         }
         if (keys[KeyEvent.VK_K.toInt()]) {
-            scene.load(13360, 5)
+            scene.loadRadius(13360, 5)
         }
         if (keys[KeyEvent.VK_L.toInt()]) {
-            scene.load(13408, 5)
+            scene.loadRadius(13408, 5)
         }
     }
 

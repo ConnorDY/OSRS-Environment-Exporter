@@ -1,5 +1,6 @@
 package controllers
 
+import AppConstants
 import ui.JLinkLabel
 import ui.NumericTextField
 import ui.PlaceholderTextField
@@ -7,7 +8,7 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
-import java.awt.GridBagConstraints.CENTER
+import java.awt.GridBagConstraints.BASELINE
 import java.awt.GridBagConstraints.HORIZONTAL
 import java.awt.GridBagConstraints.LINE_START
 import java.awt.GridBagConstraints.NONE
@@ -25,7 +26,7 @@ import javax.swing.JPanel
 class RegionChooserController constructor(
     owner: JFrame,
     title: String,
-    private var loadRegionCallback: (Int, Int) -> Unit
+    private var loadRegionCallback: (Int, Int) -> Unit,
 ) : JDialog(owner, title) {
     private val errorMessageLabel: JLabel
 
@@ -77,7 +78,7 @@ class RegionChooserController constructor(
         )
         add(
             lblWarn,
-            GridBagConstraints(0, 1, REMAINDER, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
+            GridBagConstraints(0, 1, REMAINDER, 1, 1.0, 0.0, BASELINE, NONE, inset, 0, 0)
         )
         add(
             lblRegion,
@@ -89,15 +90,15 @@ class RegionChooserController constructor(
         )
         add(
             regionIdField,
-            GridBagConstraints(1, 2, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+            GridBagConstraints(1, 2, 1, 1, 1.0, 0.0, BASELINE, HORIZONTAL, inset, 0, 0)
         )
         add(
             radiusField,
-            GridBagConstraints(1, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+            GridBagConstraints(1, 3, 1, 1, 1.0, 0.0, BASELINE, HORIZONTAL, inset, 0, 0)
         )
         add(
             loadButton,
-            GridBagConstraints(0, 4, REMAINDER, 1, 0.0, 0.0, CENTER, NONE, inset, 0, 0)
+            GridBagConstraints(0, 4, REMAINDER, 1, 0.0, 0.0, BASELINE, NONE, inset, 0, 0)
         )
         add(
             errorMessageLabel,
@@ -110,20 +111,24 @@ class RegionChooserController constructor(
         regionIdField.requestFocus()
     }
 
-    private fun loadRegion(regionIdStr: String, radius: Int) {
+    private fun loadRegion(regionIdsStr: String, radius: Int) {
         errorMessageLabel.text = ""
 
-        val regionId: Int? = regionIdStr.toIntOrNull()
-        if (regionId == null || (regionId < 4647 || regionId > 15522)) {
+        val regionId = regionIdsStr.toIntOrNull()
+        if (!regionIdIsValid(regionId)) {
             errorMessageLabel.text = INVALID_REGION_ID_TEXT
             return
         }
 
         dispose()
-        loadRegionCallback(regionId, radius)
+        loadRegionCallback(regionId!!, radius)
+    }
+
+    private fun regionIdIsValid(regionId: Int?): Boolean {
+        return (regionId != null && regionId >= AppConstants.REGION_ID_MIN && regionId <= AppConstants.REGION_ID_MAX)
     }
 
     companion object {
-        private const val INVALID_REGION_ID_TEXT = "Region Id must be between 4647 and 15522."
+        private const val INVALID_REGION_ID_TEXT = "Region ID(s) must be between ${AppConstants.REGION_ID_MIN} and ${AppConstants.REGION_ID_MAX}."
     }
 }

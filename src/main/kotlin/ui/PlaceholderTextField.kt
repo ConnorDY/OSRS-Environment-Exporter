@@ -16,11 +16,11 @@ class PlaceholderTextField(text: String, private val placeholder: String) :
             RenderingHints.KEY_TEXT_ANTIALIASING,
             RenderingHints.VALUE_TEXT_ANTIALIAS_ON
         )
-        graphics.color = foreground.let { Color(it.red, it.green, it.blue, 128) }
+        graphics.color = foreground.let { Color(it.red, it.green, it.blue, it.alpha / 2) }
         graphics.drawString(
             placeholder,
             insets.left,
-            graphics.fontMetrics.maxAscent + (insets.top + graphics.clipBounds.height - insets.bottom - graphics.fontMetrics.height) / 2
+            graphics.fontMetrics.maxAscent + (insets.top + height - insets.bottom - graphics.fontMetrics.height) / 2
         )
     }
 }

@@ -46,6 +46,7 @@ class CacheChooserController(
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         preferredSize = Dimension(750, 400)
+
         val groups = GroupLayout(contentPane)
         layout = groups
 
@@ -177,9 +178,9 @@ class CacheChooserController(
                     groups.createSequentialGroup()
                         .addComponent(lblRuneStats)
                         .addGroup(
-                            groups.createParallelGroup()
-                                .addComponent(lblFilter, Alignment.CENTER)
-                                .addComponent(txtFilter, Alignment.CENTER)
+                            groups.createParallelGroup(Alignment.BASELINE)
+                                .addComponent(lblFilter)
+                                .addComponent(txtFilter)
                         )
                         .addComponent(listCachesPane)
                         .addComponent(btnDownload)
@@ -189,12 +190,9 @@ class CacheChooserController(
                         .addGap(0, 0, Int.MAX_VALUE)
                         .addComponent(lblCacheDirectory)
                         .addGroup(
-                            groups.createParallelGroup()
-                                .addComponent(
-                                    txtCacheLocation,
-                                    Alignment.CENTER
-                                )
-                                .addComponent(btnBrowse, Alignment.CENTER)
+                            groups.createParallelGroup(Alignment.BASELINE)
+                                .addComponent(txtCacheLocation)
+                                .addComponent(btnBrowse)
                         )
                         .addComponent(scrollErrorText)
                         .addComponent(btnLaunch)
@@ -212,8 +210,8 @@ class CacheChooserController(
 
         pack()
 
-        btnLaunch.requestFocus()
         rootPane.defaultButton = btnLaunch
+        btnLaunch.requestFocus()
     }
 
     private fun launch(
@@ -273,7 +271,7 @@ class CacheChooserController(
         Thread {
             try {
                 val conn = URL("$RUNESTATS_URL/$cacheName").openConnection()
-                conn.addRequestProperty("User-Agent", "taylors-map-editor")
+                conn.addRequestProperty("User-Agent", "osrs-environment-exporter")
                 BufferedInputStream(conn.getInputStream()).use { inputStream ->
                     val tarIn = TarArchiveInputStream(
                         GzipCompressorInputStream(inputStream)

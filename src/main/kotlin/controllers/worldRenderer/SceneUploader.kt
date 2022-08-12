@@ -50,8 +50,8 @@ class SceneUploader {
         resetOffsets()
         vertexbuffer.clear()
         uvBuffer.clear()
-        for (rx in 0 until scene.radius) {
-            for (ry in 0 until scene.radius) {
+        for (rx in 0 until scene.cols) {
+            for (ry in 0 until scene.rows) {
                 val region = scene.getRegion(rx, ry) ?: continue
 
                 for (z in 0 until RegionDefinition.Z) {
@@ -64,8 +64,8 @@ class SceneUploader {
                 }
             }
         }
-        for (rx in 0 until scene.radius) {
-            for (ry in 0 until scene.radius) {
+        for (rx in 0 until scene.cols) {
+            for (ry in 0 until scene.rows) {
                 val region = scene.getRegion(rx, ry) ?: continue
 
                 for (z in 0 until RegionDefinition.Z) {

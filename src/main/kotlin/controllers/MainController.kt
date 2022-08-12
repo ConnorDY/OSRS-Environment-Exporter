@@ -95,6 +95,10 @@ class MainController constructor(
                     mnemonic = 'S'.code
                     addActionListener(::locationSearchClicked)
                 }.let(::add)
+                JMenuItem("Load Custom Grid").apply {
+                    mnemonic = 'G'.code
+                    addActionListener(::chooseGridRegionClicked)
+                }.let(::add)
             }.let(::add)
             JMenu("Edit").apply {
                 mnemonic = 'E'.code
@@ -136,7 +140,7 @@ class MainController constructor(
         }.let { add(it, BorderLayout.NORTH) }
 
         // load initial scene
-        scene.load(
+        scene.loadRadius(
             configuration.getProp("initial-region-id").toIntOrNull() ?: 15256,
             configuration.getProp("initial-radius").toIntOrNull() ?: 1,
         )
@@ -177,14 +181,23 @@ class MainController constructor(
     }
 
     private fun changeRegionClicked(event: ActionEvent) {
-        RegionChooserController(this, "Region Chooser") { regionId, radius ->
-            scene.load(regionId, radius)
+        RegionChooserController(
+            this, "Region Chooser"
+        ) { regionId, radius ->
+            scene.loadRadius(regionId, radius)
         }.display()
     }
 
     private fun locationSearchClicked(event: ActionEvent) {
         LocationSearchController(this, "Location Search", scene).display()
     }
+
+    private fun chooseGridRegionClicked(event: ActionEvent) {
+        GridRegionChooserController(this, "Load Custom Grid") { regionIds ->
+            scene.loadRegions(regionIds)
+        }.display()
+    }
+
     private fun preferencesClicked(event: ActionEvent) {
         SettingsController(this, "Preferences", worldRendererController.renderer, configuration).display()
     }
