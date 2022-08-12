@@ -20,6 +20,7 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextField
+import javax.swing.LayoutStyle
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import kotlin.math.max
@@ -113,10 +114,11 @@ class GridRegionChooserController constructor(
                         .addComponent(lblGridHeight)
                         .addComponent(gridHeightField)
                 )
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(chkBoxAutoPopulate)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE,Int.MAX_VALUE)
                 .addComponent(lblInstructions)
-                .addGap(0, 0, Int.MAX_VALUE)
-                .addComponent(gridScrollPane)
+                .addComponent(gridScrollPane, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Int.MAX_VALUE)
                 .addComponent(loadButton)
 
