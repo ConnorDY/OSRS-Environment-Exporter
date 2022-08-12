@@ -7,7 +7,7 @@ import java.awt.Color
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
-import java.awt.GridBagConstraints.CENTER
+import java.awt.GridBagConstraints.BASELINE
 import java.awt.GridBagConstraints.HORIZONTAL
 import java.awt.GridBagConstraints.LINE_START
 import java.awt.GridBagConstraints.NONE
@@ -77,7 +77,7 @@ class RegionChooserController constructor(
         )
         add(
             lblWarn,
-            GridBagConstraints(0, 1, REMAINDER, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
+            GridBagConstraints(0, 1, REMAINDER, 1, 1.0, 0.0, BASELINE, NONE, inset, 0, 0)
         )
         add(
             lblRegion,
@@ -89,15 +89,15 @@ class RegionChooserController constructor(
         )
         add(
             regionIdField,
-            GridBagConstraints(1, 2, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+            GridBagConstraints(1, 2, 1, 1, 1.0, 0.0, BASELINE, HORIZONTAL, inset, 0, 0)
         )
         add(
             radiusField,
-            GridBagConstraints(1, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+            GridBagConstraints(1, 3, 1, 1, 1.0, 0.0, BASELINE, HORIZONTAL, inset, 0, 0)
         )
         add(
             loadButton,
-            GridBagConstraints(0, 4, REMAINDER, 1, 0.0, 0.0, CENTER, NONE, inset, 0, 0)
+            GridBagConstraints(0, 4, REMAINDER, 1, 0.0, 0.0, BASELINE, NONE, inset, 0, 0)
         )
         add(
             errorMessageLabel,

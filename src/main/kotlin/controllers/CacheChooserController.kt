@@ -178,9 +178,9 @@ class CacheChooserController(
                     groups.createSequentialGroup()
                         .addComponent(lblRuneStats)
                         .addGroup(
-                            groups.createParallelGroup()
-                                .addComponent(lblFilter, Alignment.CENTER)
-                                .addComponent(txtFilter, Alignment.CENTER)
+                            groups.createParallelGroup(Alignment.BASELINE)
+                                .addComponent(lblFilter)
+                                .addComponent(txtFilter)
                         )
                         .addComponent(listCachesPane)
                         .addComponent(btnDownload)
@@ -190,12 +190,9 @@ class CacheChooserController(
                         .addGap(0, 0, Int.MAX_VALUE)
                         .addComponent(lblCacheDirectory)
                         .addGroup(
-                            groups.createParallelGroup()
-                                .addComponent(
-                                    txtCacheLocation,
-                                    Alignment.CENTER
-                                )
-                                .addComponent(btnBrowse, Alignment.CENTER)
+                            groups.createParallelGroup(Alignment.BASELINE)
+                                .addComponent(txtCacheLocation)
+                                .addComponent(btnBrowse)
                         )
                         .addComponent(scrollErrorText)
                         .addComponent(btnLaunch)

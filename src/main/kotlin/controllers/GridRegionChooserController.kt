@@ -103,7 +103,7 @@ class GridRegionChooserController constructor(
             groups.createSequentialGroup()
                 .addComponent(lblGridDimensions)
                 .addGroup(
-                    groups.createParallelGroup(Alignment.CENTER)
+                    groups.createParallelGroup(Alignment.BASELINE)
                         .addComponent(lblGridWidth)
                         .addComponent(gridWidthField)
                         .addComponent(lblGridX)
