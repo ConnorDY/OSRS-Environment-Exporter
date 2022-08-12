@@ -261,6 +261,7 @@ class MainController constructor(
                 conn.doOutput = true
 
                 val dataOutputStream = DataOutputStream(conn.outputStream)
+                dataOutputStream.flush()
                 dataOutputStream.close()
 
                 val inputStream = conn.inputStream
