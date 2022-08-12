@@ -2,7 +2,6 @@ package controllers.worldRenderer
 
 import cache.definitions.RegionDefinition
 import controllers.worldRenderer.entities.Entity
-import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
@@ -11,6 +10,7 @@ import controllers.worldRenderer.helpers.GpuIntBuffer
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
+import java.lang.ref.SoftReference
 
 /*
  * Copyright (c) 2018, Adam <Adam@sigterm.info>
@@ -40,6 +40,8 @@ class SceneUploader {
     var sceneId = System.nanoTime().toInt()
     private var offset = 0
     private var uvOffset = 0
+    private var dummyArray = SoftReference(arrayOfNulls<FloatArray>(128))
+
     fun resetOffsets() {
         offset = 0
         uvOffset = 0
@@ -263,18 +265,7 @@ class SceneUploader {
         vertexBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
         uvBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
         val triangleCount: Int = model.modelDefinition.faceCount
-        var len = 0
-        for (i in 0 until triangleCount) {
-            len += pushFace(model, i, vertexBuffer, uvBuffer)
-        }
-        model.computeObj.size = len / 3
-        offset += len
-        if (model.modelDefinition.faceTextures != null) {
-            uvOffset += len
-        }
-    }
 
-    private fun pushFace(model: Model, face: Int, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
         val modelDefinition = model.modelDefinition
         val vertexX: IntArray = model.vertexPositionsX
         val vertexY: IntArray = model.vertexPositionsY
@@ -288,13 +279,73 @@ class SceneUploader {
         val transparencies: ByteArray? = modelDefinition.faceAlphas
         val faceTextures: ShortArray? = modelDefinition.faceTextures
         val facePriorities: ByteArray? = modelDefinition.faceRenderPriorities
-        val triangleA = trianglesX[face]
-        val triangleB = trianglesY[face]
-        val triangleC = trianglesZ[face]
-        val color1 = color1s[face]
-        var color2 = color2s[face]
-        var color3 = color3s[face]
 
+        var u: Array<FloatArray?>? = modelDefinition.faceTextureUCoordinates
+        var v: Array<FloatArray?>? = modelDefinition.faceTextureVCoordinates
+
+        if (u == null || v == null) {
+            u = getDummyArray(triangleCount)
+            v = getDummyArray(triangleCount)
+        }
+
+        var len = 0
+        for (face in 0 until triangleCount) {
+            val alphaPriority = packAlphaPriority(faceTextures, transparencies, facePriorities, face)
+
+            val color1 = color1s[face]
+            var color2 = color2s[face]
+            var color3 = color3s[face]
+
+            if (color3 == -1) {
+                color3 = color1
+                color2 = color3
+            } else if (color3 == -2) {
+                vertexBuffer.put(0, 0, 0, 0)
+                vertexBuffer.put(0, 0, 0, 0)
+                vertexBuffer.put(0, 0, 0, 0)
+                if (faceTextures != null) {
+                    uvBuffer.put(0f, 0f, 0f, 0f)
+                    uvBuffer.put(0f, 0f, 0f, 0f)
+                    uvBuffer.put(0f, 0f, 0f, 0f)
+                }
+                len += 3
+                continue
+            }
+
+            val triangleA = trianglesX[face]
+            val triangleB = trianglesY[face]
+            val triangleC = trianglesZ[face]
+            vertexBuffer.put(vertexX[triangleA], vertexY[triangleA], vertexZ[triangleA], alphaPriority or color1)
+            vertexBuffer.put(vertexX[triangleB], vertexY[triangleB], vertexZ[triangleB], alphaPriority or color2)
+            vertexBuffer.put(vertexX[triangleC], vertexY[triangleC], vertexZ[triangleC], alphaPriority or color3)
+            if (faceTextures != null) {
+                pushUvForFace(faceTextures, u, v, face, uvBuffer)
+            }
+            len += 3
+        }
+        model.computeObj.size = len / 3
+        offset += len
+        if (model.modelDefinition.faceTextures != null) {
+            uvOffset += len
+        }
+    }
+
+    private fun pushUvForFace(faceTextures: ShortArray, u: Array<FloatArray?>, v: Array<FloatArray?>, face: Int, uvBuffer: GpuFloatBuffer) {
+        val uf: FloatArray? = u[face]
+        val vf: FloatArray? = v[face]
+        if (uf != null && vf != null) {
+            val texture = faceTextures[face] + 1f
+            uvBuffer.put(texture, uf[0], vf[0], 0f)
+            uvBuffer.put(texture, uf[1], vf[1], 0f)
+            uvBuffer.put(texture, uf[2], vf[2], 0f)
+        } else {
+            uvBuffer.put(0f, 0f, 0f, 0f)
+            uvBuffer.put(0f, 0f, 0f, 0f)
+            uvBuffer.put(0f, 0f, 0f, 0f)
+        }
+    }
+
+    private fun packAlphaPriority(faceTextures: ShortArray?, transparencies: ByteArray?, facePriorities: ByteArray?, face: Int): Int {
         var alpha = 0
         if (transparencies != null && (faceTextures == null || faceTextures[face].toInt() == -1)) {
             alpha = transparencies[face].toInt() and 0xFF shl 24
@@ -303,52 +354,16 @@ class SceneUploader {
         if (facePriorities != null) {
             priority = facePriorities[face].toInt() and 0xff shl 16
         }
-        if (color3 == -1) {
-            color3 = color1
-            color2 = color3
-        } else if (color3 == -2) {
-            vertexBuffer.put(0, 0, 0, 0)
-            vertexBuffer.put(0, 0, 0, 0)
-            vertexBuffer.put(0, 0, 0, 0)
-            if (faceTextures != null) {
-                uvBuffer.put(0f, 0f, 0f, 0f)
-                uvBuffer.put(0f, 0f, 0f, 0f)
-                uvBuffer.put(0f, 0f, 0f, 0f)
-            }
-            return 3
+        return alpha or priority
+    }
+
+    private fun getDummyArray(size: Int): Array<FloatArray?> {
+        var dummyArray = this.dummyArray.get()
+        if (dummyArray != null && dummyArray.size >= size) {
+            return dummyArray
         }
-        var a: Int
-        var b: Int
-        var c: Int
-        a = vertexX[triangleA]
-        b = vertexY[triangleA]
-        c = vertexZ[triangleA]
-        vertexBuffer.put(a, b, c, alpha or priority or color1)
-        a = vertexX[triangleB]
-        b = vertexY[triangleB]
-        c = vertexZ[triangleB]
-        vertexBuffer.put(a, b, c, alpha or priority or color2)
-        a = vertexX[triangleC]
-        b = vertexY[triangleC]
-        c = vertexZ[triangleC]
-        vertexBuffer.put(a, b, c, alpha or priority or color3)
-        val u: Array<FloatArray?>? = modelDefinition.faceTextureUCoordinates
-        val v: Array<FloatArray?>? = modelDefinition.faceTextureVCoordinates
-        var uf: FloatArray? = null
-        var vf: FloatArray? = null
-        if (faceTextures != null) {
-            if (u != null && v != null && u[face].also { uf = it } != null && v[face].also { vf = it } != null
-            ) {
-                val texture = faceTextures[face] + 1f
-                uvBuffer.put(texture, uf!![0], vf!![0], 0f)
-                uvBuffer.put(texture, uf!![1], vf!![1], 0f)
-                uvBuffer.put(texture, uf!![2], vf!![2], 0f)
-            } else {
-                uvBuffer.put(0f, 0f, 0f, 0f)
-                uvBuffer.put(0f, 0f, 0f, 0f)
-                uvBuffer.put(0f, 0f, 0f, 0f)
-            }
-        }
-        return 3
+        dummyArray = arrayOfNulls((size * 3) shr 1)
+        this.dummyArray = SoftReference(dummyArray)
+        return dummyArray
     }
 }
