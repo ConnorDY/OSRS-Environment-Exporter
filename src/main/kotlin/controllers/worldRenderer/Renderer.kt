@@ -397,7 +397,7 @@ class Renderer constructor(
 
     private fun drawTiles() {
         modelBuffers.clear()
-        modelBuffers.targetBufferOffset = 0
+        modelBuffers.clearBufferOffset()
 
         zLevelsSelected.forEachIndexed { z, visible ->
             if (visible) {

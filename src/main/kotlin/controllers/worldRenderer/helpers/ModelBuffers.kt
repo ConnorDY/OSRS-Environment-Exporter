@@ -22,6 +22,11 @@ class ModelBuffers {
         tempUvOffset = 0
     }
 
+    fun clearBufferOffset() {
+        // TODO: understand why this isn't always done(?)
+        targetBufferOffset = 0
+    }
+
     fun flip() {
         modelBuffer.flip()
         modelBufferSmall.flip()
@@ -38,6 +43,11 @@ class ModelBuffers {
         }
     }
 
+    fun bufferUnordered(): GpuIntBuffer {
+        unorderedModelsCount++
+        return modelBufferUnordered
+    }
+
     val vertexBuffer: GpuIntBuffer = GpuIntBuffer()
     val uvBuffer: GpuFloatBuffer = GpuFloatBuffer()
     val modelBufferUnordered: GpuIntBuffer = GpuIntBuffer()
@@ -45,24 +55,25 @@ class ModelBuffers {
     val modelBuffer: GpuIntBuffer = GpuIntBuffer()
 
     var unorderedModelsCount = 0
-    fun incUnorderedModels() {
-        unorderedModelsCount++
-    }
+        private set
 
     /**
      * number of models in small buffer
      */
     var smallModelsCount = 0
+        private set
 
     /**
      * number of models in large buffer
      */
     var largeModelsCount = 0
+        private set
 
     /**
      * offset in the target buffer for model
      */
     var targetBufferOffset = 0
+        private set
     fun addTargetBufferOffset(n: Int) {
         targetBufferOffset += n
     }
@@ -71,11 +82,13 @@ class ModelBuffers {
      * offset into the temporary scene vertex buffer
      */
     var tempOffset = 0
+        private set
 
     /**
      * offset into the temporary scene uv buffer
      */
     var tempUvOffset = 0
+        private set
 
     fun calcPickerId(x: Int, y: Int, objType: Int): Int {
         // pack x tile in top 13 bits, y in next 13, objectId in bottom 5

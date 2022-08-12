@@ -53,9 +53,8 @@ class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
 
     override fun addRenderable(renderable: Renderable, modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
         val b: GpuIntBuffer =
-            if (renderable.renderUnordered) modelBuffers.modelBufferUnordered
+            if (renderable.renderUnordered) modelBuffers.bufferUnordered()
             else modelBuffers.bufferForTriangles(min(ModelBuffers.MAX_TRIANGLE, renderable.faceCount))
-        if (renderable.renderUnordered) modelBuffers.incUnorderedModels()
         b.ensureCapacity(13)
 
         renderable.computeObj.idx = modelBuffers.targetBufferOffset
