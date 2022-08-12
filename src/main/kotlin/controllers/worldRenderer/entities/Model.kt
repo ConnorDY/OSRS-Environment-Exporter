@@ -5,12 +5,7 @@ import cache.definitions.data.FaceNormal
 import cache.definitions.data.VertexNormal
 import cache.loaders.RegionLoader
 import cache.loaders.getTileHeight
-import controllers.worldRenderer.Constants
-import controllers.worldRenderer.helpers.GpuIntBuffer
-import controllers.worldRenderer.helpers.ModelBuffers
-import controllers.worldRenderer.helpers.ModelBuffers.Companion.MAX_TRIANGLE
 import utils.clamp
-import kotlin.math.min
 import kotlin.math.sqrt
 
 class Model(
@@ -20,14 +15,17 @@ class Model(
     var orientationType: OrientationType = OrientationType.STRAIGHT,
     var x: Int = 0, // 3d world space position
     var y: Int = 0,
-    var yOff: Int = 0,
-    var xOff: Int = 0,
-    var height: Int = 0,
     val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors2: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
 ) : Renderable {
-    internal val computeObj = ComputeObj()
+    override val computeObj = ComputeObj()
+    override val renderFlags get() = super.renderFlags or (radius shl 12) or orientationType.id
+    override val renderUnordered get() = false
+    override val faceCount get() = modelDefinition.faceCount
+    override var renderOffsetX = 0
+    override var renderOffsetY = 0
+    override var renderOffsetZ = 0
 
     val vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
     val vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
@@ -45,30 +43,12 @@ class Model(
     private var radius = 0
     private var diameter = 0
 
-    override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
-        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE + xOff
-        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE + yOff
-
-        val b: GpuIntBuffer = modelBuffers.bufferForTriangles(min(MAX_TRIANGLE, modelDefinition.faceCount))
-        b.ensureCapacity(13)
-
-        computeObj.idx = modelBuffers.targetBufferOffset
-        computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER or (radius shl 12) or orientationType.id
-        computeObj.x = x
-        computeObj.y = height
-        computeObj.z = z
-        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
-        b.buffer.put(computeObj.toArray())
-
-        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
-    }
-
     private fun calculateBoundsCylinder() {
         if (boundsType != 1) {
             boundsType = 1
             bottomY = 0
             xYZMag = 0
-            height = 0
+            var height = 0
             for (var1 in 0 until modelDefinition.vertexCount) {
                 val var2: Int = modelDefinition.vertexPositionsX[var1]
                 val var3: Int = modelDefinition.vertexPositionsY[var1]

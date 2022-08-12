@@ -279,8 +279,8 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
         val triangleB = trianglesY[face]
         val triangleC = trianglesZ[face]
 
-        val x = tileX * Constants.LOCAL_TILE_SIZE + model.xOff
-        val z = tileY * Constants.LOCAL_TILE_SIZE + model.yOff
+        val x = tileX * Constants.LOCAL_TILE_SIZE + model.renderOffsetX
+        val z = tileY * Constants.LOCAL_TILE_SIZE + model.renderOffsetZ
 
         val color1 = color1s[face]
         var color2 = color2s[face]

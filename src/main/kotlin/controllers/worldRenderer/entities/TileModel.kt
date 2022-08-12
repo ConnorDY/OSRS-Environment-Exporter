@@ -1,8 +1,6 @@
 package controllers.worldRenderer.entities
 
 import controllers.worldRenderer.Constants
-import controllers.worldRenderer.helpers.GpuIntBuffer
-import controllers.worldRenderer.helpers.ModelBuffers
 
 class TileModel(
     var overlayPath: Int = 0,
@@ -23,7 +21,8 @@ class TileModel(
     var neColorB: Int,
     var nwColorB: Int
 ) : Renderable {
-    internal val computeObj = ComputeObj()
+    override val computeObj = ComputeObj()
+    override val renderUnordered get() = true
 
     lateinit var vertexX: IntArray
     lateinit var vertexY: IntArray
@@ -41,28 +40,9 @@ class TileModel(
     var triangleColorC: IntArray = intArrayOf()
         private set
 
-    var faceCount: Int = -1
+    override var faceCount: Int = -1
     var triangleTextureId: IntArray? = null
     var isFlat = true
-
-    override fun draw(modelBuffers: ModelBuffers, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
-        val x: Int = sceneX * Constants.LOCAL_TILE_SIZE
-        val z: Int = sceneY * Constants.LOCAL_TILE_SIZE
-
-        val b: GpuIntBuffer = modelBuffers.modelBufferUnordered
-        modelBuffers.incUnorderedModels()
-        b.ensureCapacity(13)
-
-        computeObj.idx = modelBuffers.targetBufferOffset
-        computeObj.flags = ModelBuffers.FLAG_SCENE_BUFFER
-        computeObj.x = x
-        computeObj.y = height
-        computeObj.z = z
-        computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
-        b.buffer.put(computeObj.toArray())
-
-        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
-    }
 
     init {
         this.calculateVertexs()
