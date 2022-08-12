@@ -30,7 +30,6 @@ import java.awt.event.ActionEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.BufferedReader
-import java.io.DataOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
@@ -277,7 +276,9 @@ class MainController constructor(
                     data,
                     objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
                 )
-                println(releases)
+                for (release in releases) {
+                    println(release)
+                }
             } catch (e: IOException) {
                 e.printStackTrace()
             }
