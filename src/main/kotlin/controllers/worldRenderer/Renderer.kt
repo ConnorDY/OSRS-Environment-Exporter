@@ -81,7 +81,7 @@ class Renderer constructor(
     private var textureArrayId = 0
     private var uniformBufferId = 0
     private val uniformBuffer: IntBuffer = GpuIntBuffer.allocateDirect(5 + 3 + 1)
-    private val textureOffsets = FloatArray(128)
+    private val textureOffsets = FloatArray(256)
 
     private lateinit var modelBuffers: ModelBuffers
     private lateinit var priorityRenderer: PriorityRenderer
@@ -311,7 +311,7 @@ class Renderer constructor(
         gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
         gl.glUniformBlockBinding(glProgram, uniBlockMain, 0)
         gl.glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
-        gl.glUniform2fv(uniTextureOffsets, 128, textureOffsets, 0)
+        gl.glUniform2fv(uniTextureOffsets, textureOffsets.size, textureOffsets, 0)
 
         // We just allow the GL to do face culling. Note this requires the priority renderer
         // to have logic to disregard culled faces in the priority depth testing.
