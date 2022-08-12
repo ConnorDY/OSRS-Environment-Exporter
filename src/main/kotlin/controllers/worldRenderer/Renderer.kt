@@ -9,7 +9,6 @@ import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL2ES3
 import com.jogamp.opengl.GL2GL3
-import com.jogamp.opengl.GL3ES3
 import com.jogamp.opengl.GL4
 import com.jogamp.opengl.GLAutoDrawable
 import com.jogamp.opengl.GLCapabilities
@@ -32,7 +31,6 @@ import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
-import controllers.worldRenderer.shaders.Template
 import models.DebugModel
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
@@ -41,7 +39,6 @@ import models.scene.SceneTile
 import org.slf4j.LoggerFactory
 import java.awt.Dimension
 import java.awt.event.ActionListener
-import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
@@ -59,9 +56,6 @@ class Renderer constructor(
 
     private lateinit var gl: GL4
     private var glProgram = 0
-    private var glComputeProgram = 0
-    private var glSmallComputeProgram = 0
-    private var glUnorderedComputeProgram = 0
 
     private var fboMainRenderer = 0
     private var rboDepthMain = 0
@@ -76,23 +70,10 @@ class Renderer constructor(
     private var rboSceneHandle = 0
     private var depthTexSceneHandle = 0
 
-    // scene vertex buffer id
-    private var bufferId = 0
-
-    // scene uv buffer id
-    private var uvBufferId = 0
-
-    private var tmpBufferId = 0 // temporary scene vertex buffer
-    private var tmpUvBufferId = 0 // temporary scene uv buffer
-    private var tmpModelBufferId = 0 // scene model buffer, large
-    private var tmpModelBufferSmallId = 0 // scene model buffer, small
-
-    private var tmpModelBufferUnorderedId = 0
     private var tmpOutBufferId = 0 // target vertex buffer for compute shaders
     private var tmpOutUvBufferId = 0 // target uv buffer for compute shaders
     private var colorPickerBufferId = 0 // buffer for unique picker id
-    private var animFrameBufferId = 0 // which frame the model should display on
-    private var selectedIdsBufferId = 0
+//    private var animFrameBufferId = 0 // which frame the model should display on
 
     private var hoverId = 0
 
@@ -102,6 +83,7 @@ class Renderer constructor(
     private val textureOffsets = FloatArray(128)
 
     private lateinit var modelBuffers: ModelBuffers
+    private lateinit var priorityRenderer: PriorityRenderer
 
     var zLevelsSelected = Array(REGION_HEIGHT) { true }
 
@@ -111,8 +93,6 @@ class Renderer constructor(
     private var uniBrightness = 0
     private var uniTextures = 0
     private var uniTextureOffsets = 0
-    private var uniBlockSmall = 0
-    private var uniBlockLarge = 0
     private var uniBlockMain = 0
     private var uniSmoothBanding = 0
     private var uniHoverId = 0
@@ -142,17 +122,8 @@ class Renderer constructor(
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
         tmpOutUvBufferId = -1
-        tmpOutBufferId = tmpOutUvBufferId
-        tmpModelBufferUnorderedId = tmpOutBufferId
-        tmpModelBufferSmallId = tmpModelBufferUnorderedId
-        tmpModelBufferId = tmpModelBufferSmallId
-        tmpUvBufferId = tmpModelBufferId
-        tmpBufferId = tmpUvBufferId
-        uniformBufferId = tmpBufferId
-        uvBufferId = uniformBufferId
-        bufferId = uvBufferId
-        selectedIdsBufferId = -1
-        colorPickerBufferId = selectedIdsBufferId
+        tmpOutBufferId = -1
+        colorPickerBufferId = -1
         modelBuffers = ModelBuffers()
 
         val jfxNewtDisplay = NewtFactory.createDisplay(null, false)
@@ -206,6 +177,7 @@ class Renderer constructor(
             gl.glDepthFunc(GL.GL_LEQUAL)
             gl.glDepthRangef(0f, 1f)
 
+            priorityRenderer = GLSLPriorityRenderer(gl)
             initProgram()
             initUniformBuffer()
             initBuffers()
@@ -295,47 +267,6 @@ class Renderer constructor(
 
         modelBuffers.flip()
         modelBuffers.flipVertUv()
-
-        val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
-        val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
-        val modelBuffer: IntBuffer = modelBuffers.modelBuffer.buffer
-        val modelBufferSmall: IntBuffer = modelBuffers.modelBufferSmall.buffer
-        val modelBufferUnordered: IntBuffer = modelBuffers.modelBufferUnordered.buffer
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            vertexBuffer.limit() * Integer.BYTES.toLong(),
-            vertexBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpUvBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            uvBuffer.limit() * java.lang.Float.BYTES.toLong(),
-            uvBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpModelBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            modelBuffer.limit() * Integer.BYTES.toLong(),
-            modelBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpModelBufferSmallId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            modelBufferSmall.limit() * Integer.BYTES.toLong(),
-            modelBufferSmall,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpModelBufferUnorderedId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            modelBufferUnordered.limit() * Integer.BYTES.toLong(),
-            modelBufferUnordered,
-            GL.GL_DYNAMIC_DRAW
-        )
         val clientCycle = ((System.currentTimeMillis() - clientStart) / 20).toInt() // 50 fps
 
         // UBO
@@ -360,99 +291,50 @@ class Renderer constructor(
         )
         gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
 
-        // Draw 3d scene
-        if (bufferId != -1) {
-            gl.glUniformBlockBinding(glSmallComputeProgram, uniBlockSmall, 0)
-            gl.glUniformBlockBinding(glComputeProgram, uniBlockLarge, 0)
-            gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
+        priorityRenderer.produceVertices(modelBuffers, uniformBufferId, tmpOutBufferId, tmpOutUvBufferId, colorPickerBufferId)
 
-            /*
-         * Compute is split into two separate programs 'small' and 'large' to
-         * save on GPU resources. Small will sort <= 512 faces, large will do <= 4096.
-         */
-
-            // unordered
-            gl.glUseProgram(glUnorderedComputeProgram)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferUnorderedId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, tmpOutBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, tmpOutUvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, colorPickerBufferId)
-            //            gl.glBindBufferBase(gl.GL_SHADER_STORAGE_BUFFER, 8, animFrameBufferId);
-            gl.glDispatchCompute(modelBuffers.unorderedModelsCount, 1, 1)
-
-            // small
-            gl.glUseProgram(glSmallComputeProgram)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferSmallId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, tmpOutBufferId) // vout[]
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, tmpOutUvBufferId) // uvout[]
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, colorPickerBufferId)
-            //            gl.glBindBufferBase(gl.GL_SHADER_STORAGE_BUFFER, 8, animFrameBufferId);
-            gl.glDispatchCompute(modelBuffers.smallModelsCount, 1, 1)
-
-            // large
-            gl.glUseProgram(glComputeProgram)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, tmpOutBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, tmpOutUvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
-            gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, colorPickerBufferId)
-            //            gl.glBindBufferBase(gl.GL_SHADER_STORAGE_BUFFER, 8, animFrameBufferId);
-            gl.glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
-            gl.glMemoryBarrier(GL3ES3.GL_SHADER_STORAGE_BARRIER_BIT)
-
-            if (textureArrayId == -1) {
-                // lazy init textures as they may not be loaded at plugin start.
-                // this will return -1 and retry if not all textures are loaded yet, too.
-                textureArrayId = textureManager.initTextureArray(gl)
-            }
-//            val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
-            gl.glUseProgram(glProgram)
-            // Brightness happens to also be stored in the texture provider, so we use that
-            gl.glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
-            gl.glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
-            gl.glUniform1f(uniSmoothBanding, 1f)
-
-            // This is just for animating!
-//            for (int id = 0; id < textures.length; ++id) {
-//                TextureDefinition texture = textures[id];
-//                if (texture == null) {
-//                    continue;
-//                }
-//
-//                textureProvider.load(id); // trips the texture load flag which lets textures animate
-//
-//                textureOffsets[id * 2] = texture.field1782;
-//                textureOffsets[id * 2 + 1] = texture.field1783;
-//            }
-            gl.glUniform1i(uniHoverId, hoverId)
-            gl.glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
-
-            // Bind uniforms
-            gl.glUniformBlockBinding(glProgram, uniBlockMain, 0)
-            gl.glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
-            gl.glUniform2fv(uniTextureOffsets, 128, textureOffsets, 0)
-
-            // We just allow the GL to do face culling. Note this requires the priority renderer
-            // to have logic to disregard culled faces in the priority depth testing.
-            gl.glEnable(GL.GL_CULL_FACE)
-
-            // Draw output of compute shaders
-            gl.glBindVertexArray(vaoHandle)
-            gl.glDrawArrays(GL.GL_TRIANGLES, 0, modelBuffers.targetBufferOffset + modelBuffers.tempOffset)
-            gl.glDisable(GL.GL_CULL_FACE)
-            gl.glUseProgram(0)
+        if (textureArrayId == -1) {
+            // lazy init textures as they may not be loaded at plugin start.
+            // this will return -1 and retry if not all textures are loaded yet, too.
+            textureArrayId = textureManager.initTextureArray(gl)
         }
+//        val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
+        gl.glUseProgram(glProgram)
+        // Brightness happens to also be stored in the texture provider, so we use that
+        gl.glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
+        gl.glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
+        gl.glUniform1f(uniSmoothBanding, 1f)
+
+        // This is just for animating!
+//        for (int id = 0; id < textures.length; ++id) {
+//            TextureDefinition texture = textures[id];
+//            if (texture == null) {
+//                continue;
+//            }
+//
+//            textureProvider.load(id); // trips the texture load flag which lets textures animate
+//
+//            textureOffsets[id * 2] = texture.field1782;
+//            textureOffsets[id * 2 + 1] = texture.field1783;
+//        }
+        gl.glUniform1i(uniHoverId, hoverId)
+        gl.glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
+
+        // Bind uniforms
+        gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
+        gl.glUniformBlockBinding(glProgram, uniBlockMain, 0)
+        gl.glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
+        gl.glUniform2fv(uniTextureOffsets, 128, textureOffsets, 0)
+
+        // We just allow the GL to do face culling. Note this requires the priority renderer
+        // to have logic to disregard culled faces in the priority depth testing.
+        gl.glEnable(GL.GL_CULL_FACE)
+
+        // Draw output of compute shaders
+        gl.glBindVertexArray(vaoHandle)
+        gl.glDrawArrays(GL.GL_TRIANGLES, 0, modelBuffers.targetBufferOffset + modelBuffers.tempOffset)
+        gl.glDisable(GL.GL_CULL_FACE)
+        gl.glUseProgram(0)
 
         if (aaEnabled) {
             gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, fboSceneHandle)
@@ -549,52 +431,48 @@ class Renderer constructor(
             null,
             GL.GL_DYNAMIC_DRAW
         )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, animFrameBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_INT * 4).toLong(),
-            null,
-            GL.GL_DYNAMIC_DRAW
-        )
+//        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, animFrameBufferId)
+//        gl.glBufferData(
+//            GL.GL_ARRAY_BUFFER,
+//            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_INT * 4).toLong(),
+//            null,
+//            GL.GL_DYNAMIC_DRAW
+//        )
     }
 
     private fun drawTile(tile: SceneTile) {
         val x: Int = tile.x
         val y: Int = tile.y
-        if (tile.tilePaint != null) {
-            tile.tilePaint!!.draw(modelBuffers, x, y, 0, LocationType.TILE_PAINT.id)
+        val tilePaint = tile.tilePaint
+        if (tilePaint != null) {
+            priorityRenderer.addRenderable(tilePaint, modelBuffers, x, y, 0, LocationType.TILE_PAINT.id)
         }
 
-        if (tile.tileModel != null) {
-            tile.tileModel!!.draw(modelBuffers, x, y, 0, LocationType.TILE_MODEL.id)
+        val tileModel = tile.tileModel
+        if (tileModel != null) {
+            priorityRenderer.addRenderable(tileModel, modelBuffers, x, y, 0, LocationType.TILE_MODEL.id)
         }
 
         val floorDecorationEntity = tile.floorDecoration?.entity
-        floorDecorationEntity?.model?.draw(
-            modelBuffers,
-            x,
-            y,
-            floorDecorationEntity.height, LocationType.FLOOR_DECORATION.id
-        )
+        if (floorDecorationEntity != null) {
+            priorityRenderer.addRenderable(floorDecorationEntity.model, modelBuffers, x, y, floorDecorationEntity.height, LocationType.FLOOR_DECORATION.id)
+        }
 
         val wall = tile.wall
         if (wall != null) {
-            wall.entity.model.draw(modelBuffers, x, y, wall.entity.height, wall.type.id)
-            wall.entity2?.model?.draw(modelBuffers, x, y, wall.entity2.height, wall.type.id)
+            priorityRenderer.addRenderable(wall.entity.model, modelBuffers, x, y, wall.entity.height, wall.type.id)
+            if (wall.entity2 != null) {
+                priorityRenderer.addRenderable(wall.entity2.model, modelBuffers, x, y, wall.entity2.height, wall.type.id)
+            }
         }
 
         val wallDecorationEntity = tile.wallDecoration?.entity
-        wallDecorationEntity?.model?.draw(
-            modelBuffers,
-            x,
-            y,
-            wallDecorationEntity.height,
-            LocationType.INTERACTABLE_WALL_DECORATION.id
-        )
+        if (wallDecorationEntity != null) {
+            priorityRenderer.addRenderable(wallDecorationEntity.model, modelBuffers, x, y, wallDecorationEntity.height, LocationType.INTERACTABLE_WALL_DECORATION.id)
+        }
 
         for (gameObject in tile.gameObjects) {
-            gameObject.entity.model
-                .draw(modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
+            priorityRenderer.addRenderable(gameObject.entity.model, modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
         }
     }
 
@@ -611,26 +489,11 @@ class Renderer constructor(
             logger.warn("out of space vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
         }
         modelBuffers.flipVertUv()
-        val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
-        val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
 
-        logger.debug("vertexBuffer size {}", vertexBuffer.limit())
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            vertexBuffer.limit() * GLBuffers.SIZEOF_INT.toLong(),
-            vertexBuffer,
-            GL2ES3.GL_STATIC_COPY
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, uvBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            uvBuffer.limit() * GLBuffers.SIZEOF_FLOAT.toLong(),
-            uvBuffer,
-            GL2ES3.GL_STATIC_COPY
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        logger.debug("vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
+        priorityRenderer.startAdding(modelBuffers)
         modelBuffers.clearVertUv()
+
         drawTiles()
         isSceneUploadRequired = false
     }
@@ -641,39 +504,16 @@ class Renderer constructor(
         shutdownVao()
         shutdownPickerFbo()
         shutdownAAFbo()
-    }
-
-    private fun createTemplate(threadCount: Int, facesPerThread: Int): Template {
-        val versionHeader: String = Shader.WINDOWS_VERSION_HEADER
-        // if (OSType.getOSType() === OSType.Linux) LINUX_VERSION_HEADER else WINDOWS_VERSION_HEADER
-        val template = Template()
-        template.add { key ->
-            if ("version_header" == key) {
-                return@add versionHeader
-            }
-            if ("thread_config" == key) {
-                return@add """
-                #define THREAD_COUNT $threadCount
-                #define FACES_PER_THREAD $facesPerThread
-                
-                """.trimIndent()
-            }
-            null
-        }
-        template.addInclude(Shader::class.java)
-        return template
+        priorityRenderer.destroy()
     }
 
     @Throws(ShaderException::class)
     private fun initProgram() {
-        val template = createTemplate(-1, -1)
+        val template = Shader.createTemplate(-1, -1)
         template.addInclude(Shader::class.java)
 
         try {
-            glProgram = Shader.PROGRAM.compile(gl, template)
-            glComputeProgram = Shader.COMPUTE_PROGRAM.compile(gl, createTemplate(1024, 4))
-            glSmallComputeProgram = Shader.SMALL_COMPUTE_PROGRAM.compile(gl, createTemplate(512, 1))
-            glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.compile(gl, template)
+            glProgram = Shader.PROGRAM.value.compile(gl, template)
         } catch (e: ShaderException) {
             // This will likely destroy the renderer, but the rest of the program should
             // still be usable.
@@ -690,8 +530,6 @@ class Renderer constructor(
         uniDrawDistance = gl.glGetUniformLocation(glProgram, "drawDistance")
         uniTextures = gl.glGetUniformLocation(glProgram, "textures")
         uniTextureOffsets = gl.glGetUniformLocation(glProgram, "textureOffsets")
-        uniBlockSmall = gl.glGetUniformBlockIndex(glSmallComputeProgram, "uniforms")
-        uniBlockLarge = gl.glGetUniformBlockIndex(glComputeProgram, "uniforms")
         uniBlockMain = gl.glGetUniformBlockIndex(glProgram, "uniforms")
         uniHoverId = gl.glGetUniformLocation(glProgram, "hoverId")
         uniMouseCoordsId = gl.glGetUniformLocation(glProgram, "mouseCoords")
@@ -832,18 +670,10 @@ class Renderer constructor(
     }
 
     private fun initBuffers() {
-        bufferId = glGenBuffers(gl)
-        uvBufferId = glGenBuffers(gl)
-        tmpBufferId = glGenBuffers(gl)
-        tmpUvBufferId = glGenBuffers(gl)
-        tmpModelBufferId = glGenBuffers(gl)
-        tmpModelBufferSmallId = glGenBuffers(gl)
-        tmpModelBufferUnorderedId = glGenBuffers(gl)
         tmpOutBufferId = glGenBuffers(gl)
         tmpOutUvBufferId = glGenBuffers(gl)
         colorPickerBufferId = glGenBuffers(gl)
-        animFrameBufferId = glGenBuffers(gl)
-        selectedIdsBufferId = glGenBuffers(gl)
+//        animFrameBufferId = glGenBuffers(gl)
     }
 
     private fun initVao() {
@@ -894,34 +724,6 @@ class Renderer constructor(
     }
 
     private fun shutdownBuffers() {
-        if (bufferId != -1) {
-            glDeleteBuffer(gl, bufferId)
-            bufferId = -1
-        }
-        if (uvBufferId != -1) {
-            glDeleteBuffer(gl, uvBufferId)
-            uvBufferId = -1
-        }
-        if (tmpBufferId != -1) {
-            glDeleteBuffer(gl, tmpBufferId)
-            tmpBufferId = -1
-        }
-        if (tmpUvBufferId != -1) {
-            glDeleteBuffer(gl, tmpUvBufferId)
-            tmpUvBufferId = -1
-        }
-        if (tmpModelBufferId != -1) {
-            glDeleteBuffer(gl, tmpModelBufferId)
-            tmpModelBufferId = -1
-        }
-        if (tmpModelBufferSmallId != -1) {
-            glDeleteBuffer(gl, tmpModelBufferSmallId)
-            tmpModelBufferSmallId = -1
-        }
-        if (tmpModelBufferUnorderedId != -1) {
-            glDeleteBuffer(gl, tmpModelBufferUnorderedId)
-            tmpModelBufferUnorderedId = -1
-        }
         if (tmpOutBufferId != -1) {
             glDeleteBuffer(gl, tmpOutBufferId)
             tmpOutBufferId = -1
@@ -934,25 +736,15 @@ class Renderer constructor(
             glDeleteBuffer(gl, colorPickerBufferId)
             colorPickerBufferId = -1
         }
-        if (animFrameBufferId != -1) {
-            glDeleteBuffer(gl, animFrameBufferId)
-            animFrameBufferId = -1
-        }
-        if (selectedIdsBufferId != -1) {
-            glDeleteBuffer(gl, selectedIdsBufferId)
-            selectedIdsBufferId = -1
-        }
+//        if (animFrameBufferId != -1) {
+//            glDeleteBuffer(gl, animFrameBufferId)
+//            animFrameBufferId = -1
+//        }
     }
 
     private fun shutdownProgram() {
         gl.glDeleteProgram(glProgram)
         glProgram = -1
-        gl.glDeleteProgram(glComputeProgram)
-        glComputeProgram = -1
-        gl.glDeleteProgram(glSmallComputeProgram)
-        glSmallComputeProgram = -1
-        gl.glDeleteProgram(glUnorderedComputeProgram)
-        glUnorderedComputeProgram = -1
     }
 
     private fun shutdownVao() {

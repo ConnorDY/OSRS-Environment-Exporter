@@ -1,5 +1,6 @@
 package controllers.worldRenderer.helpers
 
+import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL4
 
 object GLUtil {
@@ -44,7 +45,7 @@ object GLUtil {
         gl.glDeleteVertexArrays(1, buf, 0)
     }
 
-    fun glGenBuffers(gl: GL4): Int {
+    fun glGenBuffers(gl: GL): Int {
         gl.glGenBuffers(1, buf, 0)
         return buf[0]
     }

@@ -62,20 +62,40 @@ class Shader {
     }
 
     companion object {
-        const val LINUX_VERSION_HEADER = "#version 420\n" +
-            "#extension GL_ARB_compute_shader : require\n" +
-            "#extension GL_ARB_shader_storage_buffer_object : require\n" +
-            "#extension GL_ARB_explicit_attrib_location : require\n"
-        const val WINDOWS_VERSION_HEADER = "#version 430\n"
-        val PROGRAM = Shader()
-            .add(GL4.GL_VERTEX_SHADER, "/gpu/vert.glsl")
-            .add(GL4.GL_GEOMETRY_SHADER, "/gpu/geom.glsl")
-            .add(GL4.GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
-        val COMPUTE_PROGRAM = Shader()
-            .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
-        val SMALL_COMPUTE_PROGRAM = Shader()
-            .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
-        val UNORDERED_COMPUTE_PROGRAM = Shader()
-            .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp_unordered.glsl")
+        const val VERSION_HEADER = "#version 430\n"
+        val PROGRAM = lazy {
+            Shader()
+                .add(GL4.GL_VERTEX_SHADER, "/gpu/vert.glsl")
+                .add(GL4.GL_GEOMETRY_SHADER, "/gpu/geom.glsl")
+                .add(GL4.GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
+        }
+        val COMPUTE_PROGRAM = lazy {
+            Shader()
+                .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
+        }
+        val UNORDERED_COMPUTE_PROGRAM = lazy {
+            Shader()
+                .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp_unordered.glsl")
+        }
+
+        fun createTemplate(threadCount: Int, facesPerThread: Int): Template {
+            val versionHeader: String = VERSION_HEADER
+            val template = Template()
+            template.add { key ->
+                if ("version_header" == key) {
+                    return@add versionHeader
+                }
+                if ("thread_config" == key) {
+                    return@add """
+                #define THREAD_COUNT $threadCount
+                #define FACES_PER_THREAD $facesPerThread
+                
+                    """.trimIndent()
+                }
+                null
+            }
+            template.addInclude(Shader::class.java)
+            return template
+        }
     }
 }
