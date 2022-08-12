@@ -116,7 +116,7 @@ class GridRegionChooserController constructor(
                 )
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(chkBoxAutoPopulate)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE,Int.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED, GroupLayout.DEFAULT_SIZE, Int.MAX_VALUE)
                 .addComponent(lblInstructions)
                 .addComponent(gridScrollPane, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Int.MAX_VALUE)
