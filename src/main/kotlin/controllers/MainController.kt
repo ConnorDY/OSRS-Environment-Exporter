@@ -23,6 +23,7 @@ import models.DebugModel
 import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
+import org.slf4j.LoggerFactory
 import ui.JLinkLabel
 import utils.PackageMetadata
 import java.awt.BorderLayout
@@ -56,6 +57,8 @@ class MainController constructor(
 ) : JFrame(title) {
     private val animationTimer: Timer
     private val worldRendererController: WorldRendererController
+    private val logger = LoggerFactory.getLogger(Scene::class.java)
+
     val scene: Scene
 
     init {
@@ -241,6 +244,16 @@ class MainController constructor(
     }
 
     private fun checkForUpdates() {
+        val lastCheckedProp = "last-checked-for-updates"
+        val now = System.currentTimeMillis() / 1000L
+        val lastChecked = configuration.getProp(lastCheckedProp).toLongOrNull()
+
+        // see if it's been an hour since the last check
+        if (lastChecked != null && (now - lastChecked) < 3600) {
+            logger.info("Checked for updates within the past hour. Skipping check...")
+            return
+        }
+
         try {
             val url = URL("https://api.github.com/repos/ConnorDY/OSRS-Environment-Exporter/releases")
 
@@ -297,6 +310,8 @@ class MainController constructor(
         } catch (e: IOException) {
             e.printStackTrace()
         }
+
+        configuration.saveProp(lastCheckedProp, now.toString())
     }
 
     private fun isVersionNewer(verA: List<Int>, verB: List<Int>): Boolean {
