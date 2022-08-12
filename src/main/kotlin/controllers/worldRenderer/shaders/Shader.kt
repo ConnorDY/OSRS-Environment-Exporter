@@ -26,6 +26,8 @@ class Shader {
             while (i < shaders.size) {
                 val unit = units[i]
                 val shader = gl.glCreateShader(unit.type)
+                if (shader == 0)
+                    throw ShaderException("Unable to create shader of type ${unit.type}")
                 val source: String = template.load(unit.filename)
                 gl.glShaderSource(shader, 1, arrayOf(source), null)
                 gl.glCompileShader(shader)
