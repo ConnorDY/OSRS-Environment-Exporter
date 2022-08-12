@@ -53,9 +53,7 @@ void main() {
     }
   }
 
-  int hsl = int(fHsl);
-  vec3 rgb = hslToRgb(hsl) * smoothBanding + Color.rgb * (1.f - smoothBanding);
-  vec4 smoothColor = vec4(rgb, Color.a);
+  vec4 c;
 
   if (textureId > 0) {
     int textureIdx = textureId - 1;
@@ -65,13 +63,18 @@ void main() {
     vec4 textureColor = texture(textures, vec3(animatedUv, float(textureIdx)));
     vec4 textureColorBrightness = pow(textureColor, vec4(brightness, brightness, brightness, 1.0f));
 
-    smoothColor = textureColorBrightness * smoothColor;
+    float light = fHsl / 127.f;
+    c = textureColorBrightness * vec4(light, light, light, 1.f);
+  } else {
+    // pick interpolated hsl or rgb depending on smooth banding setting
+    vec3 rgb = hslToRgb(int(fHsl)) * smoothBanding + Color.rgb * (1.f - smoothBanding);
+    c = vec4(rgb, Color.a);
   }
 
-  if (smoothColor.a < 0.1) {
+  if (c.a < 0.1) {
     discard;
   }
 
-  fragColor = smoothColor;
+  fragColor = c;
   pickerId = frag_pickerId;
 }
