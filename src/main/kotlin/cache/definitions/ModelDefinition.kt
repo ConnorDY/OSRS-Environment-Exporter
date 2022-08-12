@@ -37,10 +37,7 @@ open class ModelDefinition(
     var faceNormals: Array<FaceNormal?>? = null
 
     @Transient
-    var faceTextureUCoordinates: Array<FloatArray?>? = null
-
-    @Transient
-    var faceTextureVCoordinates: Array<FloatArray?>? = null
+    var faceTextureUVCoordinates: FloatArray? = null
 
     @Transient
     private var vertexGroups: Array<IntArray?>? = null
@@ -73,8 +70,7 @@ open class ModelDefinition(
         priority = original.priority
     ) {
         tag = original.tag
-        faceTextureUCoordinates = original.faceTextureUCoordinates
-        faceTextureVCoordinates = original.faceTextureVCoordinates
+        faceTextureUVCoordinates = original.faceTextureUVCoordinates
         vertexNormals = original.vertexNormals
         faceNormals = original.faceNormals
         vertexGroups = original.vertexGroups
@@ -158,38 +154,34 @@ open class ModelDefinition(
      * texture.
      */
     fun computeTextureUVCoordinates() {
-        faceTextureUCoordinates = arrayOfNulls(faceCount)
-        faceTextureVCoordinates = arrayOfNulls(faceCount)
-        for (i in 0 until faceCount) {
-            var textureCoordinate: Int
-            textureCoordinate = if (textureCoordinates == null) {
-                -1
-            } else {
-                textureCoordinates[i].toInt()
-            }
-            var textureIdx: Int
-            if (faceTextures == null) {
-                textureIdx = -1
-            } else {
-                textureIdx = faceTextures[i].toInt() and 0xFFFF
-            }
+        val uv = FloatArray(6 * faceCount)
+        for (face in 0 until faceCount) {
+            var textureCoordinate =
+                if (textureCoordinates == null) -1
+                else textureCoordinates[face].toInt()
+            val textureIdx: Int =
+                if (faceTextures == null) -1
+                else faceTextures[face].toInt() and 0xFFFF
             if (textureIdx != -1) {
-                val u = FloatArray(3)
-                val v = FloatArray(3)
+                val idx = face * 6
                 if (textureCoordinate == -1) {
-                    u[0] = 0.0f
-                    v[0] = 1.0f
-                    u[1] = 1.0f
-                    v[1] = 1.0f
-                    u[2] = 0.0f
-                    v[2] = 0.0f
+                    /* ktlint-disable no-multi-spaces */
+                    uv[idx    ] = 0.0f
+                    uv[idx + 1] = 1.0f
+
+                    uv[idx + 2] = 1.0f
+                    uv[idx + 3] = 1.0f
+
+                    uv[idx + 4] = 0.0f
+                    uv[idx + 5] = 0.0f
+                    /* ktlint-enable no-multi-spaces */
                 } else {
                     textureCoordinate = textureCoordinate and 0xFF
                     val textureRenderType: Byte = textureRenderTypes[textureCoordinate]
                     if (textureRenderType.toInt() == 0) {
-                        val faceVertexIdx1 = faceVertexIndices1[i]
-                        val faceVertexIdx2 = faceVertexIndices2[i]
-                        val faceVertexIdx3 = faceVertexIndices3[i]
+                        val faceVertexIdx1 = faceVertexIndices1[face]
+                        val faceVertexIdx2 = faceVertexIndices2[face]
+                        val faceVertexIdx3 = faceVertexIndices3[face]
                         val triangleVertexIdx1 = textureTriangleVertexIndices1[textureCoordinate]
                         val triangleVertexIdx2 = textureTriangleVertexIndices2[textureCoordinate]
                         val triangleVertexIdx3 = textureTriangleVertexIndices3[textureCoordinate]
@@ -224,22 +216,23 @@ open class ModelDefinition(
                         var f_901_ = f_887_ * f_897_ - f_885_ * f_899_
                         var f_902_ = f_885_ * f_898_ - f_886_ * f_897_
                         var f_903_ = 1.0f / (f_900_ * f_882_ + f_901_ * f_883_ + f_902_ * f_884_)
-                        u[0] = (f_900_ * f_888_ + f_901_ * f_889_ + f_902_ * f_890_) * f_903_
-                        u[1] = (f_900_ * f_891_ + f_901_ * f_892_ + f_902_ * f_893_) * f_903_
-                        u[2] = (f_900_ * f_894_ + f_901_ * f_895_ + f_902_ * f_896_) * f_903_
+                        /* ktlint-disable no-multi-spaces */
+                        uv[idx    ] = (f_900_ * f_888_ + f_901_ * f_889_ + f_902_ * f_890_) * f_903_
+                        uv[idx + 2] = (f_900_ * f_891_ + f_901_ * f_892_ + f_902_ * f_893_) * f_903_
+                        uv[idx + 4] = (f_900_ * f_894_ + f_901_ * f_895_ + f_902_ * f_896_) * f_903_
                         f_900_ = f_883_ * f_899_ - f_884_ * f_898_
                         f_901_ = f_884_ * f_897_ - f_882_ * f_899_
                         f_902_ = f_882_ * f_898_ - f_883_ * f_897_
                         f_903_ = 1.0f / (f_900_ * f_885_ + f_901_ * f_886_ + f_902_ * f_887_)
-                        v[0] = (f_900_ * f_888_ + f_901_ * f_889_ + f_902_ * f_890_) * f_903_
-                        v[1] = (f_900_ * f_891_ + f_901_ * f_892_ + f_902_ * f_893_) * f_903_
-                        v[2] = (f_900_ * f_894_ + f_901_ * f_895_ + f_902_ * f_896_) * f_903_
+                        uv[idx + 1] = (f_900_ * f_888_ + f_901_ * f_889_ + f_902_ * f_890_) * f_903_
+                        uv[idx + 3] = (f_900_ * f_891_ + f_901_ * f_892_ + f_902_ * f_893_) * f_903_
+                        uv[idx + 5] = (f_900_ * f_894_ + f_901_ * f_895_ + f_902_ * f_896_) * f_903_
+                        /* ktlint-enable no-multi-spaces */
                     }
                 }
-                faceTextureUCoordinates!![i] = u
-                faceTextureVCoordinates!![i] = v
             }
         }
+        this.faceTextureUVCoordinates = uv
     }
 
     fun computeAnimationTables() {
@@ -329,8 +322,6 @@ open class ModelDefinition(
     private fun reset() {
         vertexNormals = null
         faceNormals = null
-//        faceTextureVCoordinates = null
-//        faceTextureUCoordinates = null
     }
 
     fun recolor(var1: Short, var2: Short) {

@@ -10,7 +10,6 @@ import controllers.worldRenderer.helpers.GpuIntBuffer
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
-import java.lang.ref.SoftReference
 
 /*
  * Copyright (c) 2018, Adam <Adam@sigterm.info>
@@ -40,7 +39,6 @@ class SceneUploader {
     var sceneId = System.nanoTime().toInt()
     private var offset = 0
     private var uvOffset = 0
-    private var dummyArray = SoftReference(arrayOfNulls<FloatArray>(128))
 
     fun resetOffsets() {
         offset = 0
@@ -279,14 +277,7 @@ class SceneUploader {
         val transparencies: ByteArray? = modelDefinition.faceAlphas
         val faceTextures: ShortArray? = modelDefinition.faceTextures
         val facePriorities: ByteArray? = modelDefinition.faceRenderPriorities
-
-        var u: Array<FloatArray?>? = modelDefinition.faceTextureUCoordinates
-        var v: Array<FloatArray?>? = modelDefinition.faceTextureVCoordinates
-
-        if (u == null || v == null) {
-            u = getDummyArray(triangleCount)
-            v = getDummyArray(triangleCount)
-        }
+        val uv: FloatArray? = modelDefinition.faceTextureUVCoordinates
 
         var len = 0
         for (face in 0 until triangleCount) {
@@ -319,7 +310,7 @@ class SceneUploader {
             vertexBuffer.put(vertexX[triangleB], vertexY[triangleB], vertexZ[triangleB], alphaPriority or color2)
             vertexBuffer.put(vertexX[triangleC], vertexY[triangleC], vertexZ[triangleC], alphaPriority or color3)
             if (faceTextures != null) {
-                pushUvForFace(faceTextures, u, v, face, uvBuffer)
+                pushUvForFace(faceTextures, uv, face, uvBuffer)
             }
             len += 3
         }
@@ -330,14 +321,15 @@ class SceneUploader {
         }
     }
 
-    private fun pushUvForFace(faceTextures: ShortArray, u: Array<FloatArray?>, v: Array<FloatArray?>, face: Int, uvBuffer: GpuFloatBuffer) {
-        val uf: FloatArray? = u[face]
-        val vf: FloatArray? = v[face]
-        if (uf != null && vf != null) {
+    private fun pushUvForFace(faceTextures: ShortArray, uv: FloatArray?, face: Int, uvBuffer: GpuFloatBuffer) {
+        if (faceTextures[face] != (-1).toShort() && uv != null) {
             val texture = faceTextures[face] + 1f
-            uvBuffer.put(texture, uf[0], vf[0], 0f)
-            uvBuffer.put(texture, uf[1], vf[1], 0f)
-            uvBuffer.put(texture, uf[2], vf[2], 0f)
+            val idx = face * 6
+            /* ktlint-disable no-multi-spaces */
+            uvBuffer.put(texture, uv[idx    ], uv[idx + 1], 0f)
+            uvBuffer.put(texture, uv[idx + 2], uv[idx + 3], 0f)
+            uvBuffer.put(texture, uv[idx + 4], uv[idx + 5], 0f)
+            /* ktlint-enable no-multi-spaces */
         } else {
             uvBuffer.put(0f, 0f, 0f, 0f)
             uvBuffer.put(0f, 0f, 0f, 0f)
@@ -355,15 +347,5 @@ class SceneUploader {
             priority = facePriorities[face].toInt() and 0xff shl 16
         }
         return alpha or priority
-    }
-
-    private fun getDummyArray(size: Int): Array<FloatArray?> {
-        var dummyArray = this.dummyArray.get()
-        if (dummyArray != null && dummyArray.size >= size) {
-            return dummyArray
-        }
-        dummyArray = arrayOfNulls((size * 3) shr 1)
-        this.dummyArray = SoftReference(dummyArray)
-        return dummyArray
     }
 }

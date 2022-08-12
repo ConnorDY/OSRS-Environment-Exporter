@@ -303,28 +303,19 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
             return
         }
 
-        val u = modelDefinition.faceTextureUCoordinates
-        val v = modelDefinition.faceTextureVCoordinates
+        val uv = modelDefinition.faceTextureUVCoordinates ?: fakeUvArray
+        val uvIdx =
+            if (uv === fakeUvArray) 0
+            else face * 6
 
         val textureId = if (faceTextures != null) faceTextures[face].toInt() else -1
         val materialBuffer = gltf.getMaterialBuffersAndAddTexture(textureId)
-
-        var uf = floatArrayOf(0f, 0f, 0f)
-        var vf = floatArrayOf(0f, 0f, 0f)
-
-        if (u != null) {
-            uf = u[face] ?: uf
-        }
-
-        if (v != null) {
-            vf = v[face] ?: vf
-        }
 
         materialBuffer.addVertex(
             (vertexX[triangleA] + x).toFloat() / scale,
             (vertexY[triangleA] + height).toFloat() / scale,
             (vertexZ[triangleA] + z).toFloat() / scale,
-            uf[0], vf[0],
+            uv[uvIdx], uv[uvIdx + 1],
             alpha or priority or color1
         )
 
@@ -332,7 +323,7 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
             (vertexX[triangleB] + x).toFloat() / scale,
             (vertexY[triangleB] + height).toFloat() / scale,
             (vertexZ[triangleB] + z).toFloat() / scale,
-            uf[1], vf[1],
+            uv[uvIdx + 2], uv[uvIdx + 3],
             alpha or priority or color2
         )
 
@@ -340,12 +331,13 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
             (vertexX[triangleC] + x).toFloat() / scale,
             (vertexY[triangleC] + height).toFloat() / scale,
             (vertexZ[triangleC] + z).toFloat() / scale,
-            uf[2], vf[2],
+            uv[uvIdx + 4], uv[uvIdx + 5],
             alpha or priority or color3
         )
     }
 
     companion object {
         const val scale = 100f
+        val fakeUvArray = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f)
     }
 }
