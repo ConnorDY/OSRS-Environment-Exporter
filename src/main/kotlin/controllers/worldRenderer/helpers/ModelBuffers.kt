@@ -16,8 +16,8 @@ class ModelBuffers {
         modelBufferSmall.clear()
         modelBufferUnordered.clear()
         unorderedModelsCount = 0
-        largeModelsCount = unorderedModelsCount
-        smallModelsCount = largeModelsCount
+        largeModelsCount = 0
+        smallModelsCount = 0
         tempOffset = 0
         tempUvOffset = 0
     }
