@@ -125,6 +125,8 @@ class MainController constructor(
             Box.createHorizontalGlue().let(::add)
 
             lblDownload.let(::add)
+
+            Box.createHorizontalStrut(4).let(::add)
         }.let { jMenuBar = it }
 
         val lblFps = JLabel("FPS: Unknown")
