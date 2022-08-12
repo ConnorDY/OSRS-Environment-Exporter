@@ -74,7 +74,9 @@ class GridRegionChooserController constructor(
             labelFor = gridHeightField
         }
 
-        val chkBoxAutoPopulate = JCheckBox("Auto-populate", true)
+        val chkBoxAutoPopulate = JCheckBox("Auto-populate", true).apply {
+            toolTipText = "Auto-fill grid with adjacent regions when a cell is edited"
+        }
 
         val gridScrollPane = JScrollPane(gridPanel)
 
