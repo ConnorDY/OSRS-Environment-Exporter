@@ -43,6 +43,8 @@ class Model(
     private var radius = 0
     private var diameter = 0
 
+    var sceneId = -1 // scene ID in which this model was rendered
+
     private fun calculateBoundsCylinder() {
         if (boundsType != 1) {
             boundsType = 1

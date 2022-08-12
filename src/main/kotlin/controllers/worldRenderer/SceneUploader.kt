@@ -37,7 +37,7 @@ import models.scene.SceneTile
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 class SceneUploader {
-    var sceneId = (System.currentTimeMillis() / 1000L).toInt()
+    var sceneId = System.nanoTime().toInt()
     private var offset = 0
     private var uvOffset = 0
     fun resetOffsets() {
@@ -59,35 +59,12 @@ class SceneUploader {
                         for (y in 0 until REGION_SIZE) {
                             val tile = region.tiles[z][x][y]
                             tile?.let {
-                                reset(it)
                                 upload(it, vertexbuffer, uvBuffer)
                             }
                         }
                     }
                 }
             }
-        }
-    }
-
-    private fun reset(tile: SceneTile) {
-// 		Tile bridge = tile.getBridge();
-// 		if (bridge != null)
-// 		{
-// 			reset(bridge);
-// 		}
-        tile.tilePaint?.computeObj?.offset = -1
-
-        tile.tileModel?.computeObj?.offset = -1
-
-        tile.wall?.entity?.model?.computeObj?.offset = -1
-        tile.wall?.entity2?.model?.computeObj?.offset = -1
-
-        tile.wallDecoration?.entity?.model?.computeObj?.offset = -1
-
-        tile.floorDecoration?.entity?.model?.computeObj?.offset = -1
-
-        for (gameObject in tile.gameObjects) {
-            gameObject.entity.model.computeObj.offset = -1
         }
     }
 
@@ -268,15 +245,11 @@ class SceneUploader {
         return cnt
     }
 
-    private fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
+    private fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
         val model = entity.model
 
-        if (model.computeObj.offset >= 0) {
-//            // this model is shared between gameobjects and has already been uploaded
-//            // copy the computeObj so that we can maintain a reference to the vertexs on the GPU
-//            // but also modify the position of this specific model
-//            model.computeObj = model.computeObj.copy()
-//            return -1
+        if (model.sceneId == sceneId) {
+            return // Model has already been uploaded
         }
 
         model.computeObj.offset = offset
@@ -285,6 +258,8 @@ class SceneUploader {
         } else {
             model.computeObj.uvOffset = -1
         }
+        model.sceneId = sceneId
+
         vertexBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
         uvBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
         val triangleCount: Int = model.modelDefinition.faceCount
@@ -297,8 +272,6 @@ class SceneUploader {
         if (model.modelDefinition.faceTextures != null) {
             uvOffset += len
         }
-
-        return len
     }
 
     private fun pushFace(model: Model, face: Int, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
