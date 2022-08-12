@@ -244,9 +244,11 @@ class MainController constructor(
     }
 
     private fun checkForUpdates() {
-        val lastCheckedProp = "last-checked-for-updates"
+        val enabled = configuration.getProp(SettingsController.CHECK_FOR_UPDATES_PROP).toBooleanStrictOrNull() ?: true
+        if (!enabled) return
+
         val now = System.currentTimeMillis() / 1000L
-        val lastChecked = configuration.getProp(lastCheckedProp).toLongOrNull()
+        val lastChecked = configuration.getProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP).toLongOrNull()
 
         // see if it's been an hour since the last check
         if (lastChecked != null && (now - lastChecked) < 3600) {
@@ -311,7 +313,7 @@ class MainController constructor(
             e.printStackTrace()
         }
 
-        configuration.saveProp(lastCheckedProp, now.toString())
+        configuration.saveProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP, now.toString())
     }
 
     private fun isVersionNewer(verA: List<Int>, verB: List<Int>): Boolean {
