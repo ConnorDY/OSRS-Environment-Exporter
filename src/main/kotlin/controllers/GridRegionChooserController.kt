@@ -39,7 +39,7 @@ class GridRegionChooserController constructor(
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
-        preferredSize = Dimension(470, 520)
+        preferredSize = Dimension(500, 550)
 
         val groups = GroupLayout(contentPane)
         layout = groups
@@ -61,7 +61,7 @@ class GridRegionChooserController constructor(
 
         arrayOf(gridWidthField.document, gridHeightField.document).forEach { it -> it.addDocumentListener(sizeChangeListener) }
 
-        val lblGridSize = JLabel("Size").apply {}
+        val lblGridDimensions = JLabel("Grid Dimensions").apply {}
 
         val lblGridWidth = JLabel("W:").apply {
             displayedMnemonic = 'w'.code
@@ -101,7 +101,7 @@ class GridRegionChooserController constructor(
 
         groups.setVerticalGroup(
             groups.createSequentialGroup()
-                .addComponent(lblGridSize)
+                .addComponent(lblGridDimensions)
                 .addGroup(
                     groups.createParallelGroup(Alignment.CENTER)
                         .addComponent(lblGridWidth)
@@ -124,7 +124,7 @@ class GridRegionChooserController constructor(
                 .addGroup(
                     groups.createParallelGroup(Alignment.CENTER)
                         .addComponent(
-                            lblGridSize
+                            lblGridDimensions
                         )
                         .addGroup(
                             groups.createSequentialGroup()
@@ -163,8 +163,6 @@ class GridRegionChooserController constructor(
 
     private fun resizeGrid(width: Int, height: Int) {
         if (height == gridInputs.size && (height == 0 || width == gridInputs[0].size)) return
-
-        println("New size: $width x $height")
 
         gridPanel.removeAll()
 
