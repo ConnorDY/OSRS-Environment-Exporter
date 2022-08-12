@@ -82,7 +82,7 @@ class ObjectToModelConverter(
                     logger.debug("Bad model index, not replacing")
                     return null
                 }
-                logger.debug("Bad model index, replacing with $indexOverride (out of ${modelTypes.size})")
+                logger.debug("Bad model index, replacing with {} (out of {})", indexOverride, modelTypes.size)
                 modelIdx = indexOverride
             } else if (debugOptionsModel.removeProperlyTypedModels.get()) {
                 return null
