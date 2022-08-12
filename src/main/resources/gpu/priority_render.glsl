@@ -258,11 +258,6 @@ void sort_and_insert(uint localId, modelinfo minfo, int thisPriority, int thisDi
             }
         }
 
-        // color picker
-        pickerOut[outOffset + myOffset * 3]     = minfo.pickerId;
-        pickerOut[outOffset + myOffset * 3 + 1] = minfo.pickerId;
-        pickerOut[outOffset + myOffset * 3 + 2] = minfo.pickerId;
-
         // anim
         animInfo[outOffset + myOffset * 3]     = AnimInfo(minfo.frame, minfo.frameDuration, minfo.frameOffset, minfo.totalFrames);
         animInfo[outOffset + myOffset * 3 + 1] = AnimInfo(minfo.frame, minfo.frameDuration, minfo.frameOffset, minfo.totalFrames);

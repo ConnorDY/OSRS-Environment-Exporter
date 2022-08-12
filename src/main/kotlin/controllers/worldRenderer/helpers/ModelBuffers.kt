@@ -90,12 +90,6 @@ class ModelBuffers {
     var tempUvOffset = 0
         private set
 
-    fun calcPickerId(x: Int, y: Int, objType: Int): Int {
-        // pack x tile in top 13 bits, y in next 13, objectId in bottom 5
-        // NOTE: signed int so x can really only use 13 bits!!
-        return x and 0x1FFF shl 18 or (y and 0x1FFF shl 5) or (objType and 0x1F)
-    }
-
     companion object {
         const val FLAG_SCENE_BUFFER = Int.MIN_VALUE
         const val MAX_TRIANGLE = 4096

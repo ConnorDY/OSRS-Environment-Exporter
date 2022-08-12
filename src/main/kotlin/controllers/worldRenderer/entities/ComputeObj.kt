@@ -21,9 +21,6 @@ data class ComputeObj(
     // scene position z
     var z: Int = 0,
 
-    // unique id for object picking
-    var pickerId: Int = -1,
-
     // anim vars
     var frame: Int = -1,
     var frameDuration: Int = -1,
@@ -31,6 +28,6 @@ data class ComputeObj(
     var totalFrames: Int = -1
 ) {
     fun toArray(): IntArray {
-        return intArrayOf(offset, uvOffset, size, idx, flags, x, y, z, pickerId, frame, frameDuration, frameOffset, totalFrames)
+        return intArrayOf(offset, uvOffset, size, idx, flags, x, y, z, frame, frameDuration, frameOffset, totalFrames)
     }
 }

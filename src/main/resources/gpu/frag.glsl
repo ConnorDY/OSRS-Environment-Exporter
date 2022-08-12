@@ -28,7 +28,6 @@ uniform sampler2DArray textures;
 uniform vec2 textureOffsets[128];
 uniform float brightness;
 uniform float smoothBanding;
-uniform bool colorPickerRender;
 
 in vec4 Color;
 noperspective centroid in float fHsl;
@@ -37,10 +36,7 @@ in vec2 fUv;
 
 in vec3 vPosition;
 
-flat in int frag_pickerId;
-
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out int pickerId;
 
 uniform ivec2 mouseCoords;
 
@@ -66,5 +62,4 @@ void main() {
   }
 
   fragColor = c;
-  pickerId = frag_pickerId;
 }

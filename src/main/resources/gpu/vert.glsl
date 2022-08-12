@@ -27,9 +27,7 @@
 
 layout (location = 0) in ivec4 VertexPosition;
 layout (location = 1) in vec4 uv;
-layout (location = 2) in int pickerId;
-
-//layout (location = 3) in ivec4 animInfo;
+//layout (location = 2) in ivec4 animInfo;
 
 layout(std140) uniform uniforms {
     int cameraYaw;
@@ -43,23 +41,14 @@ layout(std140) uniform uniforms {
     int currFrame;
 };
 
-//layout(std430, binding = 12) buffer blocksData
-//{
-//    int selectedIds[];
-//};
-
 uniform float brightness;
 uniform int drawDistance;
 uniform mat4 viewProjectionMatrix;
-
-uniform int hoverId;
 
 out vec4 Color;
 noperspective centroid out float fHsl;
 flat out int textureId;
 out vec2 fUv;
-
-flat out int frag_pickerId;
 
 #include hsl_to_rgb.glsl
 
@@ -95,22 +84,4 @@ void main()
 //        }
 //    }
     // end animation logic
-
-    // picking logic
-    frag_pickerId = pickerId;
-//
-//    if (hoverId == pickerId) {
-//        vColor.a = 0.8;
-//        vHsl = 11111;
-//    }
-
-//    int x = (pickerId >> 18) & 0x1FFF;
-//    int y = (pickerId >> 5) & 0x1FFF;
-//    int type = pickerId & 0x1F;
-//    int idx = x + 64 * (y + 64 * type);
-//    if (selectedIds[idx] == 1) {
-//        vColor.a = 0.8;
-//        vHsl = 55555;
-//    }
-    // end picking logic
 }

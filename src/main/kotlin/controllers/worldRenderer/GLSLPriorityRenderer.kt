@@ -22,7 +22,6 @@ class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
     private val tmpModelBufferId = glGenBuffers(gl)
     private val tmpModelBufferSmallId = glGenBuffers(gl)
     private val tmpModelBufferUnorderedId = glGenBuffers(gl)
-    private val selectedIdsBufferId = glGenBuffers(gl)
 
     private val glComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(gl, Shader.createTemplate(1024, 4))
     private val glSmallComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(gl, Shader.createTemplate(512, 1))
@@ -62,7 +61,6 @@ class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
         renderable.computeObj.x = sceneX * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetX
         renderable.computeObj.y = height + renderable.renderOffsetY
         renderable.computeObj.z = sceneY * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetZ
-        renderable.computeObj.pickerId = modelBuffers.calcPickerId(sceneX, sceneY, objType)
         b.buffer.put(renderable.computeObj.toArray())
 
         modelBuffers.addTargetBufferOffset(renderable.computeObj.size * 3)
@@ -71,7 +69,7 @@ class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
     override fun finishAdding(modelBuffers: ModelBuffers) {
     }
 
-    override fun produceVertices(modelBuffers: ModelBuffers, uniformStructIn: GLBuffer, vertexOut: GLBuffer, uvOut: GLBuffer, pickerIdsOut: GLBuffer) {
+    override fun produceVertices(modelBuffers: ModelBuffers, uniformStructIn: GLBuffer, vertexOut: GLBuffer, uvOut: GLBuffer) {
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
         val modelBuffer: IntBuffer = modelBuffers.modelBuffer.buffer
@@ -126,35 +124,34 @@ class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
         // unordered
         gl.glUseProgram(glUnorderedComputeProgram)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferUnorderedId)
-        bindCommonBuffers(vertexOut, uvOut, pickerIdsOut)
+        bindCommonBuffers(vertexOut, uvOut)
         gl.glDispatchCompute(modelBuffers.unorderedModelsCount, 1, 1)
 
         // small
         gl.glUseProgram(glSmallComputeProgram)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferSmallId)
-        bindCommonBuffers(vertexOut, uvOut, pickerIdsOut)
+        bindCommonBuffers(vertexOut, uvOut)
         gl.glDispatchCompute(modelBuffers.smallModelsCount, 1, 1)
 
         // large
         gl.glUseProgram(glComputeProgram)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferId)
-        bindCommonBuffers(vertexOut, uvOut, pickerIdsOut)
+        bindCommonBuffers(vertexOut, uvOut)
         gl.glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
         gl.glMemoryBarrier(GL3ES3.GL_SHADER_STORAGE_BARRIER_BIT)
     }
 
-    private fun bindCommonBuffers(vertexOut: GLBuffer, uvOut: GLBuffer, pickerIdsOut: GLBuffer) {
+    private fun bindCommonBuffers(vertexOut: GLBuffer, uvOut: GLBuffer) {
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, vertexOut)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, uvOut)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 7, pickerIdsOut)
     }
 
     override fun destroy() {
-        val allBuffers = intArrayOf(bufferId, uvBufferId, tmpBufferId, tmpUvBufferId, tmpModelBufferId, tmpModelBufferSmallId, tmpModelBufferUnorderedId, selectedIdsBufferId)
+        val allBuffers = intArrayOf(bufferId, uvBufferId, tmpBufferId, tmpUvBufferId, tmpModelBufferId, tmpModelBufferSmallId, tmpModelBufferUnorderedId)
         gl.glDeleteBuffers(allBuffers.size, allBuffers, 0)
 
         gl.glDeleteProgram(glComputeProgram)
