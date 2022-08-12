@@ -14,6 +14,7 @@ import com.jogamp.opengl.GLAutoDrawable
 import com.jogamp.opengl.GLCapabilities
 import com.jogamp.opengl.GLEventListener
 import com.jogamp.opengl.GLProfile
+import com.jogamp.opengl.math.Matrix4
 import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.helpers.AntiAliasingMode
@@ -89,7 +90,7 @@ class Renderer constructor(
 
     // Uniforms
     private var uniDrawDistance = 0
-    private var uniProjectionMatrix = 0
+    private var uniViewProjectionMatrix = 0
     private var uniBrightness = 0
     private var uniTextures = 0
     private var uniTextureOffsets = 0
@@ -102,10 +103,6 @@ class Renderer constructor(
     // figure out how to make these small and resize programmatically after load
     var canvasWidth = 100
     var canvasHeight = (canvasWidth / 1.3).toInt()
-    private var lastViewportWidth = 0
-    private var lastViewportHeight = 0
-    private var lastCanvasWidth = 0
-    private var lastCanvasHeight = 0
     private var lastStretchedCanvasWidth = 0
     private var lastStretchedCanvasHeight = 0
     private var lastAntiAliasingMode: AntiAliasingMode? = null
@@ -151,12 +148,8 @@ class Renderer constructor(
         animator.setUpdateFPSFrames(3, null)
         animator.start()
 
-        lastCanvasHeight = -1
-        lastCanvasWidth = lastCanvasHeight
-        lastViewportHeight = lastCanvasWidth
-        lastViewportWidth = lastViewportHeight
         lastStretchedCanvasHeight = -1
-        lastStretchedCanvasWidth = lastStretchedCanvasHeight
+        lastStretchedCanvasWidth = -1
         lastAntiAliasingMode = null
         textureArrayId = -1
 
@@ -225,19 +218,6 @@ class Renderer constructor(
         lastUpdate = thisUpdate
 
         inputHandler.tick(deltaTime)
-
-        if (canvasWidth > 0 && canvasHeight > 0 && (canvasWidth != lastViewportWidth || canvasHeight != lastViewportHeight)) {
-            createProjectionMatrix(
-                0f,
-                canvasWidth.toFloat(),
-                canvasHeight.toFloat(),
-                0f,
-                1f,
-                (Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE).toFloat()
-            )
-            lastViewportWidth = canvasWidth
-            lastViewportHeight = canvasHeight
-        }
 
         // base FBO to enable picking
         gl.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, fboMainRenderer)
@@ -310,6 +290,7 @@ class Renderer constructor(
         gl.glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
         gl.glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
         gl.glUniform1f(uniSmoothBanding, 1f)
+        gl.glUniformMatrix4fv(uniViewProjectionMatrix, 1, false, calculateViewProjectionMatrix().matrix, 0)
 
         // This is just for animating!
 //        for (int id = 0; id < textures.length; ++id) {
@@ -530,7 +511,7 @@ class Renderer constructor(
     }
 
     private fun initUniforms() {
-        uniProjectionMatrix = gl.glGetUniformLocation(glProgram, "projectionMatrix")
+        uniViewProjectionMatrix = gl.glGetUniformLocation(glProgram, "viewProjectionMatrix")
         uniBrightness = gl.glGetUniformLocation(glProgram, "brightness")
         uniSmoothBanding = gl.glGetUniformLocation(glProgram, "smoothBanding")
         uniDrawDistance = gl.glGetUniformLocation(glProgram, "drawDistance")
@@ -705,28 +686,22 @@ class Renderer constructor(
         gl.glBindVertexArray(0)
     }
 
-    private fun createProjectionMatrix(
-        left: Float,
-        right: Float,
-        bottom: Float,
-        top: Float,
-        near: Float,
-        far: Float
-    ) {
-        // create a standard orthographic projection
-        val tx = -((right + left) / (right - left))
-        val ty = -((top + bottom) / (top - bottom))
-        val tz = -((far + near) / (far - near))
-
-        gl.glUseProgram(glProgram)
-        val matrix = floatArrayOf(
-            2 / (right - left), 0f, 0f, 0f,
-            0f, 2 / (top - bottom), 0f, 0f,
-            0f, 0f, -2 / (far - near), 0f,
-            tx, ty, tz, 1f
+    private fun makeProjectionMatrix(width: Float, height: Float, near: Float): FloatArray =
+        floatArrayOf(
+            2 / width, 0f, 0f, 0f,
+            0f, 2 / height, 0f, 0f,
+            0f, 0f, -1f, -1f,
+            0f, 0f, -2 * near, 0f,
         )
-        gl.glUniformMatrix4fv(uniProjectionMatrix, 1, false, matrix, 0)
-        gl.glUseProgram(0)
+
+    private fun calculateViewProjectionMatrix(): Matrix4 {
+        val viewProjectionMatrix = Matrix4()
+        viewProjectionMatrix.scale(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
+        viewProjectionMatrix.multMatrix(makeProjectionMatrix(canvasWidth.toFloat(), canvasHeight.toFloat(), 50.0f))
+        viewProjectionMatrix.rotate((Math.PI - camera.pitch * Constants.UNIT).toFloat(), -1.0f, 0.0f, 0.0f)
+        viewProjectionMatrix.rotate((camera.yaw * Constants.UNIT).toFloat(), 0.0f, 1.0f, 0.0f)
+        viewProjectionMatrix.translate(-camera.cameraX.toFloat(), -camera.cameraZ.toFloat(), -camera.cameraY.toFloat())
+        return viewProjectionMatrix
     }
 
     private fun shutdownBuffers() {

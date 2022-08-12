@@ -50,14 +50,15 @@ layout(std140) uniform uniforms {
 
 uniform float brightness;
 uniform int drawDistance;
+uniform mat4 viewProjectionMatrix;
 
 uniform int hoverId;
 
-out vec4 vColor;
-out float vHsl;
-out vec4 vUv;
+out vec4 Color;
+centroid out float fHsl;
+out vec4 fUv;
 
-flat out int o_pickerId;
+flat out int frag_pickerId;
 
 #include hsl_to_rgb.glsl
 #include to_screen.glsl
@@ -72,11 +73,10 @@ void main()
     vec3 rgb = hslToRgb(hsl);
 
     ivec3 cameraPos = ivec3(cameraX, cameraY, cameraZ);
-    vec3 screenPos = toScreen(vertex - cameraPos, cameraYaw, cameraPitch, centerX, centerY, zoom);
-    gl_Position = vec4(screenPos, 1);
-    vColor = vec4(rgb, 1.f - a);
-    vHsl = float(hsl);
-    vUv = uv;
+    gl_Position = viewProjectionMatrix * vec4(vertex, 1);
+    Color = vec4(rgb, 1.f - a);
+    fHsl = float(hsl);
+    fUv = uv;
 
     // animation logic
 //    int frame = animInfo.x;
@@ -96,7 +96,7 @@ void main()
     // end animation logic
 
     // picking logic
-    o_pickerId = pickerId;
+    frag_pickerId = pickerId;
 //
 //    if (hoverId == pickerId) {
 //        vColor.a = 0.8;

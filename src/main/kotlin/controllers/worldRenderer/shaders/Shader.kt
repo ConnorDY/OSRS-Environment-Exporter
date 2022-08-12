@@ -68,7 +68,6 @@ class Shader {
         val PROGRAM = lazy {
             Shader()
                 .add(GL4.GL_VERTEX_SHADER, "/gpu/vert.glsl")
-                .add(GL4.GL_GEOMETRY_SHADER, "/gpu/geom.glsl")
                 .add(GL4.GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
         }
         val COMPUTE_PROGRAM = lazy {
