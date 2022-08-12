@@ -79,6 +79,8 @@ class GridRegionChooserController constructor(
             toolTipText = "Auto-fill grid with adjacent regions when a cell is edited"
         }
 
+        val lblInstructions = JLabel("Input region ID(s) into the boxes below.").apply {}
+
         val gridScrollPane = JScrollPane(gridPanel)
 
         val loadButton = JButton("Load Grid Regions").apply {
@@ -111,6 +113,7 @@ class GridRegionChooserController constructor(
                         .addComponent(gridHeightField)
                 )
                 .addComponent(chkBoxAutoPopulate)
+                .addComponent(lblInstructions)
                 .addGap(0, 0, Int.MAX_VALUE)
                 .addComponent(gridScrollPane)
                 .addGap(0, 0, Int.MAX_VALUE)
@@ -135,6 +138,7 @@ class GridRegionChooserController constructor(
                                 .addComponent(gridHeightField)
                         )
                         .addComponent(chkBoxAutoPopulate)
+                        .addComponent(lblInstructions)
                         .addComponent(gridScrollPane)
                         .addComponent(loadButton)
                 )

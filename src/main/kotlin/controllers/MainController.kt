@@ -193,7 +193,7 @@ class MainController constructor(
     }
 
     private fun chooseGridRegionClicked(event: ActionEvent) {
-        GridRegionChooserController(this, "Grid Region Chooser") { regionIds ->
+        GridRegionChooserController(this, "Load Custom Grid") { regionIds ->
             scene.loadRegions(regionIds)
         }.display()
     }
