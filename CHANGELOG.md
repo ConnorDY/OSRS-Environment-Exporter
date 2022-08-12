@@ -7,6 +7,12 @@
 - Provide the option to input a grid of region IDs to load &ndash; [#79](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/74) @ConnorDY & @ScoreUnder
   - Allows more fine-grained control of the regions exported, as well as loading non-square areas.
 
+### :bug: Bug Fixes
+
+- Fix missing lava textures in the Volcanic Mine &ndash; [#83](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/83) @ScoreUnder
+  - Also fix missing torches in Falador and Lumbridge
+  - Secret debug menu to help find these problems in the first place??
+
 ## 2.0.2
 
 ### :sparkles: Enhancements
