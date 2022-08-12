@@ -193,7 +193,7 @@ class MainController constructor(
     }
 
     private fun chooseGridRegionClicked(event: ActionEvent) {
-        GridRegionChooserController(this, "Location Search") { regionIds ->
+        GridRegionChooserController(this, "Grid Region Chooser") { regionIds ->
             scene.loadRegions(regionIds)
         }.display()
     }
