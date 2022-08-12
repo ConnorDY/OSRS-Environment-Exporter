@@ -14,7 +14,9 @@ class DebugOptionsController(owner: Frame, model: DebugOptionsModel): JDialog(ow
         layout = BoxLayout(contentPane, BoxLayout.PAGE_AXIS)
         makeDebugToggle(model.onlyType10Models, "Only type-10 models", '1').let(::add)
         makeDebugToggle(model.resetCameraOnSceneChange, "Reset camera on scene change", 'R').let(::add)
+        makeDebugToggle(model.removeProperlyTypedModels, "Remove properly-typed models", 'E').let(::add)
         makeDebugNumEdit(model.modelSubIndex, "Model sub-index", 'S').let(::add)
+        makeDebugNumEdit(model.badModelIndexOverride, "Bad model index override", 'B').let(::add)
         pack()
     }
 

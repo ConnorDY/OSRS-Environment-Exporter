@@ -27,6 +27,8 @@ class Scene(
         }
         debugOptionsModel.onlyType10Models.addListener(listener)
         debugOptionsModel.modelSubIndex.addListener(listener)
+        debugOptionsModel.badModelIndexOverride.addListener(listener)
+        debugOptionsModel.removeProperlyTypedModels.addListener(listener)
     }
 
     private fun reload() {

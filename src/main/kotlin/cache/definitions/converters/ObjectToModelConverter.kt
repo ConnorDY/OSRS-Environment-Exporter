@@ -4,18 +4,23 @@ import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.loaders.ModelLoader
 import models.DebugOptionsModel
+import org.slf4j.LoggerFactory
 
 class ObjectToModelConverter(
     private val modelLoader: ModelLoader,
     private val debugOptionsModel: DebugOptionsModel,
     private val litModelCache: HashMap<Long, ModelDefinition> = HashMap()
 ) {
+    private val logger = LoggerFactory.getLogger(ObjectToModelConverter::class.java)
+
     init {
         val listener: (Any) -> Unit = {
             litModelCache.clear()
         }
         debugOptionsModel.onlyType10Models.addEarlyListener(listener)
         debugOptionsModel.modelSubIndex.addEarlyListener(listener)
+        debugOptionsModel.badModelIndexOverride.addEarlyListener(listener)
+        debugOptionsModel.removeProperlyTypedModels.addEarlyListener(listener)
     }
 
     fun toModel(objectDefinition: ObjectDefinition, type: Int, orientation: Int): ModelDefinition? {
@@ -56,6 +61,8 @@ class ObjectToModelConverter(
                     return getAndRotateModel(debugSubIndex, isRotated, orientation, modelIds)
                 }
                 return null
+            } else if (debugOptionsModel.removeProperlyTypedModels.get()) {
+                return null
             }
 
             for (i in 0 until modelLen) {
@@ -65,8 +72,19 @@ class ObjectToModelConverter(
                     else ModelDefinition.combine(modelDefinition, nextModel)
             }
         } else {
-            val modelIdx = modelTypes.indexOf(type)
-            if (modelIdx == -1) {
+            var modelIdx = modelTypes.indexOf(type)
+            if (modelIdx == -1 && modelTypes.size == 1) {
+                // single model type only
+                modelIdx = 0
+            } else if (modelIdx == -1) {
+                val indexOverride = debugOptionsModel.badModelIndexOverride.get()
+                if (indexOverride !in modelTypes.indices) {
+                    logger.debug("Bad model index, not replacing")
+                    return null
+                }
+                logger.debug("Bad model index, replacing with $indexOverride (out of ${modelTypes.size})")
+                modelIdx = indexOverride
+            } else if (debugOptionsModel.removeProperlyTypedModels.get()) {
                 return null
             }
             val isRotated = isRotated xor (orientation > 3)
