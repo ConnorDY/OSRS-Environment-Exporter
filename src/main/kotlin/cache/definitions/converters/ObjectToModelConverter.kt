@@ -49,16 +49,20 @@ class ObjectToModelConverter(
                 return null
             }
             val modelLen = modelIds.size
-            for (i in 0 until modelLen) {
-                modelDefinition = getAndRotateModel(i, isRotated, orientation, modelIds)
-            }
-            if (modelLen > 1) {
-                // TODO: Combine models?
-                val idx = debugOptionsModel.modelSubIndex.get()
-                if (idx in 0 until modelLen) {
-                    return getAndRotateModel(idx, isRotated, orientation, modelIds)
+
+            val debugSubIndex = debugOptionsModel.modelSubIndex.get()
+            if (modelLen > 1 && debugSubIndex != -1) {
+                if (debugSubIndex in 0 until modelLen) {
+                    return getAndRotateModel(debugSubIndex, isRotated, orientation, modelIds)
                 }
                 return null
+            }
+
+            for (i in 0 until modelLen) {
+                val nextModel = getAndRotateModel(i, isRotated, orientation, modelIds) ?: continue
+                modelDefinition =
+                    if (modelDefinition == null) nextModel
+                    else ModelDefinition.combine(modelDefinition, nextModel)
             }
         } else {
             val modelIdx = modelTypes.indexOf(type)
