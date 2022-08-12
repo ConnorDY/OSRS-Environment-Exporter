@@ -169,7 +169,7 @@ class GridRegionChooserController constructor(
     }
 
     private fun resizeGrid(width: Int, height: Int) {
-        if (height == gridInputs.size && (height == 0 || width == gridInputs[0].size)) return
+        if (height == rows && width == cols) return
 
         gridPanel.removeAll()
 
