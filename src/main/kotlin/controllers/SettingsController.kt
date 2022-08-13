@@ -28,6 +28,11 @@ class SettingsController(
             mnemonic = 'F'.code
         }
         val txtFpsCap = NumericTextField.create(60, 1, 9999)
+
+        val chkBoxCheckForUpdates = JCheckBox("Check for updates").apply {
+            mnemonic = 'U'.code
+        }
+
         val btnSave = JButton("Save Preferences").apply {
             mnemonic = 'S'.code
         }
@@ -42,8 +47,12 @@ class SettingsController(
             GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, LINE_START, NONE, inset, 0, 0)
         )
         add(
-            btnSave,
+            chkBoxCheckForUpdates,
             GridBagConstraints(0, 1, 2, 1, 0.0, 0.0, PAGE_START, NONE, inset, 0, 0)
+        )
+        add(
+            btnSave,
+            GridBagConstraints(0, 2, 2, 1, 0.0, 0.0, PAGE_START, NONE, inset, 0, 0)
         )
 
         // load current setting(s)
@@ -56,6 +65,8 @@ class SettingsController(
             txtFpsCap.isEnabled = false
         }
 
+        chkBoxCheckForUpdates.isSelected = configuration.getProp(CHECK_FOR_UPDATES_PROP).toBooleanStrictOrNull() ?: true
+
         // FPS Limit checkbox handler
         chkBoxLimitFps.addChangeListener {
             txtFpsCap.isEnabled = chkBoxLimitFps.isSelected
@@ -64,6 +75,7 @@ class SettingsController(
         // Save Preferences button handler
         btnSave.addActionListener {
             configuration.saveProp(FPS_CAP_PROP, if (chkBoxLimitFps.isSelected) txtFpsCap.text else "")
+            configuration.saveProp(CHECK_FOR_UPDATES_PROP, chkBoxCheckForUpdates.isSelected.toString())
 
             var fpsCapToSet = txtFpsCap.text.toIntOrNull() ?: 0
             if (!chkBoxLimitFps.isSelected) fpsCapToSet = 0
@@ -79,5 +91,7 @@ class SettingsController(
 
     companion object {
         const val FPS_CAP_PROP = "fps-cap"
+        const val CHECK_FOR_UPDATES_PROP = "check-for-updates"
+        const val LAST_CHECKED_FOR_UPDATES_PROP = "last-checked-for-updates"
     }
 }
