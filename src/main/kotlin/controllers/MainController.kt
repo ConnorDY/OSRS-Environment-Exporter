@@ -69,7 +69,7 @@ class MainController constructor(
 
         val camera = Camera()
         val debugModel = DebugModel()
-        val debugOptions = DebugOptionsModel()
+        val debugOptions = DebugOptionsModel(configuration.getProp("debug") == "true")
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
@@ -91,7 +91,7 @@ class MainController constructor(
         worldRendererController = WorldRendererController(
             Renderer(
                 camera, scene, SceneUploader(),
-                InputHandler(camera, scene),
+                InputHandler(camera, scene, debugOptions),
                 TextureManager(
                     SpriteLoader(cacheLibrary), textureLoader
                 ),
@@ -152,7 +152,7 @@ class MainController constructor(
                 }.let(::add)
             }
 
-            if (configuration.getProp("debug") == "true") {
+            if (debugOptions.isDebugMode) {
                 Box.createGlue().let(::add)
                 JButton("Debug").apply {
                     mnemonic = 'D'.code

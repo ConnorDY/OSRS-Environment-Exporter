@@ -4,11 +4,13 @@ import com.jogamp.newt.event.KeyEvent
 import com.jogamp.newt.event.KeyListener
 import com.jogamp.newt.event.MouseEvent
 import com.jogamp.newt.event.MouseListener
+import models.DebugOptionsModel
 import models.scene.Scene
 
 class InputHandler internal constructor(
     private val camera: Camera,
-    private val scene: Scene
+    private val scene: Scene,
+    private val debugOptionsModel: DebugOptionsModel,
 ) : KeyListener, MouseListener {
 
     var renderer: Renderer? = null
@@ -59,11 +61,19 @@ class InputHandler internal constructor(
         if (keys[KeyEvent.VK_X.toInt()]) {
             camera.addZ(dt.toInt() * speed)
         }
-        if (keys[KeyEvent.VK_K.toInt()]) {
-            scene.loadRadius(13360, 5)
-        }
-        if (keys[KeyEvent.VK_L.toInt()]) {
-            scene.loadRadius(13408, 5)
+        if (debugOptionsModel.isDebugMode) {
+            if (keys[KeyEvent.VK_J.toInt()]) {
+                scene.loadRadius(8014, 5)
+            }
+            if (keys[KeyEvent.VK_K.toInt()]) {
+                scene.loadRadius(13360, 3)
+            }
+            if (keys[KeyEvent.VK_L.toInt()]) {
+                scene.loadRadius(13408, 3)
+            }
+            if (keys[KeyEvent.VK_SEMICOLON.toInt()]) {
+                scene.loadRadius(12850, 3)
+            }
         }
     }
 
