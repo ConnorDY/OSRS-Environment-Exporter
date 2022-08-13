@@ -266,12 +266,16 @@ class MainController constructor(
 
         val releaseInfo = getGitHubReleaseInfo()
 
-        // map the response to an array of GitHubRelease
+        // map the response to an array of sorted GitHubRelease
         val objectMapper = ObjectMapper()
         val releases = objectMapper.readValue<Array<GitHubRelease>>(
             releaseInfo,
             objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
-        )
+        ).sortedWith { a, b ->
+            val aVersion = a.tagName.split(".").map { it.toInt() }
+            val bVersion = b.tagName.split(".").map { it.toInt() }
+            compareVersions(aVersion, bVersion)
+        }
 
         // determine if there is a newer version available
         val currVersion = PackageMetadata.VERSION.split(".").map { it.toInt() }
@@ -322,11 +326,11 @@ class MainController constructor(
         }
     }
 
-    private fun newerReleaseExists(currVersion: List<Int>, releases: Array<GitHubRelease>): String? {
+    private fun newerReleaseExists(currVersion: List<Int>, releases: List<GitHubRelease>): String? {
         for (release in releases) {
             val version = release.tagName.split(".").map { it.toInt() }
 
-            if (isVersionNewer(version, currVersion)) {
+            if (compareVersions(version, currVersion) == 1) {
                 return release.htmlURL
             }
         }
@@ -334,13 +338,12 @@ class MainController constructor(
         return null
     }
 
-    private fun isVersionNewer(verA: List<Int>, verB: List<Int>): Boolean {
+    private fun compareVersions(verA: List<Int>, verB: List<Int>): Int {
         verA.zip(verB) { ver1, ver2 ->
-            if (ver1 != ver2) {
-                return ver1 > ver2
-            }
+            if (ver1 > ver2) return 1
+            if (ver1 < ver2) return -1
         }
 
-        return false
+        return 0
     }
 }
