@@ -169,28 +169,6 @@ class Model(
         }
     }
 
-    fun scaleBy(
-        x: Int,
-        y: Int,
-        z: Int
-    ): Model =
-        if (x == 128 && y == 128 && z == 128) {
-            this
-        } else {
-            val newDef = ModelDefinition(modelDefinition)
-            for (n in 0 until modelDefinition.vertexCount) {
-                newDef.vertexPositionsX[n] = newDef.vertexPositionsX[n] * x / 128
-                newDef.vertexPositionsY[n] = newDef.vertexPositionsY[n] * y / 128
-                newDef.vertexPositionsZ[n] = newDef.vertexPositionsZ[n] * z / 128
-            }
-            Model(
-                newDef,
-                faceColors1 = faceColors1,
-                faceColors2 = faceColors2,
-                faceColors3 = faceColors3
-            )
-        }
-
     private fun resetBounds() {
         boundsType = 0
     }

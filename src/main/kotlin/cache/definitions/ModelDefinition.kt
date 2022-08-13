@@ -2,6 +2,8 @@ package cache.definitions
 
 import cache.definitions.data.FaceNormal
 import cache.definitions.data.VertexNormal
+import controllers.worldRenderer.Constants.COSINE
+import controllers.worldRenderer.Constants.SINE
 
 open class ModelDefinition(
     val id: Int,
@@ -293,6 +295,19 @@ open class ModelDefinition(
         reset()
     }
 
+    fun rotate(angle: Int) {
+        // method2663
+        val var2: Int = SINE[angle]
+        val var3: Int = COSINE[angle]
+        for (var4 in 0 until vertexCount) {
+            val var5: Int = var2 * this.vertexPositionsZ[var4] + var3 * this.vertexPositionsX[var4] shr 16
+            this.vertexPositionsZ[var4] = var3 * this.vertexPositionsZ[var4] - var2 * this.vertexPositionsX[var4] shr 16
+            this.vertexPositionsX[var4] = var5
+        }
+        this.reset()
+    }
+
+
     fun rotateY90Ccw() {
         for (var1 in 0 until vertexCount) {
             val var2 = vertexPositionsX[var1]
@@ -341,6 +356,28 @@ open class ModelDefinition(
                     faceTextures[var3] = var2
                 }
             }
+        }
+    }
+
+    fun scale(x: Int, y: Int, z: Int) {
+        if (x != 128 || y != 128 || z != 128) {
+            for (n in 0 until vertexCount) {
+                vertexPositionsX[n] = vertexPositionsX[n] * x / 128
+                vertexPositionsY[n] = vertexPositionsY[n] * y / 128
+                vertexPositionsZ[n] = vertexPositionsZ[n] * z / 128
+            }
+            reset()
+        }
+    }
+
+    fun translate(x: Int, y: Int, z: Int) {
+        if (x != 0 || y != 0 || z != 0) {
+            for (n in 0 until vertexCount) {
+                vertexPositionsX[n] += x
+                vertexPositionsY[n] += y
+                vertexPositionsZ[n] += z
+            }
+            reset()
         }
     }
 
