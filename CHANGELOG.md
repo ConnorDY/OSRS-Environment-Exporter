@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### :sparkles: Enhancements
+
+- Add giants' foundry to location search &ndash; [#88](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/88) @ConnorDY
+  - Also removed duplicate locations and added numbers for locations that span multiple regions.
+
 ## 2.1.0
 
 ### :sparkles: Enhancements
