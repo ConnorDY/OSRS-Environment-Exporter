@@ -151,7 +151,7 @@ class LocationSearchController constructor(
                 if (item == null) ""
                 else {
                     val regionId = regionIdForLocation(item as Location)
-                    "${item.name} ($regionId)"
+                    "${item.name} [$regionId]"
                 }
             return this
         }
