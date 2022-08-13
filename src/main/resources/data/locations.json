@@ -75,8 +75,8 @@
       "name": "Banana plantation cutscene (Monkey Madness I)",
       "coords": [2659, 4576, 0]
     },
-    { "name": "Bandit Camp", "coords": [3037, 3699, 0] },
-    { "name": "Bandit Camp", "coords": [3171, 2979, 0] },
+    { "name": "Bandit Camp (Wilderness)", "coords": [3037, 3699, 0] },
+    { "name": "Bandit Camp (Desert)", "coords": [3171, 2979, 0] },
     {
       "name": "Banquet cutscene (A Kingdom Divided)",
       "coords": [2080, 6168, 0]
