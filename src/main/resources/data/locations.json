@@ -18,9 +18,6 @@
     { "name": "Agility Arena", "coords": [2809, 3191, 0] },
     { "name": "Agility Pyramid", "coords": [3364, 2840, 0] },
     { "name": "Agility Pyramid top floors", "coords": [3042, 4697, 0] },
-    { "name": "Agility Training Area", "coords": [2481, 3424, 0] },
-    { "name": "Agility Training Area", "coords": [2533, 3538, 0] },
-    { "name": "Agility Training Area", "coords": [2998, 3952, 0] },
     { "name": "Ah Za Rhoon", "coords": [2908, 9336, 0] },
     { "name": "Ah Za Rhoon 1 (Shilo Village)", "coords": [2913, 9304, 0] },
     { "name": "Ah Za Rhoon 2 (Shilo Village)", "coords": [2915, 9369, 0] },
@@ -90,6 +87,7 @@
       "coords": [1580, 9831, 0]
     },
     { "name": "Barbarian Outpost", "coords": [2552, 3561, 0] },
+    { "name": "Barbarian Outpost Agility Course", "coords": [2533, 3538, 0] },
     {
       "name": "Barbarian Outpost Agility Course dungeon",
       "coords": [2550, 9951, 0]
@@ -431,6 +429,7 @@
       "name": "Gnome hangar (after Monkey Madness I)",
       "coords": [2647, 4511, 0]
     },
+    { "name": "Gnome Stronghold Agility Course", "coords": [2481, 3424, 0] },
     { "name": "Goblin Cave", "coords": [2587, 9830, 0] },
     { "name": "Goblin Cave", "coords": [2591, 9824, 0] },
     {
@@ -1220,6 +1219,7 @@
     { "name": "White Wolf Mountain", "coords": [2847, 3494, 0] },
     { "name": "White Wolf Mountain passage", "coords": [2851, 9873, 0] },
     { "name": "Wilderness", "coords": [3144, 3775, 0] },
+    { "name": "Wilderness Agility Course", "coords": [2998, 3952, 0] },
     { "name": "Wilderness Agility Course Dungeon", "coords": [2999, 10349, 0] },
     { "name": "Wilderness God Wars Dungeon", "coords": [3040, 10136, 0] },
     { "name": "Wilderness Slayer Cave", "coords": [3392, 10102, 0] },
