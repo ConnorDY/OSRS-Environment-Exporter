@@ -2,7 +2,7 @@ package controllers.worldRenderer.shaders
 
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES2
-import com.jogamp.opengl.GL4
+import com.jogamp.opengl.GL3ES3
 import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glGetProgramInfoLog
 
@@ -17,7 +17,7 @@ class Shader {
     }
 
     @Throws(ShaderException::class)
-    fun compile(gl: GL4, template: Template): Int {
+    fun compile(gl: GL2ES2, template: Template): Int {
         val program = gl.glCreateProgram()
         val shaders = IntArray(units.size)
         var i = 0
@@ -67,16 +67,16 @@ class Shader {
         const val VERSION_HEADER = "#version 430\n"
         val PROGRAM = lazy {
             Shader()
-                .add(GL4.GL_VERTEX_SHADER, "/gpu/vert.glsl")
-                .add(GL4.GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
+                .add(GL2ES2.GL_VERTEX_SHADER, "/gpu/vert.glsl")
+                .add(GL2ES2.GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
         }
         val COMPUTE_PROGRAM = lazy {
             Shader()
-                .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
+                .add(GL3ES3.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
         }
         val UNORDERED_COMPUTE_PROGRAM = lazy {
             Shader()
-                .add(GL4.GL_COMPUTE_SHADER, "/gpu/comp_unordered.glsl")
+                .add(GL3ES3.GL_COMPUTE_SHADER, "/gpu/comp_unordered.glsl")
         }
 
         fun createTemplate(threadCount: Int, facesPerThread: Int): Template {

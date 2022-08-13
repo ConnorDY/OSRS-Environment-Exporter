@@ -28,7 +28,6 @@ import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES3
-import com.jogamp.opengl.GL4
 import controllers.worldRenderer.helpers.GLUtil
 import java.awt.image.BufferedImage
 import java.awt.image.IndexColorModel
@@ -40,7 +39,7 @@ class TextureManager constructor(
     private val spriteLoader: SpriteLoader,
     private val textureLoader: TextureLoader
 ) {
-    fun initTextureArray(gl: GL4): Int {
+    fun initTextureArray(gl: GL2ES3): Int {
         if (!allTexturesLoaded()) {
             return -1
         }
@@ -71,7 +70,7 @@ class TextureManager constructor(
         return textureArrayId
     }
 
-    fun freeTextureArray(gl: GL4, textureArrayId: Int) {
+    fun freeTextureArray(gl: GL, textureArrayId: Int) {
         GLUtil.glDeleteTexture(gl, textureArrayId)
     }
 
@@ -96,7 +95,7 @@ class TextureManager constructor(
         return true
     }
 
-    private fun updateTextures(gl: GL4, textureArrayId: Int) {
+    private fun updateTextures(gl: GL2ES3, textureArrayId: Int) {
         val textures: Array<TextureDefinition?> = textureLoader.getAll()
         gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
         var cnt = 0

@@ -3,7 +3,6 @@ package controllers.worldRenderer
 import com.jogamp.opengl.GL
 import com.jogamp.opengl.GL2ES3
 import com.jogamp.opengl.GL3ES3
-import com.jogamp.opengl.GL4
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.entities.Renderable
 import controllers.worldRenderer.helpers.GLUtil.glGenBuffers
@@ -14,7 +13,7 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
-class GLSLPriorityRenderer(private val gl: GL4) : PriorityRenderer {
+class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
     private val bufferId = glGenBuffers(gl)
     private val uvBufferId = glGenBuffers(gl)
     private val tmpBufferId = glGenBuffers(gl)
