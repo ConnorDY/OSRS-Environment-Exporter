@@ -7,7 +7,7 @@
 - Provide the option to input a grid of region IDs to load &ndash; [#79](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/74) @ConnorDY & @ScoreUnder
   - Allows more fine-grained control of the regions exported, as well as loading non-square areas.
 
-- Check if a newer version of the OSRS Environment Exporter is available after the cache chooser screen &ndash; [84](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/84) @ConnorDY
+- Check if a newer version of the OSRS Environment Exporter is available after the cache chooser screen &ndash; [#84](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/84) @ConnorDY
   - This check can be disabled from the "Preferences" menu.
 
 ### :bug: Bug Fixes
