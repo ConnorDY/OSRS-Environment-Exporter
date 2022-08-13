@@ -27,6 +27,8 @@ data class ComputeObj(
     var frameOffset: Int = -1,
     var totalFrames: Int = -1
 ) {
+    var generation: Int = -1
+
     fun toArray(): IntArray {
         return intArrayOf(offset, uvOffset, size, idx, flags, x, y, z, frame, frameDuration, frameOffset, totalFrames)
     }

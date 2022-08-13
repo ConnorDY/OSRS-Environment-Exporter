@@ -120,7 +120,6 @@ class SceneUploader {
         val seColor = tile.seColor
         val swColor = tile.swColor
         if (neColor == 12345678) {
-            priorityRenderer.getBuffersForRenderable(tile, 0, false)
             return
         }
 

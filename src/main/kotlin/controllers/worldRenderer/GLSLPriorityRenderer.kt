@@ -43,6 +43,7 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
     private val uniBlockLarge = gl.glGetUniformBlockIndex(glComputeProgram, "uniforms")
 
     private val modelBuffers = ModelBuffers()
+    private var generation = 0
 
     private fun initVao(vertexOut: GLBuffer, uvOut: GLBuffer): Int {
         // Create VAO
@@ -91,6 +92,7 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
         comp.offset = vertexBuffer.buffer.position() / vecDims
         comp.uvOffset = if (hasUVs) uvBuffer.buffer.position() / vecDims else -1
         comp.size = faces
+        comp.generation = generation
 
         vertexBuffer.ensureCapacity(faces * (vecDims * verticesPerTri))
         if (hasUVs)
@@ -133,19 +135,21 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
         height: Int,
         objType: Int
     ) {
+        val computeObj = renderable.computeObj
+        if (computeObj.generation != generation) return
         val b: GpuIntBuffer =
             if (renderable.renderUnordered) modelBuffers.bufferUnordered()
             else modelBuffers.bufferForTriangles(min(ModelBuffers.MAX_TRIANGLE, renderable.faceCount))
         b.ensureCapacity(13)
 
-        renderable.computeObj.idx = modelBuffers.targetBufferOffset
-        renderable.computeObj.flags = renderable.renderFlags
-        renderable.computeObj.x = sceneX * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetX
-        renderable.computeObj.y = height + renderable.renderOffsetY
-        renderable.computeObj.z = sceneY * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetZ
-        b.buffer.put(renderable.computeObj.toArray())
+        computeObj.idx = modelBuffers.targetBufferOffset
+        computeObj.flags = renderable.renderFlags
+        computeObj.x = sceneX * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetX
+        computeObj.y = height + renderable.renderOffsetY
+        computeObj.z = sceneY * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetZ
+        b.buffer.put(computeObj.toArray())
 
-        modelBuffers.addTargetBufferOffset(renderable.computeObj.size * 3)
+        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
     override fun finishPositioning() {
@@ -171,6 +175,7 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
 //            null,
 //            GL.GL_DYNAMIC_DRAW
 //        )
+        generation++ // Mark all compute objects as non-uploaded again
     }
 
     override fun produceVertices(camera: Camera, currFrame: Int) {
