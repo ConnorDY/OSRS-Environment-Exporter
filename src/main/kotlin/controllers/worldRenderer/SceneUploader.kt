@@ -1,15 +1,15 @@
 package controllers.worldRenderer
 
 import cache.definitions.RegionDefinition
+import cache.utils.put
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
-import controllers.worldRenderer.helpers.GpuFloatBuffer
-import controllers.worldRenderer.helpers.GpuIntBuffer
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
+import java.nio.FloatBuffer
 
 /*
  * Copyright (c) 2018, Adam <Adam@sigterm.info>
@@ -37,19 +37,9 @@ import models.scene.SceneTile
  */
 class SceneUploader {
     var sceneId = System.nanoTime().toInt()
-    private var offset = 0
-    private var uvOffset = 0
 
-    fun resetOffsets() {
-        offset = 0
-        uvOffset = 0
-    }
-
-    fun upload(scene: Scene, vertexbuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
+    fun upload(scene: Scene, priorityRenderer: PriorityRenderer) {
         ++sceneId
-        resetOffsets()
-        vertexbuffer.clear()
-        uvBuffer.clear()
         for (rx in 0 until scene.cols) {
             for (ry in 0 until scene.rows) {
                 val region = scene.getRegion(rx, ry) ?: continue
@@ -59,7 +49,7 @@ class SceneUploader {
                         for (y in 0 until REGION_SIZE) {
                             val tile = region.tiles[z][x][y]
                             tile?.let {
-                                upload(it, vertexbuffer, uvBuffer)
+                                upload(it, priorityRenderer)
                             }
                         }
                     }
@@ -68,7 +58,7 @@ class SceneUploader {
         }
     }
 
-    private fun upload(tile: SceneTile, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
+    private fun upload(tile: SceneTile, priorityRenderer: PriorityRenderer) {
 // 		Tile bridge = tile.getBridge();
 // 		if (bridge != null)
 // 		{
@@ -76,45 +66,23 @@ class SceneUploader {
 // 		}
         val sceneTilePaint = tile.tilePaint
         if (sceneTilePaint != null) {
-            sceneTilePaint.computeObj.offset = offset
-            if (sceneTilePaint.texture != -1) {
-                sceneTilePaint.computeObj.uvOffset = uvOffset
-            } else {
-                sceneTilePaint.computeObj.uvOffset = -1
-            }
-            val len = upload(sceneTilePaint, vertexBuffer, uvBuffer)
-            sceneTilePaint.computeObj.size = len / 3
-            offset += len
-            if (sceneTilePaint.texture != -1) {
-                uvOffset += len
-            }
+            upload(sceneTilePaint, priorityRenderer)
         }
 
         val sceneTileModel = tile.tileModel
         if (sceneTileModel != null) {
-            sceneTileModel.computeObj.offset = offset
-            if (sceneTileModel.triangleTextureId != null) {
-                sceneTileModel.computeObj.uvOffset = uvOffset
-            } else {
-                sceneTileModel.computeObj.uvOffset = -1
-            }
-            val len = upload(sceneTileModel, vertexBuffer, uvBuffer)
-            sceneTileModel.computeObj.size = len / 3
-            offset += len
-            if (sceneTileModel.triangleTextureId != null) {
-                uvOffset += len
-            }
+            upload(sceneTileModel, priorityRenderer)
         }
 
         val wall = tile.wall
         if (wall != null) {
             val entity = wall.entity
             if (entity is StaticObject) {
-                uploadModel(entity, vertexBuffer, uvBuffer)
+                uploadModel(entity, priorityRenderer)
             }
             val entity2 = wall.entity2
             if (entity2 is StaticObject) {
-                uploadModel(entity2, vertexBuffer, uvBuffer)
+                uploadModel(entity2, priorityRenderer)
             }
         }
 
@@ -122,7 +90,7 @@ class SceneUploader {
         if (wallDecoration != null) {
             val entity = wallDecoration.entity
             if (entity is StaticObject) {
-                uploadModel(entity, vertexBuffer, uvBuffer)
+                uploadModel(entity, priorityRenderer)
             }
         }
 
@@ -130,19 +98,19 @@ class SceneUploader {
         if (floorDecoration != null) {
             val entity = floorDecoration.entity
             if (entity is StaticObject) {
-                uploadModel(entity, vertexBuffer, uvBuffer)
+                uploadModel(entity, priorityRenderer)
             }
         }
 
         for (gameObject in tile.gameObjects) {
             val entity = gameObject.entity
             if (entity is StaticObject) {
-                uploadModel(entity, vertexBuffer, uvBuffer)
+                uploadModel(entity, priorityRenderer)
             }
         }
     }
 
-    private fun upload(tile: TilePaint, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
+    private fun upload(tile: TilePaint, priorityRenderer: PriorityRenderer) {
         val swHeight = tile.swHeight
         val seHeight = tile.seHeight
         val neHeight = tile.neHeight
@@ -152,11 +120,12 @@ class SceneUploader {
         val seColor = tile.seColor
         val swColor = tile.swColor
         if (neColor == 12345678) {
-            return 0
+            priorityRenderer.getBuffersForRenderable(tile, 0, false)
+            return
         }
 
-        vertexBuffer.ensureCapacity(24)
-        uvBuffer.ensureCapacity(24)
+        val (vertexBuffer, uvBuffer) =
+            priorityRenderer.getBuffersForRenderable(tile, 2, tile.texture != -1)
 
         // 0,0
         val vertexDx = 0
@@ -191,10 +160,9 @@ class SceneUploader {
             uvBuffer.put(tex, 1.0f, 0.0f, 0f)
             uvBuffer.put(tex, 0.0f, 1.0f, 0f)
         }
-        return 6
     }
 
-    private fun upload(tileModel: TileModel, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer): Int {
+    private fun upload(tileModel: TileModel, priorityRenderer: PriorityRenderer) {
         val faceX = tileModel.faceX
         val faceY = tileModel.faceY
         val faceZ = tileModel.faceZ
@@ -206,9 +174,11 @@ class SceneUploader {
         val triangleColorC = tileModel.triangleColorC
         val triangleTextures = tileModel.triangleTextureId
         val faceCount = faceX.size
-        vertexBuffer.ensureCapacity(faceCount * 12)
-        uvBuffer.ensureCapacity(faceCount * 12)
-        var cnt = 0
+
+        val trueFaceCount = triangleColorA.count { it != 12345678 }
+        val (vertexBuffer, uvBuffer) =
+            priorityRenderer.getBuffersForRenderable(tileModel, trueFaceCount, triangleTextures != null)
+
         for (i in 0 until faceCount) {
             val triangleA = faceX[i]
             val triangleB = faceY[i]
@@ -219,7 +189,6 @@ class SceneUploader {
             if (colorA == 12345678) {
                 continue
             }
-            cnt += 3
             val vertexXA = vertexX[triangleA]
             val vertexZA = vertexZ[triangleA]
             val vertexXB = vertexX[triangleB]
@@ -242,29 +211,19 @@ class SceneUploader {
                 }
             }
         }
-        return cnt
     }
 
-    private fun uploadModel(entity: Entity, vertexBuffer: GpuIntBuffer, uvBuffer: GpuFloatBuffer) {
+    private fun uploadModel(entity: Entity, priorityRenderer: PriorityRenderer) {
         val model = entity.model
 
         if (model.sceneId == sceneId) {
             return // Model has already been uploaded
         }
-
-        model.computeObj.offset = offset
-        if (model.modelDefinition.faceTextures != null) {
-            model.computeObj.uvOffset = uvOffset
-        } else {
-            model.computeObj.uvOffset = -1
-        }
         model.sceneId = sceneId
 
-        vertexBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
-        uvBuffer.ensureCapacity(model.modelDefinition.faceCount * 12)
+        val modelDefinition = model.modelDefinition
         val triangleCount: Int = model.modelDefinition.faceCount
 
-        val modelDefinition = model.modelDefinition
         val vertexX: IntArray = model.vertexPositionsX
         val vertexY: IntArray = model.vertexPositionsY
         val vertexZ: IntArray = model.vertexPositionsZ
@@ -279,7 +238,9 @@ class SceneUploader {
         val facePriorities: ByteArray? = modelDefinition.faceRenderPriorities
         val uv: FloatArray? = modelDefinition.faceTextureUVCoordinates
 
-        var len = 0
+        val (vertexBuffer, uvBuffer) =
+            priorityRenderer.getBuffersForRenderable(model, triangleCount, faceTextures != null)
+
         for (face in 0 until triangleCount) {
             val alphaPriority = packAlphaPriority(faceTextures, transparencies, facePriorities, face)
 
@@ -299,7 +260,6 @@ class SceneUploader {
                     uvBuffer.put(0f, 0f, 0f, 0f)
                     uvBuffer.put(0f, 0f, 0f, 0f)
                 }
-                len += 3
                 continue
             }
 
@@ -312,16 +272,10 @@ class SceneUploader {
             if (faceTextures != null) {
                 pushUvForFace(faceTextures, uv, face, uvBuffer)
             }
-            len += 3
-        }
-        model.computeObj.size = len / 3
-        offset += len
-        if (model.modelDefinition.faceTextures != null) {
-            uvOffset += len
         }
     }
 
-    private fun pushUvForFace(faceTextures: ShortArray, uv: FloatArray?, face: Int, uvBuffer: GpuFloatBuffer) {
+    private fun pushUvForFace(faceTextures: ShortArray, uv: FloatArray?, face: Int, uvBuffer: FloatBuffer) {
         if (faceTextures[face] != (-1).toShort() && uv != null) {
             val texture = faceTextures[face] + 1f
             val idx = face * 6

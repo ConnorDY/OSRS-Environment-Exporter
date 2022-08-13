@@ -11,14 +11,6 @@ class GpuIntBuffer {
     var buffer = allocateDirect(65536)
         private set
 
-    fun put(x: Int, y: Int, z: Int) {
-        buffer.put(x).put(y).put(z)
-    }
-
-    fun put(x: Int, y: Int, z: Int, c: Int) {
-        buffer.put(x).put(y).put(z).put(c)
-    }
-
     fun flip() {
         buffer.flip()
     }

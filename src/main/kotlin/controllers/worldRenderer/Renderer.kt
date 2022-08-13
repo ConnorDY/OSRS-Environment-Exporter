@@ -179,8 +179,6 @@ class Renderer constructor(
             uploadScene()
         }
 
-        sceneUploader.resetOffsets() // to reuse uploadModel function
-
         val thisUpdate = System.nanoTime()
         val deltaTime = (thisUpdate - lastUpdate).toDouble() / 1_000_000
         lastUpdate = thisUpdate
@@ -417,13 +415,11 @@ class Renderer constructor(
     }
 
     private fun uploadScene() {
-        val modelBuffers = priorityRenderer.unsafeGetBuffers()
-        modelBuffers.clearVertUv()
         try {
-            sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
+            sceneUploader.upload(scene, priorityRenderer)
         } catch (e: Exception) {
             e.printStackTrace()
-            logger.warn("out of space vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
+            logger.warn("Error happened while rendering with {}", priorityRenderer)
         }
 
         priorityRenderer.finishUploading()

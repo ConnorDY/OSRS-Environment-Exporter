@@ -8,10 +8,6 @@ class GpuFloatBuffer {
     var buffer = allocateDirect(65536)
         private set
 
-    fun put(texture: Float, u: Float, v: Float, pad: Float) {
-        buffer.put(texture).put(u).put(v).put(pad)
-    }
-
     fun flip() {
         buffer.flip()
     }

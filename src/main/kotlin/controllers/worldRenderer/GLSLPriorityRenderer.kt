@@ -42,7 +42,7 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
     private val uniBlockSmall = gl.glGetUniformBlockIndex(glSmallComputeProgram, "uniforms")
     private val uniBlockLarge = gl.glGetUniformBlockIndex(glComputeProgram, "uniforms")
 
-    val modelBuffers = ModelBuffers()
+    private val modelBuffers = ModelBuffers()
 
     private fun initVao(vertexOut: GLBuffer, uvOut: GLBuffer): Int {
         // Create VAO
@@ -78,6 +78,25 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
         )
         gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
         return uniformBufferId
+    }
+
+    override fun getBuffersForRenderable(renderable: Renderable, faces: Int, hasUVs: Boolean): Pair<IntBuffer, FloatBuffer> {
+        val comp = renderable.computeObj
+        val vertexBuffer = modelBuffers.vertexBuffer
+        val uvBuffer = modelBuffers.uvBuffer
+
+        val vecDims = 4
+        val verticesPerTri = 3
+
+        comp.offset = vertexBuffer.buffer.position() / vecDims
+        comp.uvOffset = if (hasUVs) uvBuffer.buffer.position() / vecDims else -1
+        comp.size = faces
+
+        vertexBuffer.ensureCapacity(faces * (vecDims * verticesPerTri))
+        if (hasUVs)
+            uvBuffer.ensureCapacity(faces * (vecDims * verticesPerTri))
+
+        return Pair(vertexBuffer.buffer, uvBuffer.buffer)
     }
 
     override fun finishUploading() {
@@ -260,8 +279,6 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
         gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
     }
 
-    override fun unsafeGetBuffers() = modelBuffers
-
     override fun draw() {
         // We just allow the GL to do face culling. Note this requires the priority renderer
         // to have logic to disregard culled faces in the priority depth testing.
@@ -287,6 +304,9 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
         gl.glDeleteProgram(glSmallComputeProgram)
         gl.glDeleteProgram(glUnorderedComputeProgram)
     }
+
+    override fun toString() =
+        "${javaClass.simpleName}(modelBuffers.vertexBuffer[${modelBuffers.vertexBuffer.buffer.limit()}])"
 
     companion object {
         private const val MAX_TEMP_VERTICES = 65535

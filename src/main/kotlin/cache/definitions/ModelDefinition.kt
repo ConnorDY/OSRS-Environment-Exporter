@@ -307,7 +307,6 @@ open class ModelDefinition(
         this.reset()
     }
 
-
     fun rotateY90Ccw() {
         for (var1 in 0 until vertexCount) {
             val var2 = vertexPositionsX[var1]
