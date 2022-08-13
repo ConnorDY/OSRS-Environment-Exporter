@@ -20,6 +20,10 @@ abstract class AbstractPriorityRenderer(gl: GL2ES3) : PriorityRenderer {
     protected val vaoHandle = initVao(gl)
     private var generation = 0
 
+    override fun bindVao() {
+        gl.glBindVertexArray(vaoHandle)
+    }
+
     protected fun initVao(gl: GL2ES3): Int {
         // Create VAO
         val vaoHandle = GLUtil.glGenVertexArrays(gl)

@@ -155,6 +155,7 @@ class Renderer constructor(
         }
 
         try {
+            priorityRenderer.bindVao()
             initProgram()
         } catch (e: ShaderException) {
             e.printStackTrace()
