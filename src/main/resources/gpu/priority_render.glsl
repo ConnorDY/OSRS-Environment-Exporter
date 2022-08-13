@@ -62,58 +62,27 @@ int priority_map(int p, int distance, int _min10, int avg1, int avg2, int avg3) 
             return 17;
         }
         default :
-        return -1;
+            // this can't happen unless an invalid priority is sent. just assume 0.
+            return 0;
     }
 }
 
 // calculate the number of faces with a lower adjusted priority than
 // the given adjusted priority
 int count_prio_offset(int priority) {
+    // this shouldn't ever be outside of (0, 17) because it is the return value from priority_map
+    priority = clamp(priority, 0, 17);
     int total = 0;
-    switch (priority) {
-        case 17:
-        total += totalMappedNum[16];
-        case 16:
-        total += totalMappedNum[15];
-        case 15:
-        total += totalMappedNum[14];
-        case 14:
-        total += totalMappedNum[13];
-        case 13:
-        total += totalMappedNum[12];
-        case 12:
-        total += totalMappedNum[11];
-        case 11:
-        total += totalMappedNum[10];
-        case 10:
-        total += totalMappedNum[9];
-        case 9:
-        total += totalMappedNum[8];
-        case 8:
-        total += totalMappedNum[7];
-        case 7:
-        total += totalMappedNum[6];
-        case 6:
-        total += totalMappedNum[5];
-        case 5:
-        total += totalMappedNum[4];
-        case 4:
-        total += totalMappedNum[3];
-        case 3:
-        total += totalMappedNum[2];
-        case 2:
-        total += totalMappedNum[1];
-        case 1:
-        total += totalMappedNum[0];
-        case 0:
-        return total;
+    for (int i = 0; i < priority; i++) {
+        total += totalMappedNum[i];
     }
+    return total;
 }
 
 void get_face(uint localId, modelinfo minfo, int cameraYaw, int cameraPitch,
 out int prio, out int dis, out ivec4 o1, out ivec4 o2, out ivec4 o3) {
-    int offset = minfo.offset;
     int size = minfo.size;
+    int offset = minfo.offset;
     int flags = minfo.flags;
     uint ssboOffset;
 
@@ -149,7 +118,12 @@ out int prio, out int dis, out ivec4 o1, out ivec4 o2, out ivec4 o3) {
 
         // calculate distance to face
         int thisPriority = (thisA.w >> 16) & 0xff;// all vertices on the face have the same priority
-        int thisDistance = radius == 0 ? 0 : face_distance(thisrvA, thisrvB, thisrvC, cameraYaw, cameraPitch) + radius;
+        int thisDistance;
+        if (radius == 0) {
+            thisDistance = 0;
+        } else {
+            thisDistance = face_distance(thisrvA, thisrvB, thisrvC, cameraYaw, cameraPitch) + radius;
+        }
 
         o1 = thisrvA;
         o2 = thisrvB;

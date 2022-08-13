@@ -48,11 +48,10 @@ void main() {
   if (textureId > 0) {
     int textureIdx = textureId - 1;
 
-    vec2 animatedUv = fUv + textureOffsets[textureIdx];
-
-    vec4 textureColor = texture(textures, vec3(animatedUv, float(textureIdx)));
+    vec4 textureColor = texture(textures, vec3(fUv, float(textureIdx)));
     vec4 textureColorBrightness = pow(textureColor, vec4(brightness, brightness, brightness, 1.0f));
 
+    // textured triangles hsl is a 7 bit lightness 2-126
     float light = fHsl / 127.f;
     c = textureColorBrightness * vec4(light, light, light, 1.f);
   } else {
