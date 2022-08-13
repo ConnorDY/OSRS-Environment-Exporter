@@ -54,6 +54,7 @@ class ObjectToModelConverter(
                 return null
             }
             val modelLen = modelIds.size
+            val isRotated = isRotated xor (type == 2 && orientation > 3)
 
             val debugSubIndex = debugOptionsModel.modelSubIndex.get()
             if (modelLen > 1 && debugSubIndex != -1) {
