@@ -300,15 +300,10 @@ class Renderer constructor(
         // to have logic to disregard culled faces in the priority depth testing.
         gl.glEnable(GL.GL_CULL_FACE)
 
-        // Allow alpha values to render correctly
-        gl.glEnable(GL.GL_BLEND)
-        gl.glBlendFuncSeparate(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA, GL.GL_ONE, GL.GL_ONE)
-
         // Draw output of compute shaders
         gl.glBindVertexArray(vaoHandle)
         gl.glDrawArrays(GL.GL_TRIANGLES, 0, modelBuffers.targetBufferOffset + modelBuffers.tempOffset)
         gl.glDisable(GL.GL_CULL_FACE)
-        gl.glDisable(GL.GL_BLEND)
         gl.glUseProgram(0)
 
         if (aaEnabled) {

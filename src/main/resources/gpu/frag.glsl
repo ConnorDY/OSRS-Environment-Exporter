@@ -60,5 +60,7 @@ void main() {
     c = vec4(rgb, Color.a);
   }
 
+  if (c.a < 0.1f) discard;
+
   fragColor = c;
 }
