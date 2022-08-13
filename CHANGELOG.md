@@ -7,6 +7,9 @@
 - Provide the option to input a grid of region IDs to load &ndash; [#79](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/74) @ConnorDY & @ScoreUnder
   - Allows more fine-grained control of the regions exported, as well as loading non-square areas.
 
+- Check if a newer version of the OSRS Environment Exporter is available after the cache chooser screen &ndash; [84](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/84) @ConnorDY
+  - This check can be disabled from the "Preferences" menu.
+
 ### :bug: Bug Fixes
 
 - Fix missing lava textures in the Volcanic Mine &ndash; [#83](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/83) @ScoreUnder
@@ -18,6 +21,7 @@
 ### :sparkles: Enhancements
 
 - Allow setting the initial region ID + radius in config &ndash; [#74](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/74) @ConnorDY
+
 - Automatically focus on the first input when opening windows &ndash; [#68](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/68) @ConnorDY
 
 ### :bug: Bug Fixes
@@ -27,9 +31,13 @@
 ### :wrench: Maintenance
 
 - Refactor some colour/brightness-related code &ndash; [#73](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/73) @ScoreUnder
+
 - Make `RegionDefinition` tile array elements not nullable &ndash; [#71](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/71) @ScoreUnder
+
 - Make `CalcTileColor` a little less mysterious &ndash; [#70](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/70) @ScoreUnder
+
 - Clean up `ColorPalette` code by merging RuneLite code into it &ndash; [#67](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/67) @ScoreUnder
+
 - Combine small and large comp shaders &ndash; [#65](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/65) @ConnorDY
 
 ## 2.0.1
@@ -42,6 +50,7 @@
 ### :wrench: Maintenance
 
 - Dead code removal & cleanup around `computeObjs` &ndash; [#55](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/55) @ScoreUnder
+
 - Use the correct `UIManager` key in `NumericTextField` &ndash; [#60](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/60) @ScoreUnder
 
 ## 2.0.0

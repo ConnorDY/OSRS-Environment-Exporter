@@ -11,6 +11,7 @@ import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
 import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
+import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.InputHandler
 import controllers.worldRenderer.Renderer
@@ -20,13 +21,22 @@ import controllers.worldRenderer.WorldRendererController
 import models.Configuration
 import models.DebugModel
 import models.DebugOptionsModel
+import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
+import org.slf4j.LoggerFactory
+import ui.JLinkLabel
+import utils.PackageMetadata
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 import javax.swing.Box
 import javax.swing.JButton
 import javax.swing.JCheckBox
@@ -48,6 +58,8 @@ class MainController constructor(
 ) : JFrame(title) {
     private val animationTimer: Timer
     private val worldRendererController: WorldRendererController
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     val scene: Scene
 
     init {
@@ -64,6 +76,7 @@ class MainController constructor(
         val regionLoader = RegionLoader(cacheLibrary)
         val textureLoader = TextureLoader(cacheLibrary)
         val underlayLoader = UnderlayLoader(cacheLibrary)
+
         scene = Scene(
             SceneRegionBuilder(
                 regionLoader,
@@ -181,6 +194,9 @@ class MainController constructor(
             worldRendererController.isVisible = false
             pack()
         }
+
+        val checkForUpdatesEnabled = configuration.getProp(SettingsController.CHECK_FOR_UPDATES_PROP).toBooleanStrictOrNull() ?: true
+        if (checkForUpdatesEnabled) checkForUpdates()
     }
 
     override fun setVisible(visible: Boolean) {
@@ -236,5 +252,98 @@ class MainController constructor(
     private fun onZLevelSelected(z: Int, isSelected: Boolean) {
         worldRendererController.renderer.zLevelsSelected[z] = isSelected
         worldRendererController.renderer.isSceneUploadRequired = true
+    }
+
+    private fun checkForUpdates() {
+        val now = System.currentTimeMillis() / 1000L
+        val lastChecked = configuration.getProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP).toLongOrNull()
+
+        // see if it's been an hour since the last check
+        if (lastChecked != null && (now - lastChecked) < 3600) {
+            logger.info("Checked for updates within the past hour. Skipping check...")
+            return
+        }
+
+        val releaseInfo = getGitHubReleaseInfo()
+
+        // map the response to an array of sorted GitHubRelease
+        val objectMapper = ObjectMapper()
+        val releases = objectMapper.readValue<Array<GitHubRelease>>(
+            releaseInfo,
+            objectMapper.typeFactory.constructArrayType(GitHubRelease::class.java)
+        ).sortedWith { a, b ->
+            val aVersion = a.tagName.split(".").map { it.toInt() }
+            val bVersion = b.tagName.split(".").map { it.toInt() }
+            compareVersions(aVersion, bVersion)
+        }
+
+        // determine if there is a newer version available
+        val currVersion = PackageMetadata.VERSION.split(".").map { it.toInt() }
+        var newerVersionUrl = newerReleaseExists(currVersion, releases)
+
+        if (newerVersionUrl != null) {
+            // add UI elements to menu bar
+            jMenuBar.add(Box.createHorizontalGlue())
+            jMenuBar.add(
+                JLinkLabel(
+                    newerVersionUrl,
+                    "Update available! Click here to download."
+                )
+            )
+            jMenuBar.add(Box.createHorizontalStrut(4))
+            pack()
+        }
+
+        configuration.saveProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP, now.toString())
+    }
+
+    private fun getGitHubReleaseInfo(): String? {
+        try {
+            val url = URL("https://api.github.com/repos/ConnorDY/OSRS-Environment-Exporter/releases")
+
+            // create request
+            val conn = url.openConnection() as HttpsURLConnection
+            conn.requestMethod = "GET"
+            conn.setRequestProperty("Accept", "application/vnd.github.manifold-preview+json")
+            conn.useCaches = false
+            conn.doOutput = true
+
+            // capture the response
+            val inputStream = conn.inputStream
+            val buffer = StringBuilder()
+            BufferedReader(InputStreamReader(inputStream)).use { bufferedReader ->
+                var line: String?
+                while (true) {
+                    line = bufferedReader.readLine()
+                    if (line != null) buffer.append(line)
+                    else break
+                }
+            }
+            return buffer.toString()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    private fun newerReleaseExists(currVersion: List<Int>, releases: List<GitHubRelease>): String? {
+        for (release in releases) {
+            val version = release.tagName.split(".").map { it.toInt() }
+
+            if (compareVersions(version, currVersion) == 1) {
+                return release.htmlURL
+            }
+        }
+
+        return null
+    }
+
+    private fun compareVersions(verA: List<Int>, verB: List<Int>): Int {
+        verA.zip(verB) { ver1, ver2 ->
+            if (ver1 > ver2) return 1
+            if (ver1 < ver2) return -1
+        }
+
+        return 0
     }
 }
