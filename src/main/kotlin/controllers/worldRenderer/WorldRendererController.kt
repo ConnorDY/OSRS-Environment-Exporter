@@ -6,7 +6,7 @@ import com.jogamp.newt.event.MouseEvent
 import com.jogamp.opengl.GLAutoDrawable
 import com.jogamp.opengl.GLEventListener
 import controllers.SettingsController
-import models.Configuration
+import models.config.Configuration
 import java.awt.Dimension
 import java.awt.Rectangle
 import java.awt.event.ComponentAdapter

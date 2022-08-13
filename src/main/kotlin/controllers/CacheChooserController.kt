@@ -3,7 +3,7 @@ package controllers
 import AppConstants
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
-import models.Configuration
+import models.config.Configuration
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream

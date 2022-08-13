@@ -18,7 +18,7 @@ import controllers.worldRenderer.Renderer
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
-import models.Configuration
+import models.config.Configuration
 import models.DebugModel
 import models.DebugOptionsModel
 import models.github.GitHubRelease

@@ -1,7 +1,7 @@
 package controllers
 
 import controllers.worldRenderer.Renderer
-import models.Configuration
+import models.config.Configuration
 import ui.NumericTextField
 import java.awt.GridBagConstraints
 import java.awt.GridBagConstraints.LINE_END

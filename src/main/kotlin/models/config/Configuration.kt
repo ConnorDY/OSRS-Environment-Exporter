@@ -1,4 +1,4 @@
-package models
+package models.config
 
 import java.io.File
 import java.io.FileWriter
