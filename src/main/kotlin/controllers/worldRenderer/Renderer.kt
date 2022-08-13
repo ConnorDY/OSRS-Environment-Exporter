@@ -18,15 +18,11 @@ import com.jogamp.opengl.util.Animator
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GLUtil
-import controllers.worldRenderer.helpers.GLUtil.glDeleteBuffer
 import controllers.worldRenderer.helpers.GLUtil.glDeleteFrameBuffer
 import controllers.worldRenderer.helpers.GLUtil.glDeleteRenderbuffers
-import controllers.worldRenderer.helpers.GLUtil.glDeleteVertexArrays
 import controllers.worldRenderer.helpers.GLUtil.glGenBuffers
-import controllers.worldRenderer.helpers.GLUtil.glGenVertexArrays
 import controllers.worldRenderer.helpers.GLUtil.glGetInteger
 import controllers.worldRenderer.helpers.GpuIntBuffer
-import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import models.DebugModel
@@ -52,27 +48,18 @@ class Renderer constructor(
 ) : GLEventListener {
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
 
-    private val MAX_TEMP_VERTICES: Int = 65535
-
     private lateinit var gl: GL4
     private var glProgram = 0
-
-    private var vaoHandle = 0
 
     private var fboSceneHandle = 0
     private var rboSceneHandle = 0
     private var rboSceneDepthBuffer = 0
-
-    private var tmpOutBufferId = 0 // target vertex buffer for compute shaders
-    private var tmpOutUvBufferId = 0 // target uv buffer for compute shaders
-//    private var animFrameBufferId = 0 // which frame the model should display on
 
     private var textureArrayId = 0
     private var uniformBufferId = 0
     private val uniformBuffer: IntBuffer = GpuIntBuffer.allocateDirect(5 + 3 + 1)
     private val textureOffsets = FloatArray(256)
 
-    private lateinit var modelBuffers: ModelBuffers
     private lateinit var priorityRenderer: PriorityRenderer
 
     var zLevelsSelected = Array(REGION_HEIGHT) { true }
@@ -106,14 +93,10 @@ class Renderer constructor(
         // center camera in viewport
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
-        tmpOutUvBufferId = -1
-        tmpOutBufferId = -1
 
         fboSceneHandle = -1
         rboSceneHandle = -1
         rboSceneDepthBuffer = -1
-
-        modelBuffers = ModelBuffers()
 
         val jfxNewtDisplay = NewtFactory.createDisplay(null, false)
         val screen = NewtFactory.createScreen(jfxNewtDisplay, 0)
@@ -168,8 +151,6 @@ class Renderer constructor(
             priorityRenderer = GLSLPriorityRenderer(gl)
             initProgram()
             initUniformBuffer()
-            initBuffers()
-            initVao()
 
             // disable vsync
 //            gl.swapInterval = 0
@@ -235,33 +216,9 @@ class Renderer constructor(
         gl.glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)
         gl.glClear(GL.GL_COLOR_BUFFER_BIT or GL.GL_DEPTH_BUFFER_BIT)
 
-        modelBuffers.flip()
-        modelBuffers.flipVertUv()
         val clientCycle = ((System.currentTimeMillis() - clientStart) / 20).toInt() // 50 fps
 
-        // UBO
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, uniformBufferId)
-        uniformBuffer.clear()
-        uniformBuffer
-            .put(camera.yaw)
-            .put(camera.pitch)
-            .put(camera.centerX)
-            .put(camera.centerY)
-            .put(camera.scale)
-            .put(camera.cameraX) // x
-            .put(camera.cameraZ) // z
-            .put(camera.cameraY) // y
-            .put(clientCycle) // currFrame
-        uniformBuffer.flip()
-        gl.glBufferSubData(
-            GL2ES3.GL_UNIFORM_BUFFER,
-            0,
-            uniformBuffer.limit() * Integer.BYTES.toLong(),
-            uniformBuffer
-        )
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
-
-        priorityRenderer.produceVertices(modelBuffers, uniformBufferId, tmpOutBufferId, tmpOutUvBufferId)
+        priorityRenderer.produceVertices(camera, clientCycle)
 
         if (textureArrayId == -1) {
             // lazy init textures as they may not be loaded at plugin start.
@@ -290,20 +247,35 @@ class Renderer constructor(
 //        }
         gl.glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
 
+        // UBO
+        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, uniformBufferId)
+        uniformBuffer.clear()
+        uniformBuffer
+            .put(camera.yaw)
+            .put(camera.pitch)
+            .put(camera.centerX)
+            .put(camera.centerY)
+            .put(camera.scale)
+            .put(camera.cameraX) // x
+            .put(camera.cameraZ) // z
+            .put(camera.cameraY) // y
+            .put(clientCycle) // currFrame
+        uniformBuffer.flip()
+        gl.glBufferSubData(
+            GL2ES3.GL_UNIFORM_BUFFER,
+            0,
+            uniformBuffer.limit() * Integer.BYTES.toLong(),
+            uniformBuffer
+        )
+        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
+
         // Bind uniforms
         gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
         gl.glUniformBlockBinding(glProgram, uniBlockMain, 0)
         gl.glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
         gl.glUniform2fv(uniTextureOffsets, textureOffsets.size, textureOffsets, 0)
 
-        // We just allow the GL to do face culling. Note this requires the priority renderer
-        // to have logic to disregard culled faces in the priority depth testing.
-        gl.glEnable(GL.GL_CULL_FACE)
-
-        // Draw output of compute shaders
-        gl.glBindVertexArray(vaoHandle)
-        gl.glDrawArrays(GL.GL_TRIANGLES, 0, modelBuffers.targetBufferOffset + modelBuffers.tempOffset)
-        gl.glDisable(GL.GL_CULL_FACE)
+        priorityRenderer.draw()
         gl.glUseProgram(0)
 
         if (aaEnabled) {
@@ -324,9 +296,6 @@ class Renderer constructor(
             GL.GL_COLOR_BUFFER_BIT, GL.GL_NEAREST
         )
         gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
-
-        modelBuffers.clearVertUv()
-        modelBuffers.clear()
 
         if (deltaTimeTarget != 0) {
             val endFrameTime = System.nanoTime()
@@ -354,9 +323,6 @@ class Renderer constructor(
     }
 
     private fun drawTiles() {
-        modelBuffers.clear()
-        modelBuffers.clearBufferOffset()
-
         zLevelsSelected.forEachIndexed { z, visible ->
             if (visible) {
                 for (x in 0 until scene.cols * REGION_SIZE) {
@@ -366,29 +332,6 @@ class Renderer constructor(
                 }
             }
         }
-
-        // allocate enough size in the outputBuffer for the static verts + the dynamic verts -- each vertex is an ivec4, 4 ints
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpOutBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_INT * 4).toLong(),
-            null,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpOutUvBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_FLOAT * 4).toLong(),
-            null,
-            GL.GL_DYNAMIC_DRAW
-        )
-//        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, animFrameBufferId)
-//        gl.glBufferData(
-//            GL.GL_ARRAY_BUFFER,
-//            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_INT * 4).toLong(),
-//            null,
-//            GL.GL_DYNAMIC_DRAW
-//        )
     }
 
     private fun drawTile(tile: SceneTile) {
@@ -396,34 +339,76 @@ class Renderer constructor(
         val y: Int = tile.y
         val tilePaint = tile.tilePaint
         if (tilePaint != null) {
-            priorityRenderer.addRenderable(tilePaint, modelBuffers, x, y, 0, LocationType.TILE_PAINT.id)
+            priorityRenderer.positionRenderable(
+                tilePaint,
+                x,
+                y,
+                0,
+                LocationType.TILE_PAINT.id
+            )
         }
 
         val tileModel = tile.tileModel
         if (tileModel != null) {
-            priorityRenderer.addRenderable(tileModel, modelBuffers, x, y, 0, LocationType.TILE_MODEL.id)
+            priorityRenderer.positionRenderable(
+                tileModel,
+                x,
+                y,
+                0,
+                LocationType.TILE_MODEL.id
+            )
         }
 
         val floorDecorationEntity = tile.floorDecoration?.entity
         if (floorDecorationEntity != null) {
-            priorityRenderer.addRenderable(floorDecorationEntity.model, modelBuffers, x, y, floorDecorationEntity.height, LocationType.FLOOR_DECORATION.id)
+            priorityRenderer.positionRenderable(
+                floorDecorationEntity.model,
+                x,
+                y,
+                floorDecorationEntity.height,
+                LocationType.FLOOR_DECORATION.id
+            )
         }
 
         val wall = tile.wall
         if (wall != null) {
-            priorityRenderer.addRenderable(wall.entity.model, modelBuffers, x, y, wall.entity.height, wall.type.id)
+            priorityRenderer.positionRenderable(
+                wall.entity.model,
+                x,
+                y,
+                wall.entity.height,
+                wall.type.id
+            )
             if (wall.entity2 != null) {
-                priorityRenderer.addRenderable(wall.entity2.model, modelBuffers, x, y, wall.entity2.height, wall.type.id)
+                priorityRenderer.positionRenderable(
+                    wall.entity2.model,
+                    x,
+                    y,
+                    wall.entity2.height,
+                    wall.type.id
+                )
             }
         }
 
         val wallDecorationEntity = tile.wallDecoration?.entity
         if (wallDecorationEntity != null) {
-            priorityRenderer.addRenderable(wallDecorationEntity.model, modelBuffers, x, y, wallDecorationEntity.height, LocationType.INTERACTABLE_WALL_DECORATION.id)
+            priorityRenderer.positionRenderable(
+                wallDecorationEntity.model,
+                x,
+                y,
+                wallDecorationEntity.height,
+                LocationType.INTERACTABLE_WALL_DECORATION.id
+            )
         }
 
         for (gameObject in tile.gameObjects) {
-            priorityRenderer.addRenderable(gameObject.entity.model, modelBuffers, x, y, gameObject.entity.height, LocationType.INTERACTABLE.id)
+            priorityRenderer.positionRenderable(
+                gameObject.entity.model,
+                x,
+                y,
+                gameObject.entity.height,
+                LocationType.INTERACTABLE.id
+            )
         }
     }
 
@@ -432,6 +417,7 @@ class Renderer constructor(
     }
 
     private fun uploadScene() {
+        val modelBuffers = priorityRenderer.unsafeGetBuffers()
         modelBuffers.clearVertUv()
         try {
             sceneUploader.upload(scene, modelBuffers.vertexBuffer, modelBuffers.uvBuffer)
@@ -439,20 +425,17 @@ class Renderer constructor(
             e.printStackTrace()
             logger.warn("out of space vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
         }
-        modelBuffers.flipVertUv()
 
-        logger.debug("vertexBuffer size {}", modelBuffers.vertexBuffer.buffer.limit())
-        priorityRenderer.startAdding(modelBuffers)
-        modelBuffers.clearVertUv()
+        priorityRenderer.finishUploading()
 
         drawTiles()
+        priorityRenderer.finishPositioning()
+
         isSceneUploadRequired = false
     }
 
     override fun dispose(drawable: GLAutoDrawable?) {
-        shutdownBuffers()
         shutdownProgram()
-        shutdownVao()
         shutdownAAFbo()
         priorityRenderer.destroy()
     }
@@ -521,31 +504,6 @@ class Renderer constructor(
         gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0)
     }
 
-    private fun initBuffers() {
-        tmpOutBufferId = glGenBuffers(gl)
-        tmpOutUvBufferId = glGenBuffers(gl)
-//        animFrameBufferId = glGenBuffers(gl)
-    }
-
-    private fun initVao() {
-        // Create VAO
-        vaoHandle = glGenVertexArrays(gl)
-        gl.glBindVertexArray(vaoHandle)
-        gl.glEnableVertexAttribArray(0)
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpOutBufferId)
-        gl.glVertexAttribIPointer(0, 4, GL2ES2.GL_INT, 0, 0)
-        gl.glEnableVertexAttribArray(1)
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpOutUvBufferId)
-        gl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0)
-//        gl.glEnableVertexAttribArray(2);
-//        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, animFrameBufferId);
-//        gl.glVertexAttribIPointer(2, 4, gl.GL_INT, 0, 0);
-
-        // unbind VBO
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        gl.glBindVertexArray(0)
-    }
-
     private fun makeProjectionMatrix(width: Float, height: Float, near: Float): FloatArray =
         floatArrayOf(
             2 / width, 0f, 0f, 0f,
@@ -564,29 +522,9 @@ class Renderer constructor(
         return viewProjectionMatrix
     }
 
-    private fun shutdownBuffers() {
-        if (tmpOutBufferId != -1) {
-            glDeleteBuffer(gl, tmpOutBufferId)
-            tmpOutBufferId = -1
-        }
-        if (tmpOutUvBufferId != -1) {
-            glDeleteBuffer(gl, tmpOutUvBufferId)
-            tmpOutUvBufferId = -1
-        }
-//        if (animFrameBufferId != -1) {
-//            glDeleteBuffer(gl, animFrameBufferId)
-//            animFrameBufferId = -1
-//        }
-    }
-
     private fun shutdownProgram() {
         gl.glDeleteProgram(glProgram)
         glProgram = -1
-    }
-
-    private fun shutdownVao() {
-        glDeleteVertexArrays(gl, vaoHandle)
-        vaoHandle = -1
     }
 
     private fun shutdownAAFbo() {
