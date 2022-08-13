@@ -415,6 +415,8 @@ class Renderer constructor(
     }
 
     private fun uploadScene() {
+        priorityRenderer.beginUploading()
+
         try {
             sceneUploader.upload(scene, priorityRenderer)
         } catch (e: Exception) {

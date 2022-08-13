@@ -125,6 +125,7 @@ class SceneUploader {
 
         val (vertexBuffer, uvBuffer) =
             priorityRenderer.getBuffersForRenderable(tile, 2, tile.texture != -1)
+        val strictUVs = priorityRenderer.needsStrictUVs || tile.texture != -1
 
         // 0,0
         val vertexDx = 0
@@ -150,7 +151,7 @@ class SceneUploader {
         vertexBuffer.put(vertexCx, seHeight, vertexCy, seColor)
         vertexBuffer.put(vertexBx, nwHeight, vertexBy, nwColor)
 
-        if (tile.texture != -1) {
+        if (strictUVs) {
             val tex = tile.texture + 1f
             uvBuffer.put(tex, 1.0f, 1.0f, 0f)
             uvBuffer.put(tex, 0.0f, 1.0f, 0f)
@@ -177,6 +178,7 @@ class SceneUploader {
         val trueFaceCount = triangleColorA.count { it != 12345678 }
         val (vertexBuffer, uvBuffer) =
             priorityRenderer.getBuffersForRenderable(tileModel, trueFaceCount, triangleTextures != null)
+        val strictUVs = priorityRenderer.needsStrictUVs || triangleTextures != null
 
         for (i in 0 until faceCount) {
             val triangleA = faceX[i]
@@ -197,17 +199,13 @@ class SceneUploader {
             vertexBuffer.put(vertexXA, vertexY[triangleA], vertexZA, colorA)
             vertexBuffer.put(vertexXB, vertexY[triangleB], vertexZB, colorB)
             vertexBuffer.put(vertexXC, vertexY[triangleC], vertexZC, colorC)
-            if (triangleTextures != null) {
-                if (triangleTextures[i] != -1) {
-                    val tex = triangleTextures[i] + 1f
-                    uvBuffer.put(tex, vertexXA / 128f, vertexZA / 128f, 0f)
-                    uvBuffer.put(tex, vertexXB / 128f, vertexZB / 128f, 0f)
-                    uvBuffer.put(tex, vertexXC / 128f, vertexZC / 128f, 0f)
-                } else {
-                    uvBuffer.put(0f, 0f, 0f, 0f)
-                    uvBuffer.put(0f, 0f, 0f, 0f)
-                    uvBuffer.put(0f, 0f, 0f, 0f)
-                }
+            if (triangleTextures != null && triangleTextures[i] != -1) {
+                val tex = triangleTextures[i] + 1f
+                uvBuffer.put(tex, vertexXA / 128f, vertexZA / 128f, 0f)
+                uvBuffer.put(tex, vertexXB / 128f, vertexZB / 128f, 0f)
+                uvBuffer.put(tex, vertexXC / 128f, vertexZC / 128f, 0f)
+            } else if (strictUVs) {
+                pushNullUvs(uvBuffer)
             }
         }
     }
@@ -239,6 +237,7 @@ class SceneUploader {
 
         val (vertexBuffer, uvBuffer) =
             priorityRenderer.getBuffersForRenderable(model, triangleCount, faceTextures != null)
+        val strictUVs = priorityRenderer.needsStrictUVs || faceTextures != null
 
         for (face in 0 until triangleCount) {
             val alphaPriority = packAlphaPriority(faceTextures, transparencies, facePriorities, face)
@@ -254,10 +253,8 @@ class SceneUploader {
                 vertexBuffer.put(0, 0, 0, 0)
                 vertexBuffer.put(0, 0, 0, 0)
                 vertexBuffer.put(0, 0, 0, 0)
-                if (faceTextures != null) {
-                    uvBuffer.put(0f, 0f, 0f, 0f)
-                    uvBuffer.put(0f, 0f, 0f, 0f)
-                    uvBuffer.put(0f, 0f, 0f, 0f)
+                if (strictUVs) {
+                    pushNullUvs(uvBuffer)
                 }
                 continue
             }
@@ -270,6 +267,8 @@ class SceneUploader {
             vertexBuffer.put(vertexX[triangleC], vertexY[triangleC], vertexZ[triangleC], alphaPriority or color3)
             if (faceTextures != null) {
                 pushUvForFace(faceTextures, uv, face, uvBuffer)
+            } else if (strictUVs) {
+                pushNullUvs(uvBuffer)
             }
         }
     }
@@ -284,10 +283,14 @@ class SceneUploader {
             uvBuffer.put(texture, uv[idx + 4], uv[idx + 5], 0f)
             /* ktlint-enable no-multi-spaces */
         } else {
-            uvBuffer.put(0f, 0f, 0f, 0f)
-            uvBuffer.put(0f, 0f, 0f, 0f)
-            uvBuffer.put(0f, 0f, 0f, 0f)
+            pushNullUvs(uvBuffer)
         }
+    }
+
+    private fun pushNullUvs(uvBuffer: FloatBuffer) {
+        uvBuffer.put(0f, 0f, 0f, 0f)
+        uvBuffer.put(0f, 0f, 0f, 0f)
+        uvBuffer.put(0f, 0f, 0f, 0f)
     }
 
     private fun packAlphaPriority(faceTextures: ShortArray?, transparencies: ByteArray?, facePriorities: ByteArray?, face: Int): Int {

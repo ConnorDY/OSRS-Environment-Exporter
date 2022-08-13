@@ -1,12 +1,10 @@
 package controllers.worldRenderer
 
 import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES2
 import com.jogamp.opengl.GL2ES3
 import com.jogamp.opengl.GL3ES3
 import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.entities.Renderable
-import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GLUtil.glGenBuffers
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
@@ -16,7 +14,7 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
-class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
+class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(gl) {
     private val logger = LoggerFactory.getLogger(GLSLPriorityRenderer::class.java)
 
     private val bufferId = glGenBuffers(gl)
@@ -26,11 +24,6 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
     private val tmpModelBufferId = glGenBuffers(gl)
     private val tmpModelBufferSmallId = glGenBuffers(gl)
     private val tmpModelBufferUnorderedId = glGenBuffers(gl)
-
-    private val vertexOut = glGenBuffers(gl)
-    private val uvOut = glGenBuffers(gl)
-//    private val animFrameBufferId = glGenBuffers(gl)
-    private val vaoHandle = initVao(vertexOut, uvOut)
 
     private val glComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(gl, Shader.createTemplate(1024, 4))
     private val glSmallComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(gl, Shader.createTemplate(512, 1))
@@ -43,27 +36,8 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
     private val uniBlockLarge = gl.glGetUniformBlockIndex(glComputeProgram, "uniforms")
 
     private val modelBuffers = ModelBuffers()
-    private var generation = 0
 
-    private fun initVao(vertexOut: GLBuffer, uvOut: GLBuffer): Int {
-        // Create VAO
-        val vaoHandle = GLUtil.glGenVertexArrays(gl)
-        gl.glBindVertexArray(vaoHandle)
-        gl.glEnableVertexAttribArray(0)
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vertexOut)
-        gl.glVertexAttribIPointer(0, 4, GL2ES2.GL_INT, 0, 0)
-        gl.glEnableVertexAttribArray(1)
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, uvOut)
-        gl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0)
-//        gl.glEnableVertexAttribArray(2);
-//        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, animFrameBufferId);
-//        gl.glVertexAttribIPointer(2, 4, gl.GL_INT, 0, 0);
-
-        // unbind VBO
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        gl.glBindVertexArray(0)
-        return vaoHandle
-    }
+    override val needsStrictUVs get() = false
 
     private fun initUniformBuffer(uniformBuffer: IntBuffer): GLBuffer {
         val uniformBufferId = glGenBuffers(gl)
@@ -82,22 +56,10 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
     }
 
     override fun getBuffersForRenderable(renderable: Renderable, faces: Int, hasUVs: Boolean): Pair<IntBuffer, FloatBuffer> {
-        val comp = renderable.computeObj
         val vertexBuffer = modelBuffers.vertexBuffer
         val uvBuffer = modelBuffers.uvBuffer
 
-        val vecDims = 4
-        val verticesPerTri = 3
-
-        comp.offset = vertexBuffer.buffer.position() / vecDims
-        comp.uvOffset = if (hasUVs) uvBuffer.buffer.position() / vecDims else -1
-        comp.size = faces
-        comp.generation = generation
-
-        vertexBuffer.ensureCapacity(faces * (vecDims * verticesPerTri))
-        if (hasUVs)
-            uvBuffer.ensureCapacity(faces * (vecDims * verticesPerTri))
-
+        prepareBuffersForRenderable(renderable, faces, hasUVs, vertexBuffer, uvBuffer)
         return Pair(vertexBuffer.buffer, uvBuffer.buffer)
     }
 
@@ -136,23 +98,21 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
         objType: Int
     ) {
         val computeObj = renderable.computeObj
-        if (computeObj.generation != generation) return
+        if (!isUploaded(computeObj)) return
+
+        super.positionRenderable(renderable, sceneX, sceneY, height, objType)
+        computeObj.idx = modelBuffers.targetBufferOffset
+        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
+
         val b: GpuIntBuffer =
             if (renderable.renderUnordered) modelBuffers.bufferUnordered()
             else modelBuffers.bufferForTriangles(min(ModelBuffers.MAX_TRIANGLE, renderable.faceCount))
         b.ensureCapacity(13)
-
-        computeObj.idx = modelBuffers.targetBufferOffset
-        computeObj.flags = renderable.renderFlags
-        computeObj.x = sceneX * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetX
-        computeObj.y = height + renderable.renderOffsetY
-        computeObj.z = sceneY * Constants.LOCAL_TILE_SIZE + renderable.renderOffsetZ
         b.buffer.put(computeObj.toArray())
-
-        modelBuffers.addTargetBufferOffset(computeObj.size * 3)
     }
 
     override fun finishPositioning() {
+        super.finishPositioning()
         // allocate enough size in the outputBuffer for the static verts + the dynamic verts -- each vertex is an ivec4, 4 ints
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vertexOut)
         gl.glBufferData(
@@ -175,7 +135,6 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
 //            null,
 //            GL.GL_DYNAMIC_DRAW
 //        )
-        generation++ // Mark all compute objects as non-uploaded again
     }
 
     override fun produceVertices(camera: Camera, currFrame: Int) {
@@ -300,10 +259,9 @@ class GLSLPriorityRenderer(private val gl: GL3ES3) : PriorityRenderer {
     }
 
     override fun destroy() {
-        val allBuffers = intArrayOf(bufferId, uvBufferId, tmpBufferId, tmpUvBufferId, tmpModelBufferId, tmpModelBufferSmallId, tmpModelBufferUnorderedId, vertexOut, uvOut)
+        super.destroy()
+        val allBuffers = intArrayOf(bufferId, uvBufferId, tmpBufferId, tmpUvBufferId, tmpModelBufferId, tmpModelBufferSmallId, tmpModelBufferUnorderedId)
         gl.glDeleteBuffers(allBuffers.size, allBuffers, 0)
-
-        GLUtil.glDeleteVertexArrays(gl, vaoHandle)
 
         gl.glDeleteProgram(glComputeProgram)
         gl.glDeleteProgram(glSmallComputeProgram)
