@@ -142,21 +142,27 @@ class Renderer constructor(
     }
 
     override fun init(drawable: GLAutoDrawable) {
+        gl = drawable.gl.gL4
+        gl.glEnable(GL.GL_DEPTH_TEST)
+        gl.glDepthFunc(GL.GL_LEQUAL)
+        gl.glDepthRangef(0f, 1f)
+
+        priorityRenderer = try {
+            GLSLPriorityRenderer(gl)
+        } catch (e: ShaderException) {
+            logger.warn("Tried to spawn a GLSLPriorityRenderer but got exception", e)
+            CPUNonPriorityRenderer(gl)
+        }
+
         try {
-            gl = drawable.gl.gL4
-            gl.glEnable(GL.GL_DEPTH_TEST)
-            gl.glDepthFunc(GL.GL_LEQUAL)
-            gl.glDepthRangef(0f, 1f)
-
-            priorityRenderer = GLSLPriorityRenderer(gl)
             initProgram()
-            initUniformBuffer()
-
-            // disable vsync
-//            gl.swapInterval = 0
         } catch (e: ShaderException) {
             e.printStackTrace()
         }
+        initUniformBuffer()
+
+        // disable vsync
+//            gl.swapInterval = 0
     }
 
     override fun reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int) {
