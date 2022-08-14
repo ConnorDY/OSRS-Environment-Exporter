@@ -14,5 +14,5 @@ interface Renderable {
 
 enum class OrientationType(val id: Int) {
     STRAIGHT(0),
-    DIAGONAL(0xFF);
+    DIAGONAL(0x100);
 }
