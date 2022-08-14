@@ -10,6 +10,7 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import models.DebugModel
 import models.DebugOptionsModel
+import models.config.ConfigOption
 import models.config.Configuration
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
@@ -28,6 +29,7 @@ import org.lwjgl.opengl.GL11C.glClear
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glDepthFunc
 import org.lwjgl.opengl.GL11C.glDepthRange
+import org.lwjgl.opengl.GL11C.glDisable
 import org.lwjgl.opengl.GL11C.glEnable
 import org.lwjgl.opengl.GL11C.glGetInteger
 import org.lwjgl.opengl.GL11C.glViewport
@@ -85,6 +87,8 @@ class Renderer(
     private val debugOptionsModel: DebugOptionsModel,
 ) {
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
+
+    var antiAliasingMode: AntiAliasingMode = configuration.getProp(ConfigOption.antiAliasing)
 
     private var glProgram = 0
 
@@ -241,7 +245,6 @@ class Renderer(
         inputHandler.tick(deltaTime)
 
         // Setup anti-aliasing
-        val antiAliasingMode: AntiAliasingMode = AntiAliasingMode.MSAA_16
         val aaEnabled = antiAliasingMode !== AntiAliasingMode.DISABLED
         if (aaEnabled) {
             glEnable(GL_MULTISAMPLE)
@@ -258,6 +261,9 @@ class Renderer(
                 lastStretchedCanvasHeight = stretchedCanvasHeight
             }
             glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboSceneHandle)
+        } else {
+            glDisable(GL_MULTISAMPLE)
+            shutdownAAFbo()
         }
         lastAntiAliasingMode = antiAliasingMode
         // TODO: was this necessary?

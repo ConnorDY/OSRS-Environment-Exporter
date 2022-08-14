@@ -1,5 +1,6 @@
 package models.config
 
+import controllers.worldRenderer.helpers.AntiAliasingMode
 import utils.Utils.isMacos
 
 data class ConfigOption<T>(
@@ -20,6 +21,7 @@ data class ConfigOption<T>(
         val lastCheckedForUpdates = ConfigOption("last-checked-for-updates", ConfigOptionType.long, 0L)
         val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode (requires restart)", 'D')
         val mouseWarping = ConfigOption("mouse-warping", ConfigOptionType.boolean, !isMacos(), "Enable mouse warping", 'W')
+        val antiAliasing = ConfigOption("anti-aliasing", ConfigOptionType.Enumerated(AntiAliasingMode::valueOf, AntiAliasingMode.values(), AntiAliasingMode::humanReadableName), AntiAliasingMode.MSAA_16, "Anti-aliasing", 'A')
 
         val all = listOf(
             lastCacheDir,
@@ -29,6 +31,7 @@ data class ConfigOption<T>(
             checkForUpdates,
             lastCheckedForUpdates,
             mouseWarping,
+            antiAliasing,
             debug,
         )
     }
