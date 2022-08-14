@@ -230,7 +230,7 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
     }
 
     override fun draw() {
-        // We just allow the  to do face culling. Note this requires the priority renderer
+        // We just allow GL to do face culling. Note this requires the priority renderer
         // to have logic to disregard culled faces in the priority depth testing.
         glEnable(GL_CULL_FACE)
 
