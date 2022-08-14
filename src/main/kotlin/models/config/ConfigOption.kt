@@ -16,7 +16,7 @@ data class ConfigOption<T>(
         val fpsCap = ConfigOption("fps-cap", ConfigOptionType.intToggle, 60, "Limit FPS", 'F')
         val checkForUpdates = ConfigOption("check-for-updates", ConfigOptionType.boolean, true, "Check for updates", 'U')
         val lastCheckedForUpdates = ConfigOption("last-checked-for-updates", ConfigOptionType.long, 0L)
-        val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode", 'D')
+        val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode (requires restart)", 'D')
 
         val all = listOf(
             lastCacheDir,

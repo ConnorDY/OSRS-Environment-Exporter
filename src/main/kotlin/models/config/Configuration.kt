@@ -9,14 +9,26 @@ class Configuration {
     private var configFile: File = File("config.properties")
 
     fun <T> saveProp(key: ConfigOption<T>, value: T) {
-        val writer = FileWriter(configFile)
+        setProp(key, value)
+        save()
+    }
+
+    fun <T> setProp(key: ConfigOption<T>, value: T) {
         properties.setProperty(key.id, key.type.convToString(value))
+    }
+
+    fun save() {
+        val writer = FileWriter(configFile)
         properties.store(writer, "")
     }
 
     fun <T> getProp(key: ConfigOption<T>): T {
         val value = properties.getProperty(key.id) ?: return key.default
-        return key.type.convFromString(value) ?: key.default
+        return try {
+            key.type.convFromString(value)
+        } catch (iae: IllegalArgumentException) {
+            key.default
+        }
     }
 
     init {
