@@ -68,6 +68,7 @@ import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
 import org.lwjgl.opengl.awt.AWTGLCanvas
+import org.lwjgl.opengl.awt.GLData
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
 import java.nio.IntBuffer
@@ -161,7 +162,12 @@ class Renderer constructor(
         rboSceneHandle = -1
         rboSceneDepthBuffer = -1
 
-        val glCanvas = object : AWTGLCanvas() {
+        val glData = GLData()
+        glData.majorVersion = 4
+        glData.minorVersion = 1
+        glData.profile = GLData.Profile.CORE
+
+        val glCanvas = object : AWTGLCanvas(glData) {
             override fun initGL() {
                 fixDebugAgent()
                 this@Renderer.init()
