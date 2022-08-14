@@ -121,7 +121,7 @@ class Renderer constructor(
     private var glCanvas: AWTGLCanvas? = null
     private lateinit var inputHandler: InputHandler
 
-    private fun fixDebugAgent() {  // TODO: this is only to make the debugger happy
+    private fun fixDebugAgent() { // TODO: this is only to make the debugger happy
         try {
             val c = Class.forName("org.lwjglx.debug.org.lwjgl.opengl.Context")
             run {
@@ -151,7 +151,6 @@ class Renderer constructor(
         } catch (e: Throwable) {
         }
     }
-
 
     fun initCanvas(): AWTGLCanvas {
         // center camera in viewport

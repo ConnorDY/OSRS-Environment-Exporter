@@ -13,8 +13,8 @@ class Animator(private val canvas: AWTGLCanvas) {
         override fun run() {
             if (!running) return
             if (!canvas.isValid) {
-                GL.setCapabilities(null);
-                return;
+                GL.setCapabilities(null)
+                return
             }
             canvas.render()
             val thisTime = System.nanoTime()
