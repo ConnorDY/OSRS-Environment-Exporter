@@ -8,7 +8,6 @@ import models.config.Configuration
 import ui.NumericTextField
 import java.awt.Component
 import java.awt.GridBagConstraints
-import java.awt.GridBagConstraints.LINE_END
 import java.awt.GridBagConstraints.LINE_START
 import java.awt.GridBagConstraints.NONE
 import java.awt.GridBagConstraints.PAGE_START
@@ -86,7 +85,7 @@ class SettingsController(
         label.labelFor = editBox
         add(
             label,
-            GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_END, NONE, defaultInset, 0, 0)
+            GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
         )
         return SaveFunc { configuration.setProp(option, editBox.value as Int) }
     }
@@ -109,7 +108,7 @@ class SettingsController(
         }
         add(
             checkbox,
-            GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_END, NONE, defaultInset, 0, 0)
+            GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
         )
         return SaveFunc { configuration.setProp(option, if (checkbox.isSelected) editBox.value as Int else null) }
     }
@@ -145,7 +144,7 @@ class SettingsController(
         label.labelFor = editBox
         add(
             label,
-            GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_END, NONE, defaultInset, 0, 0)
+            GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
         )
         return SaveFunc {
             val selected = editBox.selectedIndex
