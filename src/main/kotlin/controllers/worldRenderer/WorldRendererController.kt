@@ -1,6 +1,6 @@
 package controllers.worldRenderer
 
-import controllers.SettingsController
+import models.config.ConfigOption
 import models.config.Configuration
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -28,7 +28,7 @@ class WorldRendererController constructor(
     }
 
     private fun checkFpsCap() {
-        val fpsCap = configuration.getProp(SettingsController.FPS_CAP_PROP).toIntOrNull()
+        val fpsCap = configuration.getProp(ConfigOption.fpsCap)
 
         if (fpsCap != null) {
             renderer.setFpsTarget(fpsCap)

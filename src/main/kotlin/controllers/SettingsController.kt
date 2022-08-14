@@ -1,6 +1,7 @@
 package controllers
 
 import controllers.worldRenderer.Renderer
+import models.config.ConfigOption
 import models.config.Configuration
 import ui.NumericTextField
 import java.awt.GridBagConstraints
@@ -56,7 +57,7 @@ class SettingsController(
         )
 
         // load current setting(s)
-        val fpsCap = configuration.getProp(FPS_CAP_PROP).toIntOrNull()
+        val fpsCap = configuration.getProp(ConfigOption.fpsCap)
 
         if (fpsCap != null) {
             txtFpsCap.value = fpsCap
@@ -65,7 +66,7 @@ class SettingsController(
             txtFpsCap.isEnabled = false
         }
 
-        chkBoxCheckForUpdates.isSelected = configuration.getProp(CHECK_FOR_UPDATES_PROP).toBooleanStrictOrNull() ?: true
+        chkBoxCheckForUpdates.isSelected = configuration.getProp(ConfigOption.checkForUpdates)
 
         // FPS Limit checkbox handler
         chkBoxLimitFps.addChangeListener {
@@ -74,8 +75,8 @@ class SettingsController(
 
         // Save Preferences button handler
         btnSave.addActionListener {
-            configuration.saveProp(FPS_CAP_PROP, if (chkBoxLimitFps.isSelected) txtFpsCap.text else "")
-            configuration.saveProp(CHECK_FOR_UPDATES_PROP, chkBoxCheckForUpdates.isSelected.toString())
+            configuration.saveProp(ConfigOption.fpsCap, if (chkBoxLimitFps.isSelected) txtFpsCap.value as Int else null)
+            configuration.saveProp(ConfigOption.checkForUpdates, chkBoxCheckForUpdates.isSelected)
 
             var fpsCapToSet = txtFpsCap.text.toIntOrNull() ?: 0
             if (!chkBoxLimitFps.isSelected) fpsCapToSet = 0
@@ -87,11 +88,5 @@ class SettingsController(
 
         rootPane.defaultButton = btnSave
         pack()
-    }
-
-    companion object {
-        const val FPS_CAP_PROP = "fps-cap"
-        const val CHECK_FOR_UPDATES_PROP = "check-for-updates"
-        const val LAST_CHECKED_FOR_UPDATES_PROP = "last-checked-for-updates"
     }
 }

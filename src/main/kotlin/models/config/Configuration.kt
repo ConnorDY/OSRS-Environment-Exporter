@@ -8,14 +8,15 @@ class Configuration {
     private val properties = Properties()
     private var configFile: File = File("config.properties")
 
-    fun saveProp(key: String, value: String) {
+    fun <T> saveProp(key: ConfigOption<T>, value: T) {
         val writer = FileWriter(configFile)
-        properties.setProperty(key, value)
+        properties.setProperty(key.id, key.type.convToString(value))
         properties.store(writer, "")
     }
 
-    fun getProp(key: String): String {
-        return properties.getProperty(key).orEmpty()
+    fun <T> getProp(key: ConfigOption<T>): T {
+        val value = properties.getProperty(key.id) ?: return key.default
+        return key.type.convFromString(value) ?: key.default
     }
 
     init {
