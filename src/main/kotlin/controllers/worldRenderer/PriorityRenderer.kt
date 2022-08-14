@@ -15,6 +15,6 @@ interface PriorityRenderer {
     fun finishPositioning()
     fun produceVertices(camera: Camera, currFrame: Int)
     fun draw()
-    fun destroy()
     fun bindVao()
+    fun destroy()
 }

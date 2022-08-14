@@ -1,10 +1,27 @@
 package controllers.worldRenderer.shaders
 
-import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES2
-import com.jogamp.opengl.GL3ES3
-import controllers.worldRenderer.helpers.GLUtil
-import controllers.worldRenderer.helpers.GLUtil.glGetProgramInfoLog
+import org.lwjgl.opengl.GL11C.GL_FALSE
+import org.lwjgl.opengl.GL11C.GL_TRUE
+import org.lwjgl.opengl.GL20C.GL_COMPILE_STATUS
+import org.lwjgl.opengl.GL20C.GL_FRAGMENT_SHADER
+import org.lwjgl.opengl.GL20C.GL_LINK_STATUS
+import org.lwjgl.opengl.GL20C.GL_VALIDATE_STATUS
+import org.lwjgl.opengl.GL20C.GL_VERTEX_SHADER
+import org.lwjgl.opengl.GL20C.glAttachShader
+import org.lwjgl.opengl.GL20C.glCompileShader
+import org.lwjgl.opengl.GL20C.glCreateProgram
+import org.lwjgl.opengl.GL20C.glCreateShader
+import org.lwjgl.opengl.GL20C.glDeleteProgram
+import org.lwjgl.opengl.GL20C.glDeleteShader
+import org.lwjgl.opengl.GL20C.glDetachShader
+import org.lwjgl.opengl.GL20C.glGetProgramInfoLog
+import org.lwjgl.opengl.GL20C.glGetProgrami
+import org.lwjgl.opengl.GL20C.glGetShaderInfoLog
+import org.lwjgl.opengl.GL20C.glGetShaderi
+import org.lwjgl.opengl.GL20C.glLinkProgram
+import org.lwjgl.opengl.GL20C.glShaderSource
+import org.lwjgl.opengl.GL20C.glValidateProgram
+import org.lwjgl.opengl.GL43C.GL_COMPUTE_SHADER
 
 class Shader {
     private val units: MutableList<Unit> = ArrayList()
@@ -17,47 +34,47 @@ class Shader {
     }
 
     @Throws(ShaderException::class)
-    fun compile(gl: GL2ES2, template: Template): Int {
-        val program = gl.glCreateProgram()
+    fun compile(template: Template): Int {
+        val program = glCreateProgram()
         val shaders = IntArray(units.size)
         var i = 0
         var ok = false
         try {
             while (i < shaders.size) {
                 val unit = units[i]
-                val shader = gl.glCreateShader(unit.type)
+                val shader = glCreateShader(unit.type)
                 if (shader == 0)
                     throw ShaderException("Unable to create shader of type ${unit.type}")
                 val source: String = template.load(unit.filename)
-                gl.glShaderSource(shader, 1, arrayOf(source), null)
-                gl.glCompileShader(shader)
-                if (GLUtil.glGetShader(gl, shader, GL2ES2.GL_COMPILE_STATUS) != GL.GL_TRUE) {
-                    val err: String = GLUtil.glGetShaderInfoLog(gl, shader)
-                    gl.glDeleteShader(shader)
+                glShaderSource(shader, source)
+                glCompileShader(shader)
+                if (glGetShaderi(shader, GL_COMPILE_STATUS) != GL_TRUE) {
+                    val err: String = glGetShaderInfoLog(shader)
+                    glDeleteShader(shader)
                     throw ShaderException(err)
                 }
-                gl.glAttachShader(program, shader)
+                glAttachShader(program, shader)
                 shaders[i++] = shader
             }
-            gl.glLinkProgram(program)
-            if (GLUtil.glGetProgram(gl, program, GL2ES2.GL_LINK_STATUS) == GL.GL_FALSE) {
-                val err: String = glGetProgramInfoLog(gl, program)
+            glLinkProgram(program)
+            if (glGetProgrami(program, GL_LINK_STATUS) == GL_FALSE) {
+                val err: String = glGetProgramInfoLog(program)
                 throw ShaderException(err)
             }
-            gl.glValidateProgram(program)
-            if (GLUtil.glGetProgram(gl, program, GL2ES2.GL_VALIDATE_STATUS) == GL.GL_FALSE) {
-                val err: String = glGetProgramInfoLog(gl, program)
+            glValidateProgram(program)
+            if (glGetProgrami(program, GL_VALIDATE_STATUS) == GL_FALSE) {
+                val err: String = glGetProgramInfoLog(program)
                 throw ShaderException(err)
             }
             ok = true
         } finally {
             while (i > 0) {
                 val shader = shaders[--i]
-                gl.glDetachShader(program, shader)
-                gl.glDeleteShader(shader)
+                glDetachShader(program, shader)
+                glDeleteShader(shader)
             }
             if (!ok) {
-                gl.glDeleteProgram(program)
+                glDeleteProgram(program)
             }
         }
         return program
@@ -67,16 +84,16 @@ class Shader {
         const val VERSION_HEADER = "#version 430\n"
         val PROGRAM = lazy {
             Shader()
-                .add(GL2ES2.GL_VERTEX_SHADER, "/gpu/vert.glsl")
-                .add(GL2ES2.GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
+                .add(GL_VERTEX_SHADER, "/gpu/vert.glsl")
+                .add(GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
         }
         val COMPUTE_PROGRAM = lazy {
             Shader()
-                .add(GL3ES3.GL_COMPUTE_SHADER, "/gpu/comp.glsl")
+                .add(GL_COMPUTE_SHADER, "/gpu/comp.glsl")
         }
         val UNORDERED_COMPUTE_PROGRAM = lazy {
             Shader()
-                .add(GL3ES3.GL_COMPUTE_SHADER, "/gpu/comp_unordered.glsl")
+                .add(GL_COMPUTE_SHADER, "/gpu/comp_unordered.glsl")
         }
 
         fun createTemplate(threadCount: Int, facesPerThread: Int): Template {

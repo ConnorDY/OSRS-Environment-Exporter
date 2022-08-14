@@ -26,9 +26,25 @@ package controllers.worldRenderer
 import cache.definitions.TextureDefinition
 import cache.loaders.SpriteLoader
 import cache.loaders.TextureLoader
-import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES3
-import controllers.worldRenderer.helpers.GLUtil
+import org.lwjgl.BufferUtils
+import org.lwjgl.opengl.GL11C.GL_NEAREST
+import org.lwjgl.opengl.GL11C.GL_RGBA
+import org.lwjgl.opengl.GL11C.GL_RGBA8
+import org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER
+import org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER
+import org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S
+import org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE
+import org.lwjgl.opengl.GL11C.glBindTexture
+import org.lwjgl.opengl.GL11C.glDeleteTextures
+import org.lwjgl.opengl.GL11C.glGenTextures
+import org.lwjgl.opengl.GL11C.glTexParameteri
+import org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE
+import org.lwjgl.opengl.GL12C.glTexSubImage3D
+import org.lwjgl.opengl.GL13C.GL_TEXTURE0
+import org.lwjgl.opengl.GL13C.GL_TEXTURE1
+import org.lwjgl.opengl.GL13C.glActiveTexture
+import org.lwjgl.opengl.GL30C.GL_TEXTURE_2D_ARRAY
+import org.lwjgl.opengl.GL42C.glTexStorage3D
 import java.awt.image.BufferedImage
 import java.awt.image.IndexColorModel
 import java.io.File
@@ -39,39 +55,39 @@ class TextureManager constructor(
     private val spriteLoader: SpriteLoader,
     private val textureLoader: TextureLoader
 ) {
-    fun initTextureArray(gl: GL2ES3): Int {
+    fun initTextureArray(): Int {
         if (!allTexturesLoaded()) {
             return -1
         }
         val textures: Array<TextureDefinition?> = textureLoader.getAll()
-        val textureArrayId: Int = GLUtil.glGenTexture(gl)
-        gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
-        gl.glTexStorage3D(
-            GL2ES3.GL_TEXTURE_2D_ARRAY,
+        val textureArrayId: Int = glGenTextures()
+        glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayId)
+        glTexStorage3D(
+            GL_TEXTURE_2D_ARRAY,
             1,
-            GL.GL_RGBA8,
+            GL_RGBA8,
             TEXTURE_SIZE,
             TEXTURE_SIZE,
             textures.size
         )
-        gl.glTexParameteri(GL2ES3.GL_TEXTURE_2D_ARRAY, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
-        gl.glTexParameteri(GL2ES3.GL_TEXTURE_2D_ARRAY, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
-        gl.glTexParameteri(GL2ES3.GL_TEXTURE_2D_ARRAY, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
 
         // Set brightness to 1.0d to upload unmodified textures to GPU
 // 		double save = textureProvider.getBrightness();
 // 		textureProvider.setBrightness(1.0d);
-        updateTextures(gl, textureArrayId)
+        updateTextures(textureArrayId)
 
 // 		textureProvider.setBrightness(save);
-        gl.glActiveTexture(GL.GL_TEXTURE1)
-        gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
-        gl.glActiveTexture(GL.GL_TEXTURE0)
+        glActiveTexture(GL_TEXTURE1)
+        glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayId)
+        glActiveTexture(GL_TEXTURE0)
         return textureArrayId
     }
 
-    fun freeTextureArray(gl: GL, textureArrayId: Int) {
-        GLUtil.glDeleteTexture(gl, textureArrayId)
+    fun freeTextureArray(textureArrayId: Int) {
+        glDeleteTextures(textureArrayId)
     }
 
     /**
@@ -95,9 +111,9 @@ class TextureManager constructor(
         return true
     }
 
-    private fun updateTextures(gl: GL2ES3, textureArrayId: Int) {
+    private fun updateTextures(textureArrayId: Int) {
         val textures: Array<TextureDefinition?> = textureLoader.getAll()
-        gl.glBindTexture(GL2ES3.GL_TEXTURE_2D_ARRAY, textureArrayId)
+        glBindTexture(GL_TEXTURE_2D_ARRAY, textureArrayId)
         var cnt = 0
         for (textureId in textures.indices) {
             val texture: TextureDefinition = textures[textureId] ?: continue
@@ -107,16 +123,17 @@ class TextureManager constructor(
                 // 128x128 textures from high detail mode
                 continue
             }
-            val pixels = convertPixels(
+            val pixelBuffer = BufferUtils.createByteBuffer(4 * TEXTURE_SIZE * TEXTURE_SIZE)
+            convertPixels(
                 texture.pixels,
+                pixelBuffer,
                 TEXTURE_SIZE,
                 TEXTURE_SIZE,
                 TEXTURE_SIZE,
                 TEXTURE_SIZE
             )
-            val pixelBuffer = ByteBuffer.wrap(pixels)
-            gl.glTexSubImage3D(
-                GL2ES3.GL_TEXTURE_2D_ARRAY,
+            glTexSubImage3D(
+                GL_TEXTURE_2D_ARRAY,
                 0,
                 0,
                 0,
@@ -124,9 +141,9 @@ class TextureManager constructor(
                 TEXTURE_SIZE,
                 TEXTURE_SIZE,
                 1,
-                GL.GL_RGBA,
-                GL.GL_UNSIGNED_BYTE,
-                pixelBuffer
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                pixelBuffer.flip()
             )
         }
     }
@@ -216,30 +233,35 @@ class TextureManager constructor(
         private const val TEXTURE_SIZE = 128
         private fun convertPixels(
             srcPixels: IntArray,
+            buffer: ByteBuffer,
             width: Int,
             height: Int,
             textureWidth: Int,
             textureHeight: Int
-        ): ByteArray {
-            val pixels = ByteArray(textureWidth * textureHeight * 4)
-            var pixelIdx = 0
+        ) {
             var srcPixelIdx = 0
+            if (width > textureWidth) {
+                throw IllegalArgumentException("Texture object is not wide enough to hold the provided pixels")
+            }
+            if (height > textureHeight) {
+                throw IllegalArgumentException("Texture object is not tall enough to hold the provided pixels")
+            }
+
             val offset = (textureWidth - width) * 4
             for (y in 0 until height) {
                 for (x in 0 until width) {
                     val rgb = srcPixels[srcPixelIdx++]
                     if (rgb != 0) {
-                        pixels[pixelIdx++] = (rgb shr 16).toByte()
-                        pixels[pixelIdx++] = (rgb shr 8).toByte()
-                        pixels[pixelIdx++] = rgb.toByte()
-                        pixels[pixelIdx++] = (-1).toByte()
+                        buffer.put((rgb shr 16).toByte())
+                        buffer.put((rgb shr 8).toByte())
+                        buffer.put(rgb.toByte())
+                        buffer.put((-1).toByte())
                     } else {
-                        pixelIdx += 4
+                        buffer.position(buffer.position() + 4)
                     }
                 }
-                pixelIdx += offset
+                buffer.position(buffer.position() + offset)
             }
-            return pixels
         }
     }
 }

@@ -1,11 +1,11 @@
 package controllers.worldRenderer
 
-import com.jogamp.newt.event.KeyEvent
-import com.jogamp.newt.event.KeyListener
-import com.jogamp.newt.event.MouseEvent
-import com.jogamp.newt.event.MouseListener
 import models.DebugOptionsModel
 import models.scene.Scene
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
+import java.awt.event.MouseEvent
+import java.awt.event.MouseListener
 
 class InputHandler internal constructor(
     private val camera: Camera,
@@ -33,66 +33,61 @@ class InputHandler internal constructor(
         val yVec = camera.yawCos.toDouble() / 65535
         val zVec = camera.pitchSin.toDouble() / 65535
         var speed = 1
-        if (keys[KeyEvent.VK_SHIFT.toInt()]) {
+        if (keys[KeyEvent.VK_SHIFT]) {
             speed = 4
         }
-        if (keys[KeyEvent.VK_W.toInt()]) {
+        if (keys[KeyEvent.VK_W]) {
             camera.addX((dt * xVec * speed).toInt())
             camera.addY((dt * yVec * speed).toInt())
             camera.addZ((dt * zVec * speed).toInt())
         }
-        if (keys[KeyEvent.VK_S.toInt()]) {
+        if (keys[KeyEvent.VK_S]) {
             camera.addX((-(dt * xVec * speed)).toInt())
             camera.addY((-(dt * yVec * speed)).toInt())
             camera.addZ((-(dt * zVec * speed)).toInt())
         }
-        if (keys[KeyEvent.VK_A.toInt()]) {
+        if (keys[KeyEvent.VK_A]) {
             // X uses yVec because we want to move perpendicular
             camera.addX((-(dt * yVec * speed)).toInt())
             camera.addY((dt * xVec * speed).toInt())
         }
-        if (keys[KeyEvent.VK_D.toInt()]) {
+        if (keys[KeyEvent.VK_D]) {
             camera.addX((dt * yVec * speed).toInt())
             camera.addY((-(dt * xVec * speed)).toInt())
         }
-        if (keys[KeyEvent.VK_SPACE.toInt()]) {
+        if (keys[KeyEvent.VK_SPACE]) {
             camera.addZ((-dt).toInt() * speed)
         }
-        if (keys[KeyEvent.VK_X.toInt()]) {
+        if (keys[KeyEvent.VK_X]) {
             camera.addZ(dt.toInt() * speed)
         }
         if (debugOptionsModel.isDebugMode) {
-            if (keys[KeyEvent.VK_J.toInt()]) {
+            if (keys[KeyEvent.VK_J]) {
                 scene.loadRadius(8014, 5)
             }
-            if (keys[KeyEvent.VK_K.toInt()]) {
+            if (keys[KeyEvent.VK_K]) {
                 scene.loadRadius(13360, 3)
             }
-            if (keys[KeyEvent.VK_L.toInt()]) {
+            if (keys[KeyEvent.VK_L]) {
                 scene.loadRadius(13408, 3)
             }
-            if (keys[KeyEvent.VK_SEMICOLON.toInt()]) {
+            if (keys[KeyEvent.VK_SEMICOLON]) {
                 scene.loadRadius(12850, 3)
             }
         }
     }
 
-    fun isKeyDown(keyCode: Int): Boolean {
-        if (keyCode < 0 || keyCode >= keys.size) return false
-        return keys[keyCode]
+    override fun keyTyped(p0: KeyEvent?) {
     }
 
     override fun keyPressed(e: KeyEvent) {
-        val code = e.keyCode.toInt()
+        val code = e.keyCode
         if (code >= 0 && code < keys.size)
             keys[code] = true
     }
 
     override fun keyReleased(e: KeyEvent) {
-        if (e.isAutoRepeat) {
-            return
-        }
-        val code = e.keyCode.toInt()
+        val code = e.keyCode
         if (code >= 0 && code < keys.size)
             keys[code] = false
     }
@@ -134,20 +129,19 @@ class InputHandler internal constructor(
         }
     }
 
-    override fun mouseMoved(e: MouseEvent) {
-        mouseX = e.x
-        mouseY = e.y
-    }
-
-    override fun mouseDragged(e: MouseEvent) {
-        if (isRightMouseDown) {
-            handleCameraDrag(e)
-        }
-        mouseX = e.x
-        mouseY = e.y
-        previousMouseX = e.x
-        previousMouseY = e.y
-    }
-
-    override fun mouseWheelMoved(e: MouseEvent) {}
+    //TODO
+//    override fun mouseMoved(e: MouseEvent) {
+//        mouseX = e.x
+//        mouseY = e.y
+//    }
+//
+//    override fun mouseDragged(e: MouseEvent) {
+//        if (isRightMouseDown) {
+//            handleCameraDrag(e)
+//        }
+//        mouseX = e.x
+//        mouseY = e.y
+//        previousMouseX = e.x
+//        previousMouseY = e.y
+//    }
 }

@@ -1,54 +1,57 @@
 package controllers.worldRenderer
 
-import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES2
-import com.jogamp.opengl.GL2ES3
 import controllers.worldRenderer.entities.ComputeObj
 import controllers.worldRenderer.entities.Renderable
-import controllers.worldRenderer.helpers.GLUtil
 import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
+import org.lwjgl.opengl.GL11C.GL_FLOAT
+import org.lwjgl.opengl.GL11C.GL_INT
+import org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER
+import org.lwjgl.opengl.GL15C.glBindBuffer
+import org.lwjgl.opengl.GL15C.glDeleteBuffers
+import org.lwjgl.opengl.GL15C.glGenBuffers
+import org.lwjgl.opengl.GL20C.glEnableVertexAttribArray
+import org.lwjgl.opengl.GL20C.glVertexAttribPointer
+import org.lwjgl.opengl.GL30C.glBindVertexArray
+import org.lwjgl.opengl.GL30C.glDeleteVertexArrays
+import org.lwjgl.opengl.GL30C.glGenVertexArrays
+import org.lwjgl.opengl.GL30C.glVertexAttribIPointer
 
-abstract class AbstractPriorityRenderer(gl: GL2ES3) : PriorityRenderer {
+abstract class AbstractPriorityRenderer : PriorityRenderer {
     // We don't use this field at construction time because it may cause
     // problems with half-initialised subclasses not returning the object
     // because they haven't finished construction yet.
-    protected abstract val gl: GL2ES3
-    protected val vertexOut = GLUtil.glGenBuffers(gl)
-    protected val uvOut = GLUtil.glGenBuffers(gl)
-    //    private val animFrameBufferId = glGenBuffers(gl)
-    protected val vaoHandle = initVao(gl)
+    protected val vertexOut = glGenBuffers()
+    protected val uvOut = glGenBuffers()
+    //    private val animFrameBufferId = glGenBuffers()
+    protected val vaoHandle = initVao()
     private var generation = 0
 
-    override fun bindVao() {
-        gl.glBindVertexArray(vaoHandle)
-    }
-
-    protected fun initVao(gl: GL2ES3): Int {
+    protected fun initVao(): Int {
         // Create VAO
-        val vaoHandle = GLUtil.glGenVertexArrays(gl)
-        gl.glBindVertexArray(vaoHandle)
-        gl.glEnableVertexAttribArray(0)
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vertexOut)
-        gl.glVertexAttribIPointer(0, 4, GL2ES2.GL_INT, 0, 0)
-        gl.glEnableVertexAttribArray(1)
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, uvOut)
-        gl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0)
+        val vaoHandle = glGenVertexArrays()
+        glBindVertexArray(vaoHandle)
+        glEnableVertexAttribArray(0)
+        glBindBuffer(GL_ARRAY_BUFFER, vertexOut)
+        glVertexAttribIPointer(0, 4, GL_INT, 0, 0)
+        glEnableVertexAttribArray(1)
+        glBindBuffer(GL_ARRAY_BUFFER, uvOut)
+        glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, 0)
 //        gl.glEnableVertexAttribArray(2);
 //        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, animFrameBufferId);
 //        gl.glVertexAttribIPointer(2, 4, gl.GL_INT, 0, 0);
 
         // unbind VBO
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        gl.glBindVertexArray(0)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindVertexArray(0)
         return vaoHandle
     }
 
     private fun deinitVao() {
         val allBuffers = intArrayOf(vertexOut, uvOut)
-        gl.glDeleteBuffers(allBuffers.size, allBuffers, 0)
+        glDeleteBuffers(allBuffers)
 
-        GLUtil.glDeleteVertexArrays(gl, vaoHandle)
+        glDeleteVertexArrays(vaoHandle)
     }
 
     override fun destroy() {
@@ -90,6 +93,10 @@ abstract class AbstractPriorityRenderer(gl: GL2ES3) : PriorityRenderer {
 
     override fun finishPositioning() {
         generation++ // Mark all compute objects as non-uploaded again
+    }
+
+    override fun bindVao() {
+        glBindVertexArray(vaoHandle)
     }
 
     companion object {

@@ -2,26 +2,9 @@ package controllers.worldRenderer
 
 import cache.LocationType
 import cache.utils.ColorPalette
-import com.jogamp.newt.NewtFactory
-import com.jogamp.newt.awt.NewtCanvasAWT
-import com.jogamp.newt.opengl.GLWindow
-import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES2
-import com.jogamp.opengl.GL2ES3
-import com.jogamp.opengl.GL4
-import com.jogamp.opengl.GLAutoDrawable
-import com.jogamp.opengl.GLCapabilities
-import com.jogamp.opengl.GLEventListener
-import com.jogamp.opengl.GLProfile
-import com.jogamp.opengl.math.Matrix4
-import com.jogamp.opengl.util.Animator
-import com.jogamp.opengl.util.GLBuffers
+import controllers.worldRenderer.helpers.Animator
 import controllers.worldRenderer.helpers.AntiAliasingMode
-import controllers.worldRenderer.helpers.GLUtil
-import controllers.worldRenderer.helpers.GLUtil.glDeleteFrameBuffer
-import controllers.worldRenderer.helpers.GLUtil.glDeleteRenderbuffers
-import controllers.worldRenderer.helpers.GLUtil.glGenBuffers
-import controllers.worldRenderer.helpers.GLUtil.glGetInteger
+import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
@@ -31,9 +14,64 @@ import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
+import org.joml.Matrix4f
+import org.lwjgl.BufferUtils
+import org.lwjgl.opengl.GL.createCapabilities
+import org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT
+import org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT
+import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
+import org.lwjgl.opengl.GL11C.GL_LEQUAL
+import org.lwjgl.opengl.GL11C.GL_NEAREST
+import org.lwjgl.opengl.GL11C.GL_RGBA
+import org.lwjgl.opengl.GL11C.glClear
+import org.lwjgl.opengl.GL11C.glClearColor
+import org.lwjgl.opengl.GL11C.glDepthFunc
+import org.lwjgl.opengl.GL11C.glEnable
+import org.lwjgl.opengl.GL11C.glGetInteger
+import org.lwjgl.opengl.GL11C.glViewport
+import org.lwjgl.opengl.GL13C.GL_MULTISAMPLE
+import org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT16
+import org.lwjgl.opengl.GL15C.GL_DYNAMIC_DRAW
+import org.lwjgl.opengl.GL15C.glBindBuffer
+import org.lwjgl.opengl.GL15C.glBufferData
+import org.lwjgl.opengl.GL15C.glBufferSubData
+import org.lwjgl.opengl.GL15C.glGenBuffers
+import org.lwjgl.opengl.GL20C.glDeleteProgram
+import org.lwjgl.opengl.GL20C.glDrawBuffers
+import org.lwjgl.opengl.GL20C.glGetUniformLocation
+import org.lwjgl.opengl.GL20C.glUniform1f
+import org.lwjgl.opengl.GL20C.glUniform1i
+import org.lwjgl.opengl.GL20C.glUniform2fv
+import org.lwjgl.opengl.GL20C.glUniform2i
+import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
+import org.lwjgl.opengl.GL20C.glUseProgram
+import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0
+import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT1
+import org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT
+import org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER
+import org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER
+import org.lwjgl.opengl.GL30C.GL_MAX_SAMPLES
+import org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER
+import org.lwjgl.opengl.GL30C.GL_RENDERBUFFER
+import org.lwjgl.opengl.GL30C.glBindBufferBase
+import org.lwjgl.opengl.GL30C.glBindFramebuffer
+import org.lwjgl.opengl.GL30C.glBindRenderbuffer
+import org.lwjgl.opengl.GL30C.glBlitFramebuffer
+import org.lwjgl.opengl.GL30C.glCheckFramebufferStatus
+import org.lwjgl.opengl.GL30C.glDeleteFramebuffers
+import org.lwjgl.opengl.GL30C.glDeleteRenderbuffers
+import org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer
+import org.lwjgl.opengl.GL30C.glGenFramebuffers
+import org.lwjgl.opengl.GL30C.glGenRenderbuffers
+import org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample
+import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
+import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
+import org.lwjgl.opengl.GL31C.glUniformBlockBinding
+import org.lwjgl.opengl.GL41C.glDepthRangef
+import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.slf4j.LoggerFactory
-import java.awt.Dimension
 import java.awt.event.ActionListener
+import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
@@ -45,10 +83,9 @@ class Renderer constructor(
     private val textureManager: TextureManager,
     private val debugModel: DebugModel,
     private val debugOptionsModel: DebugOptionsModel,
-) : GLEventListener {
+) {
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
 
-    private lateinit var gl: GL4
     private var glProgram = 0
 
     private var fboSceneHandle = 0
@@ -74,8 +111,6 @@ class Renderer constructor(
     private var uniSmoothBanding = 0
     private var uniMouseCoordsId = 0
 
-    // FIXME: setting these here locks this in as the minimum
-    // figure out how to make these small and resize programmatically after load
     var canvasWidth = 100
     var canvasHeight = (canvasWidth / 1.3).toInt()
     private var lastStretchedCanvasWidth = 0
@@ -84,12 +119,42 @@ class Renderer constructor(
     private var lastFrameTime: Long = 0
     private var deltaTimeTarget = 0
 
-    // -Dnewt.verbose=true
-    // -Dnewt.debug=true
-    lateinit var window: GLWindow
-    lateinit var animator: Animator
-    lateinit var glCanvas: NewtCanvasAWT
-    fun initCanvas(): NewtCanvasAWT {
+    private var animator: Animator? = null
+    private var glCanvas: AWTGLCanvas? = null
+
+    private fun fixDebugAgent() {  // TODO: this is only to make the debugger happy
+        try {
+            val c = Class.forName("org.lwjglx.debug.org.lwjgl.opengl.Context")
+            run {
+                val m = c.getMethod(
+                    "create",
+                    Long::class.javaPrimitiveType,
+                    Long::class.javaPrimitiveType
+                )
+                m.isAccessible = true
+                m.invoke(null, 0L, 0L)
+            }
+            var ctx: Any
+            run {
+                val f = c.getField("CONTEXTS")
+                f.isAccessible = true
+                val contexts = f.get(null) as Map<Long, Any>
+                ctx = contexts[0L]!!
+                checkNotNull(ctx)
+            }
+            run {
+                val f = c.getField("CURRENT_CONTEXT")
+                f.isAccessible = true
+                val v = f.get(null) as ThreadLocal<Any?>
+                v.set(ctx)
+            }
+            println("SET!")
+        } catch (e: Throwable) {
+        }
+    }
+
+
+    fun initCanvas(): AWTGLCanvas {
         // center camera in viewport
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
@@ -98,24 +163,28 @@ class Renderer constructor(
         rboSceneHandle = -1
         rboSceneDepthBuffer = -1
 
-        val jfxNewtDisplay = NewtFactory.createDisplay(null, false)
-        val screen = NewtFactory.createScreen(jfxNewtDisplay, 0)
-        val glProfile = GLProfile.getMaxProgrammableCore(true)
-        val glCaps = GLCapabilities(glProfile)
-        glCaps.alphaBits = 8
+        val glCanvas = object : AWTGLCanvas() {
+            override fun initGL() {
+                fixDebugAgent()
+                this@Renderer.init()
+            }
 
-        window = GLWindow.create(screen, glCaps)
-        window.addGLEventListener(this)
-        window.addKeyListener(inputHandler)
-        window.addMouseListener(inputHandler)
+            override fun paintGL() {
+                this@Renderer.reshape(0, 0, width, height)
+                if (width > 0 && height > 0)
+                    this@Renderer.display(this)
+            }
+
+            override fun disposeCanvas() {
+                super.disposeCanvas()
+                this@Renderer.dispose()
+            }
+        }
+
+        glCanvas.addKeyListener(inputHandler)
+        glCanvas.addMouseListener(inputHandler)
+
         inputHandler.renderer = this
-
-        glCanvas = NewtCanvasAWT(window)
-        glCanvas.size = Dimension(canvasWidth, canvasHeight)
-
-        animator = Animator(window)
-        animator.setUpdateFPSFrames(3, null)
-        animator.start()
 
         lastStretchedCanvasHeight = -1
         lastStretchedCanvasWidth = -1
@@ -134,26 +203,35 @@ class Renderer constructor(
             }
         )
 
+        animator = Animator(glCanvas)
+        this.glCanvas = glCanvas
+
         return glCanvas
     }
 
-    fun stop() {
-        animator.stop()
+    fun start() {
+        animator?.start()
     }
 
-    override fun init(drawable: GLAutoDrawable) {
-        gl = drawable.gl.gL4
-        gl.glEnable(GL.GL_DEPTH_TEST)
-        gl.glDepthFunc(GL.GL_LEQUAL)
-        gl.glDepthRangef(0f, 1f)
+    fun stop() {
+        animator?.stop()
+    }
 
-        priorityRenderer = try {
-            GLSLPriorityRenderer(gl)
-        } catch (e: ShaderException) {
-            logger.warn("Tried to spawn a GLSLPriorityRenderer but got exception", e)
-            CPUNonPriorityRenderer(gl)
-        }
+    fun init() {
+        createCapabilities()
 
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LEQUAL)
+        glDepthRangef(0f, 1f)
+
+        priorityRenderer =
+//            try {
+//            GLSLPriorityRenderer()
+//        } catch (e: ShaderException) {
+//            logger.warn("Tried to spawn a GLSLPriorityRenderer but got exception", e)
+            CPUNonPriorityRenderer()
+//        }
+//TODO temporarily commented out
         try {
             priorityRenderer.bindVao()
             initProgram()
@@ -161,26 +239,25 @@ class Renderer constructor(
             e.printStackTrace()
         }
         initUniformBuffer()
-
-        // disable vsync
-//            gl.swapInterval = 0
     }
 
-    override fun reshape(drawable: GLAutoDrawable, x: Int, y: Int, width: Int, height: Int) {
-        gl = drawable.gl.gL4
+    fun reshape(x: Int, y: Int, width: Int, height: Int) {
         canvasWidth = width
         canvasHeight = height
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
-        gl.glViewport(x, y, width, height)
+        glViewport(x, y, width, height)
     }
 
     var isSceneUploadRequired = true
     private val clientStart = System.currentTimeMillis()
     private var lastUpdate = System.nanoTime()
 
-    override fun display(drawable: GLAutoDrawable?) {
-        debugModel.fps.set("%.0f".format(animator.lastFPS))
+    fun display(glCanvas: AWTGLCanvas) {
+        val animator = animator
+        if (animator != null) {
+            debugModel.fps.set("%.0f".format(animator.lastFPS))
+        }
 
         if (isSceneUploadRequired) {
             uploadScene()
@@ -196,30 +273,30 @@ class Renderer constructor(
         val antiAliasingMode: AntiAliasingMode = AntiAliasingMode.MSAA_16
         val aaEnabled = antiAliasingMode !== AntiAliasingMode.DISABLED
         if (aaEnabled) {
-            gl.glEnable(GL.GL_MULTISAMPLE)
+            glEnable(GL_MULTISAMPLE)
             val stretchedCanvasWidth = canvasWidth
             val stretchedCanvasHeight = canvasHeight
 
             // Re-create fbo
             if (lastStretchedCanvasWidth != stretchedCanvasWidth || lastStretchedCanvasHeight != stretchedCanvasHeight || lastAntiAliasingMode !== antiAliasingMode
             ) {
-                val maxSamples: Int = glGetInteger(gl, GL.GL_MAX_SAMPLES)
+                val maxSamples: Int = glGetInteger(GL_MAX_SAMPLES)
                 val samples = min(antiAliasingMode.ordinal, maxSamples)
                 initAAFbo(stretchedCanvasWidth, stretchedCanvasHeight, samples)
                 lastStretchedCanvasWidth = stretchedCanvasWidth
                 lastStretchedCanvasHeight = stretchedCanvasHeight
             }
-            gl.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, fboSceneHandle)
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboSceneHandle)
         }
         lastAntiAliasingMode = antiAliasingMode
-        val i =
-            GLBuffers.newDirectIntBuffer(intArrayOf(GL.GL_COLOR_ATTACHMENT0, GL2ES2.GL_COLOR_ATTACHMENT1))
-        gl.glDrawBuffers(2, i)
+        // TODO: was this necessary?
+        val i = BufferUtils.createIntBuffer(2).put(GL_COLOR_ATTACHMENT0).put(GL_COLOR_ATTACHMENT1).flip()
+        glDrawBuffers(i)
 
         // Clear scene
         val sky = 9493480
-        gl.glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT or GL.GL_DEPTH_BUFFER_BIT)
+        glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         val clientCycle = ((System.currentTimeMillis() - clientStart) / 20).toInt() // 50 fps
 
@@ -228,15 +305,15 @@ class Renderer constructor(
         if (textureArrayId == -1) {
             // lazy init textures as they may not be loaded at plugin start.
             // this will return -1 and retry if not all textures are loaded yet, too.
-            textureArrayId = textureManager.initTextureArray(gl)
+            textureArrayId = textureManager.initTextureArray()
         }
 //        val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
-        gl.glUseProgram(glProgram)
+        glUseProgram(glProgram)
         // Brightness happens to also be stored in the texture provider, so we use that
-        gl.glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
-        gl.glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
-        gl.glUniform1f(uniSmoothBanding, 1f)
-        gl.glUniformMatrix4fv(uniViewProjectionMatrix, 1, false, calculateViewProjectionMatrix().matrix, 0)
+        glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
+        glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
+        glUniform1f(uniSmoothBanding, 1f)
+        glUniformMatrix4fv(uniViewProjectionMatrix, false, calculateViewProjectionMatrix())
 
         // This is just for animating!
 //        for (int id = 0; id < textures.length; ++id) {
@@ -250,10 +327,10 @@ class Renderer constructor(
 //            textureOffsets[id * 2] = texture.field1782;
 //            textureOffsets[id * 2 + 1] = texture.field1783;
 //        }
-        gl.glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
+        glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
 
         // UBO
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, uniformBufferId)
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
         uniformBuffer
             .put(camera.yaw)
@@ -266,43 +343,45 @@ class Renderer constructor(
             .put(camera.cameraY) // y
             .put(clientCycle) // currFrame
         uniformBuffer.flip()
-        gl.glBufferSubData(
-            GL2ES3.GL_UNIFORM_BUFFER,
+        glBufferSubData(
+            GL_UNIFORM_BUFFER,
             0,
-            uniformBuffer.limit() * Integer.BYTES.toLong(),
             uniformBuffer
         )
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
         // Bind uniforms
-        gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
-        gl.glUniformBlockBinding(glProgram, uniBlockMain, 0)
-        gl.glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
-        gl.glUniform2fv(uniTextureOffsets, textureOffsets.size, textureOffsets, 0)
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBufferId)
+        glUniformBlockBinding(glProgram, uniBlockMain, 0)
+        glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
+        glUniform2fv(uniTextureOffsets, textureOffsets)
 
         priorityRenderer.draw()
-        gl.glUseProgram(0)
+        glUseProgram(0)
 
         if (aaEnabled) {
-            gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, fboSceneHandle)
-            gl.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, 0)
-            gl.glBlitFramebuffer(
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, fboSceneHandle)
+            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
+            glBlitFramebuffer(
                 0, 0, lastStretchedCanvasWidth, lastStretchedCanvasHeight,
                 0, 0, lastStretchedCanvasWidth, lastStretchedCanvasHeight,
-                GL.GL_COLOR_BUFFER_BIT, GL.GL_NEAREST
+                GL_COLOR_BUFFER_BIT, GL_NEAREST
             )
         }
 
-        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
-        gl.glBindFramebuffer(GL.GL_DRAW_FRAMEBUFFER, 0)
-        gl.glBlitFramebuffer(
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
+        glBlitFramebuffer(
             0, 0, canvasWidth, canvasHeight,
             0, 0, canvasWidth, canvasHeight,
-            GL.GL_COLOR_BUFFER_BIT, GL.GL_NEAREST
+            GL_COLOR_BUFFER_BIT, GL_NEAREST
         )
-        gl.glBindFramebuffer(GL.GL_READ_FRAMEBUFFER, 0)
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
+
+        glCanvas.swapBuffers()
 
         if (deltaTimeTarget != 0) {
+            // TODO: this is running on the swing thread. might want to avoid sleeps
             val endFrameTime = System.nanoTime()
             val sleepTime = deltaTimeTarget + (lastFrameTime - endFrameTime)
             lastFrameTime = if (sleepTime in 0..SECOND_IN_NANOS) {
@@ -439,7 +518,7 @@ class Renderer constructor(
         isSceneUploadRequired = false
     }
 
-    override fun dispose(drawable: GLAutoDrawable?) {
+    fun dispose() {
         shutdownProgram()
         shutdownAAFbo()
         priorityRenderer.destroy()
@@ -451,7 +530,7 @@ class Renderer constructor(
         template.addInclude(Shader::class.java)
 
         try {
-            glProgram = Shader.PROGRAM.value.compile(gl, template)
+            glProgram = Shader.PROGRAM.value.compile(template)
         } catch (e: ShaderException) {
             // This will likely destroy the renderer, but the rest of the program should
             // still be usable.
@@ -462,51 +541,46 @@ class Renderer constructor(
     }
 
     private fun initUniforms() {
-        uniViewProjectionMatrix = gl.glGetUniformLocation(glProgram, "viewProjectionMatrix")
-        uniBrightness = gl.glGetUniformLocation(glProgram, "brightness")
-        uniSmoothBanding = gl.glGetUniformLocation(glProgram, "smoothBanding")
-        uniDrawDistance = gl.glGetUniformLocation(glProgram, "drawDistance")
-        uniTextures = gl.glGetUniformLocation(glProgram, "textures")
-        uniTextureOffsets = gl.glGetUniformLocation(glProgram, "textureOffsets")
-        uniBlockMain = gl.glGetUniformBlockIndex(glProgram, "uniforms")
-        uniMouseCoordsId = gl.glGetUniformLocation(glProgram, "mouseCoords")
+        uniViewProjectionMatrix = glGetUniformLocation(glProgram, "viewProjectionMatrix")
+        uniBrightness = glGetUniformLocation(glProgram, "brightness")
+        uniSmoothBanding = glGetUniformLocation(glProgram, "smoothBanding")
+        uniDrawDistance = glGetUniformLocation(glProgram, "drawDistance")
+        uniTextures = glGetUniformLocation(glProgram, "textures")
+        uniTextureOffsets = glGetUniformLocation(glProgram, "textureOffsets")
+        uniBlockMain = glGetUniformBlockIndex(glProgram, "uniforms")
+        uniMouseCoordsId = glGetUniformLocation(glProgram, "mouseCoords")
     }
 
     private fun initUniformBuffer() {
-        uniformBufferId = glGenBuffers(gl)
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, uniformBufferId)
+        uniformBufferId = glGenBuffers()
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
         uniformBuffer.put(IntArray(9))
         uniformBuffer.flip()
-        gl.glBufferData(
-            GL2ES3.GL_UNIFORM_BUFFER,
-            uniformBuffer.limit() * Integer.BYTES.toLong(),
-            uniformBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
+        glBufferData(GL_UNIFORM_BUFFER, uniformBuffer, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0)
     }
 
     private fun initAAFbo(width: Int, height: Int, aaSamples: Int) {
         // Create and bind the FBO
-        fboSceneHandle = GLUtil.glGenFrameBuffer(gl)
-        gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, fboSceneHandle)
+        fboSceneHandle = glGenFramebuffers()
+        glBindFramebuffer(GL_FRAMEBUFFER, fboSceneHandle)
 
         // Create color render buffer
-        rboSceneHandle = GLUtil.glGenRenderbuffer(gl)
-        gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, rboSceneHandle)
-        gl.glRenderbufferStorageMultisample(GL.GL_RENDERBUFFER, aaSamples, GL.GL_RGBA, width, height)
-        gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_COLOR_ATTACHMENT0, GL.GL_RENDERBUFFER, rboSceneHandle)
+        rboSceneHandle = glGenRenderbuffers()
+        glBindRenderbuffer(GL_RENDERBUFFER, rboSceneHandle)
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, aaSamples, GL_RGBA, width, height)
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rboSceneHandle)
 
         // Create depth buffer
-        rboSceneDepthBuffer = GLUtil.glGenRenderbuffer(gl)
-        gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, rboSceneDepthBuffer)
-        gl.glRenderbufferStorageMultisample(GL.GL_RENDERBUFFER, aaSamples, GL.GL_DEPTH_COMPONENT16, width, height)
-        gl.glFramebufferRenderbuffer(GL.GL_FRAMEBUFFER, GL.GL_DEPTH_ATTACHMENT, GL.GL_RENDERBUFFER, rboSceneDepthBuffer)
+        rboSceneDepthBuffer = glGenRenderbuffers()
+        glBindRenderbuffer(GL_RENDERBUFFER, rboSceneDepthBuffer)
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, aaSamples, GL_DEPTH_COMPONENT16, width, height)
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboSceneDepthBuffer)
 
         // Reset
-        gl.glBindFramebuffer(GL.GL_FRAMEBUFFER, 0)
-        gl.glBindRenderbuffer(GL.GL_RENDERBUFFER, 0)
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        glBindRenderbuffer(GL_RENDERBUFFER, 0)
     }
 
     private fun makeProjectionMatrix(width: Float, height: Float, near: Float): FloatArray =
@@ -517,32 +591,37 @@ class Renderer constructor(
             0f, 0f, -2 * near, 0f,
         )
 
-    private fun calculateViewProjectionMatrix(): Matrix4 {
-        val viewProjectionMatrix = Matrix4()
-        viewProjectionMatrix.scale(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
-        viewProjectionMatrix.multMatrix(makeProjectionMatrix(canvasWidth.toFloat(), canvasHeight.toFloat(), 50.0f))
-        viewProjectionMatrix.rotate((Math.PI - camera.pitch * Constants.UNIT).toFloat(), -1.0f, 0.0f, 0.0f)
-        viewProjectionMatrix.rotate((camera.yaw * Constants.UNIT).toFloat(), 0.0f, 1.0f, 0.0f)
-        viewProjectionMatrix.translate(-camera.cameraX.toFloat(), -camera.cameraZ.toFloat(), -camera.cameraY.toFloat())
-        return viewProjectionMatrix
+    private fun calculateViewProjectionMatrix(): FloatArray {
+        val projectionMatrix = makeProjectionMatrix(
+            canvasWidth.toFloat(),
+            canvasHeight.toFloat(),
+            50.0f
+        )
+        return Matrix4f()
+            .scale(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
+            .mul(Matrix4f(GpuFloatBuffer.allocateDirect(projectionMatrix.size).put(projectionMatrix).flip()))
+            .rotateX((-Math.PI + camera.pitch * Constants.UNIT).toFloat())
+            .rotateY((camera.yaw * Constants.UNIT).toFloat())
+            .translate(-camera.cameraX.toFloat(), -camera.cameraZ.toFloat(), -camera.cameraY.toFloat())
+            .get(projectionMatrix)
     }
 
     private fun shutdownProgram() {
-        gl.glDeleteProgram(glProgram)
+        glDeleteProgram(glProgram)
         glProgram = -1
     }
 
     private fun shutdownAAFbo() {
         if (fboSceneHandle != -1) {
-            glDeleteFrameBuffer(gl, fboSceneHandle)
+            glDeleteFramebuffers(fboSceneHandle)
             fboSceneHandle = -1
         }
         if (rboSceneHandle != -1) {
-            glDeleteRenderbuffers(gl, rboSceneHandle)
+            glDeleteRenderbuffers(rboSceneHandle)
             rboSceneHandle = -1
         }
         if (rboSceneDepthBuffer != -1) {
-            glDeleteRenderbuffers(gl, rboSceneDepthBuffer)
+            glDeleteRenderbuffers(rboSceneDepthBuffer)
             rboSceneDepthBuffer = -1
         }
     }

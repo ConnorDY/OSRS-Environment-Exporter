@@ -1,57 +1,71 @@
 package controllers.worldRenderer
 
-import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES3
-import com.jogamp.opengl.GL3ES3
-import com.jogamp.opengl.util.GLBuffers
 import controllers.worldRenderer.entities.Renderable
-import controllers.worldRenderer.helpers.GLUtil.glGenBuffers
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
+import org.lwjgl.opengl.GL11C.GL_CULL_FACE
+import org.lwjgl.opengl.GL11C.GL_TRIANGLES
+import org.lwjgl.opengl.GL11C.glDisable
+import org.lwjgl.opengl.GL11C.glDrawArrays
+import org.lwjgl.opengl.GL11C.glEnable
+import org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER
+import org.lwjgl.opengl.GL15C.GL_DYNAMIC_DRAW
+import org.lwjgl.opengl.GL15C.GL_STATIC_COPY
+import org.lwjgl.opengl.GL15C.glBindBuffer
+import org.lwjgl.opengl.GL15C.glBufferData
+import org.lwjgl.opengl.GL15C.glBufferSubData
+import org.lwjgl.opengl.GL15C.glDeleteBuffers
+import org.lwjgl.opengl.GL15C.glGenBuffers
+import org.lwjgl.opengl.GL20C.glDeleteProgram
+import org.lwjgl.opengl.GL20C.glUseProgram
+import org.lwjgl.opengl.GL30C.glBindBufferBase
+import org.lwjgl.opengl.GL30C.glBindVertexArray
+import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
+import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
+import org.lwjgl.opengl.GL31C.glUniformBlockBinding
+import org.lwjgl.opengl.GL42C.glMemoryBarrier
+import org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT
+import org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER
+import org.lwjgl.opengl.GL43C.glDispatchCompute
 import org.slf4j.LoggerFactory
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
-class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(gl) {
+class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
     private val logger = LoggerFactory.getLogger(GLSLPriorityRenderer::class.java)
 
-    private val bufferId = glGenBuffers(gl)
-    private val uvBufferId = glGenBuffers(gl)
-    private val tmpBufferId = glGenBuffers(gl)
-    private val tmpUvBufferId = glGenBuffers(gl)
-    private val tmpModelBufferId = glGenBuffers(gl)
-    private val tmpModelBufferSmallId = glGenBuffers(gl)
-    private val tmpModelBufferUnorderedId = glGenBuffers(gl)
+    private val bufferId = glGenBuffers()
+    private val uvBufferId = glGenBuffers()
+    private val tmpBufferId = glGenBuffers()
+    private val tmpUvBufferId = glGenBuffers()
+    private val tmpModelBufferId = glGenBuffers()
+    private val tmpModelBufferSmallId = glGenBuffers()
+    private val tmpModelBufferUnorderedId = glGenBuffers()
 
-    private val glComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(gl, Shader.createTemplate(1024, 4))
-    private val glSmallComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(gl, Shader.createTemplate(512, 1))
-    private val glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.value.compile(gl, Shader.createTemplate(-1, -1))
+    private val glComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(Shader.createTemplate(1024, 4))
+    private val glSmallComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(Shader.createTemplate(512, 1))
+    private val glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.value.compile(Shader.createTemplate(-1, -1))
 
     private val uniformBuffer: IntBuffer = GpuIntBuffer.allocateDirect(5 + 3 + 1)
     private val uniformBufferId = initUniformBuffer(uniformBuffer)
 
-    private val uniBlockSmall = gl.glGetUniformBlockIndex(glSmallComputeProgram, "uniforms")
-    private val uniBlockLarge = gl.glGetUniformBlockIndex(glComputeProgram, "uniforms")
+    private val uniBlockSmall = glGetUniformBlockIndex(glSmallComputeProgram, "uniforms")
+    private val uniBlockLarge = glGetUniformBlockIndex(glComputeProgram, "uniforms")
 
     private val modelBuffers = ModelBuffers()
 
     override val needsStrictUVs get() = false
 
     private fun initUniformBuffer(uniformBuffer: IntBuffer): GLBuffer {
-        val uniformBufferId = glGenBuffers(gl)
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, uniformBufferId)
+        val uniformBufferId = glGenBuffers()
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
         uniformBuffer.put(IntArray(9))
         uniformBuffer.flip()
-        gl.glBufferData(
-            GL2ES3.GL_UNIFORM_BUFFER,
-            uniformBuffer.limit() * Integer.BYTES.toLong(),
-            uniformBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
+        glBufferData(GL_UNIFORM_BUFFER, uniformBuffer, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0)
         return uniformBufferId
     }
 
@@ -70,21 +84,11 @@ class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(g
         modelBuffers.flipVertUv()
         logger.debug("vertexBuffer size {}", vertexBuffer.limit())
 
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, bufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            vertexBuffer.limit() * GLBuffers.SIZEOF_INT.toLong(),
-            vertexBuffer,
-            GL2ES3.GL_STATIC_COPY
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, uvBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            uvBuffer.limit() * GLBuffers.SIZEOF_FLOAT.toLong(),
-            uvBuffer,
-            GL2ES3.GL_STATIC_COPY
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+        glBindBuffer(GL_ARRAY_BUFFER, bufferId)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_COPY)
+        glBindBuffer(GL_ARRAY_BUFFER, uvBufferId)
+        glBufferData(GL_ARRAY_BUFFER, uvBuffer, GL_STATIC_COPY)
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
         modelBuffers.clearVertUv()
         modelBuffers.clear()
         modelBuffers.clearBufferOffset()
@@ -114,26 +118,23 @@ class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(g
     override fun finishPositioning() {
         super.finishPositioning()
         // allocate enough size in the outputBuffer for the static verts + the dynamic verts -- each vertex is an ivec4, 4 ints
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vertexOut)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_INT * 4).toLong(),
-            null,
-            GL.GL_DYNAMIC_DRAW
+        glBindBuffer(GL_ARRAY_BUFFER, vertexOut)
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * Int.SIZE_BYTES * 4).toLong(),
+            GL_DYNAMIC_DRAW
         )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, uvOut)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_FLOAT * 4).toLong(),
-            null,
-            GL.GL_DYNAMIC_DRAW
+        glBindBuffer(GL_ARRAY_BUFFER, uvOut)
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * Float.SIZE_BYTES * 4).toLong(),
+            GL_DYNAMIC_DRAW
         )
-//        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, animFrameBufferId)
-//        gl.glBufferData(
-//            GL.GL_ARRAY_BUFFER,
-//            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * GLBuffers.SIZEOF_INT * 4).toLong(),
-//            null,
-//            GL.GL_DYNAMIC_DRAW
+//        glBindBuffer(GL_ARRAY_BUFFER, animFrameBufferId)
+//        glBufferData(
+//            GL_ARRAY_BUFFER,
+//            ((modelBuffers.targetBufferOffset + MAX_TEMP_VERTICES) * Int.SIZE_BYTES * 4).toLong(),
+//            GL_DYNAMIC_DRAW
 //        )
     }
 
@@ -142,7 +143,7 @@ class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(g
         modelBuffers.flipVertUv()
 
         // UBO
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, uniformBufferId)
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
         uniformBuffer
             .put(camera.yaw)
@@ -155,59 +156,29 @@ class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(g
             .put(camera.cameraY) // y
             .put(currFrame)
         uniformBuffer.flip()
-        gl.glBufferSubData(
-            GL2ES3.GL_UNIFORM_BUFFER,
-            0,
-            uniformBuffer.limit() * Integer.BYTES.toLong(),
-            uniformBuffer
-        )
-        gl.glBindBuffer(GL2ES3.GL_UNIFORM_BUFFER, 0)
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, uniformBuffer)
+        glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
         val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
         val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
         val modelBuffer: IntBuffer = modelBuffers.modelBuffer.buffer
         val modelBufferSmall: IntBuffer = modelBuffers.modelBufferSmall.buffer
         val modelBufferUnordered: IntBuffer = modelBuffers.modelBufferUnordered.buffer
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            vertexBuffer.limit() * Integer.BYTES.toLong(),
-            vertexBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpUvBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            uvBuffer.limit() * java.lang.Float.BYTES.toLong(),
-            uvBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpModelBufferId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            modelBuffer.limit() * Integer.BYTES.toLong(),
-            modelBuffer,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpModelBufferSmallId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            modelBufferSmall.limit() * Integer.BYTES.toLong(),
-            modelBufferSmall,
-            GL.GL_DYNAMIC_DRAW
-        )
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpModelBufferUnorderedId)
-        gl.glBufferData(
-            GL.GL_ARRAY_BUFFER,
-            modelBufferUnordered.limit() * Integer.BYTES.toLong(),
-            modelBufferUnordered,
-            GL.GL_DYNAMIC_DRAW
-        )
+        glBindBuffer(GL_ARRAY_BUFFER, tmpBufferId)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, tmpUvBufferId)
+        glBufferData(GL_ARRAY_BUFFER, uvBuffer, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, tmpModelBufferId)
+        glBufferData(GL_ARRAY_BUFFER, modelBuffer, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, tmpModelBufferSmallId)
+        glBufferData(GL_ARRAY_BUFFER, modelBufferSmall, GL_DYNAMIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, tmpModelBufferUnorderedId)
+        glBufferData(GL_ARRAY_BUFFER, modelBufferUnordered, GL_DYNAMIC_DRAW)
 
         // Draw 3d scene
-        gl.glBindBufferBase(GL2ES3.GL_UNIFORM_BUFFER, 0, uniformBufferId)
-        gl.glUniformBlockBinding(glSmallComputeProgram, uniBlockSmall, 0)
-        gl.glUniformBlockBinding(glComputeProgram, uniBlockLarge, 0)
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBufferId)
+        glUniformBlockBinding(glSmallComputeProgram, uniBlockSmall, 0)
+        glUniformBlockBinding(glComputeProgram, uniBlockLarge, 0)
 
         /*
          * Compute is split into two separate programs 'small' and 'large' to
@@ -215,44 +186,44 @@ class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(g
          */
 
         // unordered
-        gl.glUseProgram(glUnorderedComputeProgram)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferUnorderedId)
+        glUseProgram(glUnorderedComputeProgram)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferUnorderedId)
         bindCommonBuffers()
-        gl.glDispatchCompute(modelBuffers.unorderedModelsCount, 1, 1)
+        glDispatchCompute(modelBuffers.unorderedModelsCount, 1, 1)
 
         // small
-        gl.glUseProgram(glSmallComputeProgram)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferSmallId)
+        glUseProgram(glSmallComputeProgram)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferSmallId)
         bindCommonBuffers()
-        gl.glDispatchCompute(modelBuffers.smallModelsCount, 1, 1)
+        glDispatchCompute(modelBuffers.smallModelsCount, 1, 1)
 
         // large
-        gl.glUseProgram(glComputeProgram)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferId)
+        glUseProgram(glComputeProgram)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferId)
         bindCommonBuffers()
-        gl.glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
-        gl.glMemoryBarrier(GL3ES3.GL_SHADER_STORAGE_BARRIER_BIT)
+        glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
     }
 
     private fun bindCommonBuffers() {
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 1, bufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 3, vertexOut)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 4, uvOut)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
-        gl.glBindBufferBase(GL3ES3.GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, bufferId)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, tmpBufferId)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, vertexOut)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, uvOut)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, uvBufferId)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, tmpUvBufferId)
     }
 
     override fun draw() {
-        // We just allow the GL to do face culling. Note this requires the priority renderer
+        // We just allow the  to do face culling. Note this requires the priority renderer
         // to have logic to disregard culled faces in the priority depth testing.
-        gl.glEnable(GL.GL_CULL_FACE)
+        glEnable(GL_CULL_FACE)
 
         // Draw output of compute shaders
-        gl.glBindVertexArray(vaoHandle)
-        gl.glDrawArrays(GL.GL_TRIANGLES, 0, modelBuffers.targetBufferOffset + modelBuffers.tempOffset)
+        glBindVertexArray(vaoHandle)
+        glDrawArrays(GL_TRIANGLES, 0, modelBuffers.targetBufferOffset + modelBuffers.tempOffset)
 
-        gl.glDisable(GL.GL_CULL_FACE)
+        glDisable(GL_CULL_FACE)
 
         modelBuffers.clearVertUv()
         modelBuffers.clear()
@@ -261,11 +232,11 @@ class GLSLPriorityRenderer(override val gl: GL3ES3) : AbstractPriorityRenderer(g
     override fun destroy() {
         super.destroy()
         val allBuffers = intArrayOf(bufferId, uvBufferId, tmpBufferId, tmpUvBufferId, tmpModelBufferId, tmpModelBufferSmallId, tmpModelBufferUnorderedId)
-        gl.glDeleteBuffers(allBuffers.size, allBuffers, 0)
+        glDeleteBuffers(allBuffers)
 
-        gl.glDeleteProgram(glComputeProgram)
-        gl.glDeleteProgram(glSmallComputeProgram)
-        gl.glDeleteProgram(glUnorderedComputeProgram)
+        glDeleteProgram(glComputeProgram)
+        glDeleteProgram(glSmallComputeProgram)
+        glDeleteProgram(glUnorderedComputeProgram)
     }
 
     override fun toString() =

@@ -1,14 +1,22 @@
 package controllers.worldRenderer
 
-import com.jogamp.opengl.GL
-import com.jogamp.opengl.GL2ES3
 import controllers.worldRenderer.entities.Renderable
 import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
+import org.lwjgl.opengl.GL11C.GL_CULL_FACE
+import org.lwjgl.opengl.GL11C.GL_TRIANGLES
+import org.lwjgl.opengl.GL11C.glDisable
+import org.lwjgl.opengl.GL11C.glDrawArrays
+import org.lwjgl.opengl.GL11C.glEnable
+import org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER
+import org.lwjgl.opengl.GL15C.GL_STATIC_DRAW
+import org.lwjgl.opengl.GL15C.glBindBuffer
+import org.lwjgl.opengl.GL15C.glBufferData
+import org.lwjgl.opengl.GL30C.glBindVertexArray
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class CPUNonPriorityRenderer(override val gl: GL2ES3) : AbstractPriorityRenderer(gl) {
+class CPUNonPriorityRenderer : AbstractPriorityRenderer() {
     private val vertexBuffer = GpuIntBuffer()
     private val uvBuffer = GpuFloatBuffer()
     private var bufferedVertices = 0
@@ -53,10 +61,13 @@ class CPUNonPriorityRenderer(override val gl: GL2ES3) : AbstractPriorityRenderer
 
     override fun finishPositioning() {
         super.finishPositioning()
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vertexOut)
-        gl.glBufferData(GL.GL_ARRAY_BUFFER, vertexBuffer.buffer.limit() * Int.SIZE_BYTES.toLong(), vertexBuffer.buffer, GL.GL_STATIC_DRAW)
-        gl.glBindBuffer(GL.GL_ARRAY_BUFFER, uvOut)
-        gl.glBufferData(GL.GL_ARRAY_BUFFER, uvBuffer.buffer.limit() * Float.SIZE_BYTES.toLong(), uvBuffer.buffer, GL.GL_STATIC_DRAW)
+        // TODO: test if rewind is necessary
+        vertexBuffer.buffer.rewind()
+        uvBuffer.buffer.rewind()
+        glBindBuffer(GL_ARRAY_BUFFER, vertexOut)
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.buffer, GL_STATIC_DRAW)
+        glBindBuffer(GL_ARRAY_BUFFER, uvOut)
+        glBufferData(GL_ARRAY_BUFFER, uvBuffer.buffer, GL_STATIC_DRAW)
         bufferedVertices = vertexBuffer.buffer.limit() / VEC_DIMS
     }
 
@@ -65,11 +76,11 @@ class CPUNonPriorityRenderer(override val gl: GL2ES3) : AbstractPriorityRenderer
     }
 
     override fun draw() {
-        gl.glEnable(GL.GL_CULL_FACE)
+        glEnable(GL_CULL_FACE)
 
-        gl.glBindVertexArray(vaoHandle)
-        gl.glDrawArrays(GL.GL_TRIANGLES, 0, bufferedVertices)
+        glBindVertexArray(vaoHandle)
+        glDrawArrays(GL_TRIANGLES, 0, bufferedVertices)
 
-        gl.glDisable(GL.GL_CULL_FACE)
+        glDisable(GL_CULL_FACE)
     }
 }

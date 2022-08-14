@@ -1,6 +1,6 @@
 package controllers.worldRenderer.helpers
 
-import com.jogamp.opengl.util.GLBuffers
+import org.lwjgl.BufferUtils
 import org.slf4j.LoggerFactory
 import java.nio.BufferOverflowException
 import java.nio.IntBuffer
@@ -12,6 +12,7 @@ class GpuIntBuffer {
         private set
 
     fun flip() {
+        if (buffer.position() == 0) return  // TODO: this is only here to make the debugger happy
         buffer.flip()
     }
 
@@ -39,8 +40,7 @@ class GpuIntBuffer {
     }
 
     companion object {
-        fun allocateDirect(size: Int): IntBuffer {
-            return GLBuffers.newDirectIntBuffer(size * GLBuffers.SIZEOF_INT)
-        }
+        fun allocateDirect(size: Int): IntBuffer =
+            BufferUtils.createIntBuffer(size)
     }
 }
