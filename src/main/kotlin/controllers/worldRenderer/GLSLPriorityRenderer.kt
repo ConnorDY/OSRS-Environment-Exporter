@@ -20,11 +20,14 @@ import org.lwjgl.opengl.GL15C.glGenBuffers
 import org.lwjgl.opengl.GL20C.glDeleteProgram
 import org.lwjgl.opengl.GL20C.glUseProgram
 import org.lwjgl.opengl.GL30C.glBindBufferBase
+import org.lwjgl.opengl.GL30C.glBindBufferRange
 import org.lwjgl.opengl.GL30C.glBindVertexArray
+import org.lwjgl.opengl.GL30C.glGetIntegeri
 import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
 import org.lwjgl.opengl.GL42C.glMemoryBarrier
+import org.lwjgl.opengl.GL43C.GL_MAX_COMPUTE_WORK_GROUP_COUNT
 import org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT
 import org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER
 import org.lwjgl.opengl.GL43C.glDispatchCompute
@@ -53,6 +56,8 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
 
     private val uniBlockSmall = glGetUniformBlockIndex(glSmallComputeProgram, "uniforms")
     private val uniBlockLarge = glGetUniformBlockIndex(glComputeProgram, "uniforms")
+
+    private val maxWorkgroupSize = glGetIntegeri(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0)
 
     private val modelBuffers = ModelBuffers()
 
@@ -187,22 +192,32 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
 
         // unordered
         glUseProgram(glUnorderedComputeProgram)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferUnorderedId)
         bindCommonBuffers()
-        glDispatchCompute(modelBuffers.unorderedModelsCount, 1, 1)
+        chunkedRunShader(tmpModelBufferUnorderedId, modelBuffers.unorderedModelsCount)
 
         // small
         glUseProgram(glSmallComputeProgram)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferSmallId)
         bindCommonBuffers()
-        glDispatchCompute(modelBuffers.smallModelsCount, 1, 1)
+        chunkedRunShader(tmpModelBufferSmallId, modelBuffers.smallModelsCount)
 
         // large
         glUseProgram(glComputeProgram)
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, tmpModelBufferId)
         bindCommonBuffers()
-        glDispatchCompute(modelBuffers.largeModelsCount, 1, 1)
+        chunkedRunShader(tmpModelBufferId, modelBuffers.largeModelsCount)
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT)
+    }
+
+    private fun chunkedRunShader(bufferId: Int, bufferLength: Int) {
+        val objectSize = 12 * 4
+        var remaining = bufferLength.toLong()
+        var offset = 0L
+        while (remaining > 0) {
+            val chunk = min(remaining, maxWorkgroupSize.toLong())
+            glBindBufferRange(GL_SHADER_STORAGE_BUFFER, 0, bufferId, offset * objectSize, chunk * objectSize)
+            glDispatchCompute(chunk.toInt(), 1, 1)
+            remaining -= chunk
+            offset += chunk
+        }
     }
 
     private fun bindCommonBuffers() {
