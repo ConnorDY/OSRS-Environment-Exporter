@@ -8,4 +8,6 @@ class DebugOptionsModel(val isDebugMode: Boolean) {
     val modelSubIndex = ObservableValue(-1)
     val resetCameraOnSceneChange = ObservableValue(true)
     val onlyType10Models = ObservableValue(false)
+
+    val all = listOf(removeProperlyTypedModels, badModelIndexOverride, modelSubIndex, resetCameraOnSceneChange, onlyType10Models)
 }

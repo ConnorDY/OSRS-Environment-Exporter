@@ -9,8 +9,9 @@ import javax.swing.JCheckBox
 import javax.swing.JDialog
 import javax.swing.SwingUtilities
 
-class DebugOptionsController(owner: Frame, model: DebugOptionsModel) : JDialog(owner, "Debug Options", false) {
+class DebugOptionsController(owner: Frame, private val model: DebugOptionsModel) : JDialog(owner, "Debug Options", false) {
     init {
+        defaultCloseOperation = DISPOSE_ON_CLOSE
         layout = BoxLayout(contentPane, BoxLayout.PAGE_AXIS)
         makeDebugToggle(model.onlyType10Models, "Only type-10 models", '1').let(::add)
         makeDebugToggle(model.resetCameraOnSceneChange, "Reset camera on scene change", 'R').let(::add)
@@ -20,6 +21,13 @@ class DebugOptionsController(owner: Frame, model: DebugOptionsModel) : JDialog(o
         pack()
     }
 
+    override fun removeNotify() {
+        super.removeNotify()
+        model.all.forEach { prop ->
+            prop.removeListeners(this)
+        }
+    }
+
     private fun makeDebugToggle(prop: ObservableValue<Boolean>, name: String, mnemonic: Char) =
         JCheckBox(name).apply {
             this.mnemonic = mnemonic.code
@@ -27,7 +35,7 @@ class DebugOptionsController(owner: Frame, model: DebugOptionsModel) : JDialog(o
             addActionListener {
                 prop.set(isSelected)
             }
-            prop.addListener {
+            prop.addListener(this@DebugOptionsController) {
                 SwingUtilities.invokeLater {
                     isSelected = it
                 }
@@ -41,7 +49,7 @@ class DebugOptionsController(owner: Frame, model: DebugOptionsModel) : JDialog(o
             addActionListener {
                 prop.set(value as Int)
             }
-            prop.addListener {
+            prop.addListener(this@DebugOptionsController) {
                 SwingUtilities.invokeLater {
                     value = it
                 }
