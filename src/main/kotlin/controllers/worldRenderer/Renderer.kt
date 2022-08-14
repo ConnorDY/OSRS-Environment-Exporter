@@ -163,7 +163,7 @@ class Renderer constructor(
         rboSceneDepthBuffer = -1
 
         val glData = GLData()
-        glData.majorVersion = 4
+        glData.majorVersion = 3
         glData.minorVersion = 1
         glData.profile = GLData.Profile.CORE
 
