@@ -2,6 +2,7 @@ package models.config
 
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import utils.Utils.isMacos
+import controllers.worldRenderer.Renderer.PreferredPriorityRenderer as PriorityRenderers
 
 data class ConfigOption<T>(
     val id: String,
@@ -22,6 +23,7 @@ data class ConfigOption<T>(
         val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode (requires restart)", 'D')
         val mouseWarping = ConfigOption("mouse-warping", ConfigOptionType.boolean, !isMacos(), "Enable mouse warping", 'W')
         val antiAliasing = ConfigOption("anti-aliasing", ConfigOptionType.Enumerated(AntiAliasingMode::valueOf, AntiAliasingMode.values(), AntiAliasingMode::humanReadableName), AntiAliasingMode.MSAA_16, "Anti-aliasing", 'A')
+        val priorityRenderer = ConfigOption("priority-renderer", ConfigOptionType.Enumerated(PriorityRenderers::valueOf, PriorityRenderers.values(), PriorityRenderers::humanReadableName), if (isMacos()) PriorityRenderers.CPU_NAIVE else PriorityRenderers.GLSL, "Sorting renderer", 'R')
 
         val all = listOf(
             lastCacheDir,
@@ -32,6 +34,7 @@ data class ConfigOption<T>(
             lastCheckedForUpdates,
             mouseWarping,
             antiAliasing,
+            priorityRenderer,
             debug,
         )
     }

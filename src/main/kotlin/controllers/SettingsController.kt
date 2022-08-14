@@ -59,6 +59,7 @@ class SettingsController(
 
             renderer.setFpsTarget(configuration.getProp(ConfigOption.fpsCap) ?: 0)
             renderer.antiAliasingMode = configuration.getProp(ConfigOption.antiAliasing)
+            renderer.priorityRendererPref = configuration.getProp(ConfigOption.priorityRenderer)
 
             dispose()
         }

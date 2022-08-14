@@ -10,6 +10,7 @@
 - Added MacOS support &ndash; [#86](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/86) @ScoreUnder
   - The renderer is now using LWJGL, which also fixes a couple of weird input/focus issues we were having.
 - Added mouse warping and antialisaing settings &ndash; [#86](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/86) @ScoreUnder
+- Added option to choose render sorter, which may fix buggy previews on some machines &ndash; [#86](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/86) @ScoreUnder
 
 ## 2.1.0
 

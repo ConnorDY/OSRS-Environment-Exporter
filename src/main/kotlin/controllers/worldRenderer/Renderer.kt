@@ -86,9 +86,21 @@ class Renderer(
     private val debugModel: DebugModel,
     private val debugOptionsModel: DebugOptionsModel,
 ) {
+    enum class PreferredPriorityRenderer(val humanReadableName: String, val factory: () -> PriorityRenderer) {
+        GLSL("GLSL Compute-based priority renderer", { GLSLPriorityRenderer() }),
+        CPU_NAIVE("No priority renderer", { CPUNonPriorityRenderer() }),
+    }
+
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
 
     var antiAliasingMode: AntiAliasingMode = configuration.getProp(ConfigOption.antiAliasing)
+    var priorityRendererPref: PreferredPriorityRenderer = configuration.getProp(ConfigOption.priorityRenderer)
+        set(value) {
+            if (field != value) {
+                field = value
+                changePriorityRenderer()
+            }
+        }
 
     private var glProgram = 0
 
@@ -126,6 +138,8 @@ class Renderer(
     private var animator: Animator? = null
     private var glCanvas: AWTGLCanvas? = null
     private lateinit var inputHandler: InputHandler
+
+    private val pendingGlThreadActions = ArrayList<Runnable>()
 
     fun initCanvas(): AWTGLCanvas {
         // center camera in viewport
@@ -202,9 +216,9 @@ class Renderer(
         glDepthRange(0.0, 1.0)
 
         priorityRenderer = try {
-            GLSLPriorityRenderer()
+            priorityRendererPref.factory()
         } catch (e: ShaderException) {
-            logger.warn("Tried to spawn a GLSLPriorityRenderer but got exception", e)
+            logger.warn("Tried to spawn priority renderer but got exception", e)
             CPUNonPriorityRenderer()
         }
         try {
@@ -214,6 +228,18 @@ class Renderer(
             e.printStackTrace()
         }
         initUniformBuffer()
+    }
+
+    private fun changePriorityRenderer() {
+        doInGlThread {
+            priorityRenderer.destroy()
+            priorityRenderer = priorityRendererPref.factory()
+            isSceneUploadRequired = true
+        }
+    }
+
+    private fun doInGlThread(thing: Runnable) {
+        pendingGlThreadActions.add(thing)
     }
 
     fun reshape(x: Int, y: Int, width: Int, height: Int) {
@@ -233,6 +259,9 @@ class Renderer(
         if (animator != null) {
             debugModel.fps.set("%.0f".format(animator.lastFPS))
         }
+
+        pendingGlThreadActions.forEach(Runnable::run)
+        pendingGlThreadActions.clear()
 
         if (isSceneUploadRequired) {
             uploadScene()
