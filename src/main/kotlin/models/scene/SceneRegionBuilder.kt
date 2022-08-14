@@ -18,7 +18,6 @@ import cache.loaders.getTileSettings
 import cache.utils.Vec3F
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.Model
-import controllers.worldRenderer.entities.OrientationType
 import controllers.worldRenderer.entities.StaticObject
 import org.slf4j.LoggerFactory
 import utils.clamp
@@ -308,7 +307,7 @@ class SceneRegionBuilder constructor(
             } else if (loc.type == LocationType.INTERACTABLE.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             } else if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
-                staticObject.model.orientationType = OrientationType.DIAGONAL
+                // TODO: rotate the object
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             } else if (loc.type == LocationType.TRIANGULAR_CORNER.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
@@ -364,7 +363,7 @@ class SceneRegionBuilder constructor(
             )
         }
 
-        return StaticObject(objectDefinition, model, height, type, orientation)
+        return StaticObject(objectDefinition, model, height, type)
     }
 
     private fun packHsl(hue: Int, var1: Int, lightness: Int): Int {

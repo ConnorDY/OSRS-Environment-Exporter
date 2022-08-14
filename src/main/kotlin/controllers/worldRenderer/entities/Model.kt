@@ -12,7 +12,6 @@ class Model(
     val modelDefinition: ModelDefinition,
 
     var orientation: Int = 0,
-    var orientationType: OrientationType = OrientationType.STRAIGHT,
     var x: Int = 0, // 3d world space position
     var y: Int = 0,
     val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
@@ -20,7 +19,7 @@ class Model(
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
 ) : Renderable {
     override val computeObj = ComputeObj()
-    override val renderFlags get() = super.renderFlags or (radius shl 12) or orientationType.id
+    override val renderFlags get() = super.renderFlags or (radius shl 12)
     override val renderUnordered get() = false
     override val faceCount get() = modelDefinition.faceCount
     override var renderOffsetX = 0
