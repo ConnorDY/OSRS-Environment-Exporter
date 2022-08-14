@@ -1,2 +1,29 @@
 #!/bin/sh
-exec java --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED -jar ./build/libs/osrs-environment-exporter-fat-2.1.0.jar "$@"
+debug_params=
+java=java
+if [ -x "$JAVA_HOME/bin/java" ]; then
+    java="$JAVA_HOME/bin/java"
+fi
+
+contains() {
+    [ "${1#*"$2"}" != "$1" ]
+}
+
+if [ "${1#--debug}" != "$1" ]; then
+    if contains "$1" "software"; then
+        export LIBGL_ALWAYS_SOFTWARE=1
+    fi
+    export GALLIUM_HUD=cpu,fps\;primitives-generated,frametime
+    export MESA_DEBUG=incomplete_fbo,context,1
+    export LIBGL_DEBUG=verbose
+    if [ -e lwjglx-debug-1.0.0.jar ]; then
+        debug_params="$debug_params -javaagent:lwjglx-debug-1.0.0.jar -Dorg.lwjglx.NO_THROW"
+    fi
+    debug_params="$debug_params -Djoml.debug=true"
+    if [ -e log-debug.xml ]; then
+        debug_params="$debug_params -Dlogback.configurationFile=log-debug.xml"
+    fi
+    shift
+fi
+
+exec "$java" $debug_params --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.desktop/sun.awt=ALL-UNNAMED -jar ./build/libs/osrs-environment-exporter-fat-2.1.0.jar "$@"
