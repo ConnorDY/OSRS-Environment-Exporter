@@ -228,14 +228,12 @@ class Renderer constructor(
         glDepthFunc(GL_LEQUAL)
         glDepthRange(0.0, 1.0)
 
-        priorityRenderer =
-//            try {
-//            GLSLPriorityRenderer()
-//        } catch (e: ShaderException) {
-//            logger.warn("Tried to spawn a GLSLPriorityRenderer but got exception", e)
+        priorityRenderer = try {
+            GLSLPriorityRenderer()
+        } catch (e: ShaderException) {
+            logger.warn("Tried to spawn a GLSLPriorityRenderer but got exception", e)
             CPUNonPriorityRenderer()
-//        }
-//TODO temporarily commented out
+        }
         try {
             priorityRenderer.bindVao()
             initProgram()

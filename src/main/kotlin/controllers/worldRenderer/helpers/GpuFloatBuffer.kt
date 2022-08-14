@@ -8,7 +8,10 @@ class GpuFloatBuffer {
         private set
 
     fun flip() {
-        if (buffer.position() == 0) return  // TODO: this is only here to make the debugger happy
+        if (buffer.position() == 0) {
+            buffer.limit(0)
+            return
+        }  // TODO: this is only here to make the debugger happy
         buffer.flip()
     }
 
