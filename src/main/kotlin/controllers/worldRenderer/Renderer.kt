@@ -121,37 +121,6 @@ class Renderer constructor(
     private var glCanvas: AWTGLCanvas? = null
     private lateinit var inputHandler: InputHandler
 
-    private fun fixDebugAgent() { // TODO: this is only to make the debugger happy
-        try {
-            val c = Class.forName("org.lwjglx.debug.org.lwjgl.opengl.Context")
-            run {
-                val m = c.getMethod(
-                    "create",
-                    Long::class.javaPrimitiveType,
-                    Long::class.javaPrimitiveType
-                )
-                m.isAccessible = true
-                m.invoke(null, 0L, 0L)
-            }
-            var ctx: Any
-            run {
-                val f = c.getField("CONTEXTS")
-                f.isAccessible = true
-                val contexts = f.get(null) as Map<Long, Any>
-                ctx = contexts[0L]!!
-                checkNotNull(ctx)
-            }
-            run {
-                val f = c.getField("CURRENT_CONTEXT")
-                f.isAccessible = true
-                val v = f.get(null) as ThreadLocal<Any?>
-                v.set(ctx)
-            }
-            println("SET!")
-        } catch (e: Throwable) {
-        }
-    }
-
     fun initCanvas(): AWTGLCanvas {
         // center camera in viewport
         camera.centerX = canvasWidth / 2
@@ -168,7 +137,6 @@ class Renderer constructor(
 
         val glCanvas = object : AWTGLCanvas(glData) {
             override fun initGL() {
-                fixDebugAgent()
                 this@Renderer.init()
             }
 
