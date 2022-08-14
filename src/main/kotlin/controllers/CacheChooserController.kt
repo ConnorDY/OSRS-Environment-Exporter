@@ -3,7 +3,8 @@ package controllers
 import AppConstants
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
-import models.Configuration
+import models.config.ConfigOption
+import models.config.Configuration
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
@@ -208,9 +209,9 @@ class CacheChooserController(
         )
 
         populateCachesList(cacheListModel, listCaches, listCachesPlaceholder)
-        txtCacheLocation.text = configuration.getProp("last-cache-dir")
+        txtCacheLocation.text = configuration.getProp(ConfigOption.lastCacheDir)
 
-        if (configuration.getProp("debug") == "true") {
+        if (configuration.getProp(ConfigOption.debug)) {
             launch(lblStatusText, txtCacheLocation, btnLaunch)
         }
 
@@ -229,7 +230,7 @@ class CacheChooserController(
             "Launching map editor... Please wait... (this may take a while)"
 
         Thread() {
-            configuration.saveProp("last-cache-dir", txtCacheLocation.text)
+            configuration.saveProp(ConfigOption.lastCacheDir, txtCacheLocation.text)
             btnLaunch.isEnabled = false
             // load and open main scene
             xteaAndCache?.let {

@@ -1,5 +1,5 @@
 import controllers.CacheChooserController
-import models.Configuration
+import models.config.Configuration
 import org.pushingpixels.radiance.theming.api.skin.RadianceGraphiteAquaLookAndFeel
 import javax.swing.JPopupMenu
 import javax.swing.SwingUtilities

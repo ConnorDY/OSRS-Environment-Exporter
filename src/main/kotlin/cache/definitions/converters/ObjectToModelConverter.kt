@@ -54,11 +54,12 @@ class ObjectToModelConverter(
                 return null
             }
             val modelLen = modelIds.size
+            val isRotated = isRotated xor (type == 2 && orientation > 3)
 
             val debugSubIndex = debugOptionsModel.modelSubIndex.get()
             if (modelLen > 1 && debugSubIndex != -1) {
                 if (debugSubIndex in 0 until modelLen) {
-                    return getAndRotateModel(debugSubIndex, isRotated, orientation, modelIds)
+                    return getAndRotateModel(debugSubIndex, isRotated, type, orientation, modelIds)
                 }
                 return null
             } else if (debugOptionsModel.removeProperlyTypedModels.get()) {
@@ -66,7 +67,7 @@ class ObjectToModelConverter(
             }
 
             for (i in 0 until modelLen) {
-                val nextModel = getAndRotateModel(i, isRotated, orientation, modelIds) ?: continue
+                val nextModel = getAndRotateModel(i, isRotated, type, orientation, modelIds) ?: continue
                 modelDefinition =
                     if (modelDefinition == null) nextModel
                     else ModelDefinition.combine(modelDefinition, nextModel)
@@ -88,7 +89,7 @@ class ObjectToModelConverter(
                 return null
             }
             val isRotated = isRotated xor (orientation > 3)
-            modelDefinition = getAndRotateModel(modelIdx, isRotated, orientation, modelIds!!)
+            modelDefinition = getAndRotateModel(modelIdx, isRotated, type, orientation, modelIds!!)
         }
         if (modelDefinition == null) {
             return null
@@ -96,7 +97,7 @@ class ObjectToModelConverter(
         return modelDefinition
     }
 
-    private fun ObjectDefinition.getAndRotateModel(modelIdx: Int, isRotated: Boolean, orientation: Int, modelIds: IntArray): ModelDefinition? {
+    private fun ObjectDefinition.getAndRotateModel(modelIdx: Int, isRotated: Boolean, type: Int, orientation: Int, modelIds: IntArray): ModelDefinition? {
         var modelId = modelIds[modelIdx]
         if (isRotated) {
             modelId += 65536
@@ -105,6 +106,11 @@ class ObjectToModelConverter(
 
         if (isRotated) {
             modelDefinition.rotateMulti()
+        }
+
+        if (type == 4 && orientation > 3) {
+            modelDefinition.rotate(256)
+            modelDefinition.translate(45, 0, -45)
         }
 
         when (orientation and 3) {
@@ -125,6 +131,9 @@ class ObjectToModelConverter(
                 )
             }
         }
+
+        modelDefinition.scale(modelSizeX, modelSizeHeight, modelSizeY)
+        modelDefinition.translate(offsetX, offsetHeight, offsetY)
         return modelDefinition
     }
 }

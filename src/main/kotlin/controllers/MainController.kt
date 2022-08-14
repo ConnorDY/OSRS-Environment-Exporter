@@ -13,14 +13,14 @@ import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.worldRenderer.Camera
-import controllers.worldRenderer.InputHandler
 import controllers.worldRenderer.Renderer
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
-import models.Configuration
 import models.DebugModel
 import models.DebugOptionsModel
+import models.config.ConfigOption
+import models.config.Configuration
 import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
@@ -69,7 +69,7 @@ class MainController constructor(
 
         val camera = Camera()
         val debugModel = DebugModel()
-        val debugOptions = DebugOptionsModel()
+        val debugOptions = DebugOptionsModel(configuration.getProp(ConfigOption.debug))
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
@@ -91,10 +91,10 @@ class MainController constructor(
         worldRendererController = WorldRendererController(
             Renderer(
                 camera, scene, SceneUploader(),
-                InputHandler(camera, scene),
                 TextureManager(
                     SpriteLoader(cacheLibrary), textureLoader
                 ),
+                configuration,
                 debugModel,
                 debugOptions,
             ),
@@ -152,7 +152,7 @@ class MainController constructor(
                 }.let(::add)
             }
 
-            if (configuration.getProp("debug") == "true") {
+            if (debugOptions.isDebugMode) {
                 Box.createGlue().let(::add)
                 JButton("Debug").apply {
                     mnemonic = 'D'.code
@@ -166,8 +166,8 @@ class MainController constructor(
 
         // load initial scene
         scene.loadRadius(
-            configuration.getProp("initial-region-id").toIntOrNull() ?: 15256,
-            configuration.getProp("initial-radius").toIntOrNull() ?: 1,
+            configuration.getProp(ConfigOption.initialRegionId),
+            configuration.getProp(ConfigOption.initialRadius)
         )
 
         add(worldRendererController, BorderLayout.CENTER)
@@ -195,7 +195,7 @@ class MainController constructor(
             pack()
         }
 
-        val checkForUpdatesEnabled = configuration.getProp(SettingsController.CHECK_FOR_UPDATES_PROP).toBooleanStrictOrNull() ?: true
+        val checkForUpdatesEnabled = configuration.getProp(ConfigOption.checkForUpdates)
         if (checkForUpdatesEnabled) checkForUpdates()
     }
 
@@ -256,10 +256,10 @@ class MainController constructor(
 
     private fun checkForUpdates() {
         val now = System.currentTimeMillis() / 1000L
-        val lastChecked = configuration.getProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP).toLongOrNull()
+        val lastChecked = configuration.getProp(ConfigOption.lastCheckedForUpdates)
 
         // see if it's been an hour since the last check
-        if (lastChecked != null && (now - lastChecked) < 3600) {
+        if ((now - lastChecked) < 3600) {
             logger.info("Checked for updates within the past hour. Skipping check...")
             return
         }
@@ -294,7 +294,7 @@ class MainController constructor(
             pack()
         }
 
-        configuration.saveProp(SettingsController.LAST_CHECKED_FOR_UPDATES_PROP, now.toString())
+        configuration.saveProp(ConfigOption.lastCheckedForUpdates, now)
     }
 
     private fun getGitHubReleaseInfo(): String? {

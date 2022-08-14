@@ -142,13 +142,11 @@ class ObjectLoader(
         } else if (opcode == 69) {
             def.blockingMask = inputStream.get().toInt()
         } else if (opcode == 70) {
-            def.offsetX = inputStream.readUnsignedShort()
-            logger.warn("TODO: support offsetX, (got ${def.offsetX})")
+            def.offsetX = inputStream.short.toInt()
         } else if (opcode == 71) {
-            def.offsetHeight = inputStream.readUnsignedShort().toShort().toInt()
+            def.offsetHeight = inputStream.short.toInt()
         } else if (opcode == 72) {
-            def.offsetY = inputStream.readUnsignedShort()
-            logger.warn("TODO: support offsetY, (got ${def.offsetY})")
+            def.offsetY = inputStream.short.toInt()
         } else if (opcode == 73) {
             def.obstructsGround = true
         } else if (opcode == 74) {

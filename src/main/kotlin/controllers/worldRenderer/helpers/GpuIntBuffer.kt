@@ -1,6 +1,6 @@
 package controllers.worldRenderer.helpers
 
-import com.jogamp.opengl.util.GLBuffers
+import org.lwjgl.BufferUtils
 import org.slf4j.LoggerFactory
 import java.nio.BufferOverflowException
 import java.nio.IntBuffer
@@ -10,14 +10,6 @@ class GpuIntBuffer {
 
     var buffer = allocateDirect(65536)
         private set
-
-    fun put(x: Int, y: Int, z: Int) {
-        buffer.put(x).put(y).put(z)
-    }
-
-    fun put(x: Int, y: Int, z: Int, c: Int) {
-        buffer.put(x).put(y).put(z).put(c)
-    }
 
     fun flip() {
         buffer.flip()
@@ -47,8 +39,7 @@ class GpuIntBuffer {
     }
 
     companion object {
-        fun allocateDirect(size: Int): IntBuffer {
-            return GLBuffers.newDirectIntBuffer(size * GLBuffers.SIZEOF_INT)
-        }
+        fun allocateDirect(size: Int): IntBuffer =
+            BufferUtils.createIntBuffer(size)
     }
 }

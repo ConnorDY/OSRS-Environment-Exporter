@@ -350,8 +350,6 @@ class SceneRegionBuilder constructor(
         // FIXME: nonFlatShading affects fence doors
         var model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
 
-        model = model.scaleBy(objectDefinition.modelSizeX, objectDefinition.modelSizeHeight, objectDefinition.modelSizeY)
-
         if (objectDefinition.contouredGround >= 0) {
             model = model.contourGround(
                 regionLoader,
@@ -366,7 +364,7 @@ class SceneRegionBuilder constructor(
             )
         }
 
-        return StaticObject(objectDefinition, model, height + objectDefinition.offsetHeight, type, orientation)
+        return StaticObject(objectDefinition, model, height, type, orientation)
     }
 
     private fun packHsl(hue: Int, var1: Int, lightness: Int): Int {

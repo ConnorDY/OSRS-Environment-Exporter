@@ -9,24 +9,7 @@ group = "org.example"
 version = "2.1.0"
 
 repositories {
-    mavenCentral {
-        content {
-            excludeGroup("org.jogamp.jogl")
-        }
-    }
-    ivy {
-        // url = uri("https://jogamp.org/deployment/")
-        url = uri("https://score.moe/m/jogamp.org/deployment/")
-        patternLayout {
-            artifact("v[revision]/jar/[module].[ext]")
-        }
-        content {
-            includeGroup("org.jogamp.jogl")
-        }
-        metadataSources {
-            artifact()
-        }
-    }
+    mavenCentral()
 }
 
 dependencies {
@@ -39,27 +22,30 @@ dependencies {
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("org.pushing-pixels:radiance-theming:5.0.0")
 
-    // Jogamp and dependencies thereof
-    implementation("org.jogamp.jogl:gluegen:2.4.0-rc-20210111")
-    implementation("org.jogamp.jogl:jogl-all:2.4.0-rc-20210111")
+    // lwjgl and dependencies thereof
+    implementation(platform("org.lwjgl:lwjgl-bom:3.3.1"))
+
+    implementation("org.lwjgl", "lwjgl")
+    implementation("org.lwjgl", "lwjgl-glfw")
+    implementation("org.lwjgl", "lwjgl-jawt")
+    implementation("org.lwjgl", "lwjgl-opengl")
+    implementation("org.lwjglx", "lwjgl3-awt", "0.1.8")
+    implementation("org.joml", "joml", "1.10.4")
     for (
         p in listOf(
-            "android-aarch64",
-            "android-armv6",
-            "android-x86",
-            "ios-amd64",
-            "ios-arm64",
-            "linux-aarch64",
-            "linux-amd64",
-            "linux-armv6hf",
-            "linux-i586",
-            "macosx-universal",
-            "windows-amd64",
-            "windows-i586"
+            "natives-linux",
+            "natives-linux-arm32",
+            "natives-linux-arm64",
+            "natives-macos",
+            "natives-macos-arm64",
+            "natives-windows",
+            "natives-windows-arm64",
+            "natives-windows-x86",
         )
     ) {
-        implementation("org.jogamp.jogl:gluegen-rt-natives-$p:2.4.0-rc-20210111")
-        implementation("org.jogamp.jogl:jogl-all-natives-$p:2.4.0-rc-20210111")
+        runtimeOnly("org.lwjgl", "lwjgl", classifier = p)
+        runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = p)
+        runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = p)
     }
 }
 

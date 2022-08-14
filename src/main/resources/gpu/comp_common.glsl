@@ -54,7 +54,6 @@ struct modelinfo {
     int x;// scene position x
     int y;// scene position y
     int z;// scene position z
-    int pickerId;
 
     // anim vars
     int frame;
@@ -91,10 +90,6 @@ layout(std430, binding = 6) readonly buffer tempuvbuffer_in {
     vec4 tempuv[];
 };
 
-layout(std430, binding = 7) writeonly buffer color_picker_id_out {
-    int pickerOut[];
-};
-
-layout(std430, binding = 8) writeonly buffer anim_out {
+layout(std430, binding = 7) writeonly buffer anim_out {
     AnimInfo animInfo[];
 };

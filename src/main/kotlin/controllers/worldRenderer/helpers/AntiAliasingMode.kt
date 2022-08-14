@@ -24,6 +24,6 @@
  */
 package controllers.worldRenderer.helpers
 
-enum class AntiAliasingMode(name: String, samples: Int) {
+enum class AntiAliasingMode(val humanReadableName: String, val samples: Int) {
     DISABLED("Disabled", 0), MSAA_2("MSAA x2", 2), MSAA_4("MSAA x4", 4), MSAA_8("MSAA x8", 8), MSAA_16("MSAA x16", 16);
 }

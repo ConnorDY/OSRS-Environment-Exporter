@@ -16,10 +16,15 @@ class ModelBuffers {
         modelBufferSmall.clear()
         modelBufferUnordered.clear()
         unorderedModelsCount = 0
-        largeModelsCount = unorderedModelsCount
-        smallModelsCount = largeModelsCount
+        largeModelsCount = 0
+        smallModelsCount = 0
         tempOffset = 0
         tempUvOffset = 0
+    }
+
+    fun clearBufferOffset() {
+        // TODO: understand why this isn't always done(?)
+        targetBufferOffset = 0
     }
 
     fun flip() {
@@ -29,13 +34,18 @@ class ModelBuffers {
     }
 
     fun bufferForTriangles(triangles: Int): GpuIntBuffer {
-        return if (triangles < SMALL_TRIANGLE_COUNT) {
+        return if (triangles <= SMALL_TRIANGLE_COUNT) {
             ++smallModelsCount
             modelBufferSmall
         } else {
             ++largeModelsCount
             modelBuffer
         }
+    }
+
+    fun bufferUnordered(): GpuIntBuffer {
+        unorderedModelsCount++
+        return modelBufferUnordered
     }
 
     val vertexBuffer: GpuIntBuffer = GpuIntBuffer()
@@ -45,24 +55,25 @@ class ModelBuffers {
     val modelBuffer: GpuIntBuffer = GpuIntBuffer()
 
     var unorderedModelsCount = 0
-    fun incUnorderedModels() {
-        unorderedModelsCount++
-    }
+        private set
 
     /**
      * number of models in small buffer
      */
     var smallModelsCount = 0
+        private set
 
     /**
      * number of models in large buffer
      */
     var largeModelsCount = 0
+        private set
 
     /**
      * offset in the target buffer for model
      */
     var targetBufferOffset = 0
+        private set
     fun addTargetBufferOffset(n: Int) {
         targetBufferOffset += n
     }
@@ -71,17 +82,13 @@ class ModelBuffers {
      * offset into the temporary scene vertex buffer
      */
     var tempOffset = 0
+        private set
 
     /**
      * offset into the temporary scene uv buffer
      */
     var tempUvOffset = 0
-
-    fun calcPickerId(x: Int, y: Int, objType: Int): Int {
-        // pack x tile in top 13 bits, y in next 13, objectId in bottom 5
-        // NOTE: signed int so x can really only use 13 bits!!
-        return x and 0x1FFF shl 18 or (y and 0x1FFF shl 5) or (objType and 0x1F)
-    }
+        private set
 
     companion object {
         const val FLAG_SCENE_BUFFER = Int.MIN_VALUE

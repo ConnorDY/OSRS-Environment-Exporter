@@ -25,56 +25,42 @@
 #version 330
 
 uniform sampler2DArray textures;
-uniform vec2 textureOffsets[64];
+uniform vec2 textureOffsets[128];
 uniform float brightness;
 uniform float smoothBanding;
-uniform bool colorPickerRender;
 
 in vec4 Color;
-centroid in float fHsl;
-in vec4 fUv;
+noperspective centroid in float fHsl;
+flat in int textureId;
+in vec2 fUv;
 
 in vec3 vPosition;
 
-flat in int frag_pickerId;
-
 layout(location = 0) out vec4 fragColor;
-layout(location = 1) out int pickerId;
 
 uniform ivec2 mouseCoords;
 
 #include hsl_to_rgb.glsl
 
 void main() {
-  if (frag_pickerId == -2) {
-    if (mouseCoords.x == int(gl_FragCoord.x) && mouseCoords.y == int(gl_FragCoord.y)) {
-      discard;
-    }
-  }
+  vec4 c;
 
-  float n = fUv.x;
+  if (textureId > 0) {
+    int textureIdx = textureId - 1;
 
-  int hsl = int(fHsl);
-  vec3 rgb = hslToRgb(hsl) * smoothBanding + Color.rgb * (1.f - smoothBanding);
-  vec4 smoothColor = vec4(rgb, Color.a);
-
-  if (n > 0.0) {
-    n -= 1.0;
-    int textureIdx = int(n);
-
-    vec2 uv = fUv.yz;
-    vec2 animatedUv = uv + textureOffsets[textureIdx];
-
-    vec4 textureColor = texture(textures, vec3(animatedUv, n));
+    vec4 textureColor = texture(textures, vec3(fUv, float(textureIdx)));
     vec4 textureColorBrightness = pow(textureColor, vec4(brightness, brightness, brightness, 1.0f));
 
-    smoothColor = textureColorBrightness * smoothColor;
+    // textured triangles hsl is a 7 bit lightness 2-126
+    float light = fHsl / 127.f;
+    c = textureColorBrightness * vec4(light, light, light, 1.f);
+  } else {
+    // pick interpolated hsl or rgb depending on smooth banding setting
+    vec3 rgb = hslToRgb(int(fHsl)) * smoothBanding + Color.rgb * (1.f - smoothBanding);
+    c = vec4(rgb, Color.a);
   }
 
-  if (smoothColor.a < 0.1) {
-    discard;
-  }
+  if (c.a < 0.1f) discard;
 
-  fragColor = smoothColor;
-  pickerId = frag_pickerId;
+  fragColor = c;
 }
