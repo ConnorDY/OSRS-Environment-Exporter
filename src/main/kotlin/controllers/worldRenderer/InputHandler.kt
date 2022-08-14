@@ -2,18 +2,23 @@ package controllers.worldRenderer
 
 import models.DebugOptionsModel
 import models.scene.Scene
+import java.awt.Component
+import java.awt.GraphicsEnvironment
+import java.awt.Robot
 import java.awt.event.KeyEvent
 import java.awt.event.KeyListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
+import java.awt.event.MouseMotionListener
 
 class InputHandler internal constructor(
+    private val parent: Component,
     private val camera: Camera,
     private val scene: Scene,
     private val debugOptionsModel: DebugOptionsModel,
-) : KeyListener, MouseListener {
-
-    var renderer: Renderer? = null
+) : KeyListener, MouseListener, MouseMotionListener {
+    private var robotScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
+    private var robot = Robot(robotScreen)
 
     var isLeftMouseDown = false
     var leftMousePressed = false
@@ -129,19 +134,59 @@ class InputHandler internal constructor(
         }
     }
 
-    //TODO
-//    override fun mouseMoved(e: MouseEvent) {
-//        mouseX = e.x
-//        mouseY = e.y
-//    }
-//
-//    override fun mouseDragged(e: MouseEvent) {
-//        if (isRightMouseDown) {
-//            handleCameraDrag(e)
-//        }
-//        mouseX = e.x
-//        mouseY = e.y
-//        previousMouseX = e.x
-//        previousMouseY = e.y
-//    }
+    private fun warpMouse(x: Int, y: Int) {
+        val screen = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.find { device ->
+            device.configurations.find { it.bounds.contains(x, y) } != null
+        }
+
+        if (screen != null) {
+            if (screen != robotScreen) {
+                robotScreen = screen
+                robot = Robot(screen)
+            }
+            robot.mouseMove(x, y)
+        }
+    }
+
+    override fun mouseMoved(e: MouseEvent) {
+        mouseX = e.x
+        mouseY = e.y
+    }
+
+    override fun mouseDragged(e: MouseEvent) {
+        var x = e.x
+        var y = e.y
+
+        if (isRightMouseDown) {
+            handleCameraDrag(e)
+
+            // Mouse warping
+            var warp = false
+            val offsetX = e.xOnScreen - e.x
+            val offsetY = e.yOnScreen - e.y
+            val width = parent.width - 1
+            val height = parent.height - 1
+
+            if (x >= width) {
+                warp = true
+                x = 1
+            } else if (x <= 0) {
+                warp = true
+                x = width - 1
+            }
+            if (y >= height) {
+                warp = true
+                y = 1
+            } else if (y <= 0) {
+                warp = true
+                y = height - 1
+            }
+
+            if (warp) warpMouse(offsetX + x, offsetY + y)
+        }
+        mouseX = x
+        mouseY = y
+        previousMouseX = x
+        previousMouseY = y
+    }
 }

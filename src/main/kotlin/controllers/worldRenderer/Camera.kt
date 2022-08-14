@@ -1,5 +1,7 @@
 package controllers.worldRenderer
 
+import kotlin.math.abs
+
 class Camera {
     var yaw = 0 // yaw 0 true north, same with 2047 and 1
     var pitch = 220
@@ -33,6 +35,8 @@ class Camera {
     }
 
     fun addPitch(amt: Int) {
+        if (abs(amt) > 0x400) return
+
         var newPitch = pitch + amt
         // straight down is 0x200, straight up is 0x600 roughly
         if (newPitch > 0x200 && newPitch < 0x600) {

@@ -13,7 +13,6 @@ import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.worldRenderer.Camera
-import controllers.worldRenderer.InputHandler
 import controllers.worldRenderer.Renderer
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
@@ -91,7 +90,6 @@ class MainController constructor(
         worldRendererController = WorldRendererController(
             Renderer(
                 camera, scene, SceneUploader(),
-                InputHandler(camera, scene, debugOptions),
                 TextureManager(
                     SpriteLoader(cacheLibrary), textureLoader
                 ),

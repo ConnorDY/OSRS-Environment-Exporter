@@ -78,7 +78,6 @@ class Renderer constructor(
     private val camera: Camera,
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
-    private val inputHandler: InputHandler,
     private val textureManager: TextureManager,
     private val debugModel: DebugModel,
     private val debugOptionsModel: DebugOptionsModel,
@@ -120,6 +119,7 @@ class Renderer constructor(
 
     private var animator: Animator? = null
     private var glCanvas: AWTGLCanvas? = null
+    private lateinit var inputHandler: InputHandler
 
     private fun fixDebugAgent() {  // TODO: this is only to make the debugger happy
         try {
@@ -185,10 +185,10 @@ class Renderer constructor(
             }
         }
 
+        inputHandler = InputHandler(glCanvas, camera, scene, debugOptionsModel)
         glCanvas.addKeyListener(inputHandler)
         glCanvas.addMouseListener(inputHandler)
-
-        inputHandler.renderer = this
+        glCanvas.addMouseMotionListener(inputHandler)
 
         lastStretchedCanvasHeight = -1
         lastStretchedCanvasWidth = -1
