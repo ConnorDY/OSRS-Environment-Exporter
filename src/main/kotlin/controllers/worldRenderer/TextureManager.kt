@@ -143,7 +143,7 @@ class TextureManager constructor(
                 1,
                 GL_RGBA,
                 GL_UNSIGNED_BYTE,
-                pixelBuffer.flip()
+                pixelBuffer.rewind()
             )
         }
     }
