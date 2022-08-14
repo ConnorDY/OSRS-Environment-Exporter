@@ -28,6 +28,7 @@ class InputHandler internal constructor(
     var isRightMouseDown = false
     private val keys = BooleanArray(250)
     var mouseClicked = false
+    private var discardUntil = System.currentTimeMillis()
     private var previousMouseX = 0
     private var previousMouseY = 0
     var mouseX = 0
@@ -157,6 +158,10 @@ class InputHandler internal constructor(
     }
 
     override fun mouseDragged(e: MouseEvent) {
+        if (e.`when` <= discardUntil) {
+            return
+        }
+
         var x = e.x
         var y = e.y
 
@@ -186,7 +191,10 @@ class InputHandler internal constructor(
                     y = height - 1
                 }
 
-                if (warp) warpMouse(offsetX + x, offsetY + y)
+                if (warp) {
+                    warpMouse(offsetX + x, offsetY + y)
+                    discardUntil = System.currentTimeMillis()
+                }
             }
         }
         mouseX = x
