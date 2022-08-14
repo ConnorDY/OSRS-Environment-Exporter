@@ -104,9 +104,9 @@ class Renderer(
 
     private var glProgram = 0
 
-    private var fboSceneHandle = 0
-    private var rboSceneHandle = 0
-    private var rboSceneDepthBuffer = 0
+    private var fboSceneHandle = -1
+    private var rboSceneHandle = -1
+    private var rboSceneDepthBuffer = -1
 
     private var textureArrayId = 0
     private var uniformBufferId = 0
@@ -568,6 +568,9 @@ class Renderer(
     }
 
     private fun initAAFbo(width: Int, height: Int, aaSamples: Int) {
+        // Discard old FBO
+        shutdownAAFbo()
+
         // Create and bind the FBO
         fboSceneHandle = glGenFramebuffers()
         glBindFramebuffer(GL_FRAMEBUFFER, fboSceneHandle)
