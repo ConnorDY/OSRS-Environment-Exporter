@@ -26,6 +26,7 @@ import org.lwjgl.opengl.GL11C.GL_RGBA
 import org.lwjgl.opengl.GL11C.glClear
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glDepthFunc
+import org.lwjgl.opengl.GL11C.glDepthRange
 import org.lwjgl.opengl.GL11C.glEnable
 import org.lwjgl.opengl.GL11C.glGetInteger
 import org.lwjgl.opengl.GL11C.glViewport
@@ -57,7 +58,6 @@ import org.lwjgl.opengl.GL30C.glBindBufferBase
 import org.lwjgl.opengl.GL30C.glBindFramebuffer
 import org.lwjgl.opengl.GL30C.glBindRenderbuffer
 import org.lwjgl.opengl.GL30C.glBlitFramebuffer
-import org.lwjgl.opengl.GL30C.glCheckFramebufferStatus
 import org.lwjgl.opengl.GL30C.glDeleteFramebuffers
 import org.lwjgl.opengl.GL30C.glDeleteRenderbuffers
 import org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer
@@ -67,11 +67,9 @@ import org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample
 import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
-import org.lwjgl.opengl.GL41C.glDepthRangef
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
-import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
 
@@ -222,7 +220,7 @@ class Renderer constructor(
 
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LEQUAL)
-        glDepthRangef(0f, 1f)
+        glDepthRange(0.0, 1.0)
 
         priorityRenderer =
 //            try {
