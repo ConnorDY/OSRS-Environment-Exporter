@@ -1,6 +1,8 @@
 package controllers.worldRenderer
 
 import models.DebugOptionsModel
+import models.config.ConfigOption
+import models.config.Configuration
 import models.scene.Scene
 import java.awt.Component
 import java.awt.GraphicsEnvironment
@@ -15,6 +17,7 @@ class InputHandler internal constructor(
     private val parent: Component,
     private val camera: Camera,
     private val scene: Scene,
+    private val configuration: Configuration,
     private val debugOptionsModel: DebugOptionsModel,
 ) : KeyListener, MouseListener, MouseMotionListener {
     private var robotScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
@@ -160,29 +163,31 @@ class InputHandler internal constructor(
         if (isRightMouseDown) {
             handleCameraDrag(e)
 
-            // Mouse warping
-            var warp = false
-            val offsetX = e.xOnScreen - e.x
-            val offsetY = e.yOnScreen - e.y
-            val width = parent.width - 1
-            val height = parent.height - 1
+            if (configuration.getProp(ConfigOption.mouseWarping)) {
+                // Mouse warping
+                var warp = false
+                val offsetX = e.xOnScreen - e.x
+                val offsetY = e.yOnScreen - e.y
+                val width = parent.width - 1
+                val height = parent.height - 1
 
-            if (x >= width) {
-                warp = true
-                x = 1
-            } else if (x <= 0) {
-                warp = true
-                x = width - 1
-            }
-            if (y >= height) {
-                warp = true
-                y = 1
-            } else if (y <= 0) {
-                warp = true
-                y = height - 1
-            }
+                if (x >= width) {
+                    warp = true
+                    x = 1
+                } else if (x <= 0) {
+                    warp = true
+                    x = width - 1
+                }
+                if (y >= height) {
+                    warp = true
+                    y = 1
+                } else if (y <= 0) {
+                    warp = true
+                    y = height - 1
+                }
 
-            if (warp) warpMouse(offsetX + x, offsetY + y)
+                if (warp) warpMouse(offsetX + x, offsetY + y)
+            }
         }
         mouseX = x
         mouseY = y

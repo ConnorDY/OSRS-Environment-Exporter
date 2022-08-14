@@ -94,6 +94,7 @@ class MainController constructor(
                 TextureManager(
                     SpriteLoader(cacheLibrary), textureLoader
                 ),
+                configuration,
                 debugModel,
                 debugOptions,
             ),

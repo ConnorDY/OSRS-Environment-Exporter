@@ -10,6 +10,7 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import models.DebugModel
 import models.DebugOptionsModel
+import models.config.Configuration
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
 import models.scene.Scene
@@ -74,11 +75,12 @@ import java.awt.event.ActionListener
 import java.nio.IntBuffer
 import kotlin.math.min
 
-class Renderer constructor(
+class Renderer(
     private val camera: Camera,
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
     private val textureManager: TextureManager,
+    private val configuration: Configuration,
     private val debugModel: DebugModel,
     private val debugOptionsModel: DebugOptionsModel,
 ) {
@@ -152,7 +154,7 @@ class Renderer constructor(
             }
         }
 
-        inputHandler = InputHandler(glCanvas, camera, scene, debugOptionsModel)
+        inputHandler = InputHandler(glCanvas, camera, scene, configuration, debugOptionsModel)
         glCanvas.addKeyListener(inputHandler)
         glCanvas.addMouseListener(inputHandler)
         glCanvas.addMouseMotionListener(inputHandler)

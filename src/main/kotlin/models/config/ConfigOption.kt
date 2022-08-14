@@ -1,5 +1,7 @@
 package models.config
 
+import utils.Utils.isMacos
+
 data class ConfigOption<T>(
     val id: String,
     val type: ConfigOptionType<T>,
@@ -17,6 +19,7 @@ data class ConfigOption<T>(
         val checkForUpdates = ConfigOption("check-for-updates", ConfigOptionType.boolean, true, "Check for updates", 'U')
         val lastCheckedForUpdates = ConfigOption("last-checked-for-updates", ConfigOptionType.long, 0L)
         val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode (requires restart)", 'D')
+        val mouseWarping = ConfigOption("mouse-warping", ConfigOptionType.boolean, !isMacos(), "Enable mouse warping", 'W')
 
         val all = listOf(
             lastCacheDir,
@@ -25,6 +28,7 @@ data class ConfigOption<T>(
             fpsCap,
             checkForUpdates,
             lastCheckedForUpdates,
+            mouseWarping,
             debug,
         )
     }
