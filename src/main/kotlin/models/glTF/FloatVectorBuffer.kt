@@ -1,8 +1,8 @@
 package models.glTF
 
+import utils.ByteChunkBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.FloatBuffer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -10,7 +10,7 @@ class FloatVectorBuffer(val dims: Int) {
     val min = FloatArray(dims) { Float.POSITIVE_INFINITY }
     val max = FloatArray(dims) { Float.NEGATIVE_INFINITY }
 
-    private val buffer = Buffer("") // Steal our efficient byte-concat code
+    private val buffer = ByteChunkBuffer() // Steal our efficient byte-concat code
     private var chunk = newBuffer(INITIAL_CAPACITY)
     private var chunkWrapped = chunk.asFloatBuffer()
 

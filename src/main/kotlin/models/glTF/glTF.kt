@@ -2,6 +2,7 @@ package models.glTF
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import utils.ByteChunkBuffer
 import java.io.File
 import kotlin.math.max
 import kotlin.math.min
@@ -29,7 +30,7 @@ class glTF {
     private val materialMap = HashMap<Int, MaterialBuffers>()
     private val rsIndexToMaterialIndex = HashMap<Int, Int>()
 
-    fun addMesh(material: Int, buffer: Buffer) {
+    fun addMesh(material: Int, buffer: ByteChunkBuffer) {
         val materialBuffer = materialMap.get(material)!!
 
         val positionsAccessor = addAccessorForFloats(materialBuffer.positions, buffer)
@@ -60,12 +61,12 @@ class glTF {
 
     private fun addAccessorForFloats(
         floatBuffer: FloatVectorBuffer,
-        buffer: Buffer
+        buffer: ByteChunkBuffer
     ): Int {
         val floatsByteBuffer = floatBuffer.getBytes()
 
         // buffer view
-        val bufferView = BufferView(0, buffer.getByteLength(), floatsByteBuffer.limit())
+        val bufferView = BufferView(0, buffer.byteLength, floatsByteBuffer.limit())
         bufferViews.add(bufferView)
 
         buffer.addBytes(floatsByteBuffer)
@@ -108,16 +109,18 @@ class glTF {
     }
 
     fun save(directory: String) {
-        // create buffer
-        val buffer = Buffer("data")
-        buffers.add(buffer)
+        val chunkBuffer = ByteChunkBuffer()
 
         for (materialId in materialMap.keys) {
-            addMesh(materialId, buffer)
+            addMesh(materialId, chunkBuffer)
         }
 
+        // create buffer
+        val buffer = Buffer("data", chunkBuffer.byteLength)
+        buffers.add(buffer)
+
         // write buffer to files
-        File("$directory/${buffer.uri}").writeBytes(buffer.getBytes())
+        File("$directory/${buffer.uri}").writeBytes(chunkBuffer.getBytes())
 
         // convert to JSON
         val mapper = ObjectMapper()
