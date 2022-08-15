@@ -18,6 +18,10 @@
 
 - Provide instant feedback when changing settings &ndash; [#93](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/93) @ScoreUnder
 
+### :wrench: Maintenance
+
+- Optimise glTF export a little &ndash; [#96](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/96) @ScoreUnder
+
 ## 2.1.0
 
 ### :sparkles: Enhancements
