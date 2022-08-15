@@ -1,7 +1,5 @@
 package controllers.worldRenderer
 
-import controllers.worldRenderer.Constants.COSINE
-import controllers.worldRenderer.Constants.SINE
 import controllers.worldRenderer.entities.Renderable
 import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
@@ -53,17 +51,11 @@ class CPUNonPriorityRenderer : AbstractPriorityRenderer() {
         val zOffset = computeObj.z
         val idx = computeObj.offset * VEC_DIMS
 
-        val sin = SINE[computeObj.flags and 0x7FF]
-        val cos = COSINE[computeObj.flags and 0x7FF]
-
         for (vertex in 0 until computeObj.size * VERTICES_PER_TRI) {
             val i = vertex * VEC_DIMS + idx
-            val x = buffer.get(i)
-            val z = buffer.get(i + 2)
-
-            buffer.put(i, ((x * cos + z * sin) shr 16) + xOffset)
+            buffer.put(i, buffer.get(i) + xOffset)
             buffer.put(i + 1, buffer.get(i + 1) + yOffset)
-            buffer.put(i + 2, ((z * cos - x * sin) shr 16) + zOffset)
+            buffer.put(i + 2, buffer.get(i + 2) + zOffset)
         }
     }
 

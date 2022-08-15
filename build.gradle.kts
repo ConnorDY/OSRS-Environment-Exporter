@@ -3,9 +3,10 @@ import org.gradle.jvm.tasks.Jar
 plugins {
     kotlin("jvm") version "1.7.10"
     id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
+    id("application")
 }
 
-group = "org.example"
+group = "link.cdy"
 version = "2.1.0"
 
 repositories {
@@ -63,11 +64,18 @@ tasks {
 
 val fatJar = task("fatJar", type = Jar::class) {
     archiveBaseName.set("${project.name}-fat")
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    with(tasks.jar.get() as CopySpec)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+application {
+    mainClass.set("AppKt")
+}
+
+tasks.withType<Jar> {
     manifest {
         attributes["Implementation-Version"] = archiveVersion.get()
         attributes["Main-Class"] = "AppKt"
     }
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    with(tasks.jar.get() as CopySpec)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
