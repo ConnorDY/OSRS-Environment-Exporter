@@ -131,8 +131,6 @@ class Renderer(
     private var lastStretchedCanvasWidth = 0
     private var lastStretchedCanvasHeight = 0
     private var lastAntiAliasingMode: AntiAliasingMode? = null
-    private var lastFrameTime: Long = 0
-    private var deltaTimeTarget = 0
 
     private var animator: Animator? = null
     private var glCanvas: AWTGLCanvas? = null
@@ -392,21 +390,6 @@ class Renderer(
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
 
         glCanvas.swapBuffers()
-
-        if (deltaTimeTarget != 0) {
-            // TODO: this is running on the swing thread. might want to avoid sleeps
-            val endFrameTime = System.nanoTime()
-            val sleepTime = deltaTimeTarget + (lastFrameTime - endFrameTime)
-            lastFrameTime = if (sleepTime in 0..SECOND_IN_NANOS) {
-                Thread.sleep(
-                    sleepTime / MILLISECOND_IN_NANOS,
-                    (sleepTime % MILLISECOND_IN_NANOS).toInt()
-                )
-                endFrameTime + sleepTime
-            } else {
-                endFrameTime
-            }
-        }
     }
 
     /** Sets the FPS target for this renderer.
@@ -414,9 +397,7 @@ class Renderer(
      *  @param target The FPS target, or 0 for unlimited.
      */
     fun setFpsTarget(target: Int) {
-        deltaTimeTarget =
-            if (target > 0) SECOND_IN_NANOS / target
-            else 0
+        animator?.setFpsTarget(target)
     }
 
     private fun drawTiles() {
@@ -640,10 +621,5 @@ class Renderer(
             glDeleteRenderbuffers(rboSceneDepthBuffer)
             rboSceneDepthBuffer = -1
         }
-    }
-
-    companion object {
-        const val SECOND_IN_NANOS = 1_000_000_000
-        const val MILLISECOND_IN_NANOS = 1_000_000
     }
 }
