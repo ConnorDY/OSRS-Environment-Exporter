@@ -26,4 +26,8 @@ class ByteChunkBuffer(private val factory: IntFunction<ByteBuffer>) {
     fun addBytes(bytesToAdd: ByteBuffer) {
         byteChunks.add(bytesToAdd)
     }
+
+    fun addBytes(byteChunks: ByteChunkBuffer) {
+        this.byteChunks.addAll(byteChunks.byteChunks)
+    }
 }

@@ -67,7 +67,7 @@ class FloatVectorBuffer(val dims: Int) {
     /** Retrieve the raw bytes from this buffer.
      *  Note that this buffer cannot be added to after this operation has taken place.
      */
-    fun getBytes(): ByteBuffer {
+    fun getByteChunks(): ByteChunkBuffer {
         val unflushedFloats = chunkWrapped.position()
         if (unflushedFloats != 0) {
             buffer.addBytes(chunk.limit(unflushedFloats * BYTES_IN_A_FLOAT))
@@ -76,7 +76,7 @@ class FloatVectorBuffer(val dims: Int) {
             chunk = USELESS_BUFFER
             chunkWrapped = chunk.asFloatBuffer()
         }
-        return buffer.getByteBuffer()
+        return buffer
     }
 
     companion object {

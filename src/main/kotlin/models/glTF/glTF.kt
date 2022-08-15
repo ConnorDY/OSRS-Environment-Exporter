@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import utils.ByteChunkBuffer
 import java.io.File
 import java.nio.ByteBuffer
-import kotlin.math.max
-import kotlin.math.min
 
 class glTF {
     val asset = Asset(
@@ -64,13 +62,13 @@ class glTF {
         floatBuffer: FloatVectorBuffer,
         buffer: ByteChunkBuffer
     ): Int {
-        val floatsByteBuffer = floatBuffer.getBytes()
+        val floatsByteChunkBuffer = floatBuffer.getByteChunks()
 
         // buffer view
-        val bufferView = BufferView(0, buffer.byteLength, floatsByteBuffer.limit())
+        val bufferView = BufferView(0, buffer.byteLength, floatsByteChunkBuffer.byteLength)
         bufferViews.add(bufferView)
 
-        buffer.addBytes(floatsByteBuffer)
+        buffer.addBytes(floatsByteChunkBuffer)
 
         // accessor
         val accessorType = when (floatBuffer.dims) {
