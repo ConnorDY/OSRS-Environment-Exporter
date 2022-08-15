@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import utils.ByteChunkBuffer
 import java.io.File
+import java.nio.ByteBuffer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -109,7 +110,7 @@ class glTF {
     }
 
     fun save(directory: String) {
-        val chunkBuffer = ByteChunkBuffer()
+        val chunkBuffer = ByteChunkBuffer(ByteBuffer::allocateDirect)
 
         for (materialId in materialMap.keys) {
             addMesh(materialId, chunkBuffer)
