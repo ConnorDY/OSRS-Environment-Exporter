@@ -1,11 +1,14 @@
 package models.glTF
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import utils.ByteChunkBuffer
 import java.io.File
 import java.nio.ByteBuffer
 
+@JsonInclude(NON_EMPTY)
 class glTF {
     val asset = Asset(
         "2.0",
