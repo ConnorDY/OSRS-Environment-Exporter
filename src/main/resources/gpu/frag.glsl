@@ -24,10 +24,12 @@
  */
 #version 330
 
-uniform sampler2DArray textures;
-uniform vec2 textureOffsets[128];
-uniform float brightness;
-uniform float smoothBanding;
+#define ALPHA_MODE_BLEND 0
+#define ALPHA_MODE_CLIP 1
+#define ALPHA_MODE_HASH 2
+#define ALPHA_MODE_IGNORE 3
+
+#include uniforms.glsl
 
 in vec4 Color;
 noperspective centroid in float fHsl;
@@ -38,9 +40,8 @@ in vec3 vPosition;
 
 layout(location = 0) out vec4 fragColor;
 
-uniform ivec2 mouseCoords;
-
 #include hsl_to_rgb.glsl
+#include pcg_hash.glsl
 
 void main() {
   vec4 c;
@@ -60,7 +61,16 @@ void main() {
     c = vec4(rgb, Color.a);
   }
 
-  if (c.a < 0.1f) discard;
+  if (alphaMode == ALPHA_MODE_CLIP) {
+    if (c.a < 0.1f) discard;
+  } else if (alphaMode == ALPHA_MODE_HASH) {
+    uint uhash = pcg32_random_r(uint(gl_FragCoord.x), uint(gl_FragCoord.y), 0u);
+    uint uhash2 = pcg32_random_r(uint(cameraPitch), uint(cameraYaw), 2u);
+    uhash = pcg32_random_r(uhash, uhash2, 4u);
+    float hash = float(uhash) / 4294967296.0f;
+    if (c.a <= hash) discard;
+  }
+  // else, blend or ignore means we don't do anything here
 
   fragColor = c;
 }

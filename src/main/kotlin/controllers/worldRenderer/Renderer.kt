@@ -2,6 +2,7 @@ package controllers.worldRenderer
 
 import cache.LocationType
 import cache.utils.ColorPalette
+import controllers.worldRenderer.helpers.AlphaMode
 import controllers.worldRenderer.helpers.Animator
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GpuFloatBuffer
@@ -125,6 +126,7 @@ class Renderer(
     private var uniBlockMain = 0
     private var uniSmoothBanding = 0
     private var uniMouseCoordsId = 0
+    private var uniAlphaMode = -1
 
     var canvasWidth = 100
     var canvasHeight = (canvasWidth / 1.3).toInt()
@@ -532,6 +534,20 @@ class Renderer(
         }
 
         initUniforms()
+        updateAlphaMode(configOptions.alphaMode.value.get())
+        configOptions.alphaMode.value.addListener {
+            doInGlThread {
+                updateAlphaMode(it)
+            }
+        }
+    }
+
+    private fun updateAlphaMode(mode: AlphaMode) {
+        if (glProgram == -1 || uniAlphaMode == -1) return
+
+        glUseProgram(glProgram)
+        glUniform1i(uniAlphaMode, mode.internalId)
+        glUseProgram(0)
     }
 
     private fun initUniforms() {
@@ -543,6 +559,7 @@ class Renderer(
         uniTextureOffsets = glGetUniformLocation(glProgram, "textureOffsets")
         uniBlockMain = glGetUniformBlockIndex(glProgram, "uniforms")
         uniMouseCoordsId = glGetUniformLocation(glProgram, "mouseCoords")
+        uniAlphaMode = glGetUniformLocation(glProgram, "alphaMode")
     }
 
     private fun initUniformBuffer() {

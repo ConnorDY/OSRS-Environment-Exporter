@@ -29,21 +29,7 @@ layout (location = 0) in ivec4 VertexPosition;
 layout (location = 1) in vec4 uv;
 //layout (location = 2) in ivec4 animInfo;
 
-layout(std140) uniform uniforms {
-    int cameraYaw;
-    int cameraPitch;
-    int centerX;
-    int centerY;
-    int zoom;
-    int cameraX;
-    int cameraY;
-    int cameraZ;
-    int currFrame;
-};
-
-uniform float brightness;
-uniform int drawDistance;
-uniform mat4 viewProjectionMatrix;
+#include uniforms.glsl
 
 out vec4 Color;
 noperspective centroid out float fHsl;
