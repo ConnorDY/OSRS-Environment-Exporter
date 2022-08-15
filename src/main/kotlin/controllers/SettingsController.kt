@@ -25,14 +25,17 @@ class SettingsController(
     title: String,
     configOptions: ConfigOptions
 ) : JDialog(owner, title) {
+    private val visibleOptions: List<ConfigOption<*>>
+
     init {
+        defaultCloseOperation = DISPOSE_ON_CLOSE
         layout = GridBagLayout()
 
         val btnSave = JButton("Save Preferences").apply {
             mnemonic = 'S'.code
         }
 
-        val visibleOptions = configOptions.all
+        visibleOptions = configOptions.all
             .filter { !it.hidden }
         visibleOptions
             .forEachIndexed { index, option ->
@@ -60,6 +63,13 @@ class SettingsController(
 
         rootPane.defaultButton = btnSave
         pack()
+    }
+
+    override fun removeNotify() {
+        super.removeNotify()
+        visibleOptions.forEach {
+            it.value.removeListeners(this)
+        }
     }
 
     private fun makeIntControls(
