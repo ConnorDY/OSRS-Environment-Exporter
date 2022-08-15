@@ -1,8 +1,7 @@
 package controllers.worldRenderer
 
 import models.DebugOptionsModel
-import models.config.ConfigOption
-import models.config.Configuration
+import models.config.ConfigOptions
 import models.scene.Scene
 import java.awt.Component
 import java.awt.GraphicsEnvironment
@@ -17,7 +16,7 @@ class InputHandler internal constructor(
     private val parent: Component,
     private val camera: Camera,
     private val scene: Scene,
-    private val configuration: Configuration,
+    private val configOptions: ConfigOptions,
     private val debugOptionsModel: DebugOptionsModel,
 ) : KeyListener, MouseListener, MouseMotionListener {
     private var robotScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
@@ -168,7 +167,7 @@ class InputHandler internal constructor(
         if (isRightMouseDown) {
             handleCameraDrag(e)
 
-            if (configuration.getProp(ConfigOption.mouseWarping)) {
+            if (configOptions.mouseWarping.value.get()) {
                 // Mouse warping
                 var warp = false
                 val offsetX = e.xOnScreen - e.x

@@ -19,8 +19,7 @@ import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
 import models.DebugModel
 import models.DebugOptionsModel
-import models.config.ConfigOption
-import models.config.Configuration
+import models.config.ConfigOptions
 import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
@@ -52,7 +51,7 @@ import javax.swing.Timer
 
 class MainController constructor(
     title: String,
-    private val configuration: Configuration,
+    private val configOptions: ConfigOptions,
     xteaManager: XteaManager,
     cacheLibrary: CacheLibrary
 ) : JFrame(title) {
@@ -69,7 +68,7 @@ class MainController constructor(
 
         val camera = Camera()
         val debugModel = DebugModel()
-        val debugOptions = DebugOptionsModel(configuration.getProp(ConfigOption.debug))
+        val debugOptions = DebugOptionsModel(configOptions.debug.value.get())
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
@@ -94,11 +93,10 @@ class MainController constructor(
                 TextureManager(
                     SpriteLoader(cacheLibrary), textureLoader
                 ),
-                configuration,
+                configOptions,
                 debugModel,
                 debugOptions,
-            ),
-            configuration
+            )
         )
 
         JMenuBar().apply {
@@ -166,8 +164,8 @@ class MainController constructor(
 
         // load initial scene
         scene.loadRadius(
-            configuration.getProp(ConfigOption.initialRegionId),
-            configuration.getProp(ConfigOption.initialRadius)
+            configOptions.initialRegionId.value.get(),
+            configOptions.initialRadius.value.get()
         )
 
         add(worldRendererController, BorderLayout.CENTER)
@@ -195,7 +193,7 @@ class MainController constructor(
             pack()
         }
 
-        val checkForUpdatesEnabled = configuration.getProp(ConfigOption.checkForUpdates)
+        val checkForUpdatesEnabled = configOptions.checkForUpdates.value.get()
         if (checkForUpdatesEnabled) checkForUpdates()
     }
 
@@ -227,7 +225,7 @@ class MainController constructor(
     }
 
     private fun preferencesClicked(event: ActionEvent) {
-        SettingsController(this, "Preferences", worldRendererController.renderer, configuration).display()
+        SettingsController(this, "Preferences", configOptions).display()
     }
 
     private fun aboutClicked(event: ActionEvent) {
@@ -256,7 +254,7 @@ class MainController constructor(
 
     private fun checkForUpdates() {
         val now = System.currentTimeMillis() / 1000L
-        val lastChecked = configuration.getProp(ConfigOption.lastCheckedForUpdates)
+        val lastChecked = configOptions.lastCheckedForUpdates.value.get()
 
         // see if it's been an hour since the last check
         if ((now - lastChecked) < 3600) {
@@ -279,7 +277,7 @@ class MainController constructor(
 
         // determine if there is a newer version available
         val currVersion = PackageMetadata.VERSION.split(".").map { it.toInt() }
-        var newerVersionUrl = newerReleaseExists(currVersion, releases)
+        val newerVersionUrl = newerReleaseExists(currVersion, releases)
 
         if (newerVersionUrl != null) {
             // add UI elements to menu bar
@@ -294,7 +292,8 @@ class MainController constructor(
             pack()
         }
 
-        configuration.saveProp(ConfigOption.lastCheckedForUpdates, now)
+        configOptions.lastCheckedForUpdates.value.set(now)
+        configOptions.save()
     }
 
     private fun getGitHubReleaseInfo(): String? {

@@ -1,4 +1,5 @@
 import controllers.CacheChooserController
+import models.config.ConfigOptions
 import models.config.Configuration
 import org.pushingpixels.radiance.theming.api.skin.RadianceGraphiteAquaLookAndFeel
 import javax.swing.JPopupMenu
@@ -32,7 +33,7 @@ fun main() {
 
         CacheChooserController(
             "Choose game cache version",
-            Configuration()
+            ConfigOptions(Configuration())
         ).isVisible = true
     }
 }

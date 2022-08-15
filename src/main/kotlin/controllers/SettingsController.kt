@@ -1,10 +1,8 @@
 package controllers
 
-import controllers.SettingsController.SaveFunc
-import controllers.worldRenderer.Renderer
 import models.config.ConfigOption
 import models.config.ConfigOptionType
-import models.config.Configuration
+import models.config.ConfigOptions
 import ui.NumericTextField
 import java.awt.Component
 import java.awt.GridBagConstraints
@@ -25,8 +23,7 @@ import javax.swing.JList
 class SettingsController(
     owner: JFrame,
     title: String,
-    private val renderer: Renderer,
-    private val configuration: Configuration
+    configOptions: ConfigOptions
 ) : JDialog(owner, title) {
     init {
         layout = GridBagLayout()
@@ -35,9 +32,10 @@ class SettingsController(
             mnemonic = 'S'.code
         }
 
-        val options = ConfigOption.all
+        val visibleOptions = configOptions.all
             .filter { !it.hidden }
-            .mapIndexed { index, option ->
+        visibleOptions
+            .forEachIndexed { index, option ->
                 @Suppress("UNCHECKED_CAST") when (option.type) {
                     ConfigOptionType.int -> makeIntControls(option as ConfigOption<Int>, index)
                     ConfigOptionType.intToggle -> makeIntToggleControls(option as ConfigOption<Int?>, index)
@@ -48,18 +46,15 @@ class SettingsController(
             }
         add(
             btnSave,
-            GridBagConstraints(0, options.size, 2, 1, 0.0, 0.0, PAGE_START, NONE, defaultInset, 0, 0)
+            GridBagConstraints(0, visibleOptions.size, 2, 1, 0.0, 0.0, PAGE_START, NONE, defaultInset, 0, 0)
         )
 
         // Save Preferences button handler
         btnSave.addActionListener {
-            options.forEach { it.save() }
-            configuration.save()
-
-            renderer.setFpsTarget(configuration.getProp(ConfigOption.fpsCap) ?: 0)
-            renderer.antiAliasingMode = configuration.getProp(ConfigOption.antiAliasing)
-            renderer.priorityRendererPref = configuration.getProp(ConfigOption.priorityRenderer)
-
+            configOptions.save()
+            visibleOptions.forEach {
+                it.value.removeListeners(this@SettingsController)
+            }
             dispose()
         }
 
@@ -70,9 +65,9 @@ class SettingsController(
     private fun makeIntControls(
         option: ConfigOption<Int>,
         index: Int
-    ): SaveFunc {
+    ) {
         val editBox = NumericTextField.create(
-            configuration.getProp(option),
+            option.value.get(),
             Int.MIN_VALUE,
             Int.MAX_VALUE
         )
@@ -87,14 +82,23 @@ class SettingsController(
             label,
             GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
         )
-        return SaveFunc { configuration.setProp(option, editBox.value as Int) }
+
+        editBox.addPropertyChangeListener {
+            if (it.propertyName == "value") {
+                option.value.set(it.newValue as Int)
+            }
+        }
+        option.value.addListener(this) {
+            editBox.value = it
+            editBox.isEnabled = true
+        }
     }
 
     private fun makeIntToggleControls(
         option: ConfigOption<Int?>,
         index: Int
-    ): SaveFunc {
-        val value = configuration.getProp(option)
+    ) {
+        val value = option.value.get()
         val editBox = NumericTextField.create(value ?: option.default ?: 1, Int.MIN_VALUE, Int.MAX_VALUE)
         editBox.isEnabled = value != null
         add(
@@ -103,38 +107,64 @@ class SettingsController(
         )
         val checkbox = JCheckBox(option.humanReadableName, editBox.isEnabled)
         checkbox.mnemonic = option.mnemonic.code
-        checkbox.addChangeListener {
-            editBox.isEnabled = checkbox.isSelected
-        }
         add(
             checkbox,
             GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
         )
-        return SaveFunc { configuration.setProp(option, if (checkbox.isSelected) editBox.value as Int else null) }
+
+        checkbox.addActionListener {
+            val selected = checkbox.isSelected
+            editBox.isEnabled = selected
+            if (selected) {
+                option.value.set(editBox.value as Int?)
+            } else {
+                option.value.set(null)
+            }
+        }
+        editBox.addPropertyChangeListener {
+            if (it.propertyName == "value") {
+                option.value.set(it.newValue as Int?)
+            }
+        }
+        option.value.addListener(this) {
+            if (it == null) {
+                checkbox.isSelected = false
+                editBox.isEnabled = false
+            } else {
+                editBox.value = it
+                checkbox.isSelected = true
+                editBox.isEnabled = true
+            }
+        }
     }
 
     private fun makeBooleanControls(
         option: ConfigOption<Boolean>,
         index: Int
-    ): SaveFunc {
-        val value = configuration.getProp(option)
-        val checkbox = JCheckBox(option.humanReadableName, value)
+    ) {
+        val checkbox = JCheckBox(option.humanReadableName, option.value.get())
         checkbox.mnemonic = option.mnemonic.code
         add(
             checkbox,
             GridBagConstraints(0, index, 2, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
         )
-        return SaveFunc { configuration.setProp(option, checkbox.isSelected) }
+
+        checkbox.addActionListener {
+            option.value.set(checkbox.isSelected)
+        }
+        option.value.addListener(this) {
+            checkbox.isSelected = it
+        }
     }
 
     private fun <E : Enum<E>> makeEnumeratedControls(
         option: ConfigOption<E>,
         index: Int
-    ): SaveFunc {
+    ) {
         val type = option.type as ConfigOptionType.Enumerated<E>
         val editBox = JComboBox(type.enumValues)
         editBox.renderer = CustomListCellRenderer(type.convToHumanReadable)
-        editBox.selectedItem = configuration.getProp(option)
+        editBox.selectedItem = option.value.get()
         add(
             editBox,
             GridBagConstraints(1, index, 1, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
@@ -146,16 +176,15 @@ class SettingsController(
             label,
             GridBagConstraints(0, index, 1, 1, 0.0, 0.0, LINE_START, NONE, defaultInset, 0, 0)
         )
-        return SaveFunc {
-            val selected = editBox.selectedIndex
-            if (selected != -1) {
-                configuration.setProp(option, editBox.getItemAt(selected))
-            }
-        }
-    }
 
-    private fun interface SaveFunc {
-        fun save()
+        editBox.addActionListener {
+            val selected = editBox.selectedIndex
+            if (selected != -1)
+                option.value.set(editBox.getItemAt(selected))
+        }
+        option.value.addListener(this) {
+            editBox.selectedItem = it
+        }
     }
 
     private class CustomListCellRenderer<T>(val stringify: (T) -> String) : DefaultListCellRenderer() {
