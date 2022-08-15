@@ -16,6 +16,8 @@
 - Add option to choose render sorter, which may fix buggy previews on some machines &ndash; [#86](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/86) @ScoreUnder
   - Also fix shaders exceeding their workgroup size, which caused that issue in the first place.
 
+- Provide instant feedback when changing settings &ndash; [#93](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/93) @ScoreUnder
+
 ## 2.1.0
 
 ### :sparkles: Enhancements
