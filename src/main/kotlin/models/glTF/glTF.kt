@@ -2,9 +2,9 @@ package models.glTF
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import utils.ByteChunkBuffer
 import java.io.File
-import kotlin.math.max
-import kotlin.math.min
+import java.nio.ByteBuffer
 
 class glTF {
     val asset = Asset(
@@ -29,7 +29,7 @@ class glTF {
     private val materialMap = HashMap<Int, MaterialBuffers>()
     private val rsIndexToMaterialIndex = HashMap<Int, Int>()
 
-    fun addMesh(material: Int, buffer: Buffer) {
+    fun addMesh(material: Int, buffer: ByteChunkBuffer) {
         val materialBuffer = materialMap.get(material)!!
 
         val positionsAccessor = addAccessorForFloats(materialBuffer.positions, buffer)
@@ -60,15 +60,15 @@ class glTF {
 
     private fun addAccessorForFloats(
         floatBuffer: FloatVectorBuffer,
-        buffer: Buffer
+        buffer: ByteChunkBuffer
     ): Int {
-        val floatsByteArray = floatBuffer.getBytes()
+        val floatsByteChunkBuffer = floatBuffer.getByteChunks()
 
         // buffer view
-        val bufferView = BufferView(0, buffer.getByteLength(), floatsByteArray.size)
+        val bufferView = BufferView(0, buffer.byteLength, floatsByteChunkBuffer.byteLength)
         bufferViews.add(bufferView)
 
-        buffer.addBytes(floatsByteArray)
+        buffer.addBytes(floatsByteChunkBuffer)
 
         // accessor
         val accessorType = when (floatBuffer.dims) {
@@ -108,16 +108,20 @@ class glTF {
     }
 
     fun save(directory: String) {
-        // create buffer
-        val buffer = Buffer("data")
-        buffers.add(buffer)
+        val chunkBuffer = ByteChunkBuffer(ByteBuffer::allocateDirect)
 
         for (materialId in materialMap.keys) {
-            addMesh(materialId, buffer)
+            addMesh(materialId, chunkBuffer)
         }
 
+        // create buffer
+        val buffer = Buffer("data", chunkBuffer.byteLength)
+        buffers.add(buffer)
+
         // write buffer to files
-        File("$directory/${buffer.uri}").writeBytes(buffer.getBytes())
+        File("$directory/${buffer.uri}").outputStream().channel.use {
+            it.write(chunkBuffer.getByteBuffer())
+        }
 
         // convert to JSON
         val mapper = ObjectMapper()

@@ -5,6 +5,7 @@ import cache.definitions.data.FaceNormal
 import cache.definitions.data.VertexNormal
 import cache.loaders.RegionLoader
 import cache.loaders.getTileHeight
+import controllers.worldRenderer.Constants
 import utils.clamp
 import kotlin.math.sqrt
 
@@ -12,7 +13,6 @@ class Model(
     val modelDefinition: ModelDefinition,
 
     var orientation: Int = 0,
-    var orientationType: OrientationType = OrientationType.STRAIGHT,
     var x: Int = 0, // 3d world space position
     var y: Int = 0,
     val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
@@ -20,7 +20,7 @@ class Model(
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
 ) : Renderable {
     override val computeObj = ComputeObj()
-    override val renderFlags get() = super.renderFlags or (radius shl 12) or orientationType.id
+    override val renderFlags get() = super.renderFlags or (radius shl 12)
     override val renderUnordered get() = false
     override val faceCount get() = modelDefinition.faceCount
     override var renderOffsetX = 0
@@ -166,6 +166,16 @@ class Model(
             }
             model.resetBounds()
             model
+        }
+    }
+
+    fun rotate(angle: Int) {
+        val var2: Int = Constants.SINE[angle]
+        val var3: Int = Constants.COSINE[angle]
+        for (var4 in 0 until modelDefinition.vertexCount) {
+            val var5: Int = var2 * this.vertexPositionsZ[var4] + var3 * this.vertexPositionsX[var4] shr 16
+            this.vertexPositionsZ[var4] = var3 * this.vertexPositionsZ[var4] - var2 * this.vertexPositionsX[var4] shr 16
+            this.vertexPositionsX[var4] = var5
         }
     }
 

@@ -7,9 +7,8 @@ class StaticObject(
     override val model: Model,
     override val height: Int,
     override val type: Int,
-    override val orientation: Int
 ) : Entity {
     override fun toString(): String {
-        return "$javaClass, Height: $height, type $type, orientation $orientation, model $model, objectDefinition: $objectDefinition"
+        return "$javaClass, Height: $height, type $type, model $model, objectDefinition: $objectDefinition"
     }
 }

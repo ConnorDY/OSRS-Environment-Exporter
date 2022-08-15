@@ -304,7 +304,7 @@ open class ModelDefinition(
             this.vertexPositionsZ[var4] = var3 * this.vertexPositionsZ[var4] - var2 * this.vertexPositionsX[var4] shr 16
             this.vertexPositionsX[var4] = var5
         }
-        this.reset()
+        reset()
     }
 
     fun rotateY90Ccw() {
