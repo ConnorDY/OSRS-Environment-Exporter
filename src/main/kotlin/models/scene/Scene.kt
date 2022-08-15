@@ -25,10 +25,10 @@ class Scene(
         val listener: (Any) -> Unit = {
             reloadRegions()
         }
-        debugOptionsModel.onlyType10Models.addListener(listener)
-        debugOptionsModel.modelSubIndex.addListener(listener)
-        debugOptionsModel.badModelIndexOverride.addListener(listener)
-        debugOptionsModel.removeProperlyTypedModels.addListener(listener)
+        debugOptionsModel.onlyType10Models.value.addListener(listener)
+        debugOptionsModel.modelSubIndex.value.addListener(listener)
+        debugOptionsModel.badModelIndexOverride.value.addListener(listener)
+        debugOptionsModel.removeProperlyTypedModels.value.addListener(listener)
     }
 
     private fun reload() {

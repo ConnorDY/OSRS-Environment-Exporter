@@ -17,10 +17,10 @@ class ObjectToModelConverter(
         val listener: (Any) -> Unit = {
             litModelCache.clear()
         }
-        debugOptionsModel.onlyType10Models.addEarlyListener(listener)
-        debugOptionsModel.modelSubIndex.addEarlyListener(listener)
-        debugOptionsModel.badModelIndexOverride.addEarlyListener(listener)
-        debugOptionsModel.removeProperlyTypedModels.addEarlyListener(listener)
+        debugOptionsModel.onlyType10Models.value.addEarlyListener(listener)
+        debugOptionsModel.modelSubIndex.value.addEarlyListener(listener)
+        debugOptionsModel.badModelIndexOverride.value.addEarlyListener(listener)
+        debugOptionsModel.removeProperlyTypedModels.value.addEarlyListener(listener)
     }
 
     fun toModel(objectDefinition: ObjectDefinition, type: Int, orientation: Int): ModelDefinition? {
@@ -50,19 +50,19 @@ class ObjectToModelConverter(
         val modelTypes = modelTypes
         var modelDefinition: ModelDefinition? = null
         if (modelTypes == null) {
-            if ((type != 10 && debugOptionsModel.onlyType10Models.get()) || modelIds == null) {
+            if ((type != 10 && debugOptionsModel.onlyType10Models.value.get()) || modelIds == null) {
                 return null
             }
             val modelLen = modelIds.size
             val isRotated = isRotated xor (type == 2 && orientation > 3)
 
-            val debugSubIndex = debugOptionsModel.modelSubIndex.get()
+            val debugSubIndex = debugOptionsModel.modelSubIndex.value.get()
             if (modelLen > 1 && debugSubIndex != -1) {
                 if (debugSubIndex in 0 until modelLen) {
                     return getAndRotateModel(debugSubIndex, isRotated, type, orientation, modelIds)
                 }
                 return null
-            } else if (debugOptionsModel.removeProperlyTypedModels.get()) {
+            } else if (debugOptionsModel.removeProperlyTypedModels.value.get()) {
                 return null
             }
 
@@ -78,14 +78,14 @@ class ObjectToModelConverter(
                 // single model type only
                 modelIdx = 0
             } else if (modelIdx == -1) {
-                val indexOverride = debugOptionsModel.badModelIndexOverride.get()
+                val indexOverride = debugOptionsModel.badModelIndexOverride.value.get()
                 if (indexOverride !in modelTypes.indices) {
                     logger.debug("Bad model index, not replacing")
                     return null
                 }
                 logger.debug("Bad model index, replacing with {} (out of {})", indexOverride, modelTypes.size)
                 modelIdx = indexOverride
-            } else if (debugOptionsModel.removeProperlyTypedModels.get()) {
+            } else if (debugOptionsModel.removeProperlyTypedModels.value.get()) {
                 return null
             }
             val isRotated = isRotated xor (orientation > 3)

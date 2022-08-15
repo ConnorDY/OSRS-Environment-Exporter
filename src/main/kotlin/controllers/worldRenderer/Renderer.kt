@@ -185,7 +185,7 @@ class Renderer(
             ActionListener {
                 isSceneUploadRequired = true
 
-                if (debugOptionsModel.resetCameraOnSceneChange.get()) {
+                if (debugOptionsModel.resetCameraOnSceneChange.value.get()) {
                     camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
                     camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
                     camera.cameraZ = -2500
