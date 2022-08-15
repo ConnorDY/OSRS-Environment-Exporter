@@ -11,7 +11,7 @@ class ConfigOptions(private val configuration: Configuration) {
     val fpsCap = ConfigOption("fps-cap", ConfigOptionType.intToggle, 60, "Limit FPS", 'F')
     val checkForUpdates = ConfigOption("check-for-updates", ConfigOptionType.boolean, true, "Check for updates", 'U')
     val lastCheckedForUpdates = ConfigOption("last-checked-for-updates", ConfigOptionType.long, 0L)
-    val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode (requires restart)", 'D')
+    val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode", 'D')
     val mouseWarping = ConfigOption("mouse-warping", ConfigOptionType.boolean, !isMacos(), "Enable mouse warping", 'W')
     val antiAliasing = ConfigOption("anti-aliasing", ConfigOptionType.Enumerated(AntiAliasingMode::valueOf, AntiAliasingMode.values(), AntiAliasingMode::humanReadableName), AntiAliasingMode.MSAA_16, "Anti-aliasing", 'A')
     val priorityRenderer = ConfigOption("priority-renderer", ConfigOptionType.Enumerated(PriorityRenderers::valueOf, PriorityRenderers.values(), PriorityRenderers::humanReadableName), if (isMacos()) PriorityRenderers.CPU_NAIVE else PriorityRenderers.GLSL, "Sorting renderer", 'R')

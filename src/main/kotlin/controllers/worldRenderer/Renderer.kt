@@ -171,7 +171,7 @@ class Renderer(
             }
         }
 
-        inputHandler = InputHandler(glCanvas, camera, scene, configOptions, debugOptionsModel)
+        inputHandler = InputHandler(glCanvas, camera, scene, configOptions)
         glCanvas.addKeyListener(inputHandler)
         glCanvas.addMouseListener(inputHandler)
         glCanvas.addMouseMotionListener(inputHandler)
@@ -196,7 +196,13 @@ class Renderer(
         animator = Animator(glCanvas)
         this.glCanvas = glCanvas
 
+        configOptions.fpsCap.value.addListener {
+            setFpsTarget(it ?: 0)
+        }
         setFpsTarget(configOptions.fpsCap.value.get() ?: 0)
+
+        configOptions.priorityRenderer.value.addListener(::priorityRendererPref::set)
+        configOptions.antiAliasing.value.addListener(::antiAliasingMode::set)
 
         return glCanvas
     }

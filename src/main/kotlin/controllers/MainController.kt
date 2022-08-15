@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory
 import ui.JLinkLabel
 import utils.PackageMetadata
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.event.ActionEvent
 import java.awt.event.WindowAdapter
@@ -68,7 +69,7 @@ class MainController constructor(
 
         val camera = Camera()
         val debugModel = DebugModel()
-        val debugOptions = DebugOptionsModel(configOptions.debug.value.get())
+        val debugOptions = DebugOptionsModel()
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
@@ -150,13 +151,12 @@ class MainController constructor(
                 }.let(::add)
             }
 
-            if (debugOptions.isDebugMode) {
-                Box.createGlue().let(::add)
-                JButton("Debug").apply {
-                    mnemonic = 'D'.code
-                    addActionListener { DebugOptionsController(this@MainController, debugOptions).display() }
-                }.let(::add)
-            }
+            Box.createRigidArea(Dimension(8, 8)).showInDebugMode().let(::add)
+
+            JButton("Debug").showInDebugMode().apply {
+                mnemonic = 'D'.code
+                addActionListener { DebugOptionsController(this@MainController, debugOptions).display() }
+            }.let(::add)
 
             Box.createGlue().let(::add)
             lblFps.let(::add)
@@ -195,6 +195,14 @@ class MainController constructor(
 
         val checkForUpdatesEnabled = configOptions.checkForUpdates.value.get()
         if (checkForUpdatesEnabled) checkForUpdates()
+    }
+
+    private fun <T : Component> T.showInDebugMode(): T {
+        isVisible = configOptions.debug.value.get()
+        configOptions.debug.value.addListener {
+            isVisible = it
+        }
+        return this
     }
 
     override fun setVisible(visible: Boolean) {

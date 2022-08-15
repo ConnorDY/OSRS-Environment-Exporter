@@ -1,6 +1,5 @@
 package controllers.worldRenderer
 
-import models.DebugOptionsModel
 import models.config.ConfigOptions
 import models.scene.Scene
 import java.awt.Component
@@ -17,7 +16,6 @@ class InputHandler internal constructor(
     private val camera: Camera,
     private val scene: Scene,
     private val configOptions: ConfigOptions,
-    private val debugOptionsModel: DebugOptionsModel,
 ) : KeyListener, MouseListener, MouseMotionListener {
     private var robotScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
     private var robot = Robot(robotScreen)
@@ -69,7 +67,7 @@ class InputHandler internal constructor(
         if (keys[KeyEvent.VK_X]) {
             camera.addZ(dt.toInt() * speed)
         }
-        if (debugOptionsModel.isDebugMode) {
+        if (configOptions.debug.value.get()) {
             if (keys[KeyEvent.VK_J]) {
                 scene.loadRadius(8014, 5)
             }

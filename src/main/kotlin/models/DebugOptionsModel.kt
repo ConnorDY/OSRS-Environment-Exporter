@@ -2,7 +2,7 @@ package models
 
 import utils.ObservableValue
 
-class DebugOptionsModel(val isDebugMode: Boolean) {
+class DebugOptionsModel {
     val removeProperlyTypedModels = ObservableValue(false)
     val badModelIndexOverride = ObservableValue(-1)
     val modelSubIndex = ObservableValue(-1)
