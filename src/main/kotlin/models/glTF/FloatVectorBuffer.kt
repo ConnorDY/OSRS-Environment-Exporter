@@ -48,6 +48,22 @@ class FloatVectorBuffer(val dims: Int) {
         }
     }
 
+    fun add(x: Float, y: Float, z: Float) {
+        assert(pos == 0 && dims == 3)
+        chunkWrapped.put(x).put(y).put(z)
+
+        min[0] = min(min[0], x)
+        max[0] = max(max[0], x)
+        min[1] = min(min[1], y)
+        max[1] = max(max[1], y)
+        min[2] = min(min[2], z)
+        max[2] = max(max[2], z)
+
+        if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.limit()) {
+            refreshBuffer()
+        }
+    }
+
     /** Retrieve the raw bytes from this buffer.
      *  Note that this buffer cannot be added to after this operation has taken place.
      */
