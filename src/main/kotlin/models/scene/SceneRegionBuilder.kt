@@ -307,7 +307,7 @@ class SceneRegionBuilder constructor(
             } else if (loc.type == LocationType.INTERACTABLE.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             } else if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
-                staticObject.model.modelDefinition.rotate(0x100)
+                staticObject.model.rotate(0x100)
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
             } else if (loc.type == LocationType.TRIANGULAR_CORNER.id) {
                 sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
