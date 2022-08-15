@@ -19,12 +19,16 @@ import models.scene.SceneTile
 import org.joml.Matrix4f
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL.createCapabilities
+import org.lwjgl.opengl.GL11C.GL_BLEND
 import org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT
 import org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11C.GL_LEQUAL
 import org.lwjgl.opengl.GL11C.GL_NEAREST
+import org.lwjgl.opengl.GL11C.GL_ONE
+import org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.GL_RGBA
+import org.lwjgl.opengl.GL11C.GL_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.glClear
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glDepthFunc
@@ -35,6 +39,7 @@ import org.lwjgl.opengl.GL11C.glGetInteger
 import org.lwjgl.opengl.GL11C.glViewport
 import org.lwjgl.opengl.GL13C.GL_MULTISAMPLE
 import org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT16
+import org.lwjgl.opengl.GL14C.glBlendFuncSeparate
 import org.lwjgl.opengl.GL15C.GL_DYNAMIC_DRAW
 import org.lwjgl.opengl.GL15C.glBindBuffer
 import org.lwjgl.opengl.GL15C.glBufferData
@@ -369,7 +374,15 @@ class Renderer(
         glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
         glUniform2fv(uniTextureOffsets, textureOffsets)
 
+        val useBlend = configOptions.alphaMode.value.get() == AlphaMode.BLEND
+        if (useBlend) {
+            glEnable(GL_BLEND)
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE)
+        }
+
         priorityRenderer.draw()
+
+        if (useBlend) glDisable(GL_BLEND)
         glUseProgram(0)
 
         if (aaEnabled) {
