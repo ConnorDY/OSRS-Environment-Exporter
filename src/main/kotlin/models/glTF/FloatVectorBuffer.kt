@@ -11,8 +11,8 @@ class FloatVectorBuffer(val dims: Int) {
     val max = FloatArray(dims) { Float.NEGATIVE_INFINITY }
 
     private val buffer = Buffer("") // Steal our efficient byte-concat code
-    private var chunk = ByteArray(INITIAL_CAPACITY)
-    private var chunkWrapped = wrapBytes(chunk)
+    private var chunk = newBuffer(INITIAL_CAPACITY)
+    private var chunkWrapped = chunk.asFloatBuffer()
 
     // Position in the vector we are writing to (e.g. 0th, 1st, or 2nd dimension)
     private var pos = 0
@@ -22,19 +22,16 @@ class FloatVectorBuffer(val dims: Int) {
 
     private var bufferedSize = 0
 
-    private fun wrapBytes(chunk: ByteArray): FloatBuffer =
-        ByteBuffer.wrap(chunk).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
+    private fun newBuffer(capacity: Int): ByteBuffer =
+        ByteBuffer.allocateDirect(capacity).order(ByteOrder.LITTLE_ENDIAN)
 
     private fun refreshBuffer() {
         val unflushedFloats = chunkWrapped.position()
         val unflushedBytes = unflushedFloats * BYTES_IN_A_FLOAT
-        val chunkToAdd =
-            if (unflushedBytes == chunk.size) chunk
-            else chunk.copyOf(unflushedBytes)
-        buffer.addBytes(chunkToAdd)
+        buffer.addBytes(chunk.limit(unflushedBytes))
         bufferedSize += unflushedFloats
-        chunk = ByteArray(INITIAL_CAPACITY + bufferedSize * BYTES_IN_A_FLOAT)
-        chunkWrapped = wrapBytes(chunk)
+        chunk = newBuffer(INITIAL_CAPACITY + bufferedSize * BYTES_IN_A_FLOAT)
+        chunkWrapped = chunk.asFloatBuffer()
     }
 
     fun add(value: Float) {
@@ -45,7 +42,7 @@ class FloatVectorBuffer(val dims: Int) {
         if (pos == dims) {
             pos = 0
 
-            if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.size) {
+            if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.limit()) {
                 refreshBuffer()
             }
         }
@@ -54,21 +51,21 @@ class FloatVectorBuffer(val dims: Int) {
     /** Retrieve the raw bytes from this buffer.
      *  Note that this buffer cannot be added to after this operation has taken place.
      */
-    fun getBytes(): ByteArray {
+    fun getBytes(): ByteBuffer {
         val unflushedFloats = chunkWrapped.position()
         if (unflushedFloats != 0) {
-            buffer.addBytes(chunk.copyOf(unflushedFloats * BYTES_IN_A_FLOAT))
+            buffer.addBytes(chunk.limit(unflushedFloats * BYTES_IN_A_FLOAT))
             bufferedSize += unflushedFloats
             // Ensure no further writes succeed
-            chunk = USELESS_ARRAY
-            chunkWrapped = wrapBytes(chunk)
+            chunk = USELESS_BUFFER
+            chunkWrapped = chunk.asFloatBuffer()
         }
-        return buffer.getBytes()
+        return buffer.getByteBuffer()
     }
 
     companion object {
         const val INITIAL_CAPACITY = 3 * 512 // Kind of arbitrary
         const val BYTES_IN_A_FLOAT = Float.SIZE_BYTES
-        val USELESS_ARRAY = ByteArray(0)
+        val USELESS_BUFFER = ByteBuffer.wrap(ByteArray(0))
     }
 }

@@ -1,30 +1,38 @@
 package models.glTF
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import java.nio.ByteBuffer
 
 class Buffer(filename: String) {
     val uri = "$filename.bin"
 
-    fun getByteLength() = byteChunks.sumOf { it.size }
+    fun getByteLength() = byteChunks.sumOf { it.limit() }
 
-    private val byteChunks = ArrayList<ByteArray>()
+    private val byteChunks = ArrayList<ByteBuffer>()
 
     @JsonIgnore
     fun getBytes(): ByteArray {
-        val finalBytes = ByteArray(getByteLength())
-        byteChunks.fold(0) { pos, chunk ->
-            System.arraycopy(chunk, 0, finalBytes, pos, chunk.size)
-            pos + chunk.size
+        val buf = getByteBuffer()
+        val arr = ByteArray(buf.remaining())
+        buf.get(arr)
+        return arr
+    }
+
+    @JsonIgnore
+    fun getByteBuffer(): ByteBuffer {
+        val finalBytes = ByteBuffer.allocateDirect(getByteLength())
+        byteChunks.forEach { chunk ->
+            finalBytes.put(chunk)
         }
+        finalBytes.flip()
 
         // Might as well cache the fruit of our efforts
         byteChunks.clear()
-        byteChunks.add(finalBytes)
-
+        byteChunks.add(finalBytes.duplicate())
         return finalBytes
     }
 
-    fun addBytes(bytesToAdd: ByteArray) {
+    fun addBytes(bytesToAdd: ByteBuffer) {
         byteChunks.add(bytesToAdd)
     }
 }
