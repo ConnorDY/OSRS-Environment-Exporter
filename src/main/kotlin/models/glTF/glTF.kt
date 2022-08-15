@@ -120,7 +120,9 @@ class glTF {
         buffers.add(buffer)
 
         // write buffer to files
-        File("$directory/${buffer.uri}").writeBytes(chunkBuffer.getBytes())
+        File("$directory/${buffer.uri}").outputStream().channel.use {
+            it.write(chunkBuffer.getByteBuffer())
+        }
 
         // convert to JSON
         val mapper = ObjectMapper()

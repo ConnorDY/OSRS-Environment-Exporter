@@ -1,6 +1,5 @@
 package utils
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import java.nio.ByteBuffer
 
 class ByteChunkBuffer {
@@ -8,15 +7,6 @@ class ByteChunkBuffer {
 
     val byteLength get() = byteChunks.sumOf { it.limit() }
 
-    @JsonIgnore
-    fun getBytes(): ByteArray {
-        val buf = getByteBuffer()
-        val arr = ByteArray(buf.remaining())
-        buf.get(arr)
-        return arr
-    }
-
-    @JsonIgnore
     fun getByteBuffer(): ByteBuffer {
         val finalBytes = ByteBuffer.allocateDirect(byteLength)
         byteChunks.forEach { chunk ->
