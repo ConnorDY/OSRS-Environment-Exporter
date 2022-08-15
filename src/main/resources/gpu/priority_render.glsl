@@ -109,12 +109,6 @@ out int prio, out int dis, out ivec4 o1, out ivec4 o2, out ivec4 o3) {
 
     if (localId < size) {
         int radius = (flags & 0x7fffffff) >> 12;
-        int orientation = flags & 0x7ff;
-
-        // rotate for model orientation
-        ivec4 thisrvA = rotate(thisA, orientation);
-        ivec4 thisrvB = rotate(thisB, orientation);
-        ivec4 thisrvC = rotate(thisC, orientation);
 
         // calculate distance to face
         int thisPriority = (thisA.w >> 16) & 0xff;// all vertices on the face have the same priority
@@ -122,12 +116,12 @@ out int prio, out int dis, out ivec4 o1, out ivec4 o2, out ivec4 o3) {
         if (radius == 0) {
             thisDistance = 0;
         } else {
-            thisDistance = face_distance(thisrvA, thisrvB, thisrvC, cameraYaw, cameraPitch) + radius;
+            thisDistance = face_distance(thisA, thisB, thisC, cameraYaw, cameraPitch) + radius;
         }
 
-        o1 = thisrvA;
-        o2 = thisrvB;
-        o3 = thisrvC;
+        o1 = thisA;
+        o2 = thisB;
+        o3 = thisC;
 
         prio = thisPriority;
         dis = thisDistance;

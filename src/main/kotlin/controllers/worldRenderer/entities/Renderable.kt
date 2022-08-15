@@ -11,8 +11,3 @@ interface Renderable {
     val renderOffsetY: Int get() = 0
     val renderOffsetZ: Int get() = 0
 }
-
-enum class OrientationType(val id: Int) {
-    STRAIGHT(0),
-    DIAGONAL(0x100);
-}
