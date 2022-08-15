@@ -21,6 +21,7 @@
 ### :bug: Bug Fixes
 
 - Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
+- Made input smoother when FPS limit is turned on &ndash; [#97](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/97) @ScoreUnder
 
 ### :wrench: Maintenance
 
