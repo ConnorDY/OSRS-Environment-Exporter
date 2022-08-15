@@ -6,7 +6,7 @@ plugins {
     id("application")
 }
 
-group = "org.example"
+group = "link.cdy"
 version = "2.1.0"
 
 repositories {
