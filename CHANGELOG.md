@@ -18,6 +18,10 @@
 
 - Provide instant feedback when changing settings &ndash; [#93](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/93) @ScoreUnder
 
+### :bug: Bug Fixes
+
+- Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
+
 ## 2.1.0
 
 ### :sparkles: Enhancements
