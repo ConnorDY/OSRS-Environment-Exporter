@@ -18,6 +18,9 @@
 
 - Provide instant feedback when changing settings &ndash; [#93](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/93) @ScoreUnder
 
+- Include alpha values in exported non-textured faces &ndash; [#99](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/99) @ScoreUnder
+  - Fix glTF linter issues along the way.
+
 ### :bug: Bug Fixes
 
 - Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
