@@ -10,8 +10,7 @@ import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import models.DebugModel
 import models.DebugOptionsModel
-import models.config.ConfigOption
-import models.config.Configuration
+import models.config.ConfigOptions
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
 import models.scene.Scene
@@ -82,7 +81,7 @@ class Renderer(
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
     private val textureManager: TextureManager,
-    private val configuration: Configuration,
+    private val configOptions: ConfigOptions,
     private val debugModel: DebugModel,
     private val debugOptionsModel: DebugOptionsModel,
 ) {
@@ -93,8 +92,8 @@ class Renderer(
 
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
 
-    var antiAliasingMode: AntiAliasingMode = configuration.getProp(ConfigOption.antiAliasing)
-    var priorityRendererPref: PreferredPriorityRenderer = configuration.getProp(ConfigOption.priorityRenderer)
+    var antiAliasingMode: AntiAliasingMode = configOptions.antiAliasing.value.get()
+    var priorityRendererPref: PreferredPriorityRenderer = configOptions.priorityRenderer.value.get()
         set(value) {
             if (field != value) {
                 field = value
@@ -172,7 +171,7 @@ class Renderer(
             }
         }
 
-        inputHandler = InputHandler(glCanvas, camera, scene, configuration, debugOptionsModel)
+        inputHandler = InputHandler(glCanvas, camera, scene, configOptions)
         glCanvas.addKeyListener(inputHandler)
         glCanvas.addMouseListener(inputHandler)
         glCanvas.addMouseMotionListener(inputHandler)
@@ -186,7 +185,7 @@ class Renderer(
             ActionListener {
                 isSceneUploadRequired = true
 
-                if (debugOptionsModel.resetCameraOnSceneChange.get()) {
+                if (debugOptionsModel.resetCameraOnSceneChange.value.get()) {
                     camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
                     camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
                     camera.cameraZ = -2500
@@ -196,6 +195,14 @@ class Renderer(
 
         animator = Animator(glCanvas)
         this.glCanvas = glCanvas
+
+        configOptions.fpsCap.value.addListener {
+            setFpsTarget(it ?: 0)
+        }
+        setFpsTarget(configOptions.fpsCap.value.get() ?: 0)
+
+        configOptions.priorityRenderer.value.addListener(::priorityRendererPref::set)
+        configOptions.antiAliasing.value.addListener(::antiAliasingMode::set)
 
         return glCanvas
     }

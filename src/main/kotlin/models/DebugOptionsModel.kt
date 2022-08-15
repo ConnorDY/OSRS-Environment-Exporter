@@ -1,11 +1,14 @@
 package models
 
-import utils.ObservableValue
+import models.config.ConfigOption
+import models.config.ConfigOptionType
 
-class DebugOptionsModel(val isDebugMode: Boolean) {
-    val removeProperlyTypedModels = ObservableValue(false)
-    val badModelIndexOverride = ObservableValue(-1)
-    val modelSubIndex = ObservableValue(-1)
-    val resetCameraOnSceneChange = ObservableValue(true)
-    val onlyType10Models = ObservableValue(false)
+class DebugOptionsModel {
+    val removeProperlyTypedModels = ConfigOption("", ConfigOptionType.boolean, false, "Remove properly-typed models", 'E')
+    val badModelIndexOverride = ConfigOption("", ConfigOptionType.int, -1, "Bad model index override", 'B')
+    val modelSubIndex = ConfigOption("", ConfigOptionType.int, -1, "Model sub-index", 'S')
+    val resetCameraOnSceneChange = ConfigOption("", ConfigOptionType.boolean, true, "Reset camera on scene change", 'R')
+    val onlyType10Models = ConfigOption("", ConfigOptionType.boolean, false, "Only type-10 models", '1')
+
+    val all = listOf(onlyType10Models, resetCameraOnSceneChange, removeProperlyTypedModels, modelSubIndex, badModelIndexOverride)
 }
