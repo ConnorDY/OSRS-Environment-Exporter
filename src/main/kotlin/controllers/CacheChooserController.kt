@@ -3,8 +3,7 @@ package controllers
 import AppConstants
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
-import models.config.ConfigOption
-import models.config.Configuration
+import models.config.ConfigOptions
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
@@ -40,7 +39,7 @@ import javax.swing.event.DocumentListener
 
 class CacheChooserController(
     title: String,
-    private val configuration: Configuration
+    private val configOptions: ConfigOptions,
 ) : JFrame(title) {
     var xteaAndCache: Pair<XteaManager, CacheLibrary>? = null
 
@@ -209,9 +208,9 @@ class CacheChooserController(
         )
 
         populateCachesList(cacheListModel, listCaches, listCachesPlaceholder)
-        txtCacheLocation.text = configuration.getProp(ConfigOption.lastCacheDir)
+        txtCacheLocation.text = configOptions.lastCacheDir.value.get()
 
-        if (configuration.getProp(ConfigOption.debug)) {
+        if (configOptions.debug.value.get()) {
             launch(lblStatusText, txtCacheLocation, btnLaunch)
         }
 
@@ -230,14 +229,15 @@ class CacheChooserController(
             "Launching map editor... Please wait... (this may take a while)"
 
         Thread() {
-            configuration.saveProp(ConfigOption.lastCacheDir, txtCacheLocation.text)
+            configOptions.lastCacheDir.value.set(txtCacheLocation.text)
+            configOptions.save()
             btnLaunch.isEnabled = false
             // load and open main scene
             xteaAndCache?.let {
                 SwingUtilities.invokeLater {
                     MainController(
                         "OSRS Environment Exporter",
-                        configuration,
+                        configOptions,
                         it.first,
                         it.second,
                     ).isVisible = true

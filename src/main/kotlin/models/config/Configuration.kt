@@ -8,13 +8,16 @@ class Configuration {
     private val properties = Properties()
     private var configFile: File = File("config.properties")
 
-    fun <T> saveProp(key: ConfigOption<T>, value: T) {
-        setProp(key, value)
-        save()
-    }
-
-    fun <T> setProp(key: ConfigOption<T>, value: T) {
-        properties.setProperty(key.id, key.type.convToString(value))
+    fun <T> setProp(key: ConfigOption<T>, value: T): Boolean {
+        val id = key.id
+        val valueString = key.type.convToString(value)
+        val old = properties.getProperty(id)
+        return if (old == valueString) {
+            false
+        } else {
+            properties.setProperty(id, valueString)
+            true
+        }
     }
 
     fun save() {
