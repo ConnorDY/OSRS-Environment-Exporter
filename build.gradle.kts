@@ -63,11 +63,14 @@ tasks {
 
 val fatJar = task("fatJar", type = Jar::class) {
     archiveBaseName.set("${project.name}-fat")
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    with(tasks.jar.get() as CopySpec)
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.withType<Jar> {
     manifest {
         attributes["Implementation-Version"] = archiveVersion.get()
         attributes["Main-Class"] = "AppKt"
     }
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    with(tasks.jar.get() as CopySpec)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
