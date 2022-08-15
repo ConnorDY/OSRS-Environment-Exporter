@@ -75,6 +75,7 @@ class glTF {
 
         // accessor
         val accessorType = when (floatBuffer.dims) {
+            4 -> AccessorType.VEC4
             3 -> AccessorType.VEC3
             2 -> AccessorType.VEC2
             else -> throw UnsupportedOperationException()

@@ -13,7 +13,7 @@ class MaterialBuffers(isTextured: Boolean) {
             texcoords = FloatVectorBuffer(2)
             colors = null
         } else {
-            colors = FloatVectorBuffer(3)
+            colors = FloatVectorBuffer(4)
             texcoords = null
         }
     }
@@ -31,7 +31,12 @@ class MaterialBuffers(isTextured: Boolean) {
         if (colors != null) {
             val color = Color(pal[rs2color and 0xFFFF])
 
-            colors.add(color.red.toFloat() / 255f, color.green.toFloat() / 255f, color.blue.toFloat() / 255f)
+            colors.add(
+                color.red.toFloat() / 255f,
+                color.green.toFloat() / 255f,
+                color.blue.toFloat() / 255f,
+                1f - rs2color.ushr(24).toFloat() / 255f,
+            )
         }
 
         if (texcoords != null) {
