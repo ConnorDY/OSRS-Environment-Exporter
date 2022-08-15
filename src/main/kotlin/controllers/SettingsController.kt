@@ -11,7 +11,7 @@ class SettingsController(
     owner: JFrame,
     title: String,
     configOptions: ConfigOptions
-) : AbstractSettingsDialog(owner, title, configOptions.all) {
+) : AbstractSettingsDialog(owner, title, configOptions.all.filter { !it.hidden }) {
     init {
         val btnSave = JButton("Save Preferences").apply {
             mnemonic = 'S'.code
