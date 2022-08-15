@@ -26,16 +26,12 @@ class MaterialBuffers(isTextured: Boolean) {
         texcoordV: Float,
         rs2color: Int
     ) {
-        positions.add(positionX)
-        positions.add(-positionY)
-        positions.add(-positionZ)
+        positions.add(positionX, -positionY, -positionZ)
 
         if (colors != null) {
             val color = Color(pal[rs2color and 0xFFFF])
 
-            colors.add(color.red.toFloat() / 255f)
-            colors.add(color.green.toFloat() / 255f)
-            colors.add(color.blue.toFloat() / 255f)
+            colors.add(color.red.toFloat() / 255f, color.green.toFloat() / 255f, color.blue.toFloat() / 255f)
         }
 
         if (texcoords != null) {

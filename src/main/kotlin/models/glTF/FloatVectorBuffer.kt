@@ -1,8 +1,8 @@
 package models.glTF
 
+import utils.ByteChunkBuffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.nio.FloatBuffer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -10,32 +10,28 @@ class FloatVectorBuffer(val dims: Int) {
     val min = FloatArray(dims) { Float.POSITIVE_INFINITY }
     val max = FloatArray(dims) { Float.NEGATIVE_INFINITY }
 
-    private val buffer = Buffer("") // Steal our efficient byte-concat code
-    private var chunk = ByteArray(INITIAL_CAPACITY)
-    private var chunkWrapped = wrapBytes(chunk)
+    private val buffer = ByteChunkBuffer(ByteBuffer::allocate) // Steal our efficient byte-concat code
+    private var chunk = newBuffer(INITIAL_CAPACITY)
+    private var chunkWrapped = chunk.asFloatBuffer()
 
     // Position in the vector we are writing to (e.g. 0th, 1st, or 2nd dimension)
     private var pos = 0
 
     // Total valid size of this buffer as a whole, in vectors
-    var size = 0
-        private set
+    val size get() = (bufferedSize + chunkWrapped.position()) / dims
 
-    // Total valid size of the current chunk, in vectors
-    private var innerSize = 0
+    private var bufferedSize = 0
 
-    private fun wrapBytes(chunk: ByteArray): FloatBuffer =
-        ByteBuffer.wrap(chunk).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
+    private fun newBuffer(capacity: Int): ByteBuffer =
+        ByteBuffer.allocate(capacity).order(ByteOrder.LITTLE_ENDIAN)
 
     private fun refreshBuffer() {
-        val innerBytes = innerSize * dims * BYTES_IN_A_FLOAT
-        val chunkToAdd =
-            if (innerBytes == chunk.size) chunk
-            else chunk.copyOf(innerBytes)
-        buffer.addBytes(chunkToAdd)
-        innerSize = 0
-        chunk = ByteArray(INITIAL_CAPACITY + size * dims * BYTES_IN_A_FLOAT)
-        chunkWrapped = wrapBytes(chunk)
+        val unflushedFloats = chunkWrapped.position()
+        val unflushedBytes = unflushedFloats * BYTES_IN_A_FLOAT
+        buffer.addBytes(chunk.limit(unflushedBytes))
+        bufferedSize += unflushedFloats
+        chunk = newBuffer(INITIAL_CAPACITY + bufferedSize * BYTES_IN_A_FLOAT)
+        chunkWrapped = chunk.asFloatBuffer()
     }
 
     fun add(value: Float) {
@@ -45,32 +41,47 @@ class FloatVectorBuffer(val dims: Int) {
         pos++
         if (pos == dims) {
             pos = 0
-            size++
-            innerSize++
 
-            if ((innerSize + 1) * dims * BYTES_IN_A_FLOAT > chunk.size) {
+            if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.limit()) {
                 refreshBuffer()
             }
+        }
+    }
+
+    fun add(x: Float, y: Float, z: Float) {
+        assert(pos == 0 && dims == 3)
+        chunkWrapped.put(x).put(y).put(z)
+
+        min[0] = min(min[0], x)
+        max[0] = max(max[0], x)
+        min[1] = min(min[1], y)
+        max[1] = max(max[1], y)
+        min[2] = min(min[2], z)
+        max[2] = max(max[2], z)
+
+        if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.limit()) {
+            refreshBuffer()
         }
     }
 
     /** Retrieve the raw bytes from this buffer.
      *  Note that this buffer cannot be added to after this operation has taken place.
      */
-    fun getBytes(): ByteArray {
-        if (innerSize != 0) {
-            buffer.addBytes(chunk.copyOf(innerSize * dims * BYTES_IN_A_FLOAT))
+    fun getByteChunks(): ByteChunkBuffer {
+        val unflushedFloats = chunkWrapped.position()
+        if (unflushedFloats != 0) {
+            buffer.addBytes(chunk.limit(unflushedFloats * BYTES_IN_A_FLOAT))
+            bufferedSize += unflushedFloats
             // Ensure no further writes succeed
-            chunk = USELESS_ARRAY
-            chunkWrapped = wrapBytes(chunk)
-            innerSize = 0
+            chunk = USELESS_BUFFER
+            chunkWrapped = chunk.asFloatBuffer()
         }
-        return buffer.getBytes()
+        return buffer
     }
 
     companion object {
         const val INITIAL_CAPACITY = 3 * 512 // Kind of arbitrary
-        const val BYTES_IN_A_FLOAT = 4
-        val USELESS_ARRAY = ByteArray(0)
+        const val BYTES_IN_A_FLOAT = Float.SIZE_BYTES
+        val USELESS_BUFFER = ByteBuffer.wrap(ByteArray(0))
     }
 }

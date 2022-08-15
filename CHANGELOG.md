@@ -22,6 +22,10 @@
 
 - Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
 
+### :wrench: Maintenance
+
+- Optimise glTF export a little &ndash; [#96](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/96) @ScoreUnder
+
 ## 2.1.0
 
 ### :sparkles: Enhancements
