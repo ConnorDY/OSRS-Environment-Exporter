@@ -64,9 +64,8 @@ void main() {
   if (alphaMode == ALPHA_MODE_CLIP) {
     if (c.a < 0.1f) discard;
   } else if (alphaMode == ALPHA_MODE_HASH) {
-    uint uhash = pcg32_random_r(uint(gl_FragCoord.x), uint(gl_FragCoord.y), 0u);
-    uint uhash2 = pcg32_random_r(uint(cameraPitch), uint(cameraYaw), 2u);
-    uhash = pcg32_random_r(uhash, uhash2, 4u);
+    uint uhash = pcg32_random_r(uint(gl_FragCoord.x), uint(gl_FragCoord.y), hashSeed << 1);
+    uhash = pcg32_random_r(uhash, uint(floatBitsToUint(gl_FragCoord.z / gl_FragCoord.w)), 4u);
     float hash = float(uhash) / 4294967296.0f;
     if (c.a <= hash) discard;
   }

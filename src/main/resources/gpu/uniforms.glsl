@@ -19,3 +19,4 @@ uniform vec2 textureOffsets[128];
 uniform float smoothBanding;
 uniform ivec2 mouseCoords;
 uniform int alphaMode;
+uniform uint hashSeed;

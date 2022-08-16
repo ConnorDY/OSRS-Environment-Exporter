@@ -72,6 +72,7 @@ import org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer
 import org.lwjgl.opengl.GL30C.glGenFramebuffers
 import org.lwjgl.opengl.GL30C.glGenRenderbuffers
 import org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample
+import org.lwjgl.opengl.GL30C.glUniform1ui
 import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
@@ -132,6 +133,7 @@ class Renderer(
     private var uniSmoothBanding = 0
     private var uniMouseCoordsId = 0
     private var uniAlphaMode = -1
+    private var uniHashSeed = -1
 
     var canvasWidth = 100
     var canvasHeight = (canvasWidth / 1.3).toInt()
@@ -331,6 +333,7 @@ class Renderer(
         glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
         glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
         glUniform1f(uniSmoothBanding, 1f)
+        glUniform1ui(uniHashSeed, camera.motionTicks)
         glUniformMatrix4fv(uniViewProjectionMatrix, false, calculateViewProjectionMatrix())
 
         // This is just for animating!
@@ -573,6 +576,7 @@ class Renderer(
         uniBlockMain = glGetUniformBlockIndex(glProgram, "uniforms")
         uniMouseCoordsId = glGetUniformLocation(glProgram, "mouseCoords")
         uniAlphaMode = glGetUniformLocation(glProgram, "alphaMode")
+        uniHashSeed = glGetUniformLocation(glProgram, "hashSeed")
     }
 
     private fun initUniformBuffer() {
