@@ -14,10 +14,10 @@ class ObjectToModelConverter(
     private val logger = LoggerFactory.getLogger(ObjectToModelConverter::class.java)
 
     init {
-        val listener: (Any) -> Unit = {
+        val listener: (Any?) -> Unit = {
             litModelCache.clear()
         }
-        debugOptionsModel.onlyType10Models.value.addEarlyListener(listener)
+        debugOptionsModel.showOnlyModelType.value.addEarlyListener(listener)
         debugOptionsModel.modelSubIndex.value.addEarlyListener(listener)
         debugOptionsModel.badModelIndexOverride.value.addEarlyListener(listener)
         debugOptionsModel.removeProperlyTypedModels.value.addEarlyListener(listener)
@@ -46,11 +46,16 @@ class ObjectToModelConverter(
         type: Int,
         orientation: Int
     ): ModelDefinition? {
+        val showOnly = debugOptionsModel.showOnlyModelType.value.get()
+        if (showOnly != null && showOnly != type) {
+            return null
+        }
+
         val modelIds = modelIds
         val modelTypes = modelTypes
         var modelDefinition: ModelDefinition? = null
         if (modelTypes == null) {
-            if ((type != 10 && debugOptionsModel.onlyType10Models.value.get()) || modelIds == null) {
+            if (modelIds == null) {
                 return null
             }
             val modelLen = modelIds.size

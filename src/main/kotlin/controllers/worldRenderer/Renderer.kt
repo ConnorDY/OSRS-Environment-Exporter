@@ -214,6 +214,12 @@ class Renderer(
         configOptions.priorityRenderer.value.addListener(::priorityRendererPref::set)
         configOptions.antiAliasing.value.addListener(::antiAliasingMode::set)
 
+        val redrawSceneListener: (Any) -> Unit = {
+            isSceneUploadRequired = true
+        }
+        debugOptionsModel.showTilePaint.value.addListener(redrawSceneListener)
+        debugOptionsModel.showTileModels.value.addListener(redrawSceneListener)
+
         return glCanvas
     }
 
@@ -523,7 +529,7 @@ class Renderer(
     }
 
     fun exportScene() {
-        SceneExporter(textureManager).exportSceneToFile(scene, this)
+        SceneExporter(textureManager, debugOptionsModel).exportSceneToFile(scene, this)
     }
 
     private fun uploadScene() {

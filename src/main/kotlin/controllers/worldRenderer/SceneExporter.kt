@@ -6,6 +6,7 @@ import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
+import models.DebugOptionsModel
 import models.glTF.MaterialBuffers
 import models.glTF.glTF
 import models.scene.Scene
@@ -18,7 +19,7 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-class SceneExporter constructor(private val textureManager: TextureManager) {
+class SceneExporter constructor(private val textureManager: TextureManager, private val debugOptionsModel: DebugOptionsModel) {
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
     fun exportSceneToFile(scene: Scene, renderer: Renderer) {
@@ -89,8 +90,12 @@ class SceneExporter constructor(private val textureManager: TextureManager) {
     private fun upload(gltf: glTF, tile: SceneTile) {
         val x = tile.x
         val y = tile.y
-        tile.tilePaint?.let { upload(gltf, it, x, y, 0) }
-        tile.tileModel?.let { upload(gltf, it, x, y, 0) }
+        if (debugOptionsModel.showTilePaint.value.get()) {
+            tile.tilePaint?.let { upload(gltf, it, x, y, 0) }
+        }
+        if (debugOptionsModel.showTileModels.value.get()) {
+            tile.tileModel?.let { upload(gltf, it, x, y, 0) }
+        }
 
         tile.wall?.let { wall ->
             uploadIfStatic(gltf, wall.entity, x, y, wall.entity.height)

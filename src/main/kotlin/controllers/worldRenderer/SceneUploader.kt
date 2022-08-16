@@ -6,6 +6,7 @@ import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
+import models.DebugOptionsModel
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
@@ -35,7 +36,7 @@ import java.nio.FloatBuffer
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-class SceneUploader {
+class SceneUploader(private val debugOptionsModel: DebugOptionsModel) {
     var sceneId = System.nanoTime().toInt()
 
     fun upload(scene: Scene, priorityRenderer: PriorityRenderer) {
@@ -65,12 +66,12 @@ class SceneUploader {
 // 			upload(bridge, vertexBuffer, uvBuffer);
 // 		}
         val sceneTilePaint = tile.tilePaint
-        if (sceneTilePaint != null) {
+        if (sceneTilePaint != null && debugOptionsModel.showTilePaint.value.get()) {
             upload(sceneTilePaint, priorityRenderer)
         }
 
         val sceneTileModel = tile.tileModel
-        if (sceneTileModel != null) {
+        if (sceneTileModel != null && debugOptionsModel.showTileModels.value.get()) {
             upload(sceneTileModel, priorityRenderer)
         }
 

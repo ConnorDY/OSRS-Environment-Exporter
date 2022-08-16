@@ -8,7 +8,9 @@ class DebugOptionsModel {
     val badModelIndexOverride = ConfigOption("", ConfigOptionType.int, -1, "Bad model index override", 'B')
     val modelSubIndex = ConfigOption("", ConfigOptionType.int, -1, "Model sub-index", 'S')
     val resetCameraOnSceneChange = ConfigOption("", ConfigOptionType.boolean, true, "Reset camera on scene change", 'R')
-    val onlyType10Models = ConfigOption("", ConfigOptionType.boolean, false, "Only type-10 models", '1')
+    val showOnlyModelType = ConfigOption("", ConfigOptionType.intToggle, null, "Show only model type", 'T')
+    val showTilePaint = ConfigOption("", ConfigOptionType.boolean, true, "Show tile paint", 'P')
+    val showTileModels = ConfigOption("", ConfigOptionType.boolean, true, "Show tile models", 'M')
 
-    val all = listOf(onlyType10Models, resetCameraOnSceneChange, removeProperlyTypedModels, modelSubIndex, badModelIndexOverride)
+    val all = listOf(showOnlyModelType, showTilePaint, showTileModels, resetCameraOnSceneChange, removeProperlyTypedModels, modelSubIndex, badModelIndexOverride)
 }
