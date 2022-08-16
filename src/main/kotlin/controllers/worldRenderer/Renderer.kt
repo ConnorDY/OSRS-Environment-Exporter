@@ -18,6 +18,7 @@ import models.scene.Scene
 import models.scene.SceneTile
 import org.joml.Matrix4f
 import org.lwjgl.BufferUtils
+import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_BLEND
 import org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT
@@ -76,6 +77,8 @@ import org.lwjgl.opengl.GL30C.glUniform1ui
 import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
+import org.lwjgl.opengl.GL40C.GL_SAMPLE_SHADING
+import org.lwjgl.opengl.GL40C.glMinSampleShading
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.lwjgl.opengl.awt.GLData
 import org.slf4j.LoggerFactory
@@ -291,6 +294,17 @@ class Renderer(
         val aaEnabled = antiAliasingMode !== AntiAliasingMode.DISABLED
         if (aaEnabled) {
             glEnable(GL_MULTISAMPLE)
+            if (GL.getCapabilities().OpenGL40) {
+                if (configOptions.sampleShading.value.get()) {
+                    glEnable(GL_SAMPLE_SHADING)
+                    glMinSampleShading(1f)
+                } else {
+                    glDisable(GL_SAMPLE_SHADING)
+                }
+            } else if (configOptions.sampleShading.value.get()) {
+                logger.warn("Cannot use sample shading on OpenGL < 4.0")
+                configOptions.sampleShading.value.set(false)
+            }
             val stretchedCanvasWidth = canvasWidth
             val stretchedCanvasHeight = canvasHeight
 

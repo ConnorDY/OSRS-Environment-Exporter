@@ -22,9 +22,10 @@ We recommend using the latest release unless you are having issues with it.
 | `initial-radius`           | `Int`     | `1`           | The initial radius to load.                                                                                                                                                                                  |
 | `initial-region-id`        | `Int`     | `15256`       | The initial region to load.                                                                                                                                                                                  |
 | `last-cache-dir`           | `String`  | Empty         | The last cache that was used.                                                                                                                                                                                |
-| `last-checked-for-updates` | `Long`    | 0             | The last time an update check was performed, in unix timestamp format. Used to limit the number of requests made to GitHub's servers.                                                                        |
+| `last-checked-for-updates` | `Long`    | `0`           | The last time an update check was performed, in unix timestamp format. Used to limit the number of requests made to GitHub's servers.                                                                        |
 | `mouse-warping`            | `Boolean` | Varies        | If enabled, the mouse will warp from one edge to the other if it leaves the window while the camera is being dragged. Disabled by default on MacOS due to permissions requirements, enabled everywhere else. |
 | `priority-renderer`        | `Enum`    | Varies        | The face-sorting renderer to use. May not actually sort faces. One of `GLSL`, `CPU_NAIVE`. Set to `CPU_NAIVE` on MacOS due to missing compute shader support, and `GLSL` everywhere else.                    |
+| `sample-shading`           | `Boolean` | `false`       | If enabled, tells OpenGL to shade sub-samples in MSAA (OpenGL 4.0+).                                                                                                                                         |
 
 ## Development
 

@@ -17,6 +17,7 @@ class ConfigOptions(private val configuration: Configuration) {
     val antiAliasing = ConfigOption("anti-aliasing", ConfigOptionType.Enumerated(AntiAliasingMode::valueOf, AntiAliasingMode.values(), AntiAliasingMode::humanReadableName), AntiAliasingMode.MSAA_16, "Anti-aliasing", 'A')
     val priorityRenderer = ConfigOption("priority-renderer", ConfigOptionType.Enumerated(PriorityRenderers::valueOf, PriorityRenderers.values(), PriorityRenderers::humanReadableName), if (isMacos()) PriorityRenderers.CPU_NAIVE else PriorityRenderers.GLSL, "Sorting renderer", 'R')
     val alphaMode = ConfigOption("alpha-mode", ConfigOptionType.Enumerated(AlphaMode::valueOf, AlphaMode.values(), AlphaMode::humanReadableName), AlphaMode.CLIP, "Alpha mode", 'L')
+    val sampleShading = ConfigOption("sample-shading", ConfigOptionType.boolean, false, "Sub-sample shading (GL4.0; makes hashed alpha look nicer)", 'S')
 
     val all = listOf(
         lastCacheDir,
@@ -28,6 +29,7 @@ class ConfigOptions(private val configuration: Configuration) {
         mouseWarping,
         antiAliasing,
         alphaMode,
+        sampleShading,
         priorityRenderer,
         debug,
     )
