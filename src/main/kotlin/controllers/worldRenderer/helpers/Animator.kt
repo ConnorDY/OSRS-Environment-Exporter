@@ -9,7 +9,7 @@ class Animator(private val canvas: AWTGLCanvas) {
     var lastFPS = 0.0
     private var startFrameTime: Long = 0
     private var lastEndFrameTime: Long = 0
-    private val hiResTimerThread = Thread(HiResTimerRunnable(RenderRunnable())).apply {
+    private val hiResTimerThread = Thread(HiResTimerRunnable(RenderRunnable()), "Animator").apply {
         // If every other thread terminates and this is still running, something is wrong
         isDaemon = true
     }
