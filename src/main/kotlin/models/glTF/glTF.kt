@@ -1,11 +1,14 @@
 package models.glTF
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import utils.ByteChunkBuffer
 import java.io.File
 import java.nio.ByteBuffer
 
+@JsonInclude(NON_EMPTY)
 class glTF {
     val asset = Asset(
         "2.0",
@@ -72,6 +75,7 @@ class glTF {
 
         // accessor
         val accessorType = when (floatBuffer.dims) {
+            4 -> AccessorType.VEC4
             3 -> AccessorType.VEC3
             2 -> AccessorType.VEC2
             else -> throw UnsupportedOperationException()

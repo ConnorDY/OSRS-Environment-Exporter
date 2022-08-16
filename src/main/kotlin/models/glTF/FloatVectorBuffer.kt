@@ -38,13 +38,11 @@ class FloatVectorBuffer(val dims: Int) {
         chunkWrapped.put(value)
         min[pos] = min(min[pos], value)
         max[pos] = max(max[pos], value)
+
         pos++
         if (pos == dims) {
             pos = 0
-
-            if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.limit()) {
-                refreshBuffer()
-            }
+            checkBufferCapacity()
         }
     }
 
@@ -59,6 +57,26 @@ class FloatVectorBuffer(val dims: Int) {
         min[2] = min(min[2], z)
         max[2] = max(max[2], z)
 
+        checkBufferCapacity()
+    }
+
+    fun add(x: Float, y: Float, z: Float, w: Float) {
+        assert(pos == 0 && dims == 4)
+        chunkWrapped.put(x).put(y).put(z).put(w)
+
+        min[0] = min(min[0], x)
+        max[0] = max(max[0], x)
+        min[1] = min(min[1], y)
+        max[1] = max(max[1], y)
+        min[2] = min(min[2], z)
+        max[2] = max(max[2], z)
+        min[3] = min(min[3], w)
+        max[3] = max(max[3], w)
+
+        checkBufferCapacity()
+    }
+
+    private fun checkBufferCapacity() {
         if ((chunkWrapped.position() + dims) * BYTES_IN_A_FLOAT > chunk.limit()) {
             refreshBuffer()
         }
