@@ -28,6 +28,7 @@
 #define ALPHA_MODE_CLIP 1
 #define ALPHA_MODE_HASH 2
 #define ALPHA_MODE_IGNORE 3
+#define ALPHA_MODE_ORDERED_DITHER 4
 
 #include uniforms.glsl
 
@@ -42,6 +43,7 @@ layout(location = 0) out vec4 fragColor;
 
 #include hsl_to_rgb.glsl
 #include pcg_hash.glsl
+#include bit_twiddle.glsl
 
 void main() {
   vec4 c;
@@ -68,6 +70,9 @@ void main() {
     uhash = pcg32_random_r(uhash, uint(floatBitsToUint(gl_FragCoord.z / gl_FragCoord.w)), 4u);
     float hash = float(uhash) / 4294967296.0f;
     if (c.a <= hash) discard;
+  } else if (alphaMode == ALPHA_MODE_ORDERED_DITHER) {
+    uint threshold = bit_reverse8(bit_interleave8(uint(gl_FragCoord.x) ^ uint(gl_FragCoord.y), uint(gl_FragCoord.x)));
+    if (uint(c.a * 256.0f) <= threshold) discard;
   }
   // else, blend or ignore means we don't do anything here
 
