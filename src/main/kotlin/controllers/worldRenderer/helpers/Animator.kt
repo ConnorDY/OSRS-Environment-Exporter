@@ -46,20 +46,18 @@ class Animator(private val canvas: AWTGLCanvas) {
                     }
 
                     // Wait long enough to bring FPS down to target levels
-                    if (deltaTimeTarget != 0) {
-                        val endFrameTime = System.nanoTime()
-                        lastFPS = 1_000_000_000.0 / (endFrameTime - lastEndFrameTime)
-                        val sleepTime = deltaTimeTarget + (startFrameTime - endFrameTime)
-                        lastEndFrameTime = endFrameTime
-                        startFrameTime = if (sleepTime in 0..SECOND_IN_NANOS) {
-                            Thread.sleep(
-                                sleepTime / MILLISECOND_IN_NANOS,
-                                (sleepTime % MILLISECOND_IN_NANOS).toInt()
-                            )
-                            endFrameTime + sleepTime
-                        } else {
-                            endFrameTime
-                        }
+                    val endFrameTime = System.nanoTime()
+                    lastFPS = 1_000_000_000.0 / (endFrameTime - lastEndFrameTime)
+                    val sleepTime = deltaTimeTarget + (startFrameTime - endFrameTime)
+                    lastEndFrameTime = endFrameTime
+                    startFrameTime = if (sleepTime in 0..SECOND_IN_NANOS) {
+                        Thread.sleep(
+                            sleepTime / MILLISECOND_IN_NANOS,
+                            (sleepTime % MILLISECOND_IN_NANOS).toInt()
+                        )
+                        endFrameTime + sleepTime
+                    } else {
+                        endFrameTime
                     }
 
                     // Re-queue render task
