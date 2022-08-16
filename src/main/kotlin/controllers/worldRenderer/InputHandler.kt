@@ -42,30 +42,40 @@ class InputHandler internal constructor(
         if (keys[KeyEvent.VK_SHIFT]) {
             speed = 4
         }
+        var motionTicked = false
         if (keys[KeyEvent.VK_W]) {
             camera.addX((dt * xVec * speed).toInt())
             camera.addY((dt * yVec * speed).toInt())
             camera.addZ((dt * zVec * speed).toInt())
+            motionTicked = true
         }
         if (keys[KeyEvent.VK_S]) {
             camera.addX((-(dt * xVec * speed)).toInt())
             camera.addY((-(dt * yVec * speed)).toInt())
             camera.addZ((-(dt * zVec * speed)).toInt())
+            motionTicked = true
         }
         if (keys[KeyEvent.VK_A]) {
             // X uses yVec because we want to move perpendicular
             camera.addX((-(dt * yVec * speed)).toInt())
             camera.addY((dt * xVec * speed).toInt())
+            motionTicked = true
         }
         if (keys[KeyEvent.VK_D]) {
             camera.addX((dt * yVec * speed).toInt())
             camera.addY((-(dt * xVec * speed)).toInt())
+            motionTicked = true
         }
         if (keys[KeyEvent.VK_SPACE]) {
             camera.addZ((-dt).toInt() * speed)
+            motionTicked = true
         }
         if (keys[KeyEvent.VK_X]) {
             camera.addZ(dt.toInt() * speed)
+            motionTicked = true
+        }
+        if (motionTicked) {
+            camera.motionTicks++
         }
         if (configOptions.debug.value.get()) {
             if (keys[KeyEvent.VK_J]) {

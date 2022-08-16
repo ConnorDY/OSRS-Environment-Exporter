@@ -2,6 +2,7 @@ package controllers.worldRenderer
 
 import cache.LocationType
 import cache.utils.ColorPalette
+import controllers.worldRenderer.helpers.AlphaMode
 import controllers.worldRenderer.helpers.Animator
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GpuFloatBuffer
@@ -17,13 +18,18 @@ import models.scene.Scene
 import models.scene.SceneTile
 import org.joml.Matrix4f
 import org.lwjgl.BufferUtils
+import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL.createCapabilities
+import org.lwjgl.opengl.GL11C.GL_BLEND
 import org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT
 import org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11C.GL_LEQUAL
 import org.lwjgl.opengl.GL11C.GL_NEAREST
+import org.lwjgl.opengl.GL11C.GL_ONE
+import org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.GL_RGBA
+import org.lwjgl.opengl.GL11C.GL_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.glClear
 import org.lwjgl.opengl.GL11C.glClearColor
 import org.lwjgl.opengl.GL11C.glDepthFunc
@@ -34,6 +40,7 @@ import org.lwjgl.opengl.GL11C.glGetInteger
 import org.lwjgl.opengl.GL11C.glViewport
 import org.lwjgl.opengl.GL13C.GL_MULTISAMPLE
 import org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT16
+import org.lwjgl.opengl.GL14C.glBlendFuncSeparate
 import org.lwjgl.opengl.GL15C.GL_DYNAMIC_DRAW
 import org.lwjgl.opengl.GL15C.glBindBuffer
 import org.lwjgl.opengl.GL15C.glBufferData
@@ -66,9 +73,12 @@ import org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer
 import org.lwjgl.opengl.GL30C.glGenFramebuffers
 import org.lwjgl.opengl.GL30C.glGenRenderbuffers
 import org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample
+import org.lwjgl.opengl.GL30C.glUniform1ui
 import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
+import org.lwjgl.opengl.GL40C.GL_SAMPLE_SHADING
+import org.lwjgl.opengl.GL40C.glMinSampleShading
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.lwjgl.opengl.awt.GLData
 import org.slf4j.LoggerFactory
@@ -125,6 +135,8 @@ class Renderer(
     private var uniBlockMain = 0
     private var uniSmoothBanding = 0
     private var uniMouseCoordsId = 0
+    private var uniAlphaMode = -1
+    private var uniHashSeed = -1
 
     var canvasWidth = 100
     var canvasHeight = (canvasWidth / 1.3).toInt()
@@ -282,6 +294,17 @@ class Renderer(
         val aaEnabled = antiAliasingMode !== AntiAliasingMode.DISABLED
         if (aaEnabled) {
             glEnable(GL_MULTISAMPLE)
+            if (GL.getCapabilities().OpenGL40) {
+                if (configOptions.sampleShading.value.get()) {
+                    glEnable(GL_SAMPLE_SHADING)
+                    glMinSampleShading(1f)
+                } else {
+                    glDisable(GL_SAMPLE_SHADING)
+                }
+            } else if (configOptions.sampleShading.value.get()) {
+                logger.warn("Cannot use sample shading on OpenGL < 4.0")
+                configOptions.sampleShading.value.set(false)
+            }
             val stretchedCanvasWidth = canvasWidth
             val stretchedCanvasHeight = canvasHeight
 
@@ -324,6 +347,7 @@ class Renderer(
         glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
         glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
         glUniform1f(uniSmoothBanding, 1f)
+        glUniform1ui(uniHashSeed, camera.motionTicks)
         glUniformMatrix4fv(uniViewProjectionMatrix, false, calculateViewProjectionMatrix())
 
         // This is just for animating!
@@ -367,7 +391,15 @@ class Renderer(
         glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
         glUniform2fv(uniTextureOffsets, textureOffsets)
 
+        val useBlend = configOptions.alphaMode.value.get() == AlphaMode.BLEND
+        if (useBlend) {
+            glEnable(GL_BLEND)
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE)
+        }
+
         priorityRenderer.draw()
+
+        if (useBlend) glDisable(GL_BLEND)
         glUseProgram(0)
 
         if (aaEnabled) {
@@ -532,6 +564,20 @@ class Renderer(
         }
 
         initUniforms()
+        updateAlphaMode(configOptions.alphaMode.value.get())
+        configOptions.alphaMode.value.addListener {
+            doInGlThread {
+                updateAlphaMode(it)
+            }
+        }
+    }
+
+    private fun updateAlphaMode(mode: AlphaMode) {
+        if (glProgram == -1 || uniAlphaMode == -1) return
+
+        glUseProgram(glProgram)
+        glUniform1i(uniAlphaMode, mode.internalId)
+        glUseProgram(0)
     }
 
     private fun initUniforms() {
@@ -543,6 +589,8 @@ class Renderer(
         uniTextureOffsets = glGetUniformLocation(glProgram, "textureOffsets")
         uniBlockMain = glGetUniformBlockIndex(glProgram, "uniforms")
         uniMouseCoordsId = glGetUniformLocation(glProgram, "mouseCoords")
+        uniAlphaMode = glGetUniformLocation(glProgram, "alphaMode")
+        uniHashSeed = glGetUniformLocation(glProgram, "hashSeed")
     }
 
     private fun initUniformBuffer() {

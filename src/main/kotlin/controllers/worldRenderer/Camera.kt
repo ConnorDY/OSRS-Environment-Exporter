@@ -11,6 +11,7 @@ class Camera {
     var cameraZ = -2500
     var centerX = 400 // HALF OF VIEWPORT!
     var centerY = 300 // HALF OF VIEWPORT!
+    var motionTicks = 0 // Amount of times this camera has been moved
     fun addX(amt: Int) {
         cameraX += amt
     }

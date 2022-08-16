@@ -21,6 +21,8 @@
 - Include alpha values in exported non-textured faces &ndash; [#99](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/99) @ScoreUnder
   - Fix glTF linter issues along the way.
 
+- Add alpha blending mode selection &ndash; [#100](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/100) @ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
