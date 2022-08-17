@@ -179,7 +179,6 @@ class Model private constructor(
                 if (var13 < clipType) {
                     var14 = xOff + modelDefinition.vertexPositionsX[var12]
                     var15 = yOff + modelDefinition.vertexPositionsZ[var12]
-                    var16 = var14 and 127
                     var17 = var15 and 127
                     var18 = var14 shr 7
                     var19 = var15 shr 7
