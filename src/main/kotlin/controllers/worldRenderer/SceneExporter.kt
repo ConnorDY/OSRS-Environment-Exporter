@@ -9,6 +9,7 @@ import controllers.worldRenderer.entities.TilePaint
 import models.DebugOptionsModel
 import models.glTF.MaterialBuffers
 import models.glTF.glTF
+import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
 import java.io.File
@@ -42,12 +43,16 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
         for (rx in 0 until scene.cols) {
             for (ry in 0 until scene.rows) {
                 val region = scene.getRegion(rx, ry) ?: continue
+                val baseX = rx * REGION_SIZE
+                val baseY = ry * REGION_SIZE
                 renderer.zLevelsSelected.forEachIndexed { z, visible ->
                     if (visible) {
-                        for (x in 0 until 64) {
-                            for (y in 0 until 64) {
-                                val tile = region.tiles[z][x][y] ?: continue
-                                this.upload(gltf, tile)
+                        val tilePlane = region.tiles[z]
+                        for (x in 0 until REGION_SIZE) {
+                            val tileCol = tilePlane[x]
+                            for (y in 0 until REGION_SIZE) {
+                                val tile = tileCol[y] ?: continue
+                                this.upload(gltf, tile, baseX + x, baseY + y)
                             }
                         }
                     }
@@ -87,9 +92,7 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
         }
     }
 
-    private fun upload(gltf: glTF, tile: SceneTile) {
-        val x = tile.x
-        val y = tile.y
+    private fun upload(gltf: glTF, tile: SceneTile, x: Int, y: Int) {
         if (debugOptionsModel.showTilePaint.value.get()) {
             tile.tilePaint?.let { upload(gltf, it, x, y, 0) }
         }

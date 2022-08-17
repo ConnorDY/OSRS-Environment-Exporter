@@ -96,13 +96,7 @@ class Scene(
         val region = getRegion(gridX, gridY) ?: return null
         val regionX: Int = x % REGION_SIZE
         val regionY: Int = y % REGION_SIZE
-        val tile: SceneTile? = region.tiles[z][regionX][regionY]
-        if (tile != null) {
-            // offset the tile by adding its scene offset to its region offset - get scene position
-            tile.x = regionX + gridX * REGION_SIZE
-            tile.y = regionY + gridY * REGION_SIZE
-        }
-        return tile
+        return region.tiles[z][regionX][regionY]
     }
 
     fun getRegion(gridX: Int, gridY: Int): SceneRegion? {

@@ -444,16 +444,14 @@ class Renderer(
             if (visible) {
                 for (x in 0 until scene.cols * REGION_SIZE) {
                     for (y in 0 until scene.rows * REGION_SIZE) {
-                        scene.getTile(z, x, y)?.let { drawTile(it) }
+                        scene.getTile(z, x, y)?.let { drawTile(it, x, y) }
                     }
                 }
             }
         }
     }
 
-    private fun drawTile(tile: SceneTile) {
-        val x: Int = tile.x
-        val y: Int = tile.y
+    private fun drawTile(tile: SceneTile, x: Int, y: Int) {
         val tilePaint = tile.tilePaint
         if (tilePaint != null) {
             priorityRenderer.positionRenderable(
