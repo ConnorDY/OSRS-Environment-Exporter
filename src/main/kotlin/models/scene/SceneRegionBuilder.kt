@@ -347,10 +347,10 @@ class SceneRegionBuilder constructor(
             objectToModelConverter.toModel(objectDefinition, type, orientation) ?: return null
 
         // FIXME: nonFlatShading affects fence doors
-        var model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+        val model = Model(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
 
         if (objectDefinition.contouredGround >= 0) {
-            model = model.contourGround(
+            model.contourGround(
                 regionLoader,
                 xSize,
                 height,
@@ -358,7 +358,6 @@ class SceneRegionBuilder constructor(
                 zPlane,
                 baseX,
                 baseY,
-                true,
                 objectDefinition.contouredGround
             )
         }

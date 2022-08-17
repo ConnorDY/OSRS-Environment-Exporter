@@ -9,7 +9,7 @@ import controllers.worldRenderer.Constants
 import utils.clamp
 import kotlin.math.sqrt
 
-class Model(
+class Model private constructor(
     val modelDefinition: ModelDefinition,
 
     var orientation: Int = 0,
@@ -37,41 +37,35 @@ class Model(
     var field1865: IntArray? = null
     var field1846: IntArray? = null
 
-    private var boundsType = 0
     private var bottomY = 0
-    var xYZMag = 0
+    private var xYZMag = 0
     private var radius = 0
     private var diameter = 0
 
     var sceneId = -1 // scene ID in which this model was rendered
 
     private fun calculateBoundsCylinder() {
-        if (boundsType != 1) {
-            boundsType = 1
-            bottomY = 0
-            xYZMag = 0
-            var height = 0
-            for (var1 in 0 until modelDefinition.vertexCount) {
-                val var2: Int = modelDefinition.vertexPositionsX[var1]
-                val var3: Int = modelDefinition.vertexPositionsY[var1]
-                val var4: Int = modelDefinition.vertexPositionsZ[var1]
-                if (-var3 > height) {
-                    height = -var3
-                }
-                if (var3 > bottomY) {
-                    bottomY = var3
-                }
-                val var5 = var2 * var2 + var4 * var4
-                if (var5 > xYZMag) {
-                    xYZMag = var5
-                }
+        bottomY = 0
+        xYZMag = 0
+        var height = 0
+        for (var1 in 0 until modelDefinition.vertexCount) {
+            val var2: Int = modelDefinition.vertexPositionsX[var1]
+            val var3: Int = modelDefinition.vertexPositionsY[var1]
+            val var4: Int = modelDefinition.vertexPositionsZ[var1]
+            if (-var3 > height) {
+                height = -var3
             }
-            xYZMag = (sqrt(xYZMag.toDouble()) + 0.99).toInt()
-            radius =
-                (sqrt((xYZMag * xYZMag + height * height).toDouble()) + 0.99).toInt()
-            diameter =
-                radius + (sqrt((xYZMag * xYZMag + bottomY * bottomY).toDouble()) + 0.99).toInt()
+            if (var3 > bottomY) {
+                bottomY = var3
+            }
+            val var5 = var2 * var2 + var4 * var4
+            if (var5 > xYZMag) {
+                xYZMag = var5
+            }
         }
+        xYZMag = (sqrt(xYZMag.toDouble()) + 0.99).toInt()
+        radius = (sqrt((xYZMag * xYZMag + height * height).toDouble()) + 0.99).toInt()
+        diameter = radius + (sqrt((xYZMag * xYZMag + bottomY * bottomY).toDouble()) + 0.99).toInt()
     }
 
     fun contourGround(
@@ -82,10 +76,8 @@ class Model(
         z: Int,
         baseX: Int,
         baseY: Int,
-        deepCopy: Boolean,
         clipType: Int
-    ): Model {
-        calculateBoundsCylinder()
+    ) {
         var left = xOff - xYZMag
         var right = xOff + xYZMag
         var top = yOff - xYZMag
@@ -101,72 +93,67 @@ class Model(
         val topRight = regionLoader.getTileHeight(z, baseX + right, baseY + top)
         val bottomLeft = regionLoader.getTileHeight(z, baseX + left, baseY + bottom)
         val bottomRight = regionLoader.getTileHeight(z, baseX + right, baseY + bottom)
-        return if (height == topLeft && height == topRight && height == bottomLeft && height == bottomRight) {
-            this
-        } else {
-            val model: Model = if (deepCopy) Model(
-                ModelDefinition(modelDefinition),
-                faceColors1 = faceColors1,
-                faceColors2 = faceColors2,
-                faceColors3 = faceColors3
-            ) else this
-            var var12: Int
-            var var13: Int
-            var var14: Int
-            var var15: Int
-            var var16: Int
-            var var17: Int
-            var var18: Int
-            var var19: Int
-            var var20: Int
-            var var21: Int
-            if (clipType == 0) {
-                var12 = 0
-                while (var12 < modelDefinition.vertexCount) {
-                    var13 = xOff + modelDefinition.vertexPositionsX[var12]
-                    var14 = yOff + modelDefinition.vertexPositionsZ[var12]
-                    var15 = var13 and 127
-                    var16 = var14 and 127
-                    var17 = var13 shr 7
-                    var18 = var14 shr 7
-                    val first = regionLoader.getTileHeight(z, baseX + var17, baseY + var18)
-                    val second = regionLoader.getTileHeight(z, baseX + var17 + 1, baseY + var18)
-                    val third = regionLoader.getTileHeight(z, baseX + var17, baseY + var18 + 1)
-                    val fourth = regionLoader.getTileHeight(z, baseX + var17 + 1, baseY + var18 + 1)
-                    var19 = first * (128 - var15) + second * var15 shr 7
-                    var20 = third * (128 - var15) + var15 * fourth shr 7
-                    var21 = var19 * (128 - var16) + var20 * var16 shr 7
-                    model.vertexPositionsY[var12] =
-                        var21 + model.modelDefinition.vertexPositionsY[var12] - height
-                    ++var12
-                }
-            } else {
-                var12 = 0
-                while (var12 < modelDefinition.vertexCount) {
-                    var13 = (-modelDefinition.vertexPositionsY[var12] shl 16) / height
-                    if (var13 < clipType) {
-                        var14 = xOff + modelDefinition.vertexPositionsX[var12]
-                        var15 = yOff + modelDefinition.vertexPositionsZ[var12]
-                        var16 = var14 and 127
-                        var17 = var15 and 127
-                        var18 = var14 shr 7
-                        var19 = var15 shr 7
-                        val first = regionLoader.getTileHeight(z, baseX + var18, baseY + var19)
-                        val second = regionLoader.getTileHeight(z, baseX + var18 + 1, baseY + var19)
-                        val third = regionLoader.getTileHeight(z, baseX + var18, baseY + var19 + 1)
-                        val fourth = regionLoader.getTileHeight(z, baseX + var18 + 1, baseY + var19 + 1)
-                        var20 = first * (128 - var15) + second * var15 shr 7
-                        var21 = third * (128 - var15) + var15 * fourth shr 7
-                        val var22 = var20 * (128 - var17) + var21 * var17 shr 7
-                        model.vertexPositionsY[var12] =
-                            (clipType - var13) * (var22 - height) / clipType + model.modelDefinition.vertexPositionsY[var12]
-                    }
-                    ++var12
-                }
-            }
-            model.resetBounds()
-            model
+        if (height == topLeft && height == topRight && height == bottomLeft && height == bottomRight) {
+            return
         }
+
+        var var12: Int
+        var var13: Int
+        var var14: Int
+        var var15: Int
+        var var16: Int
+        var var17: Int
+        var var18: Int
+        var var19: Int
+        var var20: Int
+        var var21: Int
+        if (clipType == 0) {
+            var12 = 0
+            while (var12 < modelDefinition.vertexCount) {
+                var13 = xOff + modelDefinition.vertexPositionsX[var12]
+                var14 = yOff + modelDefinition.vertexPositionsZ[var12]
+                var15 = var13 and 127
+                var16 = var14 and 127
+                var17 = var13 shr 7
+                var18 = var14 shr 7
+                val first = regionLoader.getTileHeight(z, baseX + var17, baseY + var18)
+                val second = regionLoader.getTileHeight(z, baseX + var17 + 1, baseY + var18)
+                val third = regionLoader.getTileHeight(z, baseX + var17, baseY + var18 + 1)
+                val fourth = regionLoader.getTileHeight(z, baseX + var17 + 1, baseY + var18 + 1)
+                var19 = first * (128 - var15) + second * var15 shr 7
+                var20 = third * (128 - var15) + var15 * fourth shr 7
+                var21 = var19 * (128 - var16) + var20 * var16 shr 7
+                vertexPositionsY[var12] =
+                    var21 + modelDefinition.vertexPositionsY[var12] - height
+                ++var12
+            }
+        } else {
+            var12 = 0
+            while (var12 < modelDefinition.vertexCount) {
+                var13 = (-modelDefinition.vertexPositionsY[var12] shl 16) / height
+                if (var13 < clipType) {
+                    var14 = xOff + modelDefinition.vertexPositionsX[var12]
+                    var15 = yOff + modelDefinition.vertexPositionsZ[var12]
+                    var16 = var14 and 127
+                    var17 = var15 and 127
+                    var18 = var14 shr 7
+                    var19 = var15 shr 7
+                    val first = regionLoader.getTileHeight(z, baseX + var18, baseY + var19)
+                    val second = regionLoader.getTileHeight(z, baseX + var18 + 1, baseY + var19)
+                    val third = regionLoader.getTileHeight(z, baseX + var18, baseY + var19 + 1)
+                    val fourth = regionLoader.getTileHeight(z, baseX + var18 + 1, baseY + var19 + 1)
+                    var20 = first * (128 - var15) + second * var15 shr 7
+                    var21 = third * (128 - var15) + var15 * fourth shr 7
+                    val var22 = var20 * (128 - var17) + var21 * var17 shr 7
+                    vertexPositionsY[var12] =
+                        (clipType - var13) * (var22 - height) / clipType + modelDefinition.vertexPositionsY[var12]
+                }
+                ++var12
+            }
+        }
+
+        // Not sure why this needs radius 0. Still don't understand those shaders.
+        radius = 0
     }
 
     fun rotate(angle: Int) {
@@ -177,10 +164,6 @@ class Model(
             this.vertexPositionsZ[var4] = var3 * this.vertexPositionsZ[var4] - var2 * this.vertexPositionsX[var4] shr 16
             this.vertexPositionsX[var4] = var5
         }
-    }
-
-    private fun resetBounds() {
-        boundsType = 0
     }
 
     constructor(def: ModelDefinition, ambient: Int, contrast: Int) : this(def) {
@@ -318,6 +301,7 @@ class Model(
                 }
             }
         }
+        calculateBoundsCylinder()
     }
 
     companion object {
