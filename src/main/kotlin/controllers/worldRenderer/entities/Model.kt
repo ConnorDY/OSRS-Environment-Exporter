@@ -240,10 +240,11 @@ class Model private constructor(
 
             for (j in 0 until other.modelDefinition.vertexCount) {
                 val normal2 = otherNormals[j]
-                if (x == other.vertexPositionsX[j]
-                    && z == other.vertexPositionsZ[j]
-                    && y == other.vertexPositionsY[j]
-                    && normal2.magnitude != 0) {
+                if (x == other.vertexPositionsX[j] &&
+                    z == other.vertexPositionsZ[j] &&
+                    y == other.vertexPositionsY[j] &&
+                    normal2.magnitude != 0
+                ) {
                     getOrPutVertexNormal(i, normal1) += normal2
                     other.getOrPutVertexNormal(j, normal2) += normal1
 
