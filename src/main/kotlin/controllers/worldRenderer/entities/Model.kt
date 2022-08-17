@@ -12,7 +12,8 @@ import kotlin.math.sqrt
 
 class Model private constructor(
     val modelDefinition: ModelDefinition,
-
+    val ambient: Int,
+    val contrast: Int,
     val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors2: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
@@ -41,6 +42,9 @@ class Model private constructor(
     var field1844: IntArray? = null
     var field1865: IntArray? = null
     var field1846: IntArray? = null
+
+    var isLit = false
+        private set
 
     private var bottomY = 0
     private var xYZMag = 0
@@ -83,6 +87,7 @@ class Model private constructor(
         baseY: Int,
         clipType: Int
     ) {
+        calculateBoundsCylinder()
         var left = xOff - xYZMag
         var right = xOff + xYZMag
         var top = yOff - xYZMag
@@ -171,12 +176,12 @@ class Model private constructor(
         }
     }
 
-    constructor(def: ModelDefinition, ambient: Int, contrast: Int) : this(def) {
+    fun light() {
+        assert(!isLit)
+        val def = modelDefinition
         val x = -50
         val y = -10
         val z = -50
-        val ambient = ambient + 64
-        val contrast = contrast + 768
         def.computeNormals()
         def.computeTextureUVCoordinates()
         val somethingMagnitude = sqrt(z * z + x * x + (y * y).toDouble()).toInt()
@@ -306,10 +311,12 @@ class Model private constructor(
                 }
             }
         }
-        calculateBoundsCylinder()
+        isLit = true
     }
 
     companion object {
+        fun lightFromDefinition(def: ModelDefinition, ambient: Int, contrast: Int) =
+            Model(def, ambient + 64, contrast + 768).apply { light() }
     }
 
     override fun toString(): String {
