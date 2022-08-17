@@ -33,6 +33,8 @@
   - Fix position and rotation of wall-attached objects (shields, coats of arms, windows, torches, etc.).
   - Add normal-merged lighting algorithm, removing the pillow-shaded effect some tiles erroneously had.
 
+- Fix chunk stacking in export when the preview is not working &ndash; [#108](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/108) (reported in [#104](https://github.com/ConnorDY/OSRS-Environment-Exporter/issues/104)) @ScoreUnder
+
 ### :wrench: Maintenance
 
 - Optimise glTF export a little &ndash; [#96](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/96) @ScoreUnder
