@@ -35,6 +35,8 @@
 
 - Fix chunk stacking in export when the preview is not working &ndash; [#108](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/108) (reported in [#104](https://github.com/ConnorDY/OSRS-Environment-Exporter/issues/104)) @ScoreUnder
 
+- Fix some areas not being importable into blender due to division by zero in UV calculation &ndash; [#110](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/110) @ScoreUnder
+
 ### :wrench: Maintenance
 
 - Optimise glTF export a little &ndash; [#96](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/96) @ScoreUnder
