@@ -44,7 +44,6 @@ class ObjectLoader(
     }
 
     private fun processOp(opcode: Int, def: ObjectDefinition, inputStream: ByteBuffer) {
-        logger.debug("Processing opcode {}", opcode)
         if (opcode == 1) {
             val length: Int = inputStream.readUnsignedByte()
             if (length > 0) {
@@ -192,6 +191,7 @@ class ObjectLoader(
         } else if (opcode == 82) {
             def.mapAreaId = inputStream.readUnsignedShort()
         } else if (opcode == 89) {
+            logger.debug("Processed ignored opcode 89 for $def")
         } else if (opcode == 92) {
             var transformVarbit: Int = inputStream.readUnsignedShort()
             if (transformVarbit == 0xFFFF) {
