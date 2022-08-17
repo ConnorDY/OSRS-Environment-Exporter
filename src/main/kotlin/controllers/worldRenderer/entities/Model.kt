@@ -12,9 +12,6 @@ import kotlin.math.sqrt
 class Model private constructor(
     val modelDefinition: ModelDefinition,
 
-    var orientation: Int = 0,
-    var x: Int = 0, // 3d world space position
-    var y: Int = 0,
     val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors2: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
@@ -321,6 +318,6 @@ class Model private constructor(
     }
 
     override fun toString(): String {
-        return "Model(${super.toString()}, x: $x y: $y, orientation: $orientation, definition: $modelDefinition)"
+        return "Model(${super.toString()}, definition: $modelDefinition)"
     }
 }
