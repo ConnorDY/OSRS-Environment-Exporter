@@ -344,6 +344,7 @@ class SceneRegionBuilder constructor(
             }
         }
 
+        sceneRegion.applyLighting(regionLoader)
         return sceneRegion
     }
 
@@ -366,8 +367,11 @@ class SceneRegionBuilder constructor(
         val modelDefinition: ModelDefinition =
             objectToModelConverter.toModel(objectDefinition, type, orientation) ?: return null
 
-        // FIXME: nonFlatShading affects fence doors
-        val model = Model.lightFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+        val model = if (objectDefinition.mergeNormals) {
+            Model.unlitFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+        } else {
+            Model.lightFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+        }
         model.debugType = type
 
         if (objectDefinition.contouredGround >= 0) {

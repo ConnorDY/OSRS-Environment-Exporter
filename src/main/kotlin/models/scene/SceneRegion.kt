@@ -5,19 +5,25 @@ import cache.definitions.Location
 import cache.definitions.LocationsDefinition
 import cache.definitions.OverlayDefinition
 import cache.definitions.RegionDefinition
+import cache.definitions.RegionDefinition.Companion.X
+import cache.definitions.RegionDefinition.Companion.Y
+import cache.definitions.RegionDefinition.Companion.Z
 import cache.definitions.UnderlayDefinition
+import cache.loaders.RegionLoader
+import cache.loaders.getTileHeight
 import controllers.worldRenderer.Constants
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.FloorDecoration
 import controllers.worldRenderer.entities.GameObject
+import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
 import controllers.worldRenderer.entities.WallDecoration
 import controllers.worldRenderer.entities.WallObject
 
 class SceneRegion(val locationsDefinition: LocationsDefinition) {
-    val tiles = Array(RegionDefinition.Z) { Array(RegionDefinition.X) { arrayOfNulls<SceneTile>(RegionDefinition.Y) } }
-    val tileBrightness = Array(RegionDefinition.X + 1) { IntArray(RegionDefinition.Y + 1) }
+    val tiles = Array(Z) { Array(X) { arrayOfNulls<SceneTile>(Y) } }
+    val tileBrightness = Array(X + 1) { IntArray(Y + 1) }
 
     fun addTile(
         z: Int,
@@ -223,7 +229,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
 
         entity.model.offsetX = width * REGION_SIZE
         entity.model.offsetY = length * REGION_SIZE
-        tile.gameObjects.add(GameObject(entity))
+        tile.gameObjects.add(GameObject(entity, x, y, width, length))
         tile.locations.add(location)
     }
 
@@ -236,10 +242,161 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         return tiles[z][x][y]!!
     }
 
+    fun applyLighting(regionLoader: RegionLoader) {
+        for (z in 0 until Z) {
+            for (x in 0 until X) {
+                for (y in 0 until Y) {
+                    val tile = tiles[z][x][y]
+                    if (tile != null) {
+                        val wall = tile.wall
+                        if (wall != null && !wall.entity.model.isLit) {
+                            val model1 = wall.entity.model
+                            model1.mergeLargeObjectNormals(regionLoader, z, x, y, 1, 1)
+
+                            val model2 = wall.entity2?.model
+                            if (model2 != null && !model2.isLit) {
+                                model2.mergeLargeObjectNormals(regionLoader, z, x, y, 1, 1)
+                                model1.mergeNormals(model2, 0, 0, 0, false)
+                                model2.light()
+                            }
+                            model1.light()
+                        }
+
+                        for (gameObject in tile.gameObjects) {
+                            val model = gameObject.entity.model
+                            if (!model.isLit) {
+                                model.mergeLargeObjectNormals(regionLoader, z, x, y, gameObject.xWidth, gameObject.yLength)
+                                model.light()
+                            }
+                        }
+
+                        val floorDecoration = tile.floorDecoration
+                        if (floorDecoration != null && !floorDecoration.entity.model.isLit) {
+                            val model = floorDecoration.entity.model
+                            model.mergeFloorNormalsNorthEast(z, x, y)
+                            model.light()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun Model.mergeFloorNormalsNorthEast(z: Int, x: Int, y: Int) {
+        // TODO these bounds were all off by one in the original code :S
+        if (x < X - 1) {
+            val model2 = tiles[z][x + 1][y]?.floorDecoration?.entity?.model
+            if (model2 != null && !model2.isLit) {
+                mergeNormals(model2, 128, 0, 0, true)
+            }
+        }
+        if (y < Y - 1) {
+            val model2 = tiles[z][x][y + 1]?.floorDecoration?.entity?.model
+            if (model2 != null && !model2.isLit) {
+                mergeNormals(model2, 0, 0, 128, true)
+            }
+        }
+        if (x < X - 1 && y < Y - 1) {
+            val model2 = tiles[z][x + 1][y + 1]?.floorDecoration?.entity?.model
+            if (model2 != null && !model2.isLit) {
+                mergeNormals(model2, 128, 0, 128, true)
+            }
+        }
+        if (x < X - 1 && y > 0) {
+            val model2 = tiles[z][x + 1][y - 1]?.floorDecoration?.entity?.model
+            if (model2 != null && !model2.isLit) {
+                mergeNormals(model2, 128, 0, -128, true)
+            }
+        }
+    }
+
+    private fun Model.mergeLargeObjectNormals(
+        regionLoader: RegionLoader,
+        z: Int,
+        x: Int,
+        y: Int,
+        width: Int,
+        length: Int
+    ) {
+        var hideOccludedFaces = true
+        var xMin = x
+        val xMax = x + width
+        val yMin = y - 1
+        val yMax = y + length
+        val regionTileX = locationsDefinition.regionId.shr(8).and(0xFF).shl(6)
+        val regionTileY = locationsDefinition.regionId.and(0xFF).shl(6)
+        val surroundingHeight = (
+            regionLoader.getTileHeight(z, regionTileX + x + 1, regionTileY + y) +
+                regionLoader.getTileHeight(z, regionTileX + x + 1, regionTileY + y + 1) +
+                regionLoader.getTileHeight(z, regionTileX + x, regionTileY + y + 1) +
+                regionLoader.getTileHeight(z, regionTileX + x, regionTileY + y)
+            ) / 4
+        for (zi in z..z + 1) {
+            if (zi == Z) continue
+            for (xi in xMin..xMax) {
+                if (xi !in 0 until X) continue
+                for (yi in yMin..yMax) {
+                    if (yi !in 0 until Y) continue
+                    if (hideOccludedFaces && xi < xMax && yi < yMax && (yi >= y || x == xi)) continue
+                    val tile = tiles[zi][xi][yi] ?: continue
+                    val thisSurroundingHeight = (
+                        regionLoader.getTileHeight(zi, regionTileX + xi + 1, regionTileY + yi) +
+                            regionLoader.getTileHeight(zi, regionTileX + xi + 1, regionTileY + yi + 1) +
+                            regionLoader.getTileHeight(zi, regionTileX + xi, regionTileY + yi + 1) +
+                            regionLoader.getTileHeight(zi, regionTileX + xi, regionTileY + yi)
+                        ) / 4
+                    val heightDiff = thisSurroundingHeight - surroundingHeight
+                    val wall = tile.wall
+                    if (wall != null) {
+                        val model1 = wall.entity.model
+                        if (!model1.isLit) {
+                            mergeNormals(
+                                model1,
+                                (1 - width) * 64 + (xi - x) * 128,
+                                heightDiff,
+                                (yi - y) * 128 + (1 - length) * 64,
+                                hideOccludedFaces
+                            )
+                        }
+                        val model2 = wall.entity2?.model
+                        if (model2 != null && !model2.isLit) {
+                            mergeNormals(
+                                model2,
+                                (1 - width) * 64 + (xi - x) * 128,
+                                heightDiff,
+                                (yi - y) * 128 + (1 - length) * 64,
+                                hideOccludedFaces
+                            )
+                        }
+                    }
+
+                    for (gameObject in tile.gameObjects) {
+                        val model = gameObject.entity.model
+                        if (!model.isLit) {
+                            val distanceOtherX = gameObject.x - x
+                            val distanceOtherY = gameObject.y - y
+                            val widthDiff = gameObject.xWidth - width
+                            val lengthDiff = gameObject.yLength - length
+                            mergeNormals(
+                                model,
+                                distanceOtherX * 128 + widthDiff * 64,
+                                heightDiff,
+                                distanceOtherY * 128 + lengthDiff * 64,
+                                hideOccludedFaces
+                            )
+                        }
+                    }
+                }
+            }
+            --xMin
+            hideOccludedFaces = false
+        }
+    }
+
     companion object {
-        val displacementX = intArrayOf(1, 0, -1, 0) // field456
-        val displacementY = intArrayOf(0, -1, 0, 1) // field457
-        val diagonalDisplacementX = intArrayOf(1, -1, -1, 1) // field458
-        val diagonalDisplacementY = intArrayOf(-1, -1, 1, 1) // field459
+        val displacementX = intArrayOf(1, 0, -1, 0)
+        val displacementY = intArrayOf(0, -1, 0, 1)
+        val diagonalDisplacementX = intArrayOf(1, -1, -1, 1)
+        val diagonalDisplacementY = intArrayOf(-1, -1, 1, 1)
     }
 }

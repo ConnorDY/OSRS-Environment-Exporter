@@ -290,7 +290,6 @@ open class ModelDefinition(
     }
 
     fun rotate(angle: Int) {
-        // method2663
         val var2: Int = SINE[angle]
         val var3: Int = COSINE[angle]
         for (var4 in 0 until vertexCount) {

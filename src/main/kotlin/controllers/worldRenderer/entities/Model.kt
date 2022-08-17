@@ -8,6 +8,9 @@ import cache.loaders.getTileHeight
 import controllers.worldRenderer.Constants
 import models.scene.SceneRegionBuilder.Companion.multiplyHslBrightness
 import utils.clamp
+import java.lang.ref.SoftReference
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 class Model private constructor(
@@ -43,8 +46,17 @@ class Model private constructor(
     var field1865: IntArray? = null
     var field1846: IntArray? = null
 
+    private var vertexNormals: Array<VertexNormal?>? = null
+    private var faceRenderTypes: ByteArray? = null
     var isLit = false
         private set
+
+    private var minXCoord = Int.MAX_VALUE
+    private var maxXCoord = Int.MIN_VALUE
+    private var modelHeight = 0
+    private var maxYCoord = Int.MIN_VALUE
+    private var minZCoord = Int.MAX_VALUE
+    private var maxZCoord = Int.MIN_VALUE
 
     private var bottomY = 0
     private var xYZMag = 0
@@ -75,6 +87,29 @@ class Model private constructor(
         xYZMag = (sqrt(xYZMag.toDouble()) + 0.99).toInt()
         radius = (sqrt((xYZMag * xYZMag + height * height).toDouble()) + 0.99).toInt()
         diameter = radius + (sqrt((xYZMag * xYZMag + bottomY * bottomY).toDouble()) + 0.99).toInt()
+    }
+
+    private fun computeBounds() {
+        // Check if we have already calculated this
+        if (maxXCoord >= minXCoord) return
+
+        modelHeight = 0
+        maxYCoord = Int.MIN_VALUE
+        minXCoord = Int.MAX_VALUE
+        maxXCoord = Int.MIN_VALUE
+        maxZCoord = Int.MIN_VALUE
+        minZCoord = Int.MAX_VALUE
+        for (i in 0 until modelDefinition.vertexCount) {
+            val x = modelDefinition.vertexPositionsX[i]
+            val y = modelDefinition.vertexPositionsY[i]
+            val z = modelDefinition.vertexPositionsZ[i]
+            minXCoord = min(minXCoord, x)
+            maxXCoord = max(maxXCoord, x)
+            modelHeight = max(modelHeight, -y)
+            maxYCoord = max(maxYCoord, y)
+            minZCoord = min(minZCoord, z)
+            maxZCoord = max(maxZCoord, z)
+        }
     }
 
     fun contourGround(
@@ -176,6 +211,83 @@ class Model private constructor(
         }
     }
 
+    // note: not threadsafe due to shared caches
+    fun mergeNormals(other: Model, xOffset: Int, yOffset: Int, zOffset: Int, hideOccludedFaces: Boolean) {
+        assert(!isLit)
+        computeBounds()
+        modelDefinition.computeNormals()
+        other.computeBounds()
+        other.modelDefinition.computeNormals()
+        ++normalsGeneration
+
+        val myNormals = this.modelDefinition.vertexNormals!!
+        val otherNormals = other.modelDefinition.vertexNormals!!
+
+        val myMatchingNormalsCache = getMatchingNormalsCache(1, modelDefinition.vertexCount)
+        val otherMatchingNormalsCache = getMatchingNormalsCache(2, other.modelDefinition.vertexCount)
+        assert(myMatchingNormalsCache !== otherMatchingNormalsCache)
+
+        var mergedVertices = 0
+        for (i in 0 until modelDefinition.vertexCount) {
+            val normal1 = myNormals[i]
+            if (normal1.magnitude == 0) continue
+            val y = vertexPositionsY[i] - yOffset
+            if (y > other.maxYCoord) continue
+            val x = vertexPositionsX[i] - xOffset
+            if (x < other.minXCoord || x > other.maxXCoord) continue
+            val z = vertexPositionsZ[i] - zOffset
+            if (z < other.minZCoord || z > other.maxZCoord) continue
+
+            for (j in 0 until other.modelDefinition.vertexCount) {
+                val normal2 = otherNormals[j]
+                if (x == other.vertexPositionsX[j]
+                    && z == other.vertexPositionsZ[j]
+                    && y == other.vertexPositionsY[j]
+                    && normal2.magnitude != 0) {
+                    getOrPutVertexNormal(i, normal1) += normal2
+                    other.getOrPutVertexNormal(j, normal2) += normal1
+
+                    ++mergedVertices
+                    myMatchingNormalsCache[i] = normalsGeneration
+                    otherMatchingNormalsCache[j] = normalsGeneration
+                }
+            }
+        }
+
+        if (mergedVertices >= 3 && hideOccludedFaces) {
+            for (i in 0 until modelDefinition.faceCount) {
+                if (myMatchingNormalsCache[modelDefinition.faceVertexIndices1[i]] == normalsGeneration &&
+                    myMatchingNormalsCache[modelDefinition.faceVertexIndices2[i]] == normalsGeneration &&
+                    myMatchingNormalsCache[modelDefinition.faceVertexIndices3[i]] == normalsGeneration
+                ) {
+                    ensureFaceRenderTypes()[i] = 2.toByte()
+                }
+            }
+            for (i in 0 until other.modelDefinition.faceCount) {
+                if (otherMatchingNormalsCache[other.modelDefinition.faceVertexIndices1[i]] == normalsGeneration &&
+                    otherMatchingNormalsCache[other.modelDefinition.faceVertexIndices2[i]] == normalsGeneration &&
+                    otherMatchingNormalsCache[other.modelDefinition.faceVertexIndices3[i]] == normalsGeneration
+                ) {
+                    other.ensureFaceRenderTypes()[i] = 2.toByte()
+                }
+            }
+        }
+    }
+
+    private fun ensureFaceRenderTypes(): ByteArray =
+        faceRenderTypes ?: (modelDefinition.faceRenderTypes?.clone() ?: ByteArray(modelDefinition.faceCount)).also { faceRenderTypes = it }
+
+    private fun ensureVertexNormals(): Array<VertexNormal?> =
+        vertexNormals ?: arrayOfNulls<VertexNormal>(modelDefinition.vertexCount).also { vertexNormals = it }
+
+    private fun getVertexNormal(i: Int): VertexNormal =
+        vertexNormals?.get(i) ?: modelDefinition.vertexNormals!![i]
+
+    private fun getOrPutVertexNormal(i: Int, default: VertexNormal): VertexNormal {
+        val vertexNormals = ensureVertexNormals()
+        return vertexNormals[i] ?: VertexNormal(default).also { vertexNormals[i] = it }
+    }
+
     fun light() {
         assert(!isLit)
         val def = modelDefinition
@@ -226,7 +338,7 @@ class Model private constructor(
         }
         val origFaceAlphas = def.faceAlphas
         for (faceIdx in 0 until def.faceCount) {
-            val faceRenderTypes = def.faceRenderTypes
+            val faceRenderTypes = this.faceRenderTypes ?: modelDefinition.faceRenderTypes
             var faceType =
                 if (faceRenderTypes == null) 0
                 else faceRenderTypes[faceIdx]
@@ -247,15 +359,15 @@ class Model private constructor(
                 when (faceType.toInt()) {
                     0 -> {
                         val var15: Int = def.faceColors[faceIdx].toInt() and 0xffff
-                        vertexNormal = def.vertexNormals!![def.faceVertexIndices1[faceIdx]]!!
+                        vertexNormal = getVertexNormal(def.faceVertexIndices1[faceIdx])
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
                         faceColors1[faceIdx] = multiplyHslBrightness(var15, tmp)
-                        vertexNormal = def.vertexNormals!![def.faceVertexIndices2[faceIdx]]!!
+                        vertexNormal = getVertexNormal(def.faceVertexIndices2[faceIdx])
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
                         faceColors2[faceIdx] = multiplyHslBrightness(var15, tmp)
-                        vertexNormal = def.vertexNormals!![def.faceVertexIndices3[faceIdx]]!!
+                        vertexNormal = getVertexNormal(def.faceVertexIndices3[faceIdx])
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
                         faceColors3[faceIdx] = multiplyHslBrightness(var15, tmp)
@@ -282,18 +394,15 @@ class Model private constructor(
             } else {
                 when (faceType.toInt()) {
                     0 -> {
-                        vertexNormal =
-                            def.vertexNormals!![def.faceVertexIndices1[faceIdx]]!!
+                        vertexNormal = getVertexNormal(def.faceVertexIndices1[faceIdx])
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
                         faceColors1[faceIdx] = tmp.clamp(2, 126)
-                        vertexNormal =
-                            def.vertexNormals!![def.faceVertexIndices2[faceIdx]]!!
+                        vertexNormal = getVertexNormal(def.faceVertexIndices2[faceIdx])
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
                         faceColors2[faceIdx] = tmp.clamp(2, 126)
-                        vertexNormal =
-                            def.vertexNormals!![def.faceVertexIndices3[faceIdx]]!!
+                        vertexNormal = getVertexNormal(def.faceVertexIndices3[faceIdx])
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
                         faceColors3[faceIdx] = tmp.clamp(2, 126)
@@ -315,8 +424,37 @@ class Model private constructor(
     }
 
     companion object {
+        private var normalsGeneration = 0
+        private var matchingNormalsRef1 = SoftReference<IntArray>(null)
+        private var matchingNormalsRef2 = SoftReference<IntArray>(null)
+
+        fun getMatchingNormalsCache(which: Int, capacity: Int): IntArray {
+            var cache = (if (which == 2) matchingNormalsRef2 else matchingNormalsRef1).get()
+            if (cache != null && cache.size >= capacity) return cache
+
+            cache = IntArray(capacity)
+            if (which == 2)
+                matchingNormalsRef2 = SoftReference(cache)
+            else
+                matchingNormalsRef1 = SoftReference(cache)
+            return cache
+        }
+
         fun lightFromDefinition(def: ModelDefinition, ambient: Int, contrast: Int) =
             Model(def, ambient + 64, contrast + 768).apply { light() }
+
+        fun unlitFromDefinition(modelDefinition: ModelDefinition, ambient: Int, contrast: Int): Model {
+            modelDefinition.computeNormals()
+            val faceColors = IntArray(modelDefinition.faceCount) { 960 /* red */ }
+            return Model(
+                modelDefinition,
+                faceColors1 = faceColors,
+                faceColors2 = faceColors.clone(),
+                faceColors3 = faceColors.clone(),
+                ambient = ambient + 64,
+                contrast = contrast + 768,
+            )
+        }
     }
 
     override fun toString(): String {
