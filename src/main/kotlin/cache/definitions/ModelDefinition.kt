@@ -33,7 +33,7 @@ open class ModelDefinition(
     var tag: Long = 0
 
     @Transient
-    var vertexNormals: Array<VertexNormal?>? = null
+    var vertexNormals: Array<VertexNormal>? = null
 
     @Transient
     var faceNormals: Array<FaceNormal?>? = null
@@ -82,14 +82,8 @@ open class ModelDefinition(
         if (vertexNormals != null) {
             return
         }
-        vertexNormals = arrayOfNulls(vertexCount)
-        var var1 = 0
-        while (var1 < vertexCount) {
-            vertexNormals!![var1] = VertexNormal()
-            ++var1
-        }
-        var1 = 0
-        while (var1 < faceCount) {
+        val vertexNormals = Array(vertexCount) { VertexNormal() }
+        for (var1 in 0 until faceCount) {
             val vertexA = faceVertexIndices1[var1]
             val vertexB = faceVertexIndices2[var1]
             val vertexC = faceVertexIndices3[var1]
@@ -122,17 +116,17 @@ open class ModelDefinition(
                 if (faceRenderTypes == null) 0
                 else faceRenderTypes[var1]
             if (var15.toInt() == 0) {
-                var var16: VertexNormal = vertexNormals!![vertexA]!!
+                var var16: VertexNormal = vertexNormals[vertexA]
                 var16.x += var11
                 var16.y += var12
                 var16.z += var13
                 ++var16.magnitude
-                var16 = vertexNormals!![vertexB]!!
+                var16 = vertexNormals[vertexB]
                 var16.x += var11
                 var16.y += var12
                 var16.z += var13
                 ++var16.magnitude
-                var16 = vertexNormals!![vertexC]!!
+                var16 = vertexNormals[vertexC]
                 var16.x += var11
                 var16.y += var12
                 var16.z += var13
@@ -147,8 +141,8 @@ open class ModelDefinition(
                 var17.y = var12
                 var17.z = var13
             }
-            ++var1
         }
+        this.vertexNormals = vertexNormals
     }
 
     /**
