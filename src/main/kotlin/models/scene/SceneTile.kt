@@ -12,8 +12,7 @@ import controllers.worldRenderer.entities.WallDecoration
 import controllers.worldRenderer.entities.WallObject
 import kotlin.collections.ArrayList
 
-class SceneTile(val z: Int, var x: Int, var y: Int) {
-
+class SceneTile {
     var locations: ArrayList<Location> = ArrayList()
     var cacheTile: RegionDefinition.Tile? = null
     var overlayDefinition: OverlayDefinition? = null

@@ -236,7 +236,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
     private fun ensureTile(z: Int, x: Int, y: Int): SceneTile {
         for (iz in z downTo 0) {
             if (tiles[iz][x][y] == null) {
-                tiles[iz][x][y] = SceneTile(iz, x, y)
+                tiles[iz][x][y] = SceneTile()
             }
         }
         return tiles[z][x][y]!!
