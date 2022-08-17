@@ -22,10 +22,9 @@ class Scene(
     val cols get() = regions[0].size
 
     init {
-        val listener: (Any) -> Unit = {
+        val listener: (Any?) -> Unit = {
             reloadRegions()
         }
-        debugOptionsModel.onlyType10Models.value.addListener(listener)
         debugOptionsModel.modelSubIndex.value.addListener(listener)
         debugOptionsModel.badModelIndexOverride.value.addListener(listener)
         debugOptionsModel.removeProperlyTypedModels.value.addListener(listener)

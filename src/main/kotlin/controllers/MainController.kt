@@ -90,7 +90,7 @@ class MainController constructor(
         )
         worldRendererController = WorldRendererController(
             Renderer(
-                camera, scene, SceneUploader(),
+                camera, scene, SceneUploader(debugOptions),
                 TextureManager(
                     SpriteLoader(cacheLibrary), textureLoader
                 ),
