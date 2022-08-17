@@ -27,6 +27,9 @@
 
 - Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
 - Made input smoother when FPS limit is turned on &ndash; [#97](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/97) @ScoreUnder
+- Multiple cache decoding fixes &ndash; [#106](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/106) @ScoreUnder
+  - Fix position and rotation of wall-attached objects (shields, coats of arms, windows, torches, etc.).
+  - Add normal-merged lighting algorithm, removing the pillow-shaded effect some tiles erroneously had.
 
 ### :wrench: Maintenance
 
