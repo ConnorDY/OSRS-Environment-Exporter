@@ -9,8 +9,8 @@ import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
-import models.FrameRateModel
 import models.DebugOptionsModel
+import models.FrameRateModel
 import models.config.ConfigOptions
 import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
@@ -83,6 +83,8 @@ import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.lwjgl.opengl.awt.GLData
 import org.slf4j.LoggerFactory
 import java.awt.event.ActionListener
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.nio.IntBuffer
 import kotlin.math.min
 
@@ -181,10 +183,19 @@ class Renderer(
             }
         }
 
-        inputHandler = InputHandler(glCanvas, camera, scene, configOptions)
+        inputHandler = InputHandler(glCanvas, camera, scene, configOptions, frameRateModel)
         glCanvas.addKeyListener(inputHandler)
         glCanvas.addMouseListener(inputHandler)
         glCanvas.addMouseMotionListener(inputHandler)
+        glCanvas.addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent?) {
+                frameRateModel.notifyNeedFrames()
+            }
+        })
+
+        scene.sceneChangeListeners.add {
+            frameRateModel.notifyNeedFrames()
+        }
 
         lastStretchedCanvasHeight = -1
         lastStretchedCanvasWidth = -1

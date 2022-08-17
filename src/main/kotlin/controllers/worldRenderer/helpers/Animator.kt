@@ -59,6 +59,13 @@ class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: Fram
                         endFrameTime
                     }
 
+                    synchronized(frameRateModel.updateNotifier) {
+                        if (frameRateModel.powerSavingMode.get() && !frameRateModel.needAnotherFrame) {
+                            frameRateModel.updateNotifier.wait()
+                        }
+                        frameRateModel.needAnotherFrame = false
+                    }
+
                     // Re-queue render task
                     SwingUtilities.invokeLater(timerTick)
                 }

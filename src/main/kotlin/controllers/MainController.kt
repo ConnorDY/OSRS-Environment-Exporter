@@ -17,8 +17,8 @@ import controllers.worldRenderer.Renderer
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
-import models.FrameRateModel
 import models.DebugOptionsModel
+import models.FrameRateModel
 import models.config.ConfigOptions
 import models.github.GitHubRelease
 import models.scene.Scene
@@ -68,7 +68,7 @@ class MainController constructor(
         preferredSize = Dimension(1600, 800)
 
         val camera = Camera()
-        val frameRateModel = FrameRateModel()
+        val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
         val debugOptions = DebugOptionsModel()
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
