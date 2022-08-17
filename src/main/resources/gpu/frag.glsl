@@ -72,7 +72,7 @@ void main() {
     if (c.a <= hash) discard;
   } else if (alphaMode == ALPHA_MODE_ORDERED_DITHER) {
     uint threshold = bit_reverse8(bit_interleave8(uint(gl_FragCoord.x) ^ uint(gl_FragCoord.y), uint(gl_FragCoord.x)));
-    if (uint(c.a * 256.0f) <= threshold) discard;
+    if (c.a <= float(threshold) / 256.0f) discard;
   }
   // else, blend or ignore means we don't do anything here
 
