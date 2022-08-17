@@ -5,6 +5,6 @@ object Utils {
         return (x ushr 6) shl 8 or (y ushr 6)
     }
 
-    fun isMacos() =
+    fun isMacOS() =
         System.getProperty("os.name").lowercase().startsWith("mac")
 }
