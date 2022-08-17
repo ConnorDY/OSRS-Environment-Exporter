@@ -254,6 +254,12 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
 
     private fun uploadModel(gltf: glTF, entity: Entity, tileX: Int, tileY: Int, height: Int) {
         val model = entity.model
+
+        val showOnly = debugOptionsModel.showOnlyModelType.value.get()
+        if (showOnly != null && showOnly != model.debugType) {
+            return // Model is hidden for debug reasons
+        }
+
         val triangleCount = model.modelDefinition.faceCount
 
         for (i in 0 until triangleCount) {

@@ -214,11 +214,12 @@ class Renderer(
         configOptions.priorityRenderer.value.addListener(::priorityRendererPref::set)
         configOptions.antiAliasing.value.addListener(::antiAliasingMode::set)
 
-        val redrawSceneListener: (Any) -> Unit = {
+        val redrawSceneListener: (Any?) -> Unit = {
             isSceneUploadRequired = true
         }
         debugOptionsModel.showTilePaint.value.addListener(redrawSceneListener)
         debugOptionsModel.showTileModels.value.addListener(redrawSceneListener)
+        debugOptionsModel.showOnlyModelType.value.addListener(redrawSceneListener)
 
         return glCanvas
     }

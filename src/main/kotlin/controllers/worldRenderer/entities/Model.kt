@@ -19,6 +19,8 @@ class Model private constructor(
     val faceColors2: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
 ) : Renderable {
+    /** The object type corresponding to this model. For debug purposes. */
+    var debugType: Int = -1
     override val computeObj = ComputeObj()
     override val renderFlags get() = super.renderFlags or (radius shl 12)
     override val renderUnordered get() = false

@@ -25,7 +25,6 @@ class Scene(
         val listener: (Any?) -> Unit = {
             reloadRegions()
         }
-        debugOptionsModel.showOnlyModelType.value.addListener(listener)
         debugOptionsModel.modelSubIndex.value.addListener(listener)
         debugOptionsModel.badModelIndexOverride.value.addListener(listener)
         debugOptionsModel.removeProperlyTypedModels.value.addListener(listener)

@@ -214,6 +214,11 @@ class SceneUploader(private val debugOptionsModel: DebugOptionsModel) {
     private fun uploadModel(entity: Entity, priorityRenderer: PriorityRenderer) {
         val model = entity.model
 
+        val showOnly = debugOptionsModel.showOnlyModelType.value.get()
+        if (showOnly != null && showOnly != model.debugType) {
+            return // Model is hidden for debug reasons
+        }
+
         if (model.sceneId == sceneId) {
             return // Model has already been uploaded
         }

@@ -17,7 +17,6 @@ class ObjectToModelConverter(
         val listener: (Any?) -> Unit = {
             litModelCache.clear()
         }
-        debugOptionsModel.showOnlyModelType.value.addEarlyListener(listener)
         debugOptionsModel.modelSubIndex.value.addEarlyListener(listener)
         debugOptionsModel.badModelIndexOverride.value.addEarlyListener(listener)
         debugOptionsModel.removeProperlyTypedModels.value.addEarlyListener(listener)
@@ -46,11 +45,6 @@ class ObjectToModelConverter(
         type: Int,
         orientation: Int
     ): ModelDefinition? {
-        val showOnly = debugOptionsModel.showOnlyModelType.value.get()
-        if (showOnly != null && showOnly != type) {
-            return null
-        }
-
         val modelIds = modelIds
         val modelTypes = modelTypes
         var modelDefinition: ModelDefinition? = null
