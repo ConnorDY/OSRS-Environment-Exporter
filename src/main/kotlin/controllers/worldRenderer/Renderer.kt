@@ -162,7 +162,7 @@ class Renderer(
         val glData = GLData()
         glData.majorVersion = 3
         glData.minorVersion = 1
-        glData.profile = GLData.Profile.CORE
+        glData.forwardCompatible = true
 
         val glCanvas = object : AWTGLCanvas(glData) {
             override fun initGL() {
