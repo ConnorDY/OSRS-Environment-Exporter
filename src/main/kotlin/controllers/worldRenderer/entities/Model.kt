@@ -6,6 +6,7 @@ import cache.definitions.data.VertexNormal
 import cache.loaders.RegionLoader
 import cache.loaders.getTileHeight
 import controllers.worldRenderer.Constants
+import models.scene.SceneRegionBuilder.Companion.multiplyHslBrightness
 import utils.clamp
 import kotlin.math.sqrt
 
@@ -244,22 +245,22 @@ class Model private constructor(
                         vertexNormal = def.vertexNormals!![def.faceVertexIndices1[faceIdx]]!!
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                        faceColors1[faceIdx] = method2608(var15, tmp)
+                        faceColors1[faceIdx] = multiplyHslBrightness(var15, tmp)
                         vertexNormal = def.vertexNormals!![def.faceVertexIndices2[faceIdx]]!!
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                        faceColors2[faceIdx] = method2608(var15, tmp)
+                        faceColors2[faceIdx] = multiplyHslBrightness(var15, tmp)
                         vertexNormal = def.vertexNormals!![def.faceVertexIndices3[faceIdx]]!!
                         tmp =
                             (y * vertexNormal.y + z * vertexNormal.z + x * vertexNormal.x) / (var7 * vertexNormal.magnitude) + ambient
-                        faceColors3[faceIdx] = method2608(var15, tmp)
+                        faceColors3[faceIdx] = multiplyHslBrightness(var15, tmp)
                     }
                     1 -> {
                         faceNormal = def.faceNormals!![faceIdx]!!
                         tmp =
                             (y * faceNormal.y + z * faceNormal.z + x * faceNormal.x) / (var7 / 2 + var7) + ambient
                         faceColors1[faceIdx] =
-                            method2608(
+                            multiplyHslBrightness(
                                 def.faceColors[faceIdx].toInt() and 0xffff,
                                 tmp
                             )
@@ -309,12 +310,6 @@ class Model private constructor(
     }
 
     companion object {
-        fun method2608(var0: Int, var1: Int): Int {
-            var var1 = var1
-            var1 = (var0 and 0x007f) * var1 shr 7
-            var1 = var1.clamp(2, 126)
-            return (var0 and 0xff80) + var1
-        }
     }
 
     override fun toString(): String {

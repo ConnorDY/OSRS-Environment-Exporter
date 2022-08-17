@@ -406,7 +406,7 @@ class SceneRegionBuilder constructor(
     companion object {
         val sceneRegionCache = hashMapOf<Int, SceneRegion>()
 
-        private fun multiplyHslBrightness(hsl: Int, brightness: Int): Int {
+        fun multiplyHslBrightness(hsl: Int, brightness: Int): Int {
             val adjustedBrightness = ((hsl and 0x7f) * brightness) / 0x80
             return (hsl and 0xff80) + adjustedBrightness.clamp(2, 126)
         }
