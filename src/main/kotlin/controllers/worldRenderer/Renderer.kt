@@ -9,7 +9,7 @@ import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
-import models.DebugModel
+import models.FrameRateModel
 import models.DebugOptionsModel
 import models.config.ConfigOptions
 import models.scene.REGION_HEIGHT
@@ -92,7 +92,7 @@ class Renderer(
     private val sceneUploader: SceneUploader,
     private val textureManager: TextureManager,
     private val configOptions: ConfigOptions,
-    private val debugModel: DebugModel,
+    private val frameRateModel: FrameRateModel,
     private val debugOptionsModel: DebugOptionsModel,
 ) {
     enum class PreferredPriorityRenderer(val humanReadableName: String, val factory: () -> PriorityRenderer) {
@@ -203,7 +203,7 @@ class Renderer(
             }
         )
 
-        animator = Animator(glCanvas)
+        animator = Animator(glCanvas, frameRateModel)
         this.glCanvas = glCanvas
 
         configOptions.fpsCap.value.addListener {
@@ -279,11 +279,6 @@ class Renderer(
     private var lastUpdate = System.nanoTime()
 
     fun display(glCanvas: AWTGLCanvas) {
-        val animator = animator
-        if (animator != null) {
-            debugModel.fps.set("%.0f".format(animator.lastFPS))
-        }
-
         pendingGlThreadActions.forEach(Runnable::run)
         pendingGlThreadActions.clear()
 
