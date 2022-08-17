@@ -110,6 +110,9 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
         tile.wallDecoration?.entity?.let {
             uploadIfStatic(gltf, it, x, y, it.height)
         }
+        tile.wallDecoration?.entity2?.let {
+            uploadIfStatic(gltf, it, x, y, it.height)
+        }
 
         tile.gameObjects.map { it.entity }.forEach {
             uploadIfStatic(gltf, it, x, y, it.height)

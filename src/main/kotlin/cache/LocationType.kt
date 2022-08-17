@@ -22,29 +22,29 @@ enum class LocationType(val id: Int) {
     RECTANGULAR_CORNER(3),
 
     /**
-     * An object placed on a wall that can be interacted with by a player.
+     * A decoration, such as a torch, placed on the inside of a wall.
      */
-    INTERACTABLE_WALL_DECORATION(4),
+    INSIDE_WALL_DECORATION(4),
 
     /**
-     * A wall that you can interact with.
+     * A decoration, such as a torch, placed on the outside of a wall.
      */
-    INTERACTABLE_WALL(5),
+    OUTSIDE_WALL_DECORATION(5),
 
     /**
-     * A decoration, such as a torch, on the outside of a wall.
+     * A decoration, such as a torch, placed on the outside of a diagonal wall.
      */
-    OUTSIDE_WALL_DECORATION(6),
+    DIAGONAL_OUTSIDE_WALL_DECORATION(6),
 
     /**
-     * A decoration, such as a torch, on the inside of a wall.
+     * A decoration, such as a torch, placed on the inside of a diagonal wall.
      */
-    INSIDE_WALL_DECORATION(7),
+    DIAGONAL_INSIDE_WALL_DECORATION(7),
 
     /**
-     * An object placed on a diagonal wall that can be interacted with by a player.
+     * A decoration, such as a window, placed on both sides of a diagonal wall.
      */
-    DIAGONAL_INTERACTABLE_WALL_DECORATION(8),
+    DIAGONAL_WALL_DECORATION(8),
 
     /**
      * A wall joint that is presented diagonally with respect to the tile.

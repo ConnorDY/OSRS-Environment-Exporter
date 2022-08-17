@@ -1,5 +1,6 @@
 package cache.definitions.converters
 
+import cache.LocationType
 import cache.definitions.ModelDefinition
 import cache.definitions.ObjectDefinition
 import cache.loaders.ModelLoader
@@ -53,7 +54,7 @@ class ObjectToModelConverter(
                 return null
             }
             val modelLen = modelIds.size
-            val isRotated = isRotated xor (type == 2 && orientation > 3)
+            val isRotated = isRotated xor (type == LocationType.WALL_CORNER.id && orientation > 3)
 
             val debugSubIndex = debugOptionsModel.modelSubIndex.value.get()
             if (modelLen > 1 && debugSubIndex != -1) {
@@ -107,7 +108,7 @@ class ObjectToModelConverter(
             modelDefinition.rotateMulti()
         }
 
-        if (type == 4 && orientation > 3) {
+        if (type in LocationType.INSIDE_WALL_DECORATION.id..LocationType.DIAGONAL_WALL_DECORATION.id && orientation > 3) {
             modelDefinition.rotate(256)
             modelDefinition.translate(45, 0, -45)
         }

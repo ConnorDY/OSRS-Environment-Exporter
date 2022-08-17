@@ -514,7 +514,18 @@ class Renderer(
                 x,
                 y,
                 wallDecorationEntity.height,
-                LocationType.INTERACTABLE_WALL_DECORATION.id
+                LocationType.INSIDE_WALL_DECORATION.id
+            )
+        }
+
+        val wallDecorationEntity2 = tile.wallDecoration?.entity2
+        if (wallDecorationEntity2 != null) {
+            priorityRenderer.positionRenderable(
+                wallDecorationEntity2.model,
+                x,
+                y,
+                wallDecorationEntity2.height,
+                LocationType.INSIDE_WALL_DECORATION.id
             )
         }
 

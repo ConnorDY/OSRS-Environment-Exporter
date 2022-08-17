@@ -93,6 +93,10 @@ class SceneUploader(private val debugOptionsModel: DebugOptionsModel) {
             if (entity is StaticObject) {
                 uploadModel(entity, priorityRenderer)
             }
+            val entity2 = wallDecoration.entity2
+            if (entity2 is StaticObject) {
+                uploadModel(entity2, priorityRenderer)
+            }
         }
 
         val floorDecoration = tile.floorDecoration

@@ -289,38 +289,58 @@ class SceneRegionBuilder constructor(
                 getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, z, baseX, baseY)
                     ?: return@forEach
 
-            if (loc.type == LocationType.LENGTHWISE_WALL.id) {
-                sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
-            } else if (loc.type == LocationType.WALL_CORNER.id) {
-                val entity1 =
-                    getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)!!
-                val entity2 =
-                    getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)
-                sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
-            } else if (loc.type in LocationType.INTERACTABLE_WALL.id..LocationType.DIAGONAL_WALL.id) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-                return@forEach
-            } else if (loc.type == LocationType.FLOOR_DECORATION.id) {
-                sceneRegion.newFloorDecoration(z, x, y, staticObject)
-            } else if (loc.type == LocationType.INTERACTABLE_WALL_DECORATION.id) {
-                sceneRegion.newWallDecoration(z, x, y, staticObject)
-            } else if (loc.type == LocationType.INTERACTABLE.id) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-            } else if (loc.type == LocationType.DIAGONAL_INTERACTABLE.id) {
-                staticObject.model.rotate(0x100)
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-            } else if (loc.type == LocationType.TRIANGULAR_CORNER.id) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-            } else if (loc.type == LocationType.RECTANGULAR_CORNER.id) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-            }
+            when (loc.type) {
+                LocationType.LENGTHWISE_WALL.id,
+                LocationType.TRIANGULAR_CORNER.id,
+                LocationType.RECTANGULAR_CORNER.id -> {
+                    sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
+                }
+                LocationType.WALL_CORNER.id -> {
+                    val entity1 = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)!!
+                    val entity2 = getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)
+                    sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
+                }
+                LocationType.INSIDE_WALL_DECORATION.id -> {
+                    sceneRegion.newWallDecoration(z, x, y, staticObject)
+                }
+                LocationType.OUTSIDE_WALL_DECORATION.id -> {
+                    val (displacementX, displacementY) = sceneRegion.getWallDisplacement(loc, z, x, y)
+                    sceneRegion.newWallDecoration(z, x, y, staticObject, displacementX = displacementX, displacementY = displacementY)
+                }
+                LocationType.DIAGONAL_OUTSIDE_WALL_DECORATION.id -> {
+                    val (displacementX, displacementY) = sceneRegion.getWallDiagonalDisplacement(loc, z, x, y)
+                    val entity = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)!!
+                    sceneRegion.newWallDecoration(z, x, y, entity, displacementX = displacementX / 2, displacementY = displacementY / 2)
+                }
+                LocationType.DIAGONAL_INSIDE_WALL_DECORATION.id -> {
+                    val entity = getEntity(objectDefinition, loc.type, ((loc.orientation + 2) and 3) + 4, xSize, height, ySize, z, baseX, baseY)!!
+                    sceneRegion.newWallDecoration(z, x, y, entity)
+                }
+                LocationType.DIAGONAL_WALL_DECORATION.id -> {
+                    val (displacementX, displacementY) = sceneRegion.getWallDiagonalDisplacement(loc, z, x, y)
 
-            // Other objects ?
-            else if (loc.type in 12..21) {
-                sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
-                logger.debug("Load new object? ${loc.type}")
-            } else {
-                logger.warn("SceneRegionLoader Loading something new? ${loc.type}")
+                    val entity1 = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)!!
+                    val entity2 = getEntity(objectDefinition, loc.type, ((loc.orientation + 2) and 3) + 4, xSize, height, ySize, z, baseX, baseY)!!
+
+                    sceneRegion.newWallDecoration(z, x, y, entity1, entity2, displacementX / 2, displacementY / 2)
+                }
+                LocationType.DIAGONAL_WALL.id -> {
+                    sceneRegion.newPseudoWall(z, x, y, width, length, staticObject, loc)
+                }
+                LocationType.INTERACTABLE.id,
+                in LocationType.SLOPED_ROOF.id..LocationType.SLOPED_ROOF_OVERHANG_HARD_OUTER_CORNER.id -> {
+                    sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
+                }
+                LocationType.DIAGONAL_INTERACTABLE.id -> {
+                    staticObject.model.rotate(0x100)
+                    sceneRegion.newGameObject(z, x, y, width, length, staticObject, loc)
+                }
+                LocationType.FLOOR_DECORATION.id -> {
+                    sceneRegion.newFloorDecoration(z, x, y, staticObject)
+                }
+                else -> {
+                    logger.warn("SceneRegionLoader Loading something new? ${loc.type}")
+                }
             }
         }
 

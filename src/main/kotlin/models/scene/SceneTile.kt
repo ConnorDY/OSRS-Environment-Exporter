@@ -14,7 +14,7 @@ import kotlin.collections.ArrayList
 
 class SceneTile(val z: Int, var x: Int, var y: Int) {
 
-    var locations: ArrayList<Location> = ArrayList<Location>()
+    var locations: ArrayList<Location> = ArrayList()
     var cacheTile: RegionDefinition.Tile? = null
     var overlayDefinition: OverlayDefinition? = null
     var underlayDefinition: UnderlayDefinition? = null
@@ -25,5 +25,6 @@ class SceneTile(val z: Int, var x: Int, var y: Int) {
     var floorDecoration: FloorDecoration? = null
     var wallDecoration: WallDecoration? = null
     var wall: WallObject? = null
+    var wallDisplacement: Int = 16
     val gameObjects: ArrayList<GameObject> = ArrayList()
 }

@@ -25,9 +25,14 @@ class Model private constructor(
     override val renderFlags get() = super.renderFlags or (radius shl 12)
     override val renderUnordered get() = false
     override val faceCount get() = modelDefinition.faceCount
-    override var renderOffsetX = 0
+    override val renderOffsetX get() = offsetX + wallAttachedOffsetX
     override var renderOffsetY = 0
-    override var renderOffsetZ = 0
+    override val renderOffsetZ get() = offsetY + wallAttachedOffsetY
+
+    var offsetX = 0
+    var offsetY = 0
+    var wallAttachedOffsetX = 0
+    var wallAttachedOffsetY = 0
 
     val vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
     val vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
