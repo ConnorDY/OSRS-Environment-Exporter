@@ -51,7 +51,7 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
         )
         add(
             editBox,
-            GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, defaultInset, 0, 0)
+            GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, defaultInset, 0, 0)
         )
         val label = JLabel(option.humanReadableName)
         label.displayedMnemonic = option.mnemonic.code
@@ -81,7 +81,7 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
         editBox.isEnabled = value != null
         add(
             editBox,
-            GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, defaultInset, 0, 0)
+            GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, defaultInset, 0, 0)
         )
         val checkbox = JCheckBox(option.humanReadableName, editBox.isEnabled)
         checkbox.mnemonic = option.mnemonic.code
@@ -145,7 +145,7 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
         editBox.selectedItem = option.value.get()
         add(
             editBox,
-            GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, defaultInset, 0, 0)
+            GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, defaultInset, 0, 0)
         )
         val label = JLabel(option.humanReadableName)
         label.displayedMnemonic = option.mnemonic.code

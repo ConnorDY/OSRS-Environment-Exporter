@@ -214,6 +214,13 @@ class Renderer(
         configOptions.priorityRenderer.value.addListener(::priorityRendererPref::set)
         configOptions.antiAliasing.value.addListener(::antiAliasingMode::set)
 
+        val redrawSceneListener: (Any?) -> Unit = {
+            isSceneUploadRequired = true
+        }
+        debugOptionsModel.showTilePaint.value.addListener(redrawSceneListener)
+        debugOptionsModel.showTileModels.value.addListener(redrawSceneListener)
+        debugOptionsModel.showOnlyModelType.value.addListener(redrawSceneListener)
+
         return glCanvas
     }
 
@@ -507,7 +514,18 @@ class Renderer(
                 x,
                 y,
                 wallDecorationEntity.height,
-                LocationType.INTERACTABLE_WALL_DECORATION.id
+                LocationType.INSIDE_WALL_DECORATION.id
+            )
+        }
+
+        val wallDecorationEntity2 = tile.wallDecoration?.entity2
+        if (wallDecorationEntity2 != null) {
+            priorityRenderer.positionRenderable(
+                wallDecorationEntity2.model,
+                x,
+                y,
+                wallDecorationEntity2.height,
+                LocationType.INSIDE_WALL_DECORATION.id
             )
         }
 
@@ -523,7 +541,7 @@ class Renderer(
     }
 
     fun exportScene() {
-        SceneExporter(textureManager).exportSceneToFile(scene, this)
+        SceneExporter(textureManager, debugOptionsModel).exportSceneToFile(scene, this)
     }
 
     private fun uploadScene() {
