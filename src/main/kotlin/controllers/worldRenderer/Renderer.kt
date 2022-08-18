@@ -12,7 +12,6 @@ import controllers.worldRenderer.shaders.ShaderException
 import models.DebugModel
 import models.DebugOptionsModel
 import models.config.ConfigOptions
-import models.scene.REGION_HEIGHT
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
@@ -124,8 +123,6 @@ class Renderer(
 
     private lateinit var priorityRenderer: PriorityRenderer
 
-    var zLevelsSelected = Array(REGION_HEIGHT) { true }
-
     // Uniforms
     private var uniDrawDistance = 0
     private var uniViewProjectionMatrix = 0
@@ -217,6 +214,11 @@ class Renderer(
         val redrawSceneListener: (Any?) -> Unit = {
             isSceneUploadRequired = true
         }
+
+        debugOptionsModel.zLevelsSelected.forEach { level ->
+            level.addListener(redrawSceneListener)
+        }
+
         debugOptionsModel.showTilePaint.value.addListener(redrawSceneListener)
         debugOptionsModel.showTileModels.value.addListener(redrawSceneListener)
         debugOptionsModel.showOnlyModelType.value.addListener(redrawSceneListener)
@@ -440,8 +442,8 @@ class Renderer(
     }
 
     private fun drawTiles() {
-        zLevelsSelected.forEachIndexed { z, visible ->
-            if (visible) {
+        debugOptionsModel.zLevelsSelected.forEachIndexed { z, visible ->
+            if (visible.get()) {
                 for (x in 0 until scene.cols * REGION_SIZE) {
                     for (y in 0 until scene.rows * REGION_SIZE) {
                         scene.getTile(z, x, y)?.let { drawTile(it, x, y) }
@@ -536,10 +538,6 @@ class Renderer(
                 LocationType.INTERACTABLE.id
             )
         }
-    }
-
-    fun exportScene() {
-        SceneExporter(textureManager, debugOptionsModel).exportSceneToFile(scene, this)
     }
 
     private fun uploadScene() {

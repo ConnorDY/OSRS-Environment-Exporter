@@ -1,7 +1,9 @@
 package models
 
+import cache.definitions.RegionDefinition.Companion.Z
 import models.config.ConfigOption
 import models.config.ConfigOptionType
+import utils.ObservableValue
 
 class DebugOptionsModel {
     val removeProperlyTypedModels = ConfigOption("", ConfigOptionType.boolean, false, "Remove properly-typed models", 'E')
@@ -13,4 +15,6 @@ class DebugOptionsModel {
     val showTileModels = ConfigOption("", ConfigOptionType.boolean, true, "Show tile models", 'M')
 
     val all = listOf(showOnlyModelType, showTilePaint, showTileModels, resetCameraOnSceneChange, removeProperlyTypedModels, modelSubIndex, badModelIndexOverride)
+
+    val zLevelsSelected = Array(Z) { true }.map(::ObservableValue)
 }
