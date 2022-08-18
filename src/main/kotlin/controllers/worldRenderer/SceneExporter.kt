@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter
 class SceneExporter constructor(private val textureManager: TextureManager, private val debugOptionsModel: DebugOptionsModel) {
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
-    fun exportSceneToFile(scene: Scene, renderer: Renderer) {
+    fun exportSceneToFile(scene: Scene) {
         // create output directory if it does not yet exist
         File(AppConstants.OUTPUT_DIRECTORY).mkdirs()
 
@@ -45,8 +45,8 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
                 val region = scene.getRegion(rx, ry) ?: continue
                 val baseX = rx * REGION_SIZE
                 val baseY = ry * REGION_SIZE
-                renderer.zLevelsSelected.forEachIndexed { z, visible ->
-                    if (visible) {
+                debugOptionsModel.zLevelsSelected.forEachIndexed { z, visible ->
+                    if (visible.get()) {
                         val tilePlane = region.tiles[z]
                         for (x in 0 until REGION_SIZE) {
                             val tileCol = tilePlane[x]

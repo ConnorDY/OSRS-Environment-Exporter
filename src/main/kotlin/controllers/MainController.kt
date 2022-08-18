@@ -14,6 +14,7 @@ import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.Renderer
+import controllers.worldRenderer.SceneExporter
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
@@ -59,6 +60,8 @@ class MainController constructor(
     private val animationTimer: Timer
     private val worldRendererController: WorldRendererController
     private val logger = LoggerFactory.getLogger(this::class.java)
+    private val debugOptions = DebugOptionsModel()
+    private val exporter: SceneExporter
     private val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
 
     val scene: Scene
@@ -69,7 +72,6 @@ class MainController constructor(
         preferredSize = Dimension(1600, 800)
 
         val camera = Camera()
-        val debugOptions = DebugOptionsModel()
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
@@ -88,12 +90,12 @@ class MainController constructor(
             ),
             debugOptions,
         )
+        val textureManager = TextureManager(SpriteLoader(cacheLibrary), textureLoader)
+        exporter = SceneExporter(textureManager, debugOptions)
         worldRendererController = WorldRendererController(
             Renderer(
                 camera, scene, SceneUploader(debugOptions),
-                TextureManager(
-                    SpriteLoader(cacheLibrary), textureLoader
-                ),
+                textureManager,
                 configOptions,
                 frameRateModel,
                 debugOptions,
@@ -143,11 +145,12 @@ class MainController constructor(
             Box.createGlue().let(::add)
 
             JLabel("Z Layers:").let(::add)
-            worldRendererController.renderer.zLevelsSelected.forEachIndexed { z, visible ->
+            debugOptions.zLevelsSelected.forEachIndexed { z, visible ->
                 JCheckBox("Z$z").apply {
                     mnemonic = z + '0'.code
-                    isSelected = visible
-                    addActionListener { onZLevelSelected(z, isSelected) }
+                    isSelected = visible.get()
+                    visible.addListener { isSelected = it }
+                    addActionListener { visible.set(isSelected) }
                 }.let(::add)
             }
 
@@ -253,19 +256,13 @@ class MainController constructor(
     }
 
     private fun exportClicked(event: ActionEvent) {
-        worldRendererController.renderer.exportScene()
+        exporter.exportSceneToFile(scene)
         JOptionPane.showMessageDialog(
             this,
             "Exported as glTF.",
             "Export Completed",
             JOptionPane.INFORMATION_MESSAGE or JOptionPane.OK_OPTION
         )
-    }
-
-    private fun onZLevelSelected(z: Int, isSelected: Boolean) {
-        worldRendererController.renderer.zLevelsSelected[z] = isSelected
-        worldRendererController.renderer.isSceneUploadRequired = true
-        frameRateModel.notifyNeedFrames()
     }
 
     private fun checkForUpdates() {
