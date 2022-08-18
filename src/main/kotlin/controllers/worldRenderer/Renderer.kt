@@ -197,6 +197,10 @@ class Renderer(
             frameRateModel.notifyNeedFrames()
         }
 
+        frameRateModel.powerSavingMode.addListener {
+            frameRateModel.notifyNeedFrames()
+        }
+
         lastStretchedCanvasHeight = -1
         lastStretchedCanvasWidth = -1
         lastAntiAliasingMode = null
