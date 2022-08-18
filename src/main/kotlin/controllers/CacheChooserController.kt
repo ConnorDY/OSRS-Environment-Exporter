@@ -76,21 +76,25 @@ class CacheChooserController(
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
         val lblStatusText = JLabel()
+        val lblErrorText = JLabel().apply {
+            foreground = Color.RED
+        }
         btnDownload.addActionListener {
             btnDownload.isEnabled = false
             listCaches.selectedValue?.let {
                 lblStatusText.text = "Downloading cache $it, please wait.."
                 txtCacheLocation.text = ""
 
-                downloadCache(it) { path ->
+                downloadCache(it, { path ->
                     lblStatusText.text = ""
                     txtCacheLocation.text = path
                     btnDownload.isEnabled = true
-                }
+                }, { err ->
+                    lblStatusText.text = ""
+                    lblErrorText.text = "Failed to download cache: $err"
+                    btnDownload.isEnabled = true
+                })
             }
-        }
-        val lblErrorText = JLabel().apply {
-            foreground = Color.RED
         }
         val scrollErrorText = JScrollPane(lblErrorText)
 
@@ -275,7 +279,8 @@ class CacheChooserController(
 
     private fun downloadCache(
         cacheName: String,
-        onComplete: (String) -> Unit
+        onComplete: (String) -> Unit,
+        onFailure: (IOException) -> Unit,
     ) {
         val destFolder = File("${AppConstants.CACHES_DIRECTORY}/${cacheName.removeSuffix(".tar.gz")}")
 
@@ -317,6 +322,9 @@ class CacheChooserController(
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
+                SwingUtilities.invokeLater {
+                    onFailure(e)
+                }
             }
         }.start()
     }
