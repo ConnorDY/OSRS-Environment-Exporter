@@ -68,9 +68,7 @@ class CacheChooserController(
             isVisible = false
             selectionMode = ListSelectionModel.SINGLE_SELECTION
             addListSelectionListener {
-                if (selectedIndex != -1) {
-                    btnDownload.isEnabled = true
-                }
+                btnDownload.isEnabled = selectedIndex != -1
             }
         }
         val txtCacheLocation = JTextField().apply {
