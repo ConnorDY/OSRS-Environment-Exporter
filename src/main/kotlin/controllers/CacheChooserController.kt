@@ -346,13 +346,7 @@ class CacheChooserController(
         val cacheLibrary = try {
             CacheLibrary("${txtCacheLocation.text}/cache")
         } catch (e: Exception) {
-            lblErrorText.text = when (e) {
-                is FileNotFoundException -> "Bad cache: Missing required file: ${e.message}"
-                else -> {
-                    e.printStackTrace()
-                    e.message
-                }
-            }
+            lblErrorText.text = defaultErrorText(e)
             btnLaunch.isEnabled = false
             return
         }
@@ -360,17 +354,21 @@ class CacheChooserController(
             XteaManager(txtCacheLocation.text)
         } catch (e: Exception) {
             lblErrorText.text = when (e) {
-                is FileNotFoundException -> "Bad cache: Missing required file: ${e.message}"
                 is JsonMappingException -> "Bad cache: Could not decode xteas file: ${e.message}"
-                else -> {
-                    e.printStackTrace()
-                    e.message
-                }
+                else -> defaultErrorText(e)
             }
             btnLaunch.isEnabled = false
             return
         }
         xteaAndCache = Pair(xtea, cacheLibrary)
+    }
+
+    private fun defaultErrorText(e: Exception) = when (e) {
+        is FileNotFoundException -> "Bad cache: Missing required file: ${e.message}"
+        else -> {
+            e.printStackTrace()
+            e.message
+        }
     }
 
     companion object {
