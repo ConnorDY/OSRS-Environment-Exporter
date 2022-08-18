@@ -17,6 +17,7 @@ import java.awt.Dimension
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
@@ -344,7 +345,8 @@ class CacheChooserController(
         val cacheLibrary = try {
             CacheLibrary("${txtCacheLocation.text}/cache")
         } catch (e: Exception) {
-            e.printStackTrace()
+            if (e !is FileNotFoundException)
+                e.printStackTrace()
             lblErrorText.text = e.message
             btnLaunch.isEnabled = false
             return
@@ -352,7 +354,8 @@ class CacheChooserController(
         val xtea = try {
             XteaManager(txtCacheLocation.text)
         } catch (e: Exception) {
-            e.printStackTrace()
+            if (e !is FileNotFoundException)
+                e.printStackTrace()
             lblErrorText.text = e.message
             btnLaunch.isEnabled = false
             return
