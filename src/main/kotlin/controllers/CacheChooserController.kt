@@ -209,6 +209,9 @@ class CacheChooserController(
 
         populateCachesList(cacheListModel, listCaches, listCachesPlaceholder)
         txtCacheLocation.text = configOptions.lastCacheDir.value.get()
+        if (txtCacheLocation.text.isEmpty()) {
+            btnLaunch.isEnabled = false
+        }
 
         if (configOptions.debug.value.get()) {
             launch(lblStatusText, txtCacheLocation, btnLaunch)
