@@ -9,6 +9,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
 import ui.FilteredListModel
+import ui.listener.DocumentTextListener
 import ui.listener.FilterTextListener
 import java.awt.Color
 import java.awt.Component
@@ -34,8 +35,7 @@ import javax.swing.ListSelectionModel
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
+import javax.swing.text.JTextComponent
 
 class CacheChooserController(
     title: String,
@@ -112,12 +112,15 @@ class CacheChooserController(
                 launch(lblStatusText, txtCacheLocation, this)
             }
         }
+
         txtCacheLocation.document.addDocumentListener(
-            CacheLocationUpdateListener(
-                txtCacheLocation,
-                btnLaunch,
-                lblErrorText
-            )
+            DocumentTextListener {
+                onCacheChooserUpdate(
+                    txtCacheLocation,
+                    btnLaunch,
+                    lblErrorText
+                )
+            }
         )
 
         val lblRuneStats = JLabel("Caches available from RuneStats")
@@ -320,49 +323,35 @@ class CacheChooserController(
         }.start()
     }
 
-    inner class CacheLocationUpdateListener(
-        private val txtCacheLocation: JTextField,
-        private val btnLaunch: JButton,
-        private val lblErrorText: JLabel
-    ) : DocumentListener {
-        override fun insertUpdate(p0: DocumentEvent?) {
-            update()
+    private fun onCacheChooserUpdate(
+        txtCacheLocation: JTextComponent,
+        btnLaunch: Component,
+        lblErrorText: JLabel
+    ) {
+        if (txtCacheLocation.text.isEmpty()) {
+            btnLaunch.isEnabled = false
+            return
         }
 
-        override fun removeUpdate(p0: DocumentEvent?) {
-            update()
+        btnLaunch.isEnabled = true
+        lblErrorText.text = ""
+        val cacheLibrary = try {
+            CacheLibrary("${txtCacheLocation.text}/cache")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            lblErrorText.text = e.message
+            btnLaunch.isEnabled = false
+            return
         }
-
-        override fun changedUpdate(p0: DocumentEvent?) {
-            update()
+        val xtea = try {
+            XteaManager(txtCacheLocation.text)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            lblErrorText.text = e.message
+            btnLaunch.isEnabled = false
+            return
         }
-
-        fun update() {
-            if (txtCacheLocation.text.isEmpty()) {
-                btnLaunch.isEnabled = false
-                return
-            }
-
-            btnLaunch.isEnabled = true
-            lblErrorText.text = ""
-            val cacheLibrary = try {
-                CacheLibrary("${txtCacheLocation.text}/cache")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                lblErrorText.text = e.message
-                btnLaunch.isEnabled = false
-                return
-            }
-            val xtea = try {
-                XteaManager(txtCacheLocation.text)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                lblErrorText.text = e.message
-                btnLaunch.isEnabled = false
-                return
-            }
-            xteaAndCache = Pair(xtea, cacheLibrary)
-        }
+        xteaAndCache = Pair(xtea, cacheLibrary)
     }
 
     companion object {
