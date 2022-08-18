@@ -1,5 +1,6 @@
 package controllers.worldRenderer
 
+import models.FrameRateModel
 import models.config.ConfigOptions
 import models.scene.Scene
 import java.awt.Component
@@ -16,6 +17,7 @@ class InputHandler internal constructor(
     private val camera: Camera,
     private val scene: Scene,
     private val configOptions: ConfigOptions,
+    private val frameRateModel: FrameRateModel,
 ) : KeyListener, MouseListener, MouseMotionListener {
     private var robotScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
     private var robot = Robot(robotScreen)
@@ -23,7 +25,7 @@ class InputHandler internal constructor(
     var isLeftMouseDown = false
     var leftMousePressed = false
     var isRightMouseDown = false
-    private val keys = BooleanArray(250)
+    private val keys = ByteArray(0x100)
     var mouseClicked = false
     private var discardUntil = System.currentTimeMillis()
     private var previousMouseX = 0
@@ -33,64 +35,60 @@ class InputHandler internal constructor(
 
     fun tick(dt: Double) {
         if (dt > 1000) { // big lag spike, don't send the user flying
+            frameRateModel.needAnotherFrame = true
             return
         }
         val xVec = (-camera.yawSin).toDouble() / 65535
         val yVec = camera.yawCos.toDouble() / 65535
         val zVec = camera.pitchSin.toDouble() / 65535
         var speed = 1
-        if (keys[KeyEvent.VK_SHIFT]) {
+        if (isKeyHeld(KeyEvent.VK_SHIFT)) {
             speed = 4
         }
         var motionTicked = false
-        if (keys[KeyEvent.VK_W]) {
+        if (isKeyHeld(KeyEvent.VK_W)) {
             camera.addX((dt * xVec * speed).toInt())
             camera.addY((dt * yVec * speed).toInt())
             camera.addZ((dt * zVec * speed).toInt())
             motionTicked = true
         }
-        if (keys[KeyEvent.VK_S]) {
+        if (isKeyHeld(KeyEvent.VK_S)) {
             camera.addX((-(dt * xVec * speed)).toInt())
             camera.addY((-(dt * yVec * speed)).toInt())
             camera.addZ((-(dt * zVec * speed)).toInt())
             motionTicked = true
         }
-        if (keys[KeyEvent.VK_A]) {
+        if (isKeyHeld(KeyEvent.VK_A)) {
             // X uses yVec because we want to move perpendicular
             camera.addX((-(dt * yVec * speed)).toInt())
             camera.addY((dt * xVec * speed).toInt())
             motionTicked = true
         }
-        if (keys[KeyEvent.VK_D]) {
+        if (isKeyHeld(KeyEvent.VK_D)) {
             camera.addX((dt * yVec * speed).toInt())
             camera.addY((-(dt * xVec * speed)).toInt())
             motionTicked = true
         }
-        if (keys[KeyEvent.VK_SPACE]) {
+        if (isKeyHeld(KeyEvent.VK_SPACE)) {
             camera.addZ((-dt).toInt() * speed)
             motionTicked = true
         }
-        if (keys[KeyEvent.VK_X]) {
+        if (isKeyHeld(KeyEvent.VK_X)) {
             camera.addZ(dt.toInt() * speed)
             motionTicked = true
         }
         if (motionTicked) {
             camera.motionTicks++
+            frameRateModel.needAnotherFrame = true
         }
-        if (configOptions.debug.value.get()) {
-            if (keys[KeyEvent.VK_J]) {
-                scene.loadRadius(8014, 5)
-            }
-            if (keys[KeyEvent.VK_K]) {
-                scene.loadRadius(13360, 3)
-            }
-            if (keys[KeyEvent.VK_L]) {
-                scene.loadRadius(13408, 3)
-            }
-            if (keys[KeyEvent.VK_SEMICOLON]) {
-                scene.loadRadius(12850, 3)
-            }
-        }
+    }
+
+    private fun isKeyHeld(code: Int): Boolean {
+        if (keys[code] == STATE_RELEASED) return false
+        if (keys[code] == STATE_HELD || !frameRateModel.powerSavingMode.get()) return true
+        keys[code] = STATE_HELD
+        frameRateModel.needAnotherFrame = true
+        return false
     }
 
     override fun keyTyped(p0: KeyEvent?) {
@@ -99,13 +97,26 @@ class InputHandler internal constructor(
     override fun keyPressed(e: KeyEvent) {
         val code = e.keyCode
         if (code >= 0 && code < keys.size)
-            keys[code] = true
+            keys[code] = STATE_PRESSED
+
+        if (configOptions.debug.value.get()) {
+            when (code) {
+                KeyEvent.VK_J -> scene.loadRadius(8014, 5)
+                KeyEvent.VK_K -> scene.loadRadius(13360, 5)
+                KeyEvent.VK_L -> scene.loadRadius(13408, 5)
+                KeyEvent.VK_SEMICOLON -> scene.loadRadius(12850, 5)
+            }
+        }
+
+        frameRateModel.notifyNeedFrames()
     }
 
     override fun keyReleased(e: KeyEvent) {
         val code = e.keyCode
         if (code >= 0 && code < keys.size)
-            keys[code] = false
+            keys[code] = STATE_RELEASED
+
+        frameRateModel.notifyNeedFrames()
     }
 
     private fun handleCameraDrag(e: MouseEvent) {
@@ -134,6 +145,7 @@ class InputHandler internal constructor(
             leftMousePressed = true
             isLeftMouseDown = true
         }
+        frameRateModel.notifyNeedFrames()
     }
 
     override fun mouseReleased(e: MouseEvent) {
@@ -203,10 +215,18 @@ class InputHandler internal constructor(
                     discardUntil = System.currentTimeMillis()
                 }
             }
+
+            frameRateModel.notifyNeedFrames()
         }
         mouseX = x
         mouseY = y
         previousMouseX = x
         previousMouseY = y
+    }
+
+    companion object {
+        val STATE_RELEASED = 0.toByte()
+        val STATE_PRESSED = 1.toByte()
+        val STATE_HELD = 2.toByte()
     }
 }

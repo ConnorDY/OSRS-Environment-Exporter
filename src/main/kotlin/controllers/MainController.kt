@@ -18,8 +18,8 @@ import controllers.worldRenderer.SceneExporter
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
-import models.DebugModel
 import models.DebugOptionsModel
+import models.FrameRateModel
 import models.config.ConfigOptions
 import models.github.GitHubRelease
 import models.scene.Scene
@@ -62,6 +62,7 @@ class MainController constructor(
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val debugOptions = DebugOptionsModel()
     private val exporter: SceneExporter
+    private val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
 
     val scene: Scene
 
@@ -71,7 +72,6 @@ class MainController constructor(
         preferredSize = Dimension(1600, 800)
 
         val camera = Camera()
-        val debugModel = DebugModel()
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
@@ -97,7 +97,7 @@ class MainController constructor(
                 camera, scene, SceneUploader(debugOptions),
                 textureManager,
                 configOptions,
-                debugModel,
+                frameRateModel,
                 debugOptions,
             )
         )
@@ -173,8 +173,15 @@ class MainController constructor(
 
         add(worldRendererController, BorderLayout.CENTER)
 
+        var lastFrameCount = frameRateModel.frameCount
+        var lastFrameCheck = System.nanoTime()
         animationTimer = Timer(500) {
-            lblFps.text = "FPS: ${debugModel.fps.get()}"
+            val time = System.nanoTime()
+            val frameCount = frameRateModel.frameCount
+            val fps = (frameCount - lastFrameCount) * 1_000_000_000.0 / (time - lastFrameCheck)
+            lastFrameCount = frameCount
+            lastFrameCheck = time
+            lblFps.text = String.format("FPS: %.0f", fps)
         }
 
         addWindowListener(object : WindowAdapter() {
