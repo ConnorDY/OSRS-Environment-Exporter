@@ -23,6 +23,8 @@
 
 - Add alpha blending mode selection &ndash; [#100](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/100) @ScoreUnder
 
+- Add power saving mode &ndash; [#111](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/111) @ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
