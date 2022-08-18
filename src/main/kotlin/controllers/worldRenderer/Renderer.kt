@@ -193,10 +193,6 @@ class Renderer(
             }
         })
 
-        scene.sceneChangeListeners.add {
-            frameRateModel.notifyNeedFrames()
-        }
-
         frameRateModel.powerSavingMode.addListener {
             frameRateModel.notifyNeedFrames()
         }
@@ -209,6 +205,7 @@ class Renderer(
         scene.sceneChangeListeners.add(
             ActionListener {
                 isSceneUploadRequired = true
+                frameRateModel.notifyNeedFrames()
 
                 if (debugOptionsModel.resetCameraOnSceneChange.value.get()) {
                     camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
@@ -231,6 +228,7 @@ class Renderer(
 
         val redrawSceneListener: (Any?) -> Unit = {
             isSceneUploadRequired = true
+            frameRateModel.notifyNeedFrames()
         }
         debugOptionsModel.showTilePaint.value.addListener(redrawSceneListener)
         debugOptionsModel.showTileModels.value.addListener(redrawSceneListener)
@@ -275,6 +273,7 @@ class Renderer(
             priorityRenderer = priorityRendererPref.factory()
             isSceneUploadRequired = true
         }
+        frameRateModel.notifyNeedFrames()
     }
 
     private fun doInGlThread(thing: Runnable) {

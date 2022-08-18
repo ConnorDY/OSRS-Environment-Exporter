@@ -59,6 +59,7 @@ class MainController constructor(
     private val animationTimer: Timer
     private val worldRendererController: WorldRendererController
     private val logger = LoggerFactory.getLogger(this::class.java)
+    private val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
 
     val scene: Scene
 
@@ -68,7 +69,6 @@ class MainController constructor(
         preferredSize = Dimension(1600, 800)
 
         val camera = Camera()
-        val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
         val debugOptions = DebugOptionsModel()
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
@@ -265,6 +265,7 @@ class MainController constructor(
     private fun onZLevelSelected(z: Int, isSelected: Boolean) {
         worldRendererController.renderer.zLevelsSelected[z] = isSelected
         worldRendererController.renderer.isSceneUploadRequired = true
+        frameRateModel.notifyNeedFrames()
     }
 
     private fun checkForUpdates() {
