@@ -84,9 +84,9 @@ class InputHandler internal constructor(
     }
 
     private fun isKeyHeld(code: Int): Boolean {
-        if (keys[code] == 0.toByte()) return false
-        if (keys[code] == 2.toByte() || !frameRateModel.powerSavingMode.get()) return true
-        keys[code] = 2.toByte()
+        if (keys[code] == STATE_RELEASED) return false
+        if (keys[code] == STATE_HELD || !frameRateModel.powerSavingMode.get()) return true
+        keys[code] = STATE_HELD
         frameRateModel.needAnotherFrame = true
         return false
     }
@@ -97,7 +97,7 @@ class InputHandler internal constructor(
     override fun keyPressed(e: KeyEvent) {
         val code = e.keyCode
         if (code >= 0 && code < keys.size)
-            keys[code] = 1.toByte()
+            keys[code] = STATE_PRESSED
 
         if (configOptions.debug.value.get()) {
             when (code) {
@@ -114,7 +114,7 @@ class InputHandler internal constructor(
     override fun keyReleased(e: KeyEvent) {
         val code = e.keyCode
         if (code >= 0 && code < keys.size)
-            keys[code] = 0.toByte()
+            keys[code] = STATE_RELEASED
 
         frameRateModel.notifyNeedFrames()
     }
@@ -222,5 +222,11 @@ class InputHandler internal constructor(
         mouseY = y
         previousMouseX = x
         previousMouseY = y
+    }
+
+    companion object {
+        val STATE_RELEASED = 0.toByte()
+        val STATE_PRESSED = 1.toByte()
+        val STATE_HELD = 2.toByte()
     }
 }
