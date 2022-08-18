@@ -233,24 +233,24 @@ class CacheChooserController(
         txtCacheLocation: JTextField,
         btnLaunch: JButton
     ) {
+        val (xteaManager, cacheLibrary) = xteaAndCache ?: return
+
+        btnLaunch.isEnabled = false
         lblStatusText.text =
             "Launching map editor... Please wait... (this may take a while)"
 
-        Thread() {
+        Thread {
             configOptions.lastCacheDir.value.set(txtCacheLocation.text)
             configOptions.save()
-            btnLaunch.isEnabled = false
             // load and open main scene
-            xteaAndCache?.let {
-                SwingUtilities.invokeLater {
-                    MainController(
-                        "OSRS Environment Exporter",
-                        configOptions,
-                        it.first,
-                        it.second,
-                    ).isVisible = true
-                    dispose()
-                }
+            SwingUtilities.invokeLater {
+                MainController(
+                    "OSRS Environment Exporter",
+                    configOptions,
+                    xteaManager,
+                    cacheLibrary,
+                ).isVisible = true
+                dispose()
             }
         }.start()
     }
