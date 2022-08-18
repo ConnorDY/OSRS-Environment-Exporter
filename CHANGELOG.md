@@ -24,6 +24,7 @@
 - Add alpha blending mode selection &ndash; [#100](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/100) @ScoreUnder
 
 - Add power saving mode &ndash; [#111](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/111) @ScoreUnder
+  - Independent of the frame cap, this will cause the renderer to drop FPS as low as possible while nothing is happening on screen and no input is being given, while hopefully not impacting the feel of the tool.
 
 ### :bug: Bug Fixes
 
