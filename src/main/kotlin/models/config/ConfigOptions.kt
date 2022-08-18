@@ -10,6 +10,7 @@ class ConfigOptions(private val configuration: Configuration) {
     val initialRegionId = ConfigOption("initial-region-id", ConfigOptionType.int, 15256)
     val initialRadius = ConfigOption("initial-radius", ConfigOptionType.int, 1)
     val fpsCap = ConfigOption("fps-cap", ConfigOptionType.intToggle, 60, "Limit FPS", 'F')
+    val powerSavingMode = ConfigOption("power-saving-mode", ConfigOptionType.boolean, false, "Power saving mode", 'P')
     val checkForUpdates = ConfigOption("check-for-updates", ConfigOptionType.boolean, true, "Check for updates", 'U')
     val lastCheckedForUpdates = ConfigOption("last-checked-for-updates", ConfigOptionType.long, 0L)
     val debug = ConfigOption("debug", ConfigOptionType.boolean, false, "Debug mode", 'D')
@@ -26,6 +27,7 @@ class ConfigOptions(private val configuration: Configuration) {
         initialRegionId,
         initialRadius,
         fpsCap,
+        powerSavingMode,
         checkForUpdates,
         lastCheckedForUpdates,
         mouseWarping,

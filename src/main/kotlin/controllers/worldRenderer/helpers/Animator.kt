@@ -1,14 +1,13 @@
 package controllers.worldRenderer.helpers
 
+import models.FrameRateModel
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import java.util.concurrent.Semaphore
 import javax.swing.SwingUtilities
 
-class Animator(private val canvas: AWTGLCanvas) {
-    var lastFPS = 0.0
+class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: FrameRateModel) {
     private var startFrameTime: Long = 0
-    private var lastEndFrameTime: Long = 0
     private val hiResTimerThread = Thread(HiResTimerRunnable(RenderRunnable()), "Animator").apply {
         // If every other thread terminates and this is still running, something is wrong
         isDaemon = true
@@ -48,9 +47,8 @@ class Animator(private val canvas: AWTGLCanvas) {
 
                     // Wait long enough to bring FPS down to target levels
                     val endFrameTime = System.nanoTime()
-                    lastFPS = 1_000_000_000.0 / (endFrameTime - lastEndFrameTime)
+                    frameRateModel.frameCount++
                     val sleepTime = deltaTimeTarget + (startFrameTime - endFrameTime)
-                    lastEndFrameTime = endFrameTime
                     startFrameTime = if (sleepTime in 0..SECOND_IN_NANOS) {
                         Thread.sleep(
                             sleepTime / MILLISECOND_IN_NANOS,
@@ -59,6 +57,13 @@ class Animator(private val canvas: AWTGLCanvas) {
                         endFrameTime + sleepTime
                     } else {
                         endFrameTime
+                    }
+
+                    synchronized(frameRateModel.updateNotifier) {
+                        if (frameRateModel.powerSavingMode.get() && !frameRateModel.needAnotherFrame) {
+                            frameRateModel.updateNotifier.wait()
+                        }
+                        frameRateModel.needAnotherFrame = false
                     }
 
                     // Re-queue render task
