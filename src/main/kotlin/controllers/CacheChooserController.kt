@@ -3,6 +3,7 @@ package controllers
 import AppConstants
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
+import com.fasterxml.jackson.databind.JsonMappingException
 import models.config.ConfigOptions
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -345,18 +346,27 @@ class CacheChooserController(
         val cacheLibrary = try {
             CacheLibrary("${txtCacheLocation.text}/cache")
         } catch (e: Exception) {
-            if (e !is FileNotFoundException)
-                e.printStackTrace()
-            lblErrorText.text = e.message
+            lblErrorText.text = when (e) {
+                is FileNotFoundException -> "Bad cache: Missing required file: ${e.message}"
+                else -> {
+                    e.printStackTrace()
+                    e.message
+                }
+            }
             btnLaunch.isEnabled = false
             return
         }
         val xtea = try {
             XteaManager(txtCacheLocation.text)
         } catch (e: Exception) {
-            if (e !is FileNotFoundException)
-                e.printStackTrace()
-            lblErrorText.text = e.message
+            lblErrorText.text = when (e) {
+                is FileNotFoundException -> "Bad cache: Missing required file: ${e.message}"
+                is JsonMappingException -> "Bad cache: Could not decode xteas file: ${e.message}"
+                else -> {
+                    e.printStackTrace()
+                    e.message
+                }
+            }
             btnLaunch.isEnabled = false
             return
         }
