@@ -36,9 +36,12 @@ class Model private constructor(
     var wallAttachedOffsetX = 0
     var wallAttachedOffsetY = 0
 
-    val vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
-    val vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
-    val vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ.clone()
+    var vertexPositionsX: IntArray = modelDefinition.vertexPositionsX
+        private set
+    var vertexPositionsY: IntArray = modelDefinition.vertexPositionsY
+        private set
+    var vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ
+        private set
 
     var field1840: ByteArray? = null
     var field1852 = 0
@@ -112,6 +115,18 @@ class Model private constructor(
         }
     }
 
+    private fun unshareXZ() {
+        if (vertexPositionsX === modelDefinition.vertexPositionsX) {
+            vertexPositionsX = vertexPositionsX.clone()
+            vertexPositionsZ = vertexPositionsZ.clone()
+        }
+    }
+
+    private fun unshareY() {
+        if (vertexPositionsY === modelDefinition.vertexPositionsY)
+            vertexPositionsY = vertexPositionsY.clone()
+    }
+
     fun contourGround(
         regionLoader: RegionLoader,
         xOff: Int,
@@ -141,6 +156,8 @@ class Model private constructor(
         if (height == topLeft && height == topRight && height == bottomLeft && height == bottomRight) {
             return
         }
+
+        unshareY()
 
         var var12: Int
         var var13: Int
@@ -201,6 +218,8 @@ class Model private constructor(
     }
 
     fun rotate(angle: Int) {
+        unshareXZ()
+
         val var2: Int = Constants.SINE[angle]
         val var3: Int = Constants.COSINE[angle]
         for (var4 in 0 until modelDefinition.vertexCount) {
