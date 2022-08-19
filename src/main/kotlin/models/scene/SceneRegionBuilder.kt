@@ -285,8 +285,20 @@ class SceneRegionBuilder constructor(
             val nwHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var13)
             val height = swHeight + seHeight + neHeight + nwHeight shr 2
 
+            val firstEntityOrientation = when (loc.type) {
+                LocationType.WALL_CORNER.id,
+                LocationType.DIAGONAL_OUTSIDE_WALL_DECORATION.id,
+                LocationType.DIAGONAL_WALL_DECORATION.id,
+                -> loc.orientation + 4
+
+                LocationType.DIAGONAL_INSIDE_WALL_DECORATION.id,
+                -> ((loc.orientation + 2) and 3) + 4
+
+                else -> loc.orientation
+            }
+
             val staticObject =
-                getEntity(objectDefinition, loc.type, loc.orientation, xSize, height, ySize, z, baseX, baseY)
+                getEntity(objectDefinition, loc.type, firstEntityOrientation, xSize, height, ySize, z, baseX, baseY)
                     ?: return@forEach
 
             when (loc.type) {
@@ -296,9 +308,8 @@ class SceneRegionBuilder constructor(
                     sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
                 }
                 LocationType.WALL_CORNER.id -> {
-                    val entity1 = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)!!
                     val entity2 = getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)
-                    sceneRegion.newWall(z, x, y, width, length, entity1, entity2, loc)
+                    sceneRegion.newWall(z, x, y, width, length, staticObject, entity2, loc)
                 }
                 LocationType.INSIDE_WALL_DECORATION.id -> {
                     sceneRegion.newWallDecoration(z, x, y, staticObject)
@@ -309,20 +320,17 @@ class SceneRegionBuilder constructor(
                 }
                 LocationType.DIAGONAL_OUTSIDE_WALL_DECORATION.id -> {
                     val (displacementX, displacementY) = sceneRegion.getWallDiagonalDisplacement(loc, z, x, y)
-                    val entity = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)!!
-                    sceneRegion.newWallDecoration(z, x, y, entity, displacementX = displacementX / 2, displacementY = displacementY / 2)
+                    sceneRegion.newWallDecoration(z, x, y, staticObject, displacementX = displacementX / 2, displacementY = displacementY / 2)
                 }
                 LocationType.DIAGONAL_INSIDE_WALL_DECORATION.id -> {
-                    val entity = getEntity(objectDefinition, loc.type, ((loc.orientation + 2) and 3) + 4, xSize, height, ySize, z, baseX, baseY)!!
-                    sceneRegion.newWallDecoration(z, x, y, entity)
+                    sceneRegion.newWallDecoration(z, x, y, staticObject)
                 }
                 LocationType.DIAGONAL_WALL_DECORATION.id -> {
                     val (displacementX, displacementY) = sceneRegion.getWallDiagonalDisplacement(loc, z, x, y)
 
-                    val entity1 = getEntity(objectDefinition, loc.type, loc.orientation + 4, xSize, height, ySize, z, baseX, baseY)!!
                     val entity2 = getEntity(objectDefinition, loc.type, ((loc.orientation + 2) and 3) + 4, xSize, height, ySize, z, baseX, baseY)!!
 
-                    sceneRegion.newWallDecoration(z, x, y, entity1, entity2, displacementX / 2, displacementY / 2)
+                    sceneRegion.newWallDecoration(z, x, y, staticObject, entity2, displacementX / 2, displacementY / 2)
                 }
                 LocationType.DIAGONAL_WALL.id -> {
                     sceneRegion.newPseudoWall(z, x, y, width, length, staticObject, loc)
