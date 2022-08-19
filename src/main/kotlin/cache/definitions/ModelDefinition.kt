@@ -279,7 +279,7 @@ open class ModelDefinition(
 //        }
 //    }
 
-    fun rotateMulti() {
+    fun flipZ() {
         for (var1 in 0 until vertexCount) {
             vertexPositionsZ[var1] = -vertexPositionsZ[var1]
         }
