@@ -3,6 +3,7 @@ package controllers
 import AppConstants
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonMappingException
 import models.config.ConfigOptions
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
@@ -354,7 +355,7 @@ class CacheChooserController(
             XteaManager(txtCacheLocation.text)
         } catch (e: Exception) {
             lblErrorText.text = when (e) {
-                is JsonMappingException -> "Bad cache: Could not decode xteas file: ${e.message}"
+                is JsonMappingException, is JsonProcessingException -> "Bad cache: Could not decode xteas file: ${e.message}"
                 else -> defaultErrorText(e)
             }
             btnLaunch.isEnabled = false
