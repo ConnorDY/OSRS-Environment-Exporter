@@ -3,22 +3,25 @@ package controllers
 import AppConstants
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.JsonMappingException
 import models.config.ConfigOptions
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
 import ui.FilteredListModel
+import ui.listener.DocumentTextListener
 import ui.listener.FilterTextListener
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
 import java.io.File
-import java.io.FileOutputStream
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.URL
+import java.nio.file.Files
 import javax.net.ssl.SSLHandshakeException
 import javax.swing.GroupLayout
 import javax.swing.GroupLayout.Alignment
@@ -34,8 +37,7 @@ import javax.swing.ListSelectionModel
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
+import javax.swing.text.JTextComponent
 
 class CacheChooserController(
     title: String,
@@ -68,9 +70,7 @@ class CacheChooserController(
             isVisible = false
             selectionMode = ListSelectionModel.SINGLE_SELECTION
             addListSelectionListener {
-                if (selectedIndex != -1) {
-                    btnDownload.isEnabled = true
-                }
+                btnDownload.isEnabled = selectedIndex != -1
             }
         }
         val txtCacheLocation = JTextField().apply {
@@ -78,21 +78,25 @@ class CacheChooserController(
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
         val lblStatusText = JLabel()
+        val lblErrorText = JLabel().apply {
+            foreground = Color.RED
+        }
         btnDownload.addActionListener {
             btnDownload.isEnabled = false
             listCaches.selectedValue?.let {
                 lblStatusText.text = "Downloading cache $it, please wait.."
                 txtCacheLocation.text = ""
 
-                downloadCache(it) { path ->
+                downloadCache(it, { path ->
                     lblStatusText.text = ""
                     txtCacheLocation.text = path
                     btnDownload.isEnabled = true
-                }
+                }, { err ->
+                    lblStatusText.text = ""
+                    lblErrorText.text = "Failed to download cache: $err"
+                    btnDownload.isEnabled = true
+                })
             }
-        }
-        val lblErrorText = JLabel().apply {
-            foreground = Color.RED
         }
         val scrollErrorText = JScrollPane(lblErrorText)
 
@@ -112,12 +116,15 @@ class CacheChooserController(
                 launch(lblStatusText, txtCacheLocation, this)
             }
         }
+
         txtCacheLocation.document.addDocumentListener(
-            CacheLocationUpdateListener(
-                txtCacheLocation,
-                btnLaunch,
-                lblErrorText
-            )
+            DocumentTextListener {
+                onCacheChooserUpdate(
+                    txtCacheLocation,
+                    btnLaunch,
+                    lblErrorText
+                )
+            }
         )
 
         val lblRuneStats = JLabel("Caches available from RuneStats")
@@ -209,6 +216,9 @@ class CacheChooserController(
 
         populateCachesList(cacheListModel, listCaches, listCachesPlaceholder)
         txtCacheLocation.text = configOptions.lastCacheDir.value.get()
+        if (txtCacheLocation.text.isEmpty()) {
+            btnLaunch.isEnabled = false
+        }
 
         if (configOptions.debug.value.get()) {
             launch(lblStatusText, txtCacheLocation, btnLaunch)
@@ -225,24 +235,24 @@ class CacheChooserController(
         txtCacheLocation: JTextField,
         btnLaunch: JButton
     ) {
+        val (xteaManager, cacheLibrary) = xteaAndCache ?: return
+
+        btnLaunch.isEnabled = false
         lblStatusText.text =
             "Launching map editor... Please wait... (this may take a while)"
 
-        Thread() {
+        Thread {
             configOptions.lastCacheDir.value.set(txtCacheLocation.text)
             configOptions.save()
-            btnLaunch.isEnabled = false
             // load and open main scene
-            xteaAndCache?.let {
-                SwingUtilities.invokeLater {
-                    MainController(
-                        "OSRS Environment Exporter",
-                        configOptions,
-                        it.first,
-                        it.second,
-                    ).isVisible = true
-                    dispose()
-                }
+            SwingUtilities.invokeLater {
+                MainController(
+                    "OSRS Environment Exporter",
+                    configOptions,
+                    xteaManager,
+                    cacheLibrary,
+                ).isVisible = true
+                dispose()
             }
         }.start()
     }
@@ -271,7 +281,8 @@ class CacheChooserController(
 
     private fun downloadCache(
         cacheName: String,
-        onComplete: (String) -> Unit
+        onComplete: (String) -> Unit,
+        onFailure: (IOException) -> Unit,
     ) {
         val destFolder = File("${AppConstants.CACHES_DIRECTORY}/${cacheName.removeSuffix(".tar.gz")}")
 
@@ -289,19 +300,7 @@ class CacheChooserController(
                         if (tarEntry.isDirectory) {
                             dest.mkdirs()
                         } else {
-                            dest.createNewFile()
-                            val btoRead = ByteArray(1024)
-                            val bout =
-                                BufferedOutputStream(FileOutputStream(dest))
-                            var len: Int
-
-                            while (tarIn.read(btoRead)
-                                .also { len = it } != -1
-                            ) {
-                                bout.write(btoRead, 0, len)
-                            }
-
-                            bout.close()
+                            Files.copy(tarIn, dest.toPath())
                         }
                         tarEntry = tarIn.nextTarEntry
                     }
@@ -313,52 +312,50 @@ class CacheChooserController(
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
+                SwingUtilities.invokeLater {
+                    onFailure(e)
+                }
             }
         }.start()
     }
 
-    inner class CacheLocationUpdateListener(
-        private val txtCacheLocation: JTextField,
-        private val btnLaunch: JButton,
-        private val lblErrorText: JLabel
-    ) : DocumentListener {
-        override fun insertUpdate(p0: DocumentEvent?) {
-            update()
+    private fun onCacheChooserUpdate(
+        txtCacheLocation: JTextComponent,
+        btnLaunch: Component,
+        lblErrorText: JLabel
+    ) {
+        if (txtCacheLocation.text.isEmpty()) {
+            btnLaunch.isEnabled = false
+            return
         }
 
-        override fun removeUpdate(p0: DocumentEvent?) {
-            update()
+        btnLaunch.isEnabled = true
+        lblErrorText.text = ""
+        val cacheLibrary = try {
+            CacheLibrary("${txtCacheLocation.text}/cache")
+        } catch (e: Exception) {
+            lblErrorText.text = defaultErrorText(e)
+            btnLaunch.isEnabled = false
+            return
         }
-
-        override fun changedUpdate(p0: DocumentEvent?) {
-            update()
+        val xtea = try {
+            XteaManager(txtCacheLocation.text)
+        } catch (e: Exception) {
+            lblErrorText.text = when (e) {
+                is JsonMappingException, is JsonProcessingException -> "Bad cache: Could not decode xteas file: ${e.message}"
+                else -> defaultErrorText(e)
+            }
+            btnLaunch.isEnabled = false
+            return
         }
+        xteaAndCache = Pair(xtea, cacheLibrary)
+    }
 
-        fun update() {
-            if (txtCacheLocation.text.isEmpty()) {
-                btnLaunch.isEnabled = false
-                return
-            }
-
-            btnLaunch.isEnabled = true
-            lblErrorText.text = ""
-            val cacheLibrary = try {
-                CacheLibrary("${txtCacheLocation.text}/cache")
-            } catch (e: Exception) {
-                e.printStackTrace()
-                lblErrorText.text = e.message
-                btnLaunch.isEnabled = false
-                return
-            }
-            val xtea = try {
-                XteaManager(txtCacheLocation.text)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                lblErrorText.text = e.message
-                btnLaunch.isEnabled = false
-                return
-            }
-            xteaAndCache = Pair(xtea, cacheLibrary)
+    private fun defaultErrorText(e: Exception) = when (e) {
+        is FileNotFoundException -> "Bad cache: Missing required file: ${e.message}"
+        else -> {
+            e.printStackTrace()
+            e.message
         }
     }
 

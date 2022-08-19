@@ -40,6 +40,8 @@
 
 - Fix some areas not being importable into blender due to division by zero in UV calculation &ndash; [#110](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/110) @ScoreUnder
 
+- Make sure "Launch" button is not clickable if the cache textbox is empty &ndash; [#113](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/113) @ScoreUnder
+
 ### :wrench: Maintenance
 
 - Optimise glTF export a little &ndash; [#96](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/96) @ScoreUnder
