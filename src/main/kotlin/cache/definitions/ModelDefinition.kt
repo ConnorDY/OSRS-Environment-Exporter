@@ -401,7 +401,6 @@ open class ModelDefinition(
         }
 
         private fun concatIndices(first: ShortArray, second: ShortArray, shift: Int): ShortArray {
-            val shift = first.size
             return first + second.map { (it + shift).toShort() }
         }
 
