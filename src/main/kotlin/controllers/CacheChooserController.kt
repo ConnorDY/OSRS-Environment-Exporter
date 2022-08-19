@@ -23,6 +23,7 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
+import java.nio.file.Files
 import javax.net.ssl.SSLHandshakeException
 import javax.swing.GroupLayout
 import javax.swing.GroupLayout.Alignment
@@ -301,19 +302,7 @@ class CacheChooserController(
                         if (tarEntry.isDirectory) {
                             dest.mkdirs()
                         } else {
-                            dest.createNewFile()
-                            val btoRead = ByteArray(1024)
-                            val bout =
-                                BufferedOutputStream(FileOutputStream(dest))
-                            var len: Int
-
-                            while (tarIn.read(btoRead)
-                                .also { len = it } != -1
-                            ) {
-                                bout.write(btoRead, 0, len)
-                            }
-
-                            bout.close()
+                            Files.copy(tarIn, dest.toPath())
                         }
                         tarEntry = tarIn.nextTarEntry
                     }
