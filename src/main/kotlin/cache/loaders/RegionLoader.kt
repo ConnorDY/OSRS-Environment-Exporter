@@ -18,8 +18,9 @@ class RegionLoader(
     private val logger = LoggerFactory.getLogger(RegionLoader::class.java)
 
     fun get(regionId: Int): RegionDefinition? {
-        if (regionDefinitionCache.containsKey(regionId)) {
-            return regionDefinitionCache[regionId]
+        val cached = regionDefinitionCache[regionId]
+        if (cached != null || regionDefinitionCache.containsKey(regionId)) {
+            return cached
         }
 
         return loadRegion(regionId)

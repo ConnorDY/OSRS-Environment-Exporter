@@ -18,8 +18,9 @@ class LocationsLoader(
     private val logger = LoggerFactory.getLogger(LocationsLoader::class.java)
 
     fun get(regionId: Int): LocationsDefinition? {
-        if (locationsDefinitionCache.containsKey(regionId)) {
-            return locationsDefinitionCache[regionId]
+        val cached = locationsDefinitionCache[regionId]
+        if (cached != null || locationsDefinitionCache.containsKey(regionId)) {
+            return cached
         }
         val location = try {
             loadLocations(regionId)
