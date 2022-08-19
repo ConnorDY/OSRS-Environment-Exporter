@@ -17,10 +17,8 @@ import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileNotFoundException
-import java.io.FileOutputStream
 import java.io.IOException
 import java.net.URL
 import java.nio.file.Files
