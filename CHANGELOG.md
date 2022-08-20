@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## 2.2.0
 
 ### :sparkles: Enhancements
 
@@ -39,6 +39,8 @@
 - Fix chunk stacking in export when the preview is not working &ndash; [#108](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/108) (reported in [#104](https://github.com/ConnorDY/OSRS-Environment-Exporter/issues/104)) @ScoreUnder
 
 - Fix some areas not being importable into blender due to division by zero in UV calculation &ndash; [#110](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/110) @ScoreUnder
+
+- Make sure "Launch" button is not clickable if the cache textbox is empty &ndash; [#113](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/113) @ScoreUnder
 
 ### :wrench: Maintenance
 

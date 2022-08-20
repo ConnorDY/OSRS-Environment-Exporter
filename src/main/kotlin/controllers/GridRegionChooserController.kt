@@ -2,6 +2,7 @@ package controllers
 
 import AppConstants
 import ui.NumericTextField
+import ui.listener.DocumentTextListener
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagConstraints.CENTER
@@ -21,8 +22,6 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JTextField
 import javax.swing.LayoutStyle
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 import kotlin.math.max
 
 class GridRegionChooserController constructor(
@@ -220,18 +219,6 @@ class GridRegionChooserController constructor(
         }
 
         autoPopulating = false
-    }
-
-    private class DocumentTextListener(private val onChange: (event: DocumentEvent) -> Unit) : DocumentListener {
-        override fun insertUpdate(event: DocumentEvent?) {
-            event?.let(onChange)
-        }
-
-        override fun removeUpdate(event: DocumentEvent?) {
-            event?.let(onChange)
-        }
-
-        override fun changedUpdate(event: DocumentEvent?) {}
     }
 
     companion object {
