@@ -15,6 +15,21 @@ private fun setSysProperty(key: String, value: String) {
 }
 
 fun main() {
+    setThemingOptions()
+
+    SwingUtilities.invokeLater {
+        // These may be occluded by the GL canvas
+        JPopupMenu.setDefaultLightWeightPopupEnabled(false)
+        ToolTipManager.sharedInstance().isLightWeightPopupEnabled = false
+
+        CacheChooserController(
+            "Choose game cache version",
+            ConfigOptions(Configuration())
+        ).isVisible = true
+    }
+}
+
+fun setThemingOptions() {
     setSysProperty("awt.useSystemAAFontSettings", "on")
     setSysProperty("swing.aatext", "true")
 
@@ -26,14 +41,5 @@ fun main() {
         } catch (_: InstantiationException) {
         } catch (_: IllegalAccessException) {
         }
-
-        // These may be occluded by the GL canvas
-        JPopupMenu.setDefaultLightWeightPopupEnabled(false)
-        ToolTipManager.sharedInstance().isLightWeightPopupEnabled = false
-
-        CacheChooserController(
-            "Choose game cache version",
-            ConfigOptions(Configuration())
-        ).isVisible = true
     }
 }
