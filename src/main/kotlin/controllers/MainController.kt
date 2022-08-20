@@ -91,7 +91,7 @@ class MainController constructor(
             debugOptions,
         )
         val textureManager = TextureManager(SpriteLoader(cacheLibrary), textureLoader)
-        exporter = SceneExporter(textureManager, debugOptions)
+        exporter = SceneExporter(textureManager, configOptions, debugOptions)
         worldRendererController = WorldRendererController(
             Renderer(
                 camera, scene, SceneUploader(debugOptions),

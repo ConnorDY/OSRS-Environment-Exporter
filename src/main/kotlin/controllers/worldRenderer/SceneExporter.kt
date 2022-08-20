@@ -7,6 +7,7 @@ import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
 import models.DebugOptionsModel
+import models.config.ConfigOptions
 import models.glTF.MaterialBuffers
 import models.glTF.glTF
 import models.scene.REGION_SIZE
@@ -20,7 +21,11 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-class SceneExporter constructor(private val textureManager: TextureManager, private val debugOptionsModel: DebugOptionsModel) {
+class SceneExporter(
+    private val textureManager: TextureManager,
+    private val configOptions: ConfigOptions,
+    private val debugOptionsModel: DebugOptionsModel
+) {
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
     fun exportSceneToFile(scene: Scene) {
@@ -70,7 +75,7 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
     }
 
     private fun glTF.getMaterialBuffersAndAddTexture(textureId: Int): MaterialBuffers {
-        if (textureId != -1) {
+        if (textureId >= 0) {
             addTextureMaterial(
                 textureId,
                 "./${AppConstants.TEXTURES_DIRECTORY_NAME}/$textureId.png"
@@ -325,7 +330,7 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
             if (uv === fakeUvArray) 0
             else face * 6
 
-        val textureId = if (faceTextures != null) faceTextures[face].toInt() else -1
+        val textureId = if (faceTextures != null) faceTextures[face].toInt() else if (configOptions.alphaAsSeparateMesh.value.get() && alpha != 0) -2 else -1
         val materialBuffer = gltf.getMaterialBuffersAndAddTexture(textureId)
 
         materialBuffer.addVertex(

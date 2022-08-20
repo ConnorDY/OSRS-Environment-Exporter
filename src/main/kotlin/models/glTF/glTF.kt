@@ -39,8 +39,8 @@ class glTF {
         var texCoordsAccessor: Int? = null
         var colorsAccessor: Int? = null
 
-        if (material != -1) {
-            texCoordsAccessor = addAccessorForFloats(materialBuffer.texcoords!!, buffer)
+        if (materialBuffer.texcoords != null) {
+            texCoordsAccessor = addAccessorForFloats(materialBuffer.texcoords, buffer)
         } else {
             colorsAccessor = addAccessorForFloats(materialBuffer.colors!!, buffer)
         }
