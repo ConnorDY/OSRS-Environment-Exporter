@@ -3,47 +3,43 @@ package controllers.worldRenderer.helpers
 import models.FrameRateModel
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.awt.AWTGLCanvas
-import java.util.concurrent.Semaphore
+import utils.Utils.doAllActions
+import java.util.Collections.synchronizedList
+import java.util.concurrent.ConcurrentLinkedQueue
 import javax.swing.SwingUtilities
 
 class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: FrameRateModel) {
     private var startFrameTime: Long = 0
-    private val hiResTimerThread = Thread(HiResTimerRunnable(RenderRunnable()), "Animator").apply {
+    private val hiResTimerThread = Thread(HiResTimerRunnable(), "Animator").apply {
         // If every other thread terminates and this is still running, something is wrong
         isDaemon = true
     }
+    @Volatile
     private var running = false
+    @Volatile
     private var deltaTimeTarget = 0
-    private val syncSemaphore = Semaphore(0)
 
-    private inner class RenderRunnable : Runnable {
-        override fun run() {
-            try {
-                if (!running) return
-                if (!canvas.isValid) {
-                    GL.setCapabilities(null)
-                    return
-                }
-                canvas.render()
-            } finally {
-                syncSemaphore.release()
-                // If we have 2 permits, something has started the runnable twice erroneously
-                assert(syncSemaphore.availablePermits() <= 1)
-            }
-        }
-    }
+    @Volatile
+    var terminateCallback: Runnable? = null
+    private val temporaryPreRenderListeners = ConcurrentLinkedQueue<Runnable>()
+    private val preRenderListeners: MutableList<Runnable> = synchronizedList(ArrayList<Runnable>())
 
     // Swing's Timer is not high resolution enough to feel nice when limiting FPS.
     // It is millisecond-resolution, but we want nanosecond resolution.
-    private inner class HiResTimerRunnable(val timerTick: Runnable) : Runnable {
+    private inner class HiResTimerRunnable : Runnable {
         override fun run() {
-            // No initial delay
-            SwingUtilities.invokeLater(timerTick)
-
             try {
                 while (true) {
-                    // Wait for render task to finish
-                    syncSemaphore.acquire()
+                    if (!running) return
+
+                    temporaryPreRenderListeners.doAllActions()
+                    preRenderListeners.forEach(Runnable::run)
+
+                    if (canvas.isValid) {
+                        canvas.render()
+                    } else {
+                        GL.setCapabilities(null)
+                    }
 
                     // Wait long enough to bring FPS down to target levels
                     val endFrameTime = System.nanoTime()
@@ -66,14 +62,34 @@ class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: Fram
                         frameRateModel.needAnotherFrame = false
                     }
 
-                    // Re-queue render task
-                    SwingUtilities.invokeLater(timerTick)
+                    SwingUtilities.invokeAndWait {
+                        // Hold up the thread until swing ticks
+                        // this means we don't contend for the swing lock too much when our frame rate is very high
+                        // this is also important because the GL thread will sleep with the AWT lock held when
+                        // waiting for a vertical blank, which would otherwise cause swing events to be dropped
+                    }
                 }
             } catch (e: InterruptedException) {
                 // This thread should terminate on interrupt signal
                 // so, drop off the end of the run function
             }
+
+            terminateCallback?.run()
         }
+    }
+
+    fun checkGlThread() {
+        if (Thread.currentThread() != hiResTimerThread) {
+            throw IllegalStateException("This method must be called from the GL thread")
+        }
+    }
+
+    fun doOnceBeforeGlRender(action: Runnable) {
+        temporaryPreRenderListeners.add(action)
+    }
+
+    fun doBeforeGlRender(action: Runnable) {
+        preRenderListeners.add(action)
     }
 
     /** Sets the FPS target for this animator.
@@ -91,7 +107,8 @@ class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: Fram
         hiResTimerThread.start()
     }
 
-    fun stop() {
+    fun stopWith(callback: Runnable) {
+        terminateCallback = callback
         running = false
         hiResTimerThread.interrupt()
     }

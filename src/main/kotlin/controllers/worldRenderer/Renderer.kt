@@ -81,10 +81,12 @@ import org.lwjgl.opengl.GL40C.glMinSampleShading
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.lwjgl.opengl.awt.GLData
 import org.slf4j.LoggerFactory
+import utils.Utils.doAllActions
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.nio.IntBuffer
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.min
 
 class Renderer(
@@ -147,7 +149,7 @@ class Renderer(
     private var glCanvas: AWTGLCanvas? = null
     private lateinit var inputHandler: InputHandler
 
-    private val pendingGlThreadActions = ArrayList<Runnable>()
+    private val pendingGlThreadActions = ConcurrentLinkedQueue<Runnable>()
 
     fun initCanvas(): AWTGLCanvas {
         // center camera in viewport
@@ -176,7 +178,7 @@ class Renderer(
 
             override fun disposeCanvas() {
                 super.disposeCanvas()
-                this@Renderer.dispose()
+                stop()
             }
         }
 
@@ -201,14 +203,11 @@ class Renderer(
 
         scene.sceneChangeListeners.add(
             ActionListener {
-                isSceneUploadRequired = true
-                frameRateModel.notifyNeedFrames()
-
-                if (debugOptionsModel.resetCameraOnSceneChange.value.get()) {
-                    camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
-                    camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
-                    camera.cameraZ = -2500
+                animator?.doOnceBeforeGlRender {
+                    queueSceneUpload()
+                    shouldResetCamera = true
                 }
+                frameRateModel.notifyNeedFrames()
             }
         )
 
@@ -224,7 +223,9 @@ class Renderer(
         configOptions.antiAliasing.value.addListener(::antiAliasingMode::set)
 
         val redrawSceneListener: (Any?) -> Unit = {
-            isSceneUploadRequired = true
+            animator?.doOnceBeforeGlRender {
+                queueSceneUpload()
+            }
             frameRateModel.notifyNeedFrames()
         }
 
@@ -236,6 +237,15 @@ class Renderer(
         debugOptionsModel.showTileModels.value.addListener(redrawSceneListener)
         debugOptionsModel.showOnlyModelType.value.addListener(redrawSceneListener)
 
+        doInGlThread {
+            // Hack: can't call preDisplay() before any GL stuff is initialised
+            // because PriorityRenderer needs to initialise GL buffers
+            // So instead do it in the render function first, and before it thereafter.
+            // Things are split like this because the render function locks AWT.
+            preDisplay()
+            animator!!.doBeforeGlRender(::preDisplay)
+        }
+
         return glCanvas
     }
 
@@ -244,7 +254,11 @@ class Renderer(
     }
 
     fun stop() {
-        animator?.stop()
+        animator!!.stopWith {
+            shutdownProgram()
+            shutdownAAFbo()
+            priorityRenderer.destroy()
+        }
     }
 
     fun init() {
@@ -270,10 +284,14 @@ class Renderer(
     }
 
     private fun changePriorityRenderer() {
+        val animator = animator ?: return
+        animator.doOnceBeforeGlRender {
+            forceLockedRender = true
+        }
         doInGlThread {
             priorityRenderer.destroy()
             priorityRenderer = priorityRendererPref.factory()
-            isSceneUploadRequired = true
+            queueSceneUpload()
         }
         frameRateModel.notifyNeedFrames()
     }
@@ -290,16 +308,43 @@ class Renderer(
         glViewport(x, y, width, height)
     }
 
-    var isSceneUploadRequired = true
+    private var isSceneUploadRequired = true
+    private var forceLockedRender = false
+    private var shouldResetCamera = true
     private val clientStart = System.currentTimeMillis()
     private var lastUpdate = System.nanoTime()
 
+    private fun queueSceneUpload() {
+        animator!!.checkGlThread()
+        isSceneUploadRequired = true
+    }
+
+    private fun preDisplay() {
+        if (isSceneUploadRequired && !forceLockedRender) {
+            uploadSceneCPUHalf()
+            // do not unset isSceneUploadRequired here, it will be unset in display()
+            // when the scene is uploaded to the GPU
+        }
+    }
+
     fun display(glCanvas: AWTGLCanvas) {
-        pendingGlThreadActions.forEach(Runnable::run)
-        pendingGlThreadActions.clear()
+        pendingGlThreadActions.doAllActions()
 
         if (isSceneUploadRequired) {
-            uploadScene()
+            if (forceLockedRender) {
+                uploadSceneCPUHalf()
+                forceLockedRender = false
+            }
+            uploadSceneGPUHalf()
+            if (shouldResetCamera) {
+                if (debugOptionsModel.resetCameraOnSceneChange.value.get()) {
+                    camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
+                    camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
+                    camera.cameraZ = -2500
+                }
+                shouldResetCamera = false
+            }
+            isSceneUploadRequired = false
         }
 
         val thisUpdate = System.nanoTime()
@@ -549,7 +594,7 @@ class Renderer(
         }
     }
 
-    private fun uploadScene() {
+    private fun uploadSceneCPUHalf() {
         priorityRenderer.beginUploading()
 
         try {
@@ -559,18 +604,12 @@ class Renderer(
             logger.warn("Error happened while rendering with {}", priorityRenderer)
         }
 
-        priorityRenderer.finishUploading()
-
         drawTiles()
-        priorityRenderer.finishPositioning()
-
-        isSceneUploadRequired = false
     }
 
-    fun dispose() {
-        shutdownProgram()
-        shutdownAAFbo()
-        priorityRenderer.destroy()
+    private fun uploadSceneGPUHalf() {
+        priorityRenderer.finishUploading()
+        priorityRenderer.finishPositioning()
     }
 
     @Throws(ShaderException::class)

@@ -35,7 +35,7 @@ class InputHandler internal constructor(
 
     fun tick(dt: Double) {
         if (dt > 1000) { // big lag spike, don't send the user flying
-            frameRateModel.needAnotherFrame = true
+            frameRateModel.notifyNeedFrames()
             return
         }
         val xVec = (-camera.yawSin).toDouble() / 65535
@@ -79,7 +79,7 @@ class InputHandler internal constructor(
         }
         if (motionTicked) {
             camera.motionTicks++
-            frameRateModel.needAnotherFrame = true
+            frameRateModel.notifyNeedFrames()
         }
     }
 
@@ -87,7 +87,7 @@ class InputHandler internal constructor(
         if (keys[code] == STATE_RELEASED) return false
         if (keys[code] == STATE_HELD || !frameRateModel.powerSavingMode.get()) return true
         keys[code] = STATE_HELD
-        frameRateModel.needAnotherFrame = true
+        frameRateModel.notifyNeedFrames()
         return false
     }
 
