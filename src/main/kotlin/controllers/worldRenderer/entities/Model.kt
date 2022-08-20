@@ -24,7 +24,7 @@ class Model private constructor(
     /** The object type corresponding to this model. For debug purposes. */
     var debugType: Int = -1
     override val computeObj = ComputeObj()
-    override val renderFlags get() = super.renderFlags or (radius shl 12)
+    override val renderFlags get() = super.renderFlags or (xyzMag shl 12)
     override val renderUnordered get() = false
     override val faceCount get() = modelDefinition.faceCount
     override val renderOffsetX get() = offsetX + wallAttachedOffsetX
@@ -36,9 +36,12 @@ class Model private constructor(
     var wallAttachedOffsetX = 0
     var wallAttachedOffsetY = 0
 
-    val vertexPositionsX: IntArray = modelDefinition.vertexPositionsX.clone()
-    val vertexPositionsY: IntArray = modelDefinition.vertexPositionsY.clone()
-    val vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ.clone()
+    var vertexPositionsX: IntArray = modelDefinition.vertexPositionsX
+        private set
+    var vertexPositionsY: IntArray = modelDefinition.vertexPositionsY
+        private set
+    var vertexPositionsZ: IntArray = modelDefinition.vertexPositionsZ
+        private set
 
     var field1840: ByteArray? = null
     var field1852 = 0
@@ -53,48 +56,22 @@ class Model private constructor(
 
     private var minXCoord = Int.MAX_VALUE
     private var maxXCoord = Int.MIN_VALUE
-    private var modelHeight = 0
-    private var maxYCoord = Int.MIN_VALUE
     private var minZCoord = Int.MAX_VALUE
     private var maxZCoord = Int.MIN_VALUE
 
-    private var bottomY = 0
-    private var xYZMag = 0
-    private var radius = 0
-    private var diameter = 0
+    private var bottomY = Int.MIN_VALUE
+    private var xzMag = 0
+    private var xyzMag = 0
+    private var diagonalMag = 0
 
     var sceneId = -1 // scene ID in which this model was rendered
 
-    private fun calculateBoundsCylinder() {
-        bottomY = 0
-        xYZMag = 0
-        var height = 0
-        for (var1 in 0 until modelDefinition.vertexCount) {
-            val var2: Int = modelDefinition.vertexPositionsX[var1]
-            val var3: Int = modelDefinition.vertexPositionsY[var1]
-            val var4: Int = modelDefinition.vertexPositionsZ[var1]
-            if (-var3 > height) {
-                height = -var3
-            }
-            if (var3 > bottomY) {
-                bottomY = var3
-            }
-            val var5 = var2 * var2 + var4 * var4
-            if (var5 > xYZMag) {
-                xYZMag = var5
-            }
-        }
-        xYZMag = (sqrt(xYZMag.toDouble()) + 0.99).toInt()
-        radius = (sqrt((xYZMag * xYZMag + height * height).toDouble()) + 0.99).toInt()
-        diameter = radius + (sqrt((xYZMag * xYZMag + bottomY * bottomY).toDouble()) + 0.99).toInt()
-    }
-
-    private fun computeBounds() {
+    private fun computeBounds(recalculate: Boolean = false) {
         // Check if we have already calculated this
-        if (maxXCoord >= minXCoord) return
+        if (maxXCoord >= minXCoord && !recalculate) return
 
-        modelHeight = 0
-        maxYCoord = Int.MIN_VALUE
+        var height = Int.MIN_VALUE
+        bottomY = Int.MIN_VALUE
         minXCoord = Int.MAX_VALUE
         maxXCoord = Int.MIN_VALUE
         maxZCoord = Int.MIN_VALUE
@@ -105,11 +82,28 @@ class Model private constructor(
             val z = modelDefinition.vertexPositionsZ[i]
             minXCoord = min(minXCoord, x)
             maxXCoord = max(maxXCoord, x)
-            modelHeight = max(modelHeight, -y)
-            maxYCoord = max(maxYCoord, y)
+            height = max(height, -y)
+            bottomY = max(bottomY, y)
             minZCoord = min(minZCoord, z)
             maxZCoord = max(maxZCoord, z)
+            val mag = x * x + z * z
+            xzMag = max(xzMag, mag)
         }
+        xzMag = (sqrt(xzMag.toDouble()) + 0.99).toInt()
+        xyzMag = (sqrt((xzMag * xzMag + height * height).toDouble()) + 0.99).toInt()
+        diagonalMag = xyzMag + (sqrt((xzMag * xzMag + bottomY * bottomY).toDouble()) + 0.99).toInt()
+    }
+
+    private fun unshareXZ() {
+        if (vertexPositionsX === modelDefinition.vertexPositionsX) {
+            vertexPositionsX = vertexPositionsX.clone()
+            vertexPositionsZ = vertexPositionsZ.clone()
+        }
+    }
+
+    private fun unshareY() {
+        if (vertexPositionsY === modelDefinition.vertexPositionsY)
+            vertexPositionsY = vertexPositionsY.clone()
     }
 
     fun contourGround(
@@ -122,11 +116,11 @@ class Model private constructor(
         baseY: Int,
         clipType: Int
     ) {
-        calculateBoundsCylinder()
-        var left = xOff - xYZMag
-        var right = xOff + xYZMag
-        var top = yOff - xYZMag
-        var bottom = yOff + xYZMag
+        computeBounds()
+        var left = xOff - xzMag
+        var right = xOff + xzMag
+        var top = yOff - xzMag
+        var bottom = yOff + xzMag
         left = left shr 7
         right = right + 127 shr 7
         top = top shr 7
@@ -141,6 +135,8 @@ class Model private constructor(
         if (height == topLeft && height == topRight && height == bottomLeft && height == bottomRight) {
             return
         }
+
+        unshareY()
 
         var var12: Int
         var var13: Int
@@ -197,10 +193,12 @@ class Model private constructor(
         }
 
         // Not sure why this needs radius 0. Still don't understand those shaders.
-        radius = 0
+        xyzMag = 0
     }
 
     fun rotate(angle: Int) {
+        unshareXZ()
+
         val var2: Int = Constants.SINE[angle]
         val var3: Int = Constants.COSINE[angle]
         for (var4 in 0 until modelDefinition.vertexCount) {
@@ -231,7 +229,7 @@ class Model private constructor(
             val normal1 = myNormals[i]
             if (normal1.magnitude == 0) continue
             val y = vertexPositionsY[i] - yOffset
-            if (y > other.maxYCoord) continue
+            if (y > other.bottomY) continue
             val x = vertexPositionsX[i] - xOffset
             if (x < other.minXCoord || x > other.maxXCoord) continue
             val z = vertexPositionsZ[i] - zOffset
@@ -444,7 +442,6 @@ class Model private constructor(
             Model(def, ambient + 64, contrast + 768).apply { light() }
 
         fun unlitFromDefinition(modelDefinition: ModelDefinition, ambient: Int, contrast: Int): Model {
-            modelDefinition.computeNormals()
             val faceColors = IntArray(modelDefinition.faceCount) { 960 /* red */ }
             return Model(
                 modelDefinition,

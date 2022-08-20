@@ -105,7 +105,7 @@ class ObjectToModelConverter(
         val modelDefinition = modelLoader[modelId] ?: return null
 
         if (isRotated) {
-            modelDefinition.rotateMulti()
+            modelDefinition.flipZ()
         }
 
         if (type in LocationType.INSIDE_WALL_DECORATION.id..LocationType.DIAGONAL_WALL_DECORATION.id && orientation > 3) {
