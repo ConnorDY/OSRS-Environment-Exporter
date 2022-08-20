@@ -442,7 +442,6 @@ class Model private constructor(
             Model(def, ambient + 64, contrast + 768).apply { light() }
 
         fun unlitFromDefinition(modelDefinition: ModelDefinition, ambient: Int, contrast: Int): Model {
-            modelDefinition.computeNormals()
             val faceColors = IntArray(modelDefinition.faceCount) { 960 /* red */ }
             return Model(
                 modelDefinition,
