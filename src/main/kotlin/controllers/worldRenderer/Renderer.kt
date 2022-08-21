@@ -81,6 +81,7 @@ import org.lwjgl.opengl.GL40C.glMinSampleShading
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.lwjgl.opengl.awt.GLData
 import org.slf4j.LoggerFactory
+import ui.CancelledException
 import utils.Utils.doAllActions
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
@@ -150,6 +151,7 @@ class Renderer(
     private lateinit var inputHandler: InputHandler
 
     private val pendingGlThreadActions = ConcurrentLinkedQueue<Runnable>()
+    val sceneDrawListeners = ArrayList<SceneDrawListener>() // TODO concurrent?
 
     fun initCanvas(): AWTGLCanvas {
         // center camera in viewport
@@ -598,13 +600,20 @@ class Renderer(
         priorityRenderer.beginUploading()
 
         try {
-            sceneUploader.upload(scene, priorityRenderer)
-        } catch (e: Exception) {
-            e.printStackTrace()
-            logger.warn("Error happened while rendering with {}", priorityRenderer)
-        }
+            try {
+                sceneUploader.upload(scene, priorityRenderer)
+            } catch (e: CancelledException) {
+                throw e // rethrow to cancel the whole upload
+            } catch (e: Exception) {
+                logger.warn("Error happened while rendering with $priorityRenderer", e)
+            }
 
-        drawTiles()
+            sceneDrawListeners.forEach(SceneDrawListener::onStartDraw)
+            drawTiles()
+            sceneDrawListeners.forEach(SceneDrawListener::onEndDraw)
+        } catch (e: CancelledException) {
+            // Do nothing
+        }
     }
 
     private fun uploadSceneGPUHalf() {

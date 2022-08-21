@@ -1,5 +1,12 @@
 # Changelog
 
+## Upcoming
+
+### :sparkles: Enhancements
+
+- Added progress bars for long world load operations &ndash; [#117](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/117) @ScoreUnder
+
+
 ## 2.2.0
 
 ### :sparkles: Enhancements

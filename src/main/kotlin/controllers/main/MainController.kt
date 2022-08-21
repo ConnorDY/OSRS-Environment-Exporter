@@ -1,4 +1,4 @@
-package controllers
+package controllers.main
 
 import cache.XteaManager
 import cache.definitions.converters.ObjectToModelConverter
@@ -12,6 +12,12 @@ import cache.loaders.TextureLoader
 import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.databind.ObjectMapper
+import controllers.AboutController
+import controllers.DebugOptionsController
+import controllers.GridRegionChooserController
+import controllers.LocationSearchController
+import controllers.RegionChooserController
+import controllers.SettingsController
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.Renderer
 import controllers.worldRenderer.SceneExporter
@@ -92,15 +98,17 @@ class MainController constructor(
         )
         val textureManager = TextureManager(SpriteLoader(cacheLibrary), textureLoader)
         exporter = SceneExporter(textureManager, debugOptions)
-        worldRendererController = WorldRendererController(
-            Renderer(
-                camera, scene, SceneUploader(debugOptions),
-                textureManager,
-                configOptions,
-                frameRateModel,
-                debugOptions,
-            )
+        val sceneUploader = SceneUploader(debugOptions)
+        val renderer = Renderer(
+            camera, scene, sceneUploader,
+            textureManager,
+            configOptions,
+            frameRateModel,
+            debugOptions,
         )
+        worldRendererController = WorldRendererController(renderer)
+
+        SceneLoadProgressDialogSpawner(this).attach(scene, sceneUploader, renderer)
 
         JMenuBar().apply {
             JMenu("World").apply {
