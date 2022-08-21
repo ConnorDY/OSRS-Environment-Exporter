@@ -11,6 +11,7 @@ import java.awt.event.KeyListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
+import kotlin.math.pow
 
 class InputHandler internal constructor(
     private val parent: Component,
@@ -32,6 +33,7 @@ class InputHandler internal constructor(
     private var previousMouseY = 0
     var mouseX = 0
     var mouseY = 0
+    var baseSpeed = 1.0
 
     fun tick(dt: Double) {
         if (dt > 1000) { // big lag spike, don't send the user flying
@@ -41,9 +43,9 @@ class InputHandler internal constructor(
         val xVec = (-camera.yawSin).toDouble() / 65535
         val yVec = camera.yawCos.toDouble() / 65535
         val zVec = camera.pitchSin.toDouble() / 65535
-        var speed = 1
+        var speed = baseSpeed
         if (isKeyHeld(KeyEvent.VK_SHIFT)) {
-            speed = 4
+            speed *= 4
         }
         var motionTicked = false
         if (isKeyHeld(KeyEvent.VK_W)) {
@@ -70,11 +72,11 @@ class InputHandler internal constructor(
             motionTicked = true
         }
         if (isKeyHeld(KeyEvent.VK_SPACE)) {
-            camera.addZ((-dt).toInt() * speed)
+            camera.addZ((-dt * speed).toInt())
             motionTicked = true
         }
         if (isKeyHeld(KeyEvent.VK_X)) {
-            camera.addZ(dt.toInt() * speed)
+            camera.addZ((dt * speed).toInt())
             motionTicked = true
         }
         if (motionTicked) {
@@ -99,7 +101,9 @@ class InputHandler internal constructor(
         if (code >= 0 && code < keys.size)
             keys[code] = STATE_PRESSED
 
-        if (configOptions.debug.value.get()) {
+        if (code in KeyEvent.VK_1..KeyEvent.VK_9) {
+            baseSpeed = 2.0.pow(code - KeyEvent.VK_3)
+        } else if (configOptions.debug.value.get()) {
             when (code) {
                 KeyEvent.VK_J -> scene.loadRadius(8014, 5)
                 KeyEvent.VK_K -> scene.loadRadius(13360, 5)
