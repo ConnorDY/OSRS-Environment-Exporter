@@ -10,6 +10,8 @@
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder
 
+- Fix camera flickering when mouse warping is enabled but the warp destination is outside of the screen &ndash; [#124](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/124) @ScoreUnder
+
 ## 2.2.0
 
 ### :sparkles: Enhancements

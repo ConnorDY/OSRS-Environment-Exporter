@@ -161,7 +161,7 @@ class InputHandler internal constructor(
         }
     }
 
-    private fun warpMouse(x: Int, y: Int) {
+    private fun warpMouse(x: Int, y: Int): Boolean {
         val screen = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.find { device ->
             device.configurations.find { it.bounds.contains(x, y) } != null
         }
@@ -173,6 +173,7 @@ class InputHandler internal constructor(
             }
             robot.mouseMove(x, y)
         }
+        return screen != null
     }
 
     override fun mouseMoved(e: MouseEvent) {
@@ -215,8 +216,17 @@ class InputHandler internal constructor(
                 }
 
                 if (warp) {
-                    warpMouse(offsetX + x, offsetY + y)
-                    discardUntil = System.currentTimeMillis()
+                    val warpSuccess = warpMouse(offsetX + x, offsetY + y)
+                    if (warpSuccess) {
+                        // Discard queued events if we warped the mouse successfully
+                        // because the old events will be relative to the old mouse position
+                        discardUntil = System.currentTimeMillis()
+                    } else {
+                        // If the mouse failed to warp, set x and y back to normal
+                        // so that the camera doesn't jump around
+                        x = e.x
+                        y = e.y
+                    }
                 }
             }
 
