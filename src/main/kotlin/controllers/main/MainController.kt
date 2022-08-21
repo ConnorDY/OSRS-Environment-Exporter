@@ -71,6 +71,7 @@ class MainController constructor(
     private val debugOptions = DebugOptionsModel()
     private val exporter: SceneExporter
     private val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
+    private val btnExport: JButton
 
     val scene: Scene
 
@@ -147,11 +148,12 @@ class MainController constructor(
 
         val lblFps = JLabel("FPS: Unknown")
 
+        btnExport = JButton("Export").apply {
+            mnemonic = 'X'.code
+            addActionListener(::exportClicked)
+        }
         JToolBar().apply {
-            JButton("Export").apply {
-                mnemonic = 'X'.code
-                addActionListener(::exportClicked)
-            }.let(::add)
+            btnExport.let(::add)
             JToolBar.Separator().let(::add)
             Box.createGlue().let(::add)
 
@@ -267,20 +269,27 @@ class MainController constructor(
     }
 
     private fun exportClicked(event: ActionEvent) {
+        btnExport.isEnabled = false
         Thread {
             try {
-                exporter.exportSceneToFile(scene)
-            } catch (_: CancelledException) {
-                return@Thread
-            }
+                try {
+                    exporter.exportSceneToFile(scene)
+                } catch (_: CancelledException) {
+                    return@Thread
+                }
 
-            SwingUtilities.invokeLater {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Exported as glTF.",
-                    "Export Completed",
-                    JOptionPane.INFORMATION_MESSAGE or JOptionPane.OK_OPTION
-                )
+                SwingUtilities.invokeLater {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Exported as glTF.",
+                        "Export Completed",
+                        JOptionPane.INFORMATION_MESSAGE or JOptionPane.OK_OPTION
+                    )
+                }
+            } finally {
+                SwingUtilities.invokeLater {
+                    btnExport.isEnabled = true
+                }
             }
         }.start()
     }
