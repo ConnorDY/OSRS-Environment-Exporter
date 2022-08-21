@@ -10,6 +10,8 @@
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder
 
+- Scale canvas correctly even under high-DPI modes &ndash; [#125](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/125) @ScoreUnder
+
 ## 2.2.0
 
 ### :sparkles: Enhancements

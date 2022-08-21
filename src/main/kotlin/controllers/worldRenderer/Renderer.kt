@@ -169,7 +169,7 @@ class Renderer(
             }
 
             override fun paintGL() {
-                this@Renderer.reshape(0, 0, width, height)
+                this@Renderer.reshape(framebufferWidth, framebufferHeight)
                 if (width > 0 && height > 0)
                     this@Renderer.display(this)
             }
@@ -282,12 +282,12 @@ class Renderer(
         pendingGlThreadActions.add(thing)
     }
 
-    fun reshape(x: Int, y: Int, width: Int, height: Int) {
+    fun reshape(width: Int, height: Int) {
         canvasWidth = width
         canvasHeight = height
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
-        glViewport(x, y, width, height)
+        glViewport(0, 0, width, height)
     }
 
     var isSceneUploadRequired = true
