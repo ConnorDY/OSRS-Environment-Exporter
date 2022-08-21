@@ -31,6 +31,7 @@ import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
 import org.slf4j.LoggerFactory
+import ui.CancelledException
 import ui.JLinkLabel
 import utils.PackageMetadata
 import java.awt.BorderLayout
@@ -55,6 +56,7 @@ import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JToolBar
+import javax.swing.SwingUtilities
 import javax.swing.Timer
 
 class MainController constructor(
@@ -109,6 +111,7 @@ class MainController constructor(
         worldRendererController = WorldRendererController(renderer)
 
         SceneLoadProgressDialogSpawner(this).attach(scene, sceneUploader, renderer)
+        SceneExportProgressDialogSpawner(this).attach(exporter)
 
         JMenuBar().apply {
             JMenu("World").apply {
@@ -264,13 +267,22 @@ class MainController constructor(
     }
 
     private fun exportClicked(event: ActionEvent) {
-        exporter.exportSceneToFile(scene)
-        JOptionPane.showMessageDialog(
-            this,
-            "Exported as glTF.",
-            "Export Completed",
-            JOptionPane.INFORMATION_MESSAGE or JOptionPane.OK_OPTION
-        )
+        Thread {
+            try {
+                exporter.exportSceneToFile(scene)
+            } catch (_: CancelledException) {
+                return@Thread
+            }
+
+            SwingUtilities.invokeLater {
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Exported as glTF.",
+                    "Export Completed",
+                    JOptionPane.INFORMATION_MESSAGE or JOptionPane.OK_OPTION
+                )
+            }
+        }.start()
     }
 
     private fun checkForUpdates() {
