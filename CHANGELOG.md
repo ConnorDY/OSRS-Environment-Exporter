@@ -12,6 +12,8 @@
 
 - Fix camera flickering when mouse warping is enabled but the warp destination is outside of the screen &ndash; [#124](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/124) @ScoreUnder
 
+- Scale canvas correctly even under high-DPI modes &ndash; [#125](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/125) @ScoreUnder
+
 ## 2.2.0
 
 ### :sparkles: Enhancements
