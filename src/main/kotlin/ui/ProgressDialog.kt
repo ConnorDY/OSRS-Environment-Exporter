@@ -1,5 +1,7 @@
 package ui
 
+import org.pushingpixels.radiance.theming.api.RadianceThemingCortex
+import org.pushingpixels.radiance.theming.api.RadianceThemingSlices
 import org.pushingpixels.radiance.theming.internal.ui.RadianceButtonUI
 import utils.ProgressContainer
 import java.awt.Component
@@ -43,6 +45,11 @@ class ProgressDialog(owner: Frame?, title: String, message: String) : JDialog(ow
         layout = GridBagLayout()
         isUndecorated = true
         rootPane.windowDecorationStyle = JRootPane.PLAIN_DIALOG
+        RadianceThemingCortex.WindowScope.extendContentIntoTitlePane(
+            this,
+            RadianceThemingSlices.HorizontalGravity.TRAILING,
+            RadianceThemingSlices.VerticalGravity.CENTERED
+        )
         removeCloseButton()
 
         val mainLabel = JLabel(message)
