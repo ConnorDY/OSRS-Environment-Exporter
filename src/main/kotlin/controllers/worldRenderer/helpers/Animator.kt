@@ -75,7 +75,11 @@ class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: Fram
                 // so, drop off the end of the run function
             }
 
-            terminateCallback?.run()
+            if (isMacOS()) {
+                SwingUtilities.invokeLater { terminateCallback?.run() }
+            } else {
+                terminateCallback?.run()
+            }
         }
 
         private fun callRender() {
