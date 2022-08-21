@@ -12,27 +12,16 @@ import utils.Utils
 import java.nio.ByteBuffer
 
 class RegionLoader(
-    private val cacheLibrary: CacheLibrary,
-    private val regionDefinitionCache: HashMap<Int, RegionDefinition?> = HashMap()
-) {
+    private val cacheLibrary: CacheLibrary
+) : ThreadsafeLazyLoader<RegionDefinition>() {
     private val logger = LoggerFactory.getLogger(RegionLoader::class.java)
 
-    fun get(regionId: Int): RegionDefinition? {
-        val cached = regionDefinitionCache[regionId]
-        if (cached != null || regionDefinitionCache.containsKey(regionId)) {
-            return cached
-        }
-
-        return loadRegion(regionId)
-    }
-
-    private fun loadRegion(regionId: Int): RegionDefinition? {
-        val regionX = (regionId shr 8) and 0xFF
-        val regionY = regionId and 0xFF
+    override fun load(id: Int): RegionDefinition? {
+        val regionX = (id shr 8) and 0xFF
+        val regionY = id and 0xFF
         val map = cacheLibrary.data(IndexType.MAPS.id, "m${regionX}_$regionY")
         if (map == null) {
-            logger.warn("Could not load region (tile) data for $regionId")
-            regionDefinitionCache[regionId] = null // Negative cache entry
+            logger.warn("Could not load region (tile) data for $id")
             return null
         }
 
@@ -67,9 +56,8 @@ class RegionLoader(
             }
         }
 
-        val regionDefinition = RegionDefinition(regionId, tiles)
+        val regionDefinition = RegionDefinition(id, tiles)
         regionDefinition.calculateTerrain()
-        regionDefinitionCache[regionId] = regionDefinition
         return regionDefinition
     }
 
