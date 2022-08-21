@@ -7,6 +7,7 @@ assignees: ''
 
 ---
 
+<!-- Replace "[ ]" with "[x]" to check the box below. -->
 - [ ] I am using the latest version of the exporter
 
 ## Bug description
