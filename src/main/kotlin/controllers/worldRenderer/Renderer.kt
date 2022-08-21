@@ -81,6 +81,7 @@ import org.lwjgl.opengl.GL40C.glMinSampleShading
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.lwjgl.opengl.awt.GLData
 import org.slf4j.LoggerFactory
+import utils.Utils.isMacOS
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -169,7 +170,12 @@ class Renderer(
             }
 
             override fun paintGL() {
-                this@Renderer.reshape(framebufferWidth, framebufferHeight)
+                if (isMacOS()) {
+                    // MacOS highDPI stuff returns the wrong value for framebuffer width/height
+                    this@Renderer.reshape(width, height)
+                } else {
+                    this@Renderer.reshape(framebufferWidth, framebufferHeight)
+                }
                 if (width > 0 && height > 0)
                     this@Renderer.display(this)
             }
