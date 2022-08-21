@@ -10,6 +10,8 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
 import org.jsoup.Jsoup
+import org.pushingpixels.radiance.theming.ktx.setExtraWidgetsPresence
+import org.pushingpixels.radiance.theming.ktx.setLockIconVisible
 import ui.FilteredListModel
 import ui.listener.DocumentTextListener
 import ui.listener.FilterTextListener
@@ -73,14 +75,19 @@ class CacheChooserController(
                 btnDownload.isEnabled = selectedIndex != -1
             }
         }
+
         val txtCacheLocation = JTextField().apply {
-            isEnabled = false
+            isEditable = false
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
+        txtCacheLocation.setExtraWidgetsPresence(false) // upstream bug: false and true are inverted
+        txtCacheLocation.setLockIconVisible(true)
+
         val lblStatusText = JLabel()
         val lblErrorText = JLabel().apply {
             foreground = Color.RED
         }
+
         btnDownload.addActionListener {
             btnDownload.isEnabled = false
             listCaches.selectedValue?.let {

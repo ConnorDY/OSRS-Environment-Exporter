@@ -32,6 +32,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:1.2.11")
     implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("org.pushing-pixels:radiance-theming:5.0.0")
+    implementation("org.pushing-pixels:radiance-theming-ktx:5.0.0")
 
     // lwjgl and dependencies thereof
     implementation(platform("org.lwjgl:lwjgl-bom:3.3.1"))
