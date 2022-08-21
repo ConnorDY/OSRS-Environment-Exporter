@@ -4,6 +4,7 @@ import models.FrameRateModel
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import utils.Utils.doAllActions
+import utils.Utils.isMacOS
 import java.util.Collections.synchronizedList
 import java.util.concurrent.ConcurrentLinkedQueue
 import javax.swing.SwingUtilities
@@ -35,10 +36,10 @@ class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: Fram
                     temporaryPreRenderListeners.doAllActions()
                     preRenderListeners.forEach(Runnable::run)
 
-                    if (canvas.isValid) {
-                        canvas.render()
+                    if (isMacOS()) {
+                        SwingUtilities.invokeAndWait(::callRender)
                     } else {
-                        GL.setCapabilities(null)
+                        callRender()
                     }
 
                     // Wait long enough to bring FPS down to target levels
@@ -75,6 +76,14 @@ class Animator(private val canvas: AWTGLCanvas, private val frameRateModel: Fram
             }
 
             terminateCallback?.run()
+        }
+
+        private fun callRender() {
+            if (canvas.isValid) {
+                canvas.render()
+            } else {
+                GL.setCapabilities(null)
+            }
         }
     }
 
