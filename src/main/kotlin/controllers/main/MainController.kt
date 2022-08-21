@@ -237,6 +237,11 @@ class MainController constructor(
         }
     }
 
+    override fun dispose() {
+        super.dispose()
+        animationTimer.stop()
+    }
+
     private fun changeRegionClicked(event: ActionEvent) {
         RegionChooserController(
             this, "Region Chooser"
