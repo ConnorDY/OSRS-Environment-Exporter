@@ -14,6 +14,7 @@ import models.scene.Scene
 import models.scene.SceneLoadProgressListener
 import models.scene.SceneTile
 import ui.CancelledException
+import utils.ChunkWriteListener
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -24,6 +25,7 @@ import java.time.format.DateTimeFormatter
 
 class SceneExporter(private val textureManager: TextureManager, private val debugOptionsModel: DebugOptionsModel) {
     val sceneLoadProgressListeners = ArrayList<SceneLoadProgressListener>()
+    val chunkWriteListeners = ArrayList<ChunkWriteListener>()
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
     fun exportSceneToFile(scene: Scene) {
@@ -74,7 +76,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             throw e
         }
 
-        gltf.save(outDir)
+        gltf.save(outDir, chunkWriteListeners)
 
         // copy textures
         if (textureManager.allTexturesLoaded()) {

@@ -1,27 +1,13 @@
 package utils
 
 import java.nio.ByteBuffer
-import java.util.function.IntFunction
 
-class ByteChunkBuffer(private val factory: IntFunction<ByteBuffer>) {
+class ByteChunkBuffer {
     private val byteChunks = ArrayList<ByteBuffer>()
 
-    val byteLength get() = byteChunks.sumOf { it.limit() }
+    val byteLength get() = byteChunks.sumOf { it.limit().toLong() }
 
-    fun getByteBuffer(): ByteBuffer {
-        if (byteChunks.size == 1) return byteChunks[0].duplicate()
-
-        val finalBytes = factory.apply(byteLength)
-        byteChunks.forEach { chunk ->
-            finalBytes.put(chunk)
-        }
-        finalBytes.flip()
-
-        // Might as well cache the fruit of our efforts
-        byteChunks.clear()
-        byteChunks.add(finalBytes.duplicate())
-        return finalBytes
-    }
+    fun getBuffers(): List<ByteBuffer> = byteChunks.map { it.duplicate() }
 
     fun addBytes(bytesToAdd: ByteBuffer) {
         byteChunks.add(bytesToAdd)

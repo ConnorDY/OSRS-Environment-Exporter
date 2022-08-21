@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import utils.ByteChunkBuffer
+import utils.ChunkWriteListener
 import java.io.File
-import java.nio.ByteBuffer
 
 @JsonInclude(NON_EMPTY)
 class glTF {
@@ -111,8 +111,8 @@ class glTF {
         images.add(image)
     }
 
-    fun save(directory: String) {
-        val chunkBuffer = ByteChunkBuffer(ByteBuffer::allocateDirect)
+    fun save(directory: String, chunkWriteListeners: List<ChunkWriteListener>) {
+        val chunkBuffer = ByteChunkBuffer()
 
         for (materialId in materialMap.keys) {
             addMesh(materialId, chunkBuffer)
@@ -123,8 +123,13 @@ class glTF {
         buffers.add(buffer)
 
         // write buffer to files
-        File("$directory/${buffer.uri}").outputStream().channel.use {
-            it.write(chunkBuffer.getByteBuffer())
+        chunkWriteListeners.forEach { it.onStartWriting(buffer.byteLength) }
+        File("$directory/${buffer.uri}").outputStream().channel.use { file ->
+            chunkBuffer.getBuffers().forEach { buf ->
+                val dataLength = buf.remaining().toLong()
+                file.write(buf)
+                chunkWriteListeners.forEach { it.onChunkWritten(dataLength) }
+            }
         }
 
         // convert to JSON
@@ -136,6 +141,7 @@ class glTF {
         File("$directory/scene.gltf").printWriter().use {
             it.write(json)
         }
+        chunkWriteListeners.forEach { it.onFinishWriting() }
     }
 
     init {

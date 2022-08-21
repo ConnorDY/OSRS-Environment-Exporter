@@ -52,9 +52,7 @@ abstract class CountingSceneLoadProgressListener : SceneLoadProgressListener {
         if (currentRegion >= numRegions) {
             progressContainer.status = statusDone
             if (progress == progressMax) {
-                SwingUtilities.invokeLater {
-                    progressContainer.complete()
-                }
+                progressContainer.complete()
             }
         } else {
             progressContainer.status = statusDoing
@@ -63,8 +61,10 @@ abstract class CountingSceneLoadProgressListener : SceneLoadProgressListener {
 
     private fun checkCancelled() {
         if (progressContainer.isCancelled) {
-            progressContainer.status = "Cancelled"
-            progressContainer.complete()
+            SwingUtilities.invokeLater {
+                progressContainer.status = "Cancelled"
+                progressContainer.complete()
+            }
             throw CancelledException()
         }
     }

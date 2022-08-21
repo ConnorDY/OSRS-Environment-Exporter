@@ -10,7 +10,7 @@ class FloatVectorBuffer(val dims: Int) {
     val min = FloatArray(dims) { Float.POSITIVE_INFINITY }
     val max = FloatArray(dims) { Float.NEGATIVE_INFINITY }
 
-    private val buffer = ByteChunkBuffer(ByteBuffer::allocate) // Steal our efficient byte-concat code
+    private val buffer = ByteChunkBuffer() // Steal our efficient byte-concat code
     private var chunk = newBuffer(INITIAL_CAPACITY)
     private var chunkWrapped = chunk.asFloatBuffer()
 
