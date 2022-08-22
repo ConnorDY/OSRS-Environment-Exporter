@@ -1,4 +1,4 @@
-package controllers
+package controllers.main
 
 import cache.XteaManager
 import cache.definitions.converters.ObjectToModelConverter
@@ -12,6 +12,12 @@ import cache.loaders.TextureLoader
 import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.databind.ObjectMapper
+import controllers.AboutController
+import controllers.DebugOptionsController
+import controllers.GridRegionChooserController
+import controllers.LocationSearchController
+import controllers.RegionChooserController
+import controllers.SettingsController
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.Renderer
 import controllers.worldRenderer.SceneExporter
@@ -25,6 +31,7 @@ import models.github.GitHubRelease
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
 import org.slf4j.LoggerFactory
+import ui.CancelledException
 import ui.JLinkLabel
 import utils.PackageMetadata
 import java.awt.BorderLayout
@@ -49,6 +56,7 @@ import javax.swing.JMenuBar
 import javax.swing.JMenuItem
 import javax.swing.JOptionPane
 import javax.swing.JToolBar
+import javax.swing.SwingUtilities
 import javax.swing.Timer
 
 class MainController constructor(
@@ -63,6 +71,7 @@ class MainController constructor(
     private val debugOptions = DebugOptionsModel()
     private val exporter: SceneExporter
     private val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
+    private val btnExport: JButton
 
     val scene: Scene
 
@@ -92,15 +101,18 @@ class MainController constructor(
         )
         val textureManager = TextureManager(SpriteLoader(cacheLibrary), textureLoader)
         exporter = SceneExporter(textureManager, debugOptions)
-        worldRendererController = WorldRendererController(
-            Renderer(
-                camera, scene, SceneUploader(debugOptions),
-                textureManager,
-                configOptions,
-                frameRateModel,
-                debugOptions,
-            )
+        val sceneUploader = SceneUploader(debugOptions)
+        val renderer = Renderer(
+            camera, scene, sceneUploader,
+            textureManager,
+            configOptions,
+            frameRateModel,
+            debugOptions,
         )
+        worldRendererController = WorldRendererController(renderer)
+
+        SceneLoadProgressDialogSpawner(this).attach(scene, sceneUploader, renderer)
+        SceneExportProgressDialogSpawner(this).attach(exporter)
 
         JMenuBar().apply {
             JMenu("World").apply {
@@ -136,11 +148,12 @@ class MainController constructor(
 
         val lblFps = JLabel("FPS: Unknown")
 
+        btnExport = JButton("Export").apply {
+            mnemonic = 'X'.code
+            addActionListener(::exportClicked)
+        }
         JToolBar().apply {
-            JButton("Export").apply {
-                mnemonic = 'X'.code
-                addActionListener(::exportClicked)
-            }.let(::add)
+            btnExport.let(::add)
             JToolBar.Separator().let(::add)
             Box.createGlue().let(::add)
 
@@ -261,13 +274,29 @@ class MainController constructor(
     }
 
     private fun exportClicked(event: ActionEvent) {
-        exporter.exportSceneToFile(scene)
-        JOptionPane.showMessageDialog(
-            this,
-            "Exported as glTF.",
-            "Export Completed",
-            JOptionPane.INFORMATION_MESSAGE or JOptionPane.OK_OPTION
-        )
+        btnExport.isEnabled = false
+        Thread {
+            try {
+                try {
+                    exporter.exportSceneToFile(scene)
+                } catch (_: CancelledException) {
+                    return@Thread
+                }
+
+                SwingUtilities.invokeLater {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "Exported as glTF.",
+                        "Export Completed",
+                        JOptionPane.INFORMATION_MESSAGE or JOptionPane.OK_OPTION
+                    )
+                }
+            } finally {
+                SwingUtilities.invokeLater {
+                    btnExport.isEnabled = true
+                }
+            }
+        }.start()
     }
 
     private fun checkForUpdates() {

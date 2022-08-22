@@ -67,11 +67,12 @@ abstract class AbstractPriorityRenderer : PriorityRenderer {
         comp.offset = vertexBuffer.buffer.position() / VEC_DIMS
         comp.uvOffset = if (strictUVs) uvBuffer.buffer.position() / VEC_DIMS else -1
         comp.size = faces
-        comp.generation = generation
 
         vertexBuffer.ensureCapacity(faces * (VEC_DIMS * VERTICES_PER_TRI))
         if (strictUVs)
             uvBuffer.ensureCapacity(faces * (VEC_DIMS * VERTICES_PER_TRI))
+
+        comp.generation = generation
     }
 
     protected fun isUploaded(computeObj: ComputeObj): Boolean =

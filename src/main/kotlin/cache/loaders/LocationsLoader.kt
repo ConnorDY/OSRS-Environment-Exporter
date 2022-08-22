@@ -7,39 +7,22 @@ import cache.utils.readUnsignedShortSmart
 import cache.utils.readUnsignedSmartShortExtended
 import com.displee.cache.CacheLibrary
 import org.slf4j.LoggerFactory
-import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
 
 class LocationsLoader(
     private val library: CacheLibrary,
     private val xtea: XteaManager,
-    private val locationsDefinitionCache: HashMap<Int, LocationsDefinition?> = HashMap()
-) {
+) : ThreadsafeLazyLoader<LocationsDefinition>() {
     private val logger = LoggerFactory.getLogger(LocationsLoader::class.java)
 
-    fun get(regionId: Int): LocationsDefinition? {
-        val cached = locationsDefinitionCache[regionId]
-        if (cached != null || locationsDefinitionCache.containsKey(regionId)) {
-            return cached
-        }
-        val location = try {
-            loadLocations(regionId)
-        } catch (e: BufferUnderflowException) {
-            e.printStackTrace() // Alert an attentive user that an issue has occurred
-            null
-        }
-        locationsDefinitionCache[regionId] = location
-        return location
-    }
+    override fun load(id: Int): LocationsDefinition? {
+        val locationsDefinition = LocationsDefinition(id)
 
-    private fun loadLocations(regionId: Int): LocationsDefinition? {
-        val locationsDefinition = LocationsDefinition(regionId)
-
-        val x = (regionId shr 8) and 0xFF
-        val y = regionId and 0xFF
-        val xteaKeys = xtea.getKeys(regionId)
+        val x = (id shr 8) and 0xFF
+        val y = id and 0xFF
+        val xteaKeys = xtea.getKeys(id)
         if (xteaKeys == null) {
-            logger.warn("Could not get xtea keys for region $regionId ($x, $y)")
+            logger.warn("Could not get xtea keys for region $id ($x, $y)")
             return null
         }
 

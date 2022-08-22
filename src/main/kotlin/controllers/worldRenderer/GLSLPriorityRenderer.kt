@@ -74,6 +74,12 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
         return uniformBufferId
     }
 
+    override fun beginUploading() {
+        super.beginUploading()
+        modelBuffers.clear()
+        modelBuffers.clearBufferOffset()
+    }
+
     override fun getBuffersForRenderable(renderable: Renderable, faces: Int, hasUVs: Boolean): Pair<IntBuffer, FloatBuffer> {
         val vertexBuffer = modelBuffers.vertexBuffer
         val uvBuffer = modelBuffers.uvBuffer
@@ -95,8 +101,6 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
         glBufferData(GL_ARRAY_BUFFER, uvBuffer, GL_STATIC_COPY)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         modelBuffers.clearVertUv()
-        modelBuffers.clear()
-        modelBuffers.clearBufferOffset()
     }
 
     override fun positionRenderable(

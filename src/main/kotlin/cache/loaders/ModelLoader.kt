@@ -40,31 +40,30 @@ import com.displee.cache.CacheLibrary
 import java.io.IOException
 import java.nio.ByteBuffer
 
-class ModelLoader(private val cacheLibrary: CacheLibrary) {
-    private val modelDefinitionCache: MutableMap<Int, ModelDefinition> =
-        HashMap()
-
+class ModelLoader(private val cacheLibrary: CacheLibrary) : ThreadsafeLazyLoader<ModelDefinition>() {
     @Throws(IOException::class)
-    operator fun get(modelId: Int): ModelDefinition? {
-        var def = modelDefinitionCache[modelId]
-        if (def == null) {
-            val index = cacheLibrary.index(IndexType.MODELS.id)
-            val archive = index.archive(modelId and 0xffff) ?: return null
-            val stream = ByteBuffer.wrap(archive.files[0]!!.data)
-            archive.restore() // Drop cached archive
-            stream.position(stream.limit() - 2)
-            def = when (stream.short.toInt()) {
-                -3 -> readModelCommon(modelId, stream, 26, true, true)
-                -2 -> readModelCommon(modelId, stream, 23, false, true)
-                -1 -> readModelCommon(modelId, stream, 23, true, false)
-                else -> readModelCommon(modelId, stream, 18, false, false)
-            }
-            def.computeNormals()
-            def.computeTextureUVCoordinates()
-            def.computeAnimationTables()
-            modelDefinitionCache[modelId] = def
-        }
+    override operator fun get(id: Int): ModelDefinition? {
+        val def = super.get(id) ?: return null
+        // Make a defensive copy because these get mutated a lot
         return ModelDefinition(def)
+    }
+
+    override fun load(id: Int): ModelDefinition? {
+        val index = cacheLibrary.index(IndexType.MODELS.id)
+        val archive = index.archive(id and 0xffff) ?: return null
+        val stream = ByteBuffer.wrap(archive.files[0]!!.data)
+        archive.restore() // Drop cached archive
+        stream.position(stream.limit() - 2)
+        val def = when (stream.short.toInt()) {
+            -3 -> readModelCommon(id, stream, 26, true, true)
+            -2 -> readModelCommon(id, stream, 23, false, true)
+            -1 -> readModelCommon(id, stream, 23, true, false)
+            else -> readModelCommon(id, stream, 18, false, false)
+        }
+        def.computeNormals()
+        def.computeTextureUVCoordinates()
+        def.computeAnimationTables()
+        return def
     }
 
     private fun readModelCommon(

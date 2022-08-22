@@ -2,6 +2,7 @@ package models.scene
 
 import models.DebugOptionsModel
 import org.slf4j.LoggerFactory
+import ui.CancelledException
 import java.awt.event.ActionListener
 import java.util.function.Consumer
 
@@ -17,9 +18,11 @@ class Scene(
     // NxM grid of regions to display
     private var regions: Array<Array<SceneRegion?>> = emptyArray()
     val sceneChangeListeners: ArrayList<ActionListener> = ArrayList()
+    val sceneLoadProgressListeners = ArrayList<SceneLoadProgressListener>()
 
     val rows get() = regions.size
-    val cols get() = regions[0].size
+    val cols get() = if (regions.isEmpty()) 0 else regions[0].size
+    val numRegions get() = regions.sumOf { row -> row.count { it != null } }
 
     init {
         val listener: (Any?) -> Unit = {
@@ -28,6 +31,15 @@ class Scene(
         debugOptionsModel.modelSubIndex.value.addListener(listener)
         debugOptionsModel.badModelIndexOverride.value.addListener(listener)
         debugOptionsModel.removeProperlyTypedModels.value.addListener(listener)
+    }
+
+    private fun startLoading(numRegions: Int) {
+        logger.info("Loading $numRegions regions")
+        sceneLoadProgressListeners.forEach { it.onBeginLoadingRegions(numRegions) }
+    }
+
+    private fun finishLoadingRegion() {
+        sceneLoadProgressListeners.forEach { it.onRegionLoaded() }
     }
 
     private fun reload() {
@@ -41,7 +53,6 @@ class Scene(
     }
 
     fun loadRadius(centerRegionId: Int, radius: Int) {
-        regions = Array(radius) { arrayOfNulls(radius) }
         var regionId = centerRegionId
         if (radius > 1) {
             regionId = centerRegionId - 256 * (radius - 2) - (radius - 2)
@@ -61,28 +72,53 @@ class Scene(
      * @param regionIds Non-empty list of rows of region IDs
      */
     fun loadRegions(regionIds: List<List<Int?>>) {
-        regions = regionIds.map { row ->
-            row.map { regionId ->
-                if (regionId == null) null
-                else {
-                    logger.info("Loading region {}", regionId)
-                    sceneRegionBuilder.loadRegion(regionId)
-                }
+        onAnotherThreadCancellable {
+            val numRegions = regionIds.sumOf { row -> row.count { it != null } }
+            startLoading(numRegions)
+            regions = regionIds.map { row ->
+                row.map { regionId ->
+                    if (regionId == null) null
+                    else {
+                        logger.info("Loading region {}", regionId)
+                        sceneRegionBuilder.loadRegion(regionId).also {
+                            finishLoadingRegion()
+                        }
+                    }
+                }.toTypedArray()
             }.toTypedArray()
-        }.toTypedArray()
 
-        reload()
+            reload()
+        }
     }
 
-    fun reloadRegions() {
-        regions.forEach { row ->
-            row.indices.forEach inner@{
-                val region = row[it] ?: return@inner
-                row[it] = sceneRegionBuilder.loadRegion(region.locationsDefinition.regionId)
+    private fun reloadRegions() {
+        onAnotherThreadCancellable {
+            startLoading(numRegions)
+            regions.forEach { row ->
+                row.indices.forEach inner@{
+                    val region = row[it] ?: return@inner
+                    row[it] = sceneRegionBuilder.loadRegion(region.locationsDefinition.regionId)
+                    finishLoadingRegion()
+                }
             }
-        }
 
-        reload()
+            reload()
+        }
+    }
+
+    private fun onAnotherThreadCancellable(block: () -> Unit) {
+        Thread {
+            try {
+                block()
+            } catch (e: CancelledException) {
+                // Do nothing
+            } catch (e: Exception) {
+                logger.error("Error loading scene", e)
+                sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onError)
+            }
+        }.apply {
+            start()
+        }
     }
 
     fun getTile(z: Int, x: Int, y: Int): SceneTile? {

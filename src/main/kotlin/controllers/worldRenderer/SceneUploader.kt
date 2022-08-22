@@ -9,6 +9,7 @@ import controllers.worldRenderer.entities.TilePaint
 import models.DebugOptionsModel
 import models.scene.REGION_SIZE
 import models.scene.Scene
+import models.scene.SceneLoadProgressListener
 import models.scene.SceneTile
 import java.nio.FloatBuffer
 
@@ -37,9 +38,12 @@ import java.nio.FloatBuffer
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 class SceneUploader(private val debugOptionsModel: DebugOptionsModel) {
+    val sceneLoadProgressListeners = ArrayList<SceneLoadProgressListener>()
     var sceneId = System.nanoTime().toInt()
 
     fun upload(scene: Scene, priorityRenderer: PriorityRenderer) {
+        val numRegions = scene.numRegions
+        sceneLoadProgressListeners.forEach { it.onBeginLoadingRegions(numRegions) }
         ++sceneId
         for (rx in 0 until scene.cols) {
             for (ry in 0 until scene.rows) {
@@ -55,6 +59,8 @@ class SceneUploader(private val debugOptionsModel: DebugOptionsModel) {
                         }
                     }
                 }
+
+                sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onRegionLoaded)
             }
         }
     }

@@ -6,6 +6,8 @@
 
 - Added fly speed modifier keys (1-9) &ndash; [#118](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/118)
 
+- Added progress bars for long world load operations &ndash; [#117](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/117) @ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder

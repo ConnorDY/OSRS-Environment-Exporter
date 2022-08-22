@@ -11,7 +11,10 @@ import models.glTF.MaterialBuffers
 import models.glTF.glTF
 import models.scene.REGION_SIZE
 import models.scene.Scene
+import models.scene.SceneLoadProgressListener
 import models.scene.SceneTile
+import ui.CancelledException
+import utils.ChunkWriteListener
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -20,7 +23,9 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
-class SceneExporter constructor(private val textureManager: TextureManager, private val debugOptionsModel: DebugOptionsModel) {
+class SceneExporter(private val textureManager: TextureManager, private val debugOptionsModel: DebugOptionsModel) {
+    val sceneLoadProgressListeners = ArrayList<SceneLoadProgressListener>()
+    val chunkWriteListeners = ArrayList<ChunkWriteListener>()
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
     fun exportSceneToFile(scene: Scene) {
@@ -40,27 +45,38 @@ class SceneExporter constructor(private val textureManager: TextureManager, priv
 
         ++sceneId
 
-        for (rx in 0 until scene.cols) {
-            for (ry in 0 until scene.rows) {
-                val region = scene.getRegion(rx, ry) ?: continue
-                val baseX = rx * REGION_SIZE
-                val baseY = ry * REGION_SIZE
-                debugOptionsModel.zLevelsSelected.forEachIndexed { z, visible ->
-                    if (visible.get()) {
-                        val tilePlane = region.tiles[z]
-                        for (x in 0 until REGION_SIZE) {
-                            val tileCol = tilePlane[x]
-                            for (y in 0 until REGION_SIZE) {
-                                val tile = tileCol[y] ?: continue
-                                this.upload(gltf, tile, baseX + x, baseY + y)
+        try {
+            sceneLoadProgressListeners.forEach { it.onBeginLoadingRegions(scene.numRegions) }
+
+            for (rx in 0 until scene.cols) {
+                for (ry in 0 until scene.rows) {
+                    val region = scene.getRegion(rx, ry) ?: continue
+                    val baseX = rx * REGION_SIZE
+                    val baseY = ry * REGION_SIZE
+                    debugOptionsModel.zLevelsSelected.forEachIndexed { z, visible ->
+                        if (visible.get()) {
+                            val tilePlane = region.tiles[z]
+                            for (x in 0 until REGION_SIZE) {
+                                val tileCol = tilePlane[x]
+                                for (y in 0 until REGION_SIZE) {
+                                    val tile = tileCol[y] ?: continue
+                                    this.upload(gltf, tile, baseX + x, baseY + y)
+                                }
                             }
                         }
                     }
+
+                    sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onRegionLoaded)
                 }
             }
+        } catch (e: CancelledException) {
+            throw e // don't save, but don't report as an error to listeners
+        } catch (e: Exception) {
+            sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onError)
+            throw e
         }
 
-        gltf.save(outDir)
+        gltf.save(outDir, chunkWriteListeners)
 
         // copy textures
         if (textureManager.allTexturesLoaded()) {

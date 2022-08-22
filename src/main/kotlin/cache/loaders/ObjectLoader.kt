@@ -11,17 +11,10 @@ import com.displee.cache.CacheLibrary
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
 
-class ObjectLoader(
-    private val cacheLibrary: CacheLibrary,
-    private val objectDefinitionCache: HashMap<Int, ObjectDefinition?> = HashMap()
-) {
+class ObjectLoader(private val cacheLibrary: CacheLibrary) : ThreadsafeLazyLoader<ObjectDefinition>() {
     private val logger = LoggerFactory.getLogger(ObjectLoader::class.java)
 
-    fun get(id: Int): ObjectDefinition? {
-        return objectDefinitionCache.getOrPut(id) { load(id) }
-    }
-
-    fun load(id: Int): ObjectDefinition? {
+    override fun load(id: Int): ObjectDefinition? {
         val index = cacheLibrary.index(IndexType.CONFIGS.id)
         val archive = index.archive(ConfigType.OBJECT.id)
         val data = archive?.file(id)?.data ?: return null
