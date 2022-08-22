@@ -1,9 +1,9 @@
 package controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import controllers.RegionLoadingDialogHelper.MAP_LENGTH
 import models.locations.Location
 import models.locations.Locations
-import models.scene.Scene
 import ui.FilteredListModel
 import ui.NumericTextField
 import ui.PlaceholderTextField
@@ -33,10 +33,10 @@ import javax.swing.JList
 import javax.swing.JScrollPane
 import javax.swing.UIManager
 
-class LocationSearchController constructor(
+class LocationSearchController(
     owner: JFrame,
     title: String,
-    private val scene: Scene
+    private val loadRegionCallback: (Component, Int, Int) -> Boolean,
 ) : JDialog(owner, title) {
 
     init {
@@ -50,7 +50,7 @@ class LocationSearchController constructor(
         }
         listLocations.cellRenderer = LocationCell()
         val txtSearchQuery = PlaceholderTextField("", "Lumbridge")
-        val txtRadius = NumericTextField.create(1, 1, 20)
+        val txtRadius = NumericTextField.create(1, 1, MAP_LENGTH)
         val lblSearchQuery = JLabel("Search Query:").apply {
             displayedMnemonic = 'S'.code
             labelFor = txtSearchQuery
@@ -115,8 +115,9 @@ class LocationSearchController constructor(
             val selectedLocation = listLocations.selectedValue ?: return@addActionListener
             val regionId = regionIdForLocation(selectedLocation)
 
-            dispose()
-            scene.loadRadius(regionId, txtRadius.value as Int)
+            if (loadRegionCallback(this, regionId, txtRadius.value as Int)) {
+                dispose()
+            }
         }
 
         rootPane.defaultButton = btnLoad

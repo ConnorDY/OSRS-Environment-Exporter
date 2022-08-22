@@ -17,6 +17,7 @@ import controllers.DebugOptionsController
 import controllers.GridRegionChooserController
 import controllers.LocationSearchController
 import controllers.RegionChooserController
+import controllers.RegionLoadingDialogHelper.confirmAndLoadRadius
 import controllers.SettingsController
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.Renderer
@@ -243,16 +244,15 @@ class MainController constructor(
     }
 
     private fun changeRegionClicked(event: ActionEvent) {
-        RegionChooserController(
-            this, "Region Chooser"
-        ) { regionId, radius ->
-            scene.loadRadius(regionId, radius)
-        }.display()
+        RegionChooserController(this, "Region Chooser", ::loadRadiusCallback).display()
     }
 
     private fun locationSearchClicked(event: ActionEvent) {
-        LocationSearchController(this, "Location Search", scene).display()
+        LocationSearchController(this, "Location Search", ::loadRadiusCallback).display()
     }
+
+    private fun loadRadiusCallback(dialog: Component, regionId: Int, radius: Int) =
+        confirmAndLoadRadius(dialog, scene, regionId, radius)
 
     private fun chooseGridRegionClicked(event: ActionEvent) {
         GridRegionChooserController(this, "Load Custom Grid") { regionIds ->

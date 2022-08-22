@@ -1,6 +1,8 @@
 package controllers
 
 import AppConstants
+import controllers.RegionLoadingDialogHelper.MAP_LENGTH
+import controllers.RegionLoadingDialogHelper.confirmRegionLoad
 import ui.NumericTextField
 import ui.listener.DocumentTextListener
 import java.awt.Dimension
@@ -24,7 +26,7 @@ import javax.swing.JTextField
 import javax.swing.LayoutStyle
 import kotlin.math.max
 
-class GridRegionChooserController constructor(
+class GridRegionChooserController(
     owner: JFrame,
     title: String,
     private var loadRegionsCallback: (List<List<Int?>>) -> Unit
@@ -47,10 +49,10 @@ class GridRegionChooserController constructor(
 
         resizeGrid(2, 2)
 
-        val gridWidthField = NumericTextField.create(cols, 2, MAX_WIDTH).apply {
+        val gridWidthField = NumericTextField.create(cols, 1, MAP_LENGTH).apply {
             sizeToText("888")
         }
-        val gridHeightField = NumericTextField.create(rows, 2, MAX_HEIGHT).apply {
+        val gridHeightField = NumericTextField.create(rows, 1, MAP_LENGTH).apply {
             sizeToText("888")
         }
 
@@ -89,13 +91,16 @@ class GridRegionChooserController constructor(
             alignmentX = CENTER_ALIGNMENT
             mnemonic = 'L'.code
             addActionListener {
-                loadRegionsCallback(
-                    gridInputs.map { row ->
-                        row.map {
-                            it.value as Int?
-                        }
-                    }.reversed()
-                )
+                val numRegions = gridInputs.sumOf { row -> row.count { it.value != null } }
+                if (confirmRegionLoad(this@GridRegionChooserController, numRegions)) {
+                    loadRegionsCallback(
+                        gridInputs.map { row ->
+                            row.map {
+                                it.value as Int?
+                            }
+                        }.reversed()
+                    )
+                }
                 dispose()
             }
         }
@@ -219,10 +224,5 @@ class GridRegionChooserController constructor(
         }
 
         autoPopulating = false
-    }
-
-    companion object {
-        const val MAX_WIDTH = 6
-        const val MAX_HEIGHT = 6
     }
 }
