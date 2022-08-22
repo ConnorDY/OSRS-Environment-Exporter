@@ -23,7 +23,7 @@ class FloatVectorBuffer(val dims: Int) {
     private var bufferedSize = 0
 
     private fun newBuffer(capacity: Int): ByteBuffer =
-        ByteBuffer.allocate(capacity).order(ByteOrder.LITTLE_ENDIAN)
+        ByteBuffer.allocateDirect(capacity).order(ByteOrder.LITTLE_ENDIAN)
 
     private fun refreshBuffer() {
         val unflushedFloats = chunkWrapped.position()
