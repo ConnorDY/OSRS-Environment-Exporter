@@ -2,7 +2,7 @@
 
 Tool for exporting Old School RuneScape environments so that they can be used in 3D modeling programs like Blender.
 
-![Screenshot of the application](./docs/screenshot.png)
+![Screenshot of the application](./docs/screenshot.webp)
 
 ## Downloading
 
