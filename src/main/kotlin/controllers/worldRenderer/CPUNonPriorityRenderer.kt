@@ -61,9 +61,6 @@ class CPUNonPriorityRenderer : AbstractPriorityRenderer() {
 
     override fun finishPositioning() {
         super.finishPositioning()
-        // TODO: test if rewind is necessary
-        vertexBuffer.buffer.rewind()
-        uvBuffer.buffer.rewind()
         glBindBuffer(GL_ARRAY_BUFFER, vertexOut)
         glBufferData(GL_ARRAY_BUFFER, vertexBuffer.buffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, uvOut)
