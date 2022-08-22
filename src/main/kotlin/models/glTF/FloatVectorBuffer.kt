@@ -30,7 +30,8 @@ class FloatVectorBuffer(val dims: Int) {
         val unflushedBytes = unflushedFloats * BYTES_IN_A_FLOAT
         buffer.addBytes(chunk.limit(unflushedBytes))
         bufferedSize += unflushedFloats
-        chunk = newBuffer(INITIAL_CAPACITY + bufferedSize * BYTES_IN_A_FLOAT)
+        val capacity = INITIAL_CAPACITY + bufferedSize * BYTES_IN_A_FLOAT
+        chunk = newBuffer(if (capacity < INITIAL_CAPACITY) 1024 * 1024 * 1024 else capacity)
         chunkWrapped = chunk.asFloatBuffer()
     }
 
