@@ -5,6 +5,9 @@ import controllers.RegionLoadingDialogHelper.MAP_LENGTH
 import controllers.RegionLoadingDialogHelper.confirmRegionLoad
 import ui.NumericTextField
 import ui.listener.DocumentTextListener
+import utils.Utils.getRegionIdX
+import utils.Utils.getRegionIdY
+import utils.Utils.regionCoordinatesToRegionId
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagConstraints.CENTER
@@ -212,14 +215,21 @@ class GridRegionChooserController(
         if (autoPopulating || regionId == null || !chkBoxAutoPopulate.isSelected) return
         autoPopulating = true
 
+        val xWest = getRegionIdX(regionId) - x
+        val yNorth = getRegionIdY(regionId) - y + rows - 1
+
         for ((yy, inputs) in gridInputs.withIndex()) {
             for ((xx, input) in inputs.withIndex()) {
                 if (xx == x && yy == y) continue
 
-                val xdiff = xx - x
-                val ydiff = yy - y
+                val xHere = xWest + xx
+                val yHere = yNorth - yy
 
-                input.value = regionId + (xdiff * 256) - ydiff
+                // Avoid impossible coordinates (would normally cause the map to wrap weirdly)
+                if (xHere < 0 || xHere >= MAP_LENGTH) continue
+                if (yHere < 0 || yHere >= MAP_LENGTH) continue
+
+                input.value = regionCoordinatesToRegionId(xHere, yHere)
             }
         }
 
