@@ -1,8 +1,7 @@
 package controllers.worldRenderer
 
 import controllers.worldRenderer.entities.Renderable
-import controllers.worldRenderer.helpers.GpuFloatBuffer
-import controllers.worldRenderer.helpers.GpuIntBuffer
+import controllers.worldRenderer.helpers.MeshBuffers
 import org.lwjgl.opengl.GL11C.GL_CULL_FACE
 import org.lwjgl.opengl.GL11C.GL_TRIANGLES
 import org.lwjgl.opengl.GL11C.glDisable
@@ -17,26 +16,23 @@ import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
 class CPUNonPriorityRenderer : AbstractPriorityRenderer() {
-    private val vertexBuffer = GpuIntBuffer()
-    private val uvBuffer = GpuFloatBuffer()
+    private val meshBuffers = MeshBuffers()
     private var bufferedVertices = 0
 
     override val needsStrictUVs get() = true
 
     override fun beginUploading() {
         super.beginUploading()
-        vertexBuffer.clear()
-        uvBuffer.clear()
+        meshBuffers.clear()
     }
 
     override fun getBuffersForRenderable(renderable: Renderable, faces: Int, hasUVs: Boolean): Pair<IntBuffer, FloatBuffer> {
-        prepareBuffersForRenderable(renderable, faces, hasUVs, vertexBuffer, uvBuffer)
-        return Pair(vertexBuffer.buffer, uvBuffer.buffer)
+        prepareBuffersForRenderable(renderable, faces, hasUVs, meshBuffers.vertexBuffer, meshBuffers.uvBuffer)
+        return Pair(meshBuffers.vertexBuffer.buffer, meshBuffers.uvBuffer.buffer)
     }
 
     override fun finishUploading() {
-        vertexBuffer.flip()
-        uvBuffer.flip()
+        meshBuffers.flip()
     }
 
     override fun positionRenderable(renderable: Renderable, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
@@ -45,7 +41,7 @@ class CPUNonPriorityRenderer : AbstractPriorityRenderer() {
 
         super.positionRenderable(renderable, sceneX, sceneY, height, objType)
 
-        val buffer = vertexBuffer.buffer
+        val buffer = meshBuffers.vertexBuffer.buffer
         val xOffset = computeObj.x
         val yOffset = computeObj.y
         val zOffset = computeObj.z
@@ -62,10 +58,10 @@ class CPUNonPriorityRenderer : AbstractPriorityRenderer() {
     override fun finishPositioning() {
         super.finishPositioning()
         glBindBuffer(GL_ARRAY_BUFFER, vertexOut)
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer.buffer, GL_STATIC_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, meshBuffers.vertexBuffer.buffer, GL_STATIC_DRAW)
         glBindBuffer(GL_ARRAY_BUFFER, uvOut)
-        glBufferData(GL_ARRAY_BUFFER, uvBuffer.buffer, GL_STATIC_DRAW)
-        bufferedVertices = vertexBuffer.buffer.limit() / VEC_DIMS
+        glBufferData(GL_ARRAY_BUFFER, meshBuffers.uvBuffer.buffer, GL_STATIC_DRAW)
+        bufferedVertices = meshBuffers.vertexBuffer.buffer.limit() / VEC_DIMS
     }
 
     override fun produceVertices(camera: Camera, currFrame: Int) {

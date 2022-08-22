@@ -1,16 +1,6 @@
 package controllers.worldRenderer.helpers
 
 class ModelBuffers {
-    fun clearVertUv() {
-        vertexBuffer.clear()
-        uvBuffer.clear()
-    }
-
-    fun flipVertUv() {
-        vertexBuffer.flip()
-        uvBuffer.flip()
-    }
-
     fun clear() {
         modelBuffer.clear()
         modelBufferSmall.clear()
@@ -18,8 +8,6 @@ class ModelBuffers {
         unorderedModelsCount = 0
         largeModelsCount = 0
         smallModelsCount = 0
-        tempOffset = 0
-        tempUvOffset = 0
     }
 
     fun clearBufferOffset() {
@@ -48,8 +36,6 @@ class ModelBuffers {
         return modelBufferUnordered
     }
 
-    val vertexBuffer: GpuIntBuffer = GpuIntBuffer()
-    val uvBuffer: GpuFloatBuffer = GpuFloatBuffer()
     val modelBufferUnordered: GpuIntBuffer = GpuIntBuffer()
     val modelBufferSmall: GpuIntBuffer = GpuIntBuffer()
     val modelBuffer: GpuIntBuffer = GpuIntBuffer()
@@ -77,18 +63,6 @@ class ModelBuffers {
     fun addTargetBufferOffset(n: Int) {
         targetBufferOffset += n
     }
-
-    /**
-     * offset into the temporary scene vertex buffer
-     */
-    var tempOffset = 0
-        private set
-
-    /**
-     * offset into the temporary scene uv buffer
-     */
-    var tempUvOffset = 0
-        private set
 
     companion object {
         const val FLAG_SCENE_BUFFER = Int.MIN_VALUE

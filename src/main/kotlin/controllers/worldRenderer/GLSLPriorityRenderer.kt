@@ -2,6 +2,7 @@ package controllers.worldRenderer
 
 import controllers.worldRenderer.entities.Renderable
 import controllers.worldRenderer.helpers.GpuIntBuffer
+import controllers.worldRenderer.helpers.MeshBuffers
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
 import org.lwjgl.opengl.GL11C.GL_CULL_FACE
@@ -60,6 +61,7 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
     private val maxWorkgroupSize = glGetIntegeri(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0)
 
     private val modelBuffers = ModelBuffers()
+    private val meshBuffers = MeshBuffers()
 
     override val needsStrictUVs get() = false
 
@@ -81,18 +83,18 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
     }
 
     override fun getBuffersForRenderable(renderable: Renderable, faces: Int, hasUVs: Boolean): Pair<IntBuffer, FloatBuffer> {
-        val vertexBuffer = modelBuffers.vertexBuffer
-        val uvBuffer = modelBuffers.uvBuffer
+        val vertexBuffer = meshBuffers.vertexBuffer
+        val uvBuffer = meshBuffers.uvBuffer
 
         prepareBuffersForRenderable(renderable, faces, hasUVs, vertexBuffer, uvBuffer)
         return Pair(vertexBuffer.buffer, uvBuffer.buffer)
     }
 
     override fun finishUploading() {
-        val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
-        val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
+        val vertexBuffer: IntBuffer = meshBuffers.vertexBuffer.buffer
+        val uvBuffer: FloatBuffer = meshBuffers.uvBuffer.buffer
 
-        modelBuffers.flipVertUv()
+        meshBuffers.flip()
         logger.debug("vertexBuffer size {}", vertexBuffer.limit())
 
         glBindBuffer(GL_ARRAY_BUFFER, bufferId)
@@ -100,7 +102,7 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
         glBindBuffer(GL_ARRAY_BUFFER, uvBufferId)
         glBufferData(GL_ARRAY_BUFFER, uvBuffer, GL_STATIC_COPY)
         glBindBuffer(GL_ARRAY_BUFFER, 0)
-        modelBuffers.clearVertUv()
+        meshBuffers.clear()
     }
 
     override fun positionRenderable(
@@ -149,7 +151,7 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
 
     override fun produceVertices(camera: Camera, currFrame: Int) {
         modelBuffers.flip()
-        modelBuffers.flipVertUv()
+        meshBuffers.flip()
 
         // UBO
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
@@ -168,8 +170,8 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
         glBufferSubData(GL_UNIFORM_BUFFER, 0, uniformBuffer)
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
 
-        val vertexBuffer: IntBuffer = modelBuffers.vertexBuffer.buffer
-        val uvBuffer: FloatBuffer = modelBuffers.uvBuffer.buffer
+        val vertexBuffer: IntBuffer = meshBuffers.vertexBuffer.buffer
+        val uvBuffer: FloatBuffer = meshBuffers.uvBuffer.buffer
         val modelBuffer: IntBuffer = modelBuffers.modelBuffer.buffer
         val modelBufferSmall: IntBuffer = modelBuffers.modelBufferSmall.buffer
         val modelBufferUnordered: IntBuffer = modelBuffers.modelBufferUnordered.buffer
@@ -240,11 +242,11 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
 
         // Draw output of compute shaders
         glBindVertexArray(vaoHandle)
-        glDrawArrays(GL_TRIANGLES, 0, modelBuffers.targetBufferOffset + modelBuffers.tempOffset)
+        glDrawArrays(GL_TRIANGLES, 0, modelBuffers.targetBufferOffset)
 
         glDisable(GL_CULL_FACE)
 
-        modelBuffers.clearVertUv()
+        meshBuffers.clear()
         modelBuffers.clear()
     }
 
@@ -259,7 +261,7 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
     }
 
     override fun toString() =
-        "${javaClass.simpleName}(modelBuffers.vertexBuffer[${modelBuffers.vertexBuffer.buffer.limit()}])"
+        "${javaClass.simpleName}(modelBuffers.vertexBuffer[${meshBuffers.vertexBuffer.buffer.limit()}])"
 
     companion object {
         private const val MAX_TEMP_VERTICES = 65535
