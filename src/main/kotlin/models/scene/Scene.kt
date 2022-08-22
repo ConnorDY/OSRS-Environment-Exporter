@@ -1,8 +1,12 @@
 package models.scene
 
+import controllers.RegionLoadingDialogHelper.MAP_LENGTH
 import models.DebugOptionsModel
 import org.slf4j.LoggerFactory
 import ui.CancelledException
+import utils.Utils.getRegionIdX
+import utils.Utils.getRegionIdY
+import utils.Utils.regionCoordinatesToRegionId
 import java.awt.event.ActionListener
 import java.util.function.Consumer
 
@@ -53,15 +57,14 @@ class Scene(
     }
 
     fun loadRadius(centerRegionId: Int, radius: Int) {
-        var regionId = centerRegionId
-        if (radius > 1) {
-            regionId = centerRegionId - 256 * (radius - 2) - (radius - 2)
-        }
+        val centreOffset = (radius - 1) / 2 // half radius, excluding centre region
+        val xWest = (getRegionIdX(centerRegionId) - centreOffset).coerceIn(0, MAP_LENGTH - radius)
+        val ySouth = (getRegionIdY(centerRegionId) - centreOffset).coerceIn(0, MAP_LENGTH - radius)
 
         loadRegions(
             List(radius) { y ->
                 List(radius) { x ->
-                    regionId + 256 * x + y
+                    regionCoordinatesToRegionId(xWest + x, ySouth + y)
                 }
             }
         )
