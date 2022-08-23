@@ -1,0 +1,5 @@
+repos:
+- repo: https://github.com/ScoreUnder/pre-commit-gradle-ktlint.git
+  rev: c57a0e874a7bb5d6140f38a013388691e2e43f1d
+  hooks:
+    - id: gradle-ktlint
