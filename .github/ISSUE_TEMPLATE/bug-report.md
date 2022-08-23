@@ -30,7 +30,7 @@ assignees: ''
 
 ## The current behavior
 
-<!-- Describe the the problem you are seeing. -->
+<!-- Describe the problem you are seeing. -->
 
 ## The expected behavior
 
