@@ -300,6 +300,12 @@ class MainController constructor(
     }
 
     private fun checkForUpdates() {
+        val rawCurrentVersion = PackageMetadata.VERSION
+        if (rawCurrentVersion.isBlank()) {
+            logger.warn("No version info available; cannot auto-update.")
+            return
+        }
+
         val now = System.currentTimeMillis() / 1000L
         val lastChecked = configOptions.lastCheckedForUpdates.value.get()
 
@@ -323,7 +329,7 @@ class MainController constructor(
         }
 
         // determine if there is a newer version available
-        val currVersion = PackageMetadata.VERSION.split(".").map { it.toInt() }
+        val currVersion = rawCurrentVersion.split(".").map { it.toInt() }
         val newerVersionUrl = newerReleaseExists(currVersion, releases)
 
         if (newerVersionUrl != null) {

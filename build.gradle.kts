@@ -1,4 +1,5 @@
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.7.10"
@@ -59,11 +60,14 @@ dependencies {
 }
 
 tasks {
-    compileKotlin {
+    withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "11"
     }
-    compileTestKotlin {
-        kotlinOptions.jvmTarget = "11"
+    withType<Jar> {
+        manifest {
+            attributes["Implementation-Version"] = archiveVersion.get()
+            attributes["Main-Class"] = "AppKt"
+        }
     }
     build {
         dependsOn(fatJar)
@@ -79,11 +83,4 @@ val fatJar = task("fatJar", type = Jar::class) {
 
 application {
     mainClass.set("AppKt")
-}
-
-tasks.withType<Jar> {
-    manifest {
-        attributes["Implementation-Version"] = archiveVersion.get()
-        attributes["Main-Class"] = "AppKt"
-    }
 }

@@ -13,6 +13,6 @@ object PackageMetadata {
     }
 
     val VERSION: String by lazy {
-        getPackageInfo { it.implementationVersion } ?: "unknown"
+        getPackageInfo { it.implementationVersion } ?: ""
     }
 }
