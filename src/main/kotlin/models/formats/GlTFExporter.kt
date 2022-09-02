@@ -22,9 +22,12 @@ import java.io.File
 class GlTFExporter : MeshFormatExporter {
     private val materialMap = HashMap<Int, MaterialBuffers>()
     private val rsIndexToMaterialIndex = HashMap<Int, Int>()
+    private val sceneNodes = ArrayList<Int>()
+    private val chunkBuffer = ByteChunkBuffer()
+
     private val gltfModel = glTF()
 
-    private fun addMesh(material: Int, buffer: ByteChunkBuffer) {
+    private fun addMesh(material: Int, buffer: ByteChunkBuffer): Node {
         val materialBuffer = materialMap[material]!!
 
         val positionsAccessor = addAccessorForFloats(materialBuffer.positions, buffer)
@@ -49,8 +52,7 @@ class GlTFExporter : MeshFormatExporter {
         gltfModel.meshes.add(mesh)
 
         // node
-        val node = Node(gltfModel.meshes.size - 1)
-        gltfModel.nodes.add(node)
+        return Node(mesh = gltfModel.meshes.size - 1)
     }
 
     private fun addAccessorForFloats(
@@ -104,15 +106,31 @@ class GlTFExporter : MeshFormatExporter {
     }
 
     override fun flush() {
-        // Not yet implemented
+        if (materialMap.isNotEmpty()) {
+            val unflushedNodes = ArrayList<Node>()
+            for (materialId in materialMap.keys) {
+                unflushedNodes.add(addMesh(materialId, chunkBuffer))
+            }
+
+            // Now that the meshes have been added, clear old buffers out
+            materialMap.clear()
+
+            // Flush unflushed nodes; bundle into one parent node
+            val sceneNode = Node(children = unflushedNodes.indices.map { it + gltfModel.nodes.size })
+            gltfModel.nodes.addAll(unflushedNodes)
+            unflushedNodes.clear()
+
+            // Add parent node into scene
+            sceneNodes.add(gltfModel.nodes.size)
+            gltfModel.nodes.add(sceneNode)
+        }
     }
 
     override fun save(directory: String, chunkWriteListeners: List<ChunkWriteListener>) {
-        val chunkBuffer = ByteChunkBuffer()
+        flush()
 
-        for (materialId in materialMap.keys) {
-            addMesh(materialId, chunkBuffer)
-        }
+        // setup single scene
+        gltfModel.scenes.add(Scene(sceneNodes))
 
         // create buffer
         val buffer = Buffer("data", chunkBuffer.byteLength)
@@ -138,14 +156,5 @@ class GlTFExporter : MeshFormatExporter {
             it.write(json)
         }
         chunkWriteListeners.forEach { it.onFinishWriting() }
-    }
-
-    init {
-        // setup single scene
-        val _sceenNodes = ArrayList<Int>()
-        _sceenNodes.add(0)
-
-        val _scene = Scene(_sceenNodes)
-        gltfModel.scenes.add(_scene)
     }
 }
