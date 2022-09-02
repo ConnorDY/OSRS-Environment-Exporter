@@ -67,6 +67,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
                         }
                     }
 
+                    gltf.flush()
                     sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onRegionLoaded)
                 }
             }

@@ -112,6 +112,10 @@ class glTF : MeshFormatExporter {
         images.add(image)
     }
 
+    override fun flush() {
+        // Not yet implemented
+    }
+
     override fun save(directory: String, chunkWriteListeners: List<ChunkWriteListener>) {
         val chunkBuffer = ByteChunkBuffer()
 
