@@ -4,12 +4,13 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
+import models.formats.MeshFormatExporter
 import utils.ByteChunkBuffer
 import utils.ChunkWriteListener
 import java.io.File
 
 @JsonInclude(NON_EMPTY)
-class glTF {
+class glTF : MeshFormatExporter {
     val asset = Asset(
         "2.0",
         "OSRS-Environment-Exporter"
@@ -32,7 +33,7 @@ class glTF {
     private val materialMap = HashMap<Int, MaterialBuffers>()
     private val rsIndexToMaterialIndex = HashMap<Int, Int>()
 
-    fun addMesh(material: Int, buffer: ByteChunkBuffer) {
+    private fun addMesh(material: Int, buffer: ByteChunkBuffer) {
         val materialBuffer = materialMap.get(material)!!
 
         val positionsAccessor = addAccessorForFloats(materialBuffer.positions, buffer)
@@ -93,11 +94,11 @@ class glTF {
         return accessors.size - 1
     }
 
-    fun getOrCreateBuffersForMaterial(materialId: Int) = materialMap.getOrPut(materialId) {
+    override fun getOrCreateBuffersForMaterial(materialId: Int) = materialMap.getOrPut(materialId) {
         MaterialBuffers(materialId >= 0)
     }
 
-    fun addTextureMaterial(rsIndex: Int, imagePath: String) {
+    override fun addTextureMaterial(rsIndex: Int, imagePath: String) {
         if (rsIndexToMaterialIndex.containsKey(rsIndex)) return
         rsIndexToMaterialIndex[rsIndex] = materials.size
 
@@ -111,7 +112,7 @@ class glTF {
         images.add(image)
     }
 
-    fun save(directory: String, chunkWriteListeners: List<ChunkWriteListener>) {
+    override fun save(directory: String, chunkWriteListeners: List<ChunkWriteListener>) {
         val chunkBuffer = ByteChunkBuffer()
 
         for (materialId in materialMap.keys) {
