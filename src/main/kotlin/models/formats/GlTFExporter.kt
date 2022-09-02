@@ -98,10 +98,10 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
         if (rsIndexToMaterialIndex.containsKey(rsIndex)) return
         rsIndexToMaterialIndex[rsIndex] = gltfModel.materials.size
 
-        val material = Material(gltfModel.materials.size)
+        val material = Material(gltfModel.textures.size)
         gltfModel.materials.add(material)
 
-        val texture = Texture(gltfModel.materials.size - 1)
+        val texture = Texture(gltfModel.images.size)
         gltfModel.textures.add(texture)
 
         val image = Image(imagePath)
