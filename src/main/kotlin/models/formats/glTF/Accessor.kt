@@ -1,4 +1,4 @@
-package models.glTF
+package models.formats.glTF
 
 class Accessor(val bufferView: Int, _type: AccessorType, val count: Int, val min: FloatArray, val max: FloatArray) {
     val byteOffset = 0

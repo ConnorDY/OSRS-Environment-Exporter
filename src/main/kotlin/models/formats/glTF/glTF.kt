@@ -1,4 +1,4 @@
-package models.glTF
+package models.formats.glTF
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY

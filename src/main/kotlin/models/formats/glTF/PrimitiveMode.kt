@@ -1,4 +1,4 @@
-package models.glTF
+package models.formats.glTF
 
 enum class PrimitiveMode(val value: Int) {
     POINTS(0),

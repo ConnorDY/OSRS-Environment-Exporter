@@ -8,8 +8,8 @@ import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
 import models.DebugOptionsModel
 import models.formats.MeshFormatExporter
-import models.glTF.MaterialBuffers
-import models.glTF.glTF
+import models.formats.glTF.MaterialBuffers
+import models.formats.glTF.glTF
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneLoadProgressListener

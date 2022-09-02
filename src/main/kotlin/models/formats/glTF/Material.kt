@@ -1,9 +1,9 @@
-package models.glTF
+package models.formats.glTF
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonInclude.Include
-import models.glTF.extensions.Extensions
-import models.glTF.extensions.KHRMaterialsSpecular
+import models.formats.glTF.extensions.Extensions
+import models.formats.glTF.extensions.KHRMaterialsSpecular
 
 class Material(texture: Int) {
     @JsonInclude(Include.NON_NULL)

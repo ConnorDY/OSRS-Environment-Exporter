@@ -1,4 +1,4 @@
-package models.glTF
+package models.formats.glTF
 
 enum class BufferTarget(val value: Int) {
     ARRAY_BUFFER(34962),
