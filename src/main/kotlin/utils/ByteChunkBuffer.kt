@@ -16,4 +16,8 @@ class ByteChunkBuffer {
     fun addBytes(byteChunks: ByteChunkBuffer) {
         this.byteChunks.addAll(byteChunks.byteChunks)
     }
+
+    fun clear() {
+        byteChunks.clear()
+    }
 }

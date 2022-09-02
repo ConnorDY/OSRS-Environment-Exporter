@@ -42,7 +42,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         File(outDir).mkdirs()
 
         // init glTF builder
-        val fmt = GlTFExporter()
+        val fmt = GlTFExporter(outDir, chunkWriteListeners)
 
         ++sceneId
 
@@ -78,7 +78,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             throw e
         }
 
-        fmt.save(outDir, chunkWriteListeners)
+        fmt.finish()
 
         // copy textures
         if (textureManager.allTexturesLoaded()) {

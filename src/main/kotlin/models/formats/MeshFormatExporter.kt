@@ -1,7 +1,5 @@
 package models.formats
 
-import utils.ChunkWriteListener
-
 /** A buffered 3D mesh file format writer. */
 interface MeshFormatExporter {
     /** (Create and) retrieve the buffers for the given material ID.
@@ -25,10 +23,6 @@ interface MeshFormatExporter {
      */
     fun flush()
 
-    /** Save buffers to file.
-     *
-     *  @param directory The directory to save to.
-     *  @param chunkWriteListeners The listeners to notify when writing chunks.
-     */
-    fun save(directory: String, chunkWriteListeners: List<ChunkWriteListener>)
+    /** Finish saving buffers to file. This will write any unwritten metadata etc. */
+    fun finish()
 }
