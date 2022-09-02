@@ -7,9 +7,9 @@ import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
 import models.DebugOptionsModel
+import models.formats.GlTFExporter
+import models.formats.MaterialBuffers
 import models.formats.MeshFormatExporter
-import models.formats.glTF.MaterialBuffers
-import models.formats.glTF.glTF
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneLoadProgressListener
@@ -42,7 +42,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         File(outDir).mkdirs()
 
         // init glTF builder
-        val gltf = glTF()
+        val fmt = GlTFExporter()
 
         ++sceneId
 
@@ -61,13 +61,13 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
                                 val tileCol = tilePlane[x]
                                 for (y in 0 until REGION_SIZE) {
                                     val tile = tileCol[y] ?: continue
-                                    this.upload(gltf, tile, baseX + x, baseY + y)
+                                    this.upload(fmt, tile, baseX + x, baseY + y)
                                 }
                             }
                         }
                     }
 
-                    gltf.flush()
+                    fmt.flush()
                     sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onRegionLoaded)
                 }
             }
@@ -78,7 +78,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             throw e
         }
 
-        gltf.save(outDir, chunkWriteListeners)
+        fmt.save(outDir, chunkWriteListeners)
 
         // copy textures
         if (textureManager.allTexturesLoaded()) {

@@ -1,4 +1,4 @@
-package models.formats.glTF
+package models.formats
 
 import utils.ByteChunkBuffer
 import java.nio.ByteBuffer

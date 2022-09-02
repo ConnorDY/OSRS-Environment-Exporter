@@ -1,6 +1,5 @@
 package models.formats
 
-import models.formats.glTF.MaterialBuffers
 import utils.ChunkWriteListener
 
 /** A buffered 3D mesh file format writer. */
