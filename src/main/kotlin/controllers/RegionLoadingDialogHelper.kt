@@ -6,9 +6,6 @@ import javax.swing.JOptionPane
 import kotlin.math.roundToInt
 
 object RegionLoadingDialogHelper {
-    /** The theoretical maximum length of the sides of the region grid, in cells. */
-    const val MAP_LENGTH = 256
-
     fun confirmAndLoadRadius(parent: Component, scene: Scene, regionId: Int, radius: Int): Boolean {
         if (!confirmRegionLoad(parent, radius * radius)) {
             return false

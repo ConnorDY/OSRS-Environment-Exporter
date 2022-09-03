@@ -1,7 +1,7 @@
 package controllers
 
 import AppConstants
-import controllers.RegionLoadingDialogHelper.MAP_LENGTH
+import controllers.worldRenderer.Constants.MAP_LENGTH
 import ui.JLinkLabel
 import ui.NumericTextField
 import ui.PlaceholderTextField

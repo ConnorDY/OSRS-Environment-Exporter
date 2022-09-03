@@ -12,6 +12,9 @@ object Constants {
 
     const val REGION_X_STRIDE = 256 // region ID difference between consecutive regions horizontally
 
+    /** The theoretical maximum length of the sides of the region grid, in cells. */
+    const val MAP_LENGTH = 256
+
     const val UNIT = Math.PI / 1024.0 // How much of the circle each unit of SINE/COSINE is
     val SINE =
         IntArray(2048) { i -> (65536.0 * sin(i * UNIT)).toInt() } // sine angles for each of the 2048 units, * 65536 and stored as an int

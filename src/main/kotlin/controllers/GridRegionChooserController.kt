@@ -1,8 +1,8 @@
 package controllers
 
 import AppConstants
-import controllers.RegionLoadingDialogHelper.MAP_LENGTH
 import controllers.RegionLoadingDialogHelper.confirmRegionLoad
+import controllers.worldRenderer.Constants.MAP_LENGTH
 import ui.NumericTextField
 import ui.listener.DocumentTextListener
 import utils.Utils.getRegionIdX

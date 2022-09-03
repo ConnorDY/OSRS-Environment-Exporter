@@ -1,6 +1,6 @@
 package models.scene
 
-import controllers.RegionLoadingDialogHelper.MAP_LENGTH
+import controllers.worldRenderer.Constants.MAP_LENGTH
 import models.DebugOptionsModel
 import org.slf4j.LoggerFactory
 import ui.CancelledException

@@ -1,7 +1,7 @@
 package controllers
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import controllers.RegionLoadingDialogHelper.MAP_LENGTH
+import controllers.worldRenderer.Constants.MAP_LENGTH
 import models.locations.Location
 import models.locations.Locations
 import ui.FilteredListModel
