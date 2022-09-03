@@ -5,6 +5,7 @@ import controllers.worldRenderer.Constants.MAP_LENGTH
 import models.locations.Location
 import models.locations.Locations
 import ui.FilteredListModel
+import ui.JLinkLabel
 import ui.NumericTextField
 import ui.PlaceholderTextField
 import ui.listener.FilterTextListener
@@ -12,6 +13,7 @@ import utils.Utils
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
+import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagConstraints.ABOVE_BASELINE
 import java.awt.GridBagConstraints.BOTH
@@ -27,10 +29,13 @@ import javax.swing.BorderFactory
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JButton
 import javax.swing.JDialog
+import javax.swing.JFormattedTextField
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JList
+import javax.swing.JPanel
 import javax.swing.JScrollPane
+import javax.swing.JTextField
 import javax.swing.UIManager
 
 class LocationSearchController(
@@ -38,20 +43,24 @@ class LocationSearchController(
     title: String,
     private val loadRegionCallback: (Component, Int, Int) -> Boolean,
 ) : JDialog(owner, title) {
+    private val listLocations: JList<Location>
+    private val txtSearchQuery: JTextField
+    private val txtRadius: JFormattedTextField
+    private val errorMessageLabel: JLabel
 
     init {
         layout = GridBagLayout()
         preferredSize = Dimension(600, 400)
 
         val filterableLocations = FilteredListModel<Location> { it.name }
-        val listLocations = JList(filterableLocations).apply {
+        listLocations = JList(filterableLocations).apply {
             val borderColor = UIManager.getColor("InternalFrame.borderColor")
             border = BorderFactory.createMatteBorder(0, 1, 0, 0, borderColor)
         }
         listLocations.cellRenderer = LocationCell()
-        val txtSearchQuery = PlaceholderTextField("", "Lumbridge")
-        val txtRadius = NumericTextField.create(1, 1, MAP_LENGTH)
-        val lblSearchQuery = JLabel("Search Query:").apply {
+        txtSearchQuery = PlaceholderTextField("", "Lumbridge")
+        txtRadius = NumericTextField.create(1, 1, MAP_LENGTH)
+        val lblSearchQuery = JLabel("Search Query or Region ID:").apply {
             displayedMnemonic = 'S'.code
             labelFor = txtSearchQuery
         }
@@ -64,36 +73,52 @@ class LocationSearchController(
         val btnLoad = JButton("Load Location").apply {
             mnemonic = 'L'.code
         }
+        errorMessageLabel = JLabel().apply {
+            foreground = Color.RED
+        }
+        val pnlExplv = JPanel().apply {
+            layout = FlowLayout()
+            add(JLabel("Visit Explv's OSRS map to find more region ids."))
+            add(JLinkLabel("https://explv.github.io/"))
+        }
 
         val inset = Insets(0, 20, 0, 0)
         val controlSepInsets = Insets(30, 20, 0, 0)
         add(
+            pnlExplv,
+            GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
+        )
+        add(
             JScrollPane(listLocations),
-            GridBagConstraints(1, 0, 1, 6, 1.5, 1.0, LINE_END, BOTH, inset, 0, 0)
+            GridBagConstraints(1, 1, 1, 7, 1.5, 1.0, LINE_END, BOTH, inset, 0, 0)
         )
         add(
             lblSearchQuery,
-            GridBagConstraints(0, 0, 1, 1, 1.0, 1.0, PAGE_END, NONE, inset, 0, 0)
+            GridBagConstraints(0, 1, 1, 1, 1.0, 1.0, PAGE_END, NONE, inset, 0, 0)
         )
         add(
             txtSearchQuery,
-            GridBagConstraints(0, 1, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+            GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
         )
         add(
             lblRadius,
-            GridBagConstraints(0, 2, 1, 1, 1.0, 0.0, ABOVE_BASELINE, NONE, controlSepInsets, 0, 0)
+            GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, ABOVE_BASELINE, NONE, controlSepInsets, 0, 0)
         )
         add(
             txtRadius,
-            GridBagConstraints(0, 3, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
+            GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, CENTER, HORIZONTAL, inset, 0, 0)
         )
         add(
             lblErrorText,
-            GridBagConstraints(0, 4, 1, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
+            GridBagConstraints(0, 5, 1, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
         )
         add(
             btnLoad,
-            GridBagConstraints(0, 5, 1, 1, 1.0, 1.0, PAGE_START, NONE, controlSepInsets, 0, 0)
+            GridBagConstraints(0, 6, 1, 1, 1.0, 0.0, CENTER, NONE, controlSepInsets, 0, 0)
+        )
+        add(
+            errorMessageLabel,
+            GridBagConstraints(0, 7, 1, 1, 1.0, 1.0, PAGE_START, NONE, controlSepInsets, 0, 0)
         )
 
         // load locations
@@ -111,19 +136,28 @@ class LocationSearchController(
         }
 
         // load button handler
-        btnLoad.addActionListener {
-            val selectedLocation = listLocations.selectedValue ?: return@addActionListener
-            val regionId = regionIdForLocation(selectedLocation)
-
-            if (loadRegionCallback(this, regionId, txtRadius.value as Int)) {
-                dispose()
-            }
-        }
+        btnLoad.addActionListener { loadSelectedRegions() }
 
         rootPane.defaultButton = btnLoad
         pack()
 
         txtSearchQuery.requestFocus()
+    }
+
+    private fun loadSelectedRegions() {
+        val selectedLocation = listLocations.selectedValue
+        val enteredRegionId = txtSearchQuery.text.toIntOrNull()
+        if (selectedLocation == null && enteredRegionId == null) {
+            errorMessageLabel.text = "<html><center>Please select a location<br>or enter a region ID</center></html>"
+            return
+        }
+        val regionId =
+            if (selectedLocation != null) regionIdForLocation(selectedLocation)
+            else enteredRegionId!!
+
+        if (loadRegionCallback(this, regionId, txtRadius.value as Int)) {
+            dispose()
+        }
     }
 
     private fun readBuiltinLocations(): ArrayList<Location> {
