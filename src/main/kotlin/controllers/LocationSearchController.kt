@@ -52,7 +52,7 @@ class LocationSearchController(
         layout = GridBagLayout()
         preferredSize = Dimension(600, 400)
 
-        val filterableLocations = FilteredListModel<Location> { it.name }
+        val filterableLocations = FilteredListModel(::locationToString)
         listLocations = JList(filterableLocations).apply {
             val borderColor = UIManager.getColor("InternalFrame.borderColor")
             border = BorderFactory.createMatteBorder(0, 1, 0, 0, borderColor)
@@ -184,10 +184,7 @@ class LocationSearchController(
             border = BorderFactory.createEmptyBorder(0, 8, 0, 0)
             text =
                 if (item == null) ""
-                else {
-                    val regionId = regionIdForLocation(item as Location)
-                    "${item.name} [$regionId]"
-                }
+                else locationToString(item as Location)
             return this
         }
     }
@@ -196,6 +193,11 @@ class LocationSearchController(
         fun regionIdForLocation(location: Location): Int {
             val (x, y) = location.coords
             return Utils.worldCoordinatesToRegionId(x, y)
+        }
+
+        private fun locationToString(location: Location): String {
+            val regionId = regionIdForLocation(location)
+            return "${location.name} [$regionId]"
         }
     }
 }
