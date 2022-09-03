@@ -215,13 +215,18 @@ class GridRegionChooserController(
         if (autoPopulating || regionId == null || !chkBoxAutoPopulate.isSelected) return
         autoPopulating = true
 
+        // Take the northwestmost coordinates
+        // this is where the top-left corner of the input boxes would be in runescape coordinates
+        // i.e. when xx == 0 && yy == 0
         val xWest = getRegionIdX(regionId) - x
-        val yNorth = getRegionIdY(regionId) - y + rows - 1
+        val yNorth = getRegionIdY(regionId) + y
 
         for ((yy, inputs) in gridInputs.withIndex()) {
             for ((xx, input) in inputs.withIndex()) {
                 if (xx == x && yy == y) continue
 
+                // The current box's coordinate is our northwestmost coordinate plus the offset from the top-left corner
+                // (keeping in mind that north/up is +y in RS, but -y in our grid, so we have to go the other way)
                 val xHere = xWest + xx
                 val yHere = yNorth - yy
 
