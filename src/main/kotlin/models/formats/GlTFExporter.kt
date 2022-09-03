@@ -100,7 +100,7 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
         if (rsIndexToMaterialIndex.containsKey(rsIndex)) return
         rsIndexToMaterialIndex[rsIndex] = gltfModel.materials.size
 
-        val material = Material(gltfModel.textures.size)
+        val material = Material(gltfModel.textures.size, name = "rs_texture_$rsIndex")
         gltfModel.materials.add(material)
 
         val texture = Texture(gltfModel.images.size)
@@ -111,12 +111,12 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
     }
 
     private fun createNullTextureMaterial(gltfModel: glTF): Int {
-        val material = Material(null)
+        val material = Material(null, name = "rs_untextured")
         gltfModel.materials.add(material)
         return gltfModel.materials.size - 1
     }
 
-    override fun flush() {
+    override fun flush(name: String) {
         if (materialMap.isNotEmpty()) {
             val unflushedNodes = ArrayList<Node>()
             for (materialId in materialMap.keys) {
@@ -127,7 +127,10 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
             materialMap.clear()
 
             // Flush unflushed nodes; bundle into one parent node
-            val sceneNode = Node(children = unflushedNodes.indices.map { it + gltfModel.nodes.size })
+            val sceneNode = Node(
+                name = name,
+                children = unflushedNodes.indices.map { it + gltfModel.nodes.size }
+            )
             gltfModel.nodes.addAll(unflushedNodes)
             unflushedNodes.clear()
 
@@ -147,7 +150,7 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
     }
 
     override fun finish() {
-        flush()
+        flush("")
 
         // setup single scene
         gltfModel.scenes.add(Scene(sceneNodes))

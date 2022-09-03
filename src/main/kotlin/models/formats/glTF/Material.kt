@@ -5,7 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include
 import models.formats.glTF.extensions.Extensions
 import models.formats.glTF.extensions.KHRMaterialsSpecular
 
-class Material(texture: Int?) {
+@JsonInclude(Include.NON_NULL)
+class Material(texture: Int?, val name: String? = null) {
     @JsonInclude(Include.NON_NULL)
     class PbrMetallicRoughness(texture: Int?) {
         class BaseColorTexture(val index: Int)

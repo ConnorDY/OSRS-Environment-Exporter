@@ -67,7 +67,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
                         }
                     }
 
-                    fmt.flush()
+                    fmt.flush("region_${rx}_${ry}_${region.locationsDefinition.regionId}")
                     sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onRegionLoaded)
                 }
             }

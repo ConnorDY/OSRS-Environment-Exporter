@@ -6,4 +6,5 @@ import com.fasterxml.jackson.annotation.JsonInclude
 class Node(
     val mesh: Int? = null,
     val children: List<Int> = emptyList(),
+    val name: String = "",
 )

@@ -20,8 +20,10 @@ interface MeshFormatExporter {
     /** Flush buffers to file.
      *  May be ignored depending on implementation if partial writes are not supported.
      *  The material buffers in memory may be cleared after calling this method.
+     *
+     *  @param name The name to give the flushed data (if it is given a separate object/mesh/etc)
      */
-    fun flush()
+    fun flush(name: String)
 
     /** Finish saving buffers to file. This will write any unwritten metadata etc. */
     fun finish()
