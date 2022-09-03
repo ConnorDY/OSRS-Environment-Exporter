@@ -28,6 +28,7 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
     private var bufferFileOffset = 0L
 
     private val dataFile = File("$directory/$dataFilename").outputStream().channel
+    private var flushingRegionNum = 0
     private val gltfModel = glTF()
 
     private val nullMaterial = createNullTextureMaterial(gltfModel)
@@ -139,18 +140,22 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
             gltfModel.nodes.add(sceneNode)
 
             // Flush buffers to data file
+            chunkWriteListeners.forEach { it.onStartRegion(flushingRegionNum) }
             chunkBuffer.getBuffers().forEach { buf ->
                 val dataLength = buf.remaining().toLong()
                 dataFile.write(buf)
-                chunkWriteListeners.forEach { it.onChunkWritten(dataLength) }
                 bufferFileOffset += dataLength
             }
             chunkBuffer.clear()
+            chunkWriteListeners.forEach { it.onEndRegion() }
         }
+
+        flushingRegionNum++
     }
 
     override fun finish() {
         flush("")
+        dataFile.close()
 
         // setup single scene
         gltfModel.scenes.add(Scene(sceneNodes))
@@ -159,15 +164,8 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
         val buffer = Buffer(dataFilename, byteLength = bufferFileOffset)
         gltfModel.buffers.add(buffer)
 
-        // write buffer to files
-        chunkWriteListeners.forEach { it.onStartWriting(buffer.byteLength) }
-        dataFile.use { file ->
-            chunkBuffer.getBuffers().forEach { buf ->
-                val dataLength = buf.remaining().toLong()
-                file.write(buf)
-                chunkWriteListeners.forEach { it.onChunkWritten(dataLength) }
-            }
-        }
+        // indicate start of gltf file
+        chunkWriteListeners.forEach { it.onStartRegion(-1) }
 
         // convert to JSON
         val mapper = ObjectMapper()
