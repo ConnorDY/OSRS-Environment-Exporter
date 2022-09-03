@@ -30,6 +30,8 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
     private val dataFile = File("$directory/$dataFilename").outputStream().channel
     private val gltfModel = glTF()
 
+    private val nullMaterial = createNullTextureMaterial(gltfModel)
+
     private fun addMesh(material: Int, buffer: ByteChunkBuffer): Node {
         val materialBuffer = materialMap[material]!!
 
@@ -48,7 +50,7 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
 
         // primitive
         val primitives = ArrayList<Primitive>()
-        primitives.add(Primitive(attributes, rsIndexToMaterialIndex[material]))
+        primitives.add(Primitive(attributes, rsIndexToMaterialIndex[material] ?: nullMaterial))
 
         // mesh
         val mesh = Mesh(primitives)
@@ -106,6 +108,12 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
 
         val image = Image(imagePath)
         gltfModel.images.add(image)
+    }
+
+    private fun createNullTextureMaterial(gltfModel: glTF): Int {
+        val material = Material(null)
+        gltfModel.materials.add(material)
+        return gltfModel.materials.size - 1
     }
 
     override fun flush() {
