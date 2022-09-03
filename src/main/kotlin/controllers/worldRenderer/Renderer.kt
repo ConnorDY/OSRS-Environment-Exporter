@@ -612,7 +612,7 @@ class Renderer(
                 throw e // rethrow to cancel the whole upload
             } catch (e: Exception) {
                 logger.warn("Error happened while rendering with $priorityRenderer", e)
-                sceneDrawListeners.forEach(SceneDrawListener::onError)
+                sceneDrawListeners.forEach { it.onError(e) }
             }
 
             sceneDrawListeners.forEach(SceneDrawListener::onStartDraw)
@@ -622,7 +622,7 @@ class Renderer(
             // Do nothing
         } catch (e: Exception) {
             logger.error("Error happened while positioning scene", e)
-            sceneDrawListeners.forEach(SceneDrawListener::onError)
+            sceneDrawListeners.forEach { it.onError(e) }
         }
     }
 

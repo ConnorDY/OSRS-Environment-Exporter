@@ -8,6 +8,13 @@
 
 - Added progress bars for long world load operations &ndash; [#117](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/117) @ScoreUnder
 
+- Support huge regions when exporting to glTF (even if preview doesn't yet support it) &ndash; [#135](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/135) @ScoreUnder
+  - Divide exported glTF into regions.
+  - Apply terrain colour automatically.
+  - Give exported nodes and materials sensible names.
+
+- Load the user's chosen region in the centre of the radius, rather than the northeast &ndash; [#135](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/135) @ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder

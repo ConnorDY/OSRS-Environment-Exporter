@@ -10,7 +10,6 @@ import javax.swing.SwingUtilities
 
 class SceneExportProgressDialogSpawner(private val parent: Frame) {
     var progressContainer: ProgressContainer = NullProgressContainer()
-    val writeScale = 0.25 // 1:this ratio of region export to file write time
 
     private val sceneExporterListener = object : DialogSpawningSceneLoadProgressListener(parent) {
         override var progressContainer
@@ -18,30 +17,32 @@ class SceneExportProgressDialogSpawner(private val parent: Frame) {
             set(value) {
                 this@SceneExportProgressDialogSpawner.progressContainer = value
             }
-        override val progressMax get() = (super.progressMax * (1 + writeScale)).toInt() + 1 // regions * (encoding + writing) + json
+        override val progress get() = super.progress * 2 // interleaved export and write
+        override val progressMax get() = super.progressMax * 2 + 1 // regions * (encoding + writing) + json
         override val dialogTitle get() = "Exporting..."
         override val dialogSummary get() = "Exporting $numRegions regions..."
-        override val statusDoing get() = "Exporting region $currentRegion of $numRegions"
+        public override val statusDoing get() = "Exporting region $currentRegion of $numRegions"
         override val statusDone get() = "Writing to file"
     }
 
     private val sceneWriteListener = object : ChunkWriteListener {
-        var bytesWritten = 0L
-        var bytesTotal = 0L
+        var currentRegion = 0
 
-        private val bytesFrac get() = bytesWritten.toDouble() / bytesTotal
-
-        override fun onStartWriting(totalSize: Long) {
+        override fun onStartRegion(regionNum: Int) {
             checkCanceled()
-            bytesTotal = totalSize
-            bytesWritten = 0
-            updateProgress()
+            currentRegion = regionNum
+            updateProgress(regionNum == -1)
         }
 
-        override fun onChunkWritten(written: Long) {
+        override fun onEndRegion() {
             checkCanceled()
-            bytesWritten += written
-            updateProgress()
+            SwingUtilities.invokeLater {
+                progressContainer.progress++
+                if (currentRegion != sceneExporterListener.numRegions) {
+                    // Interleaving with other listener's action again
+                    progressContainer.status = sceneExporterListener.statusDoing
+                }
+            }
         }
 
         override fun onFinishWriting() {
@@ -52,24 +53,12 @@ class SceneExportProgressDialogSpawner(private val parent: Frame) {
             }
         }
 
-        private fun bytesToProgress(bytes: Long): Int {
-            // Total progress for writes is between
-            // (sceneExporterListener.numRegions, sceneExporterListener.numRegions * 2)
-            // so we need to scale the bytes written to the total bytes to get a progress value
-            val numRegions = sceneExporterListener.numRegions
-            if (bytesTotal == 0L) {
-                return numRegions // zero progress
-            }
-            return (numRegions * (1 + bytesFrac * writeScale)).toInt()
-        }
-
-        private fun updateProgress() {
+        private fun updateProgress(writingMetadata: Boolean) {
             SwingUtilities.invokeLater {
-                progressContainer.progress = bytesToProgress(bytesWritten)
-                if (bytesWritten == bytesTotal) {
+                if (writingMetadata) {
                     progressContainer.status = "Writing JSON"
                 } else {
-                    progressContainer.status = String.format("Writing to file (%.0f%% complete)", bytesFrac * 100)
+                    progressContainer.status = "Writing region ${currentRegion + 1} of ${sceneExporterListener.numRegions}"
                 }
             }
         }

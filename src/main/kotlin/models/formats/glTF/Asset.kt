@@ -1,4 +1,4 @@
-package models.glTF
+package models.formats.glTF
 
 data class Asset(
     val version: String,

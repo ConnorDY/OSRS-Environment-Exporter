@@ -17,9 +17,11 @@ import controllers.DebugOptionsController
 import controllers.GridRegionChooserController
 import controllers.LocationSearchController
 import controllers.RegionChooserController
+import controllers.RegionLoadingDialogHelper.confirmAndLoadRadius
 import controllers.SettingsController
 import controllers.worldRenderer.Camera
 import controllers.worldRenderer.Renderer
+import controllers.worldRenderer.SceneDrawListener
 import controllers.worldRenderer.SceneExporter
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
@@ -113,6 +115,11 @@ class MainController constructor(
 
         SceneLoadProgressDialogSpawner(this).attach(scene, sceneUploader, renderer)
         SceneExportProgressDialogSpawner(this).attach(exporter)
+        renderer.sceneDrawListeners.add(object : SceneDrawListener {
+            override fun onStartDraw() {}
+            override fun onEndDraw() {}
+            override fun onError(t: Throwable) { reportSceneDrawError(t) }
+        })
 
         JMenuBar().apply {
             JMenu("World").apply {
@@ -220,6 +227,21 @@ class MainController constructor(
         if (checkForUpdatesEnabled) checkForUpdates()
     }
 
+    private fun reportSceneDrawError(t: Throwable) {
+        if (t is IllegalArgumentException && t.message?.contains("capacity") == true) {
+            // https://github.com/ConnorDY/OSRS-Environment-Exporter/issues/46
+            SwingUtilities.invokeLater {
+                JOptionPane.showMessageDialog(
+                    this@MainController,
+                    "The scene is too large to be fully previewed.\nHowever, exporting should still work.",
+                    "Scene too large",
+                    JOptionPane.ERROR_MESSAGE
+                )
+            }
+        }
+        // Other errors will just be "an error occurred" and the stack trace will be printed to the console.
+    }
+
     private fun <T : Component> T.showInDebugMode(): T {
         isVisible = configOptions.debug.value.get()
         configOptions.debug.value.addListener {
@@ -243,16 +265,15 @@ class MainController constructor(
     }
 
     private fun changeRegionClicked(event: ActionEvent) {
-        RegionChooserController(
-            this, "Region Chooser"
-        ) { regionId, radius ->
-            scene.loadRadius(regionId, radius)
-        }.display()
+        RegionChooserController(this, "Region Chooser", ::loadRadiusCallback).display()
     }
 
     private fun locationSearchClicked(event: ActionEvent) {
-        LocationSearchController(this, "Location Search", scene).display()
+        LocationSearchController(this, "Location Search", ::loadRadiusCallback).display()
     }
+
+    private fun loadRadiusCallback(dialog: Component, regionId: Int, radius: Int) =
+        confirmAndLoadRadius(dialog, scene, regionId, radius)
 
     private fun chooseGridRegionClicked(event: ActionEvent) {
         GridRegionChooserController(this, "Load Custom Grid") { regionIds ->

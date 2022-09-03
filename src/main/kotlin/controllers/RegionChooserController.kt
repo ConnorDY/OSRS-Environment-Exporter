@@ -1,10 +1,12 @@
 package controllers
 
 import AppConstants
+import controllers.worldRenderer.Constants.MAP_LENGTH
 import ui.JLinkLabel
 import ui.NumericTextField
 import ui.PlaceholderTextField
 import java.awt.Color
+import java.awt.Component
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.GridBagConstraints
@@ -23,10 +25,10 @@ import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JPanel
 
-class RegionChooserController constructor(
+class RegionChooserController(
     owner: JFrame,
     title: String,
-    private var loadRegionCallback: (Int, Int) -> Unit,
+    private val loadRegionCallback: (Component, Int, Int) -> Boolean,
 ) : JDialog(owner, title) {
     private val errorMessageLabel: JLabel
 
@@ -38,7 +40,7 @@ class RegionChooserController constructor(
         val regionIdField = PlaceholderTextField("", "10038").apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
-        val radiusField = NumericTextField.create(1, 1, 20).apply {
+        val radiusField = NumericTextField.create(1, 1, MAP_LENGTH).apply {
             maximumSize = Dimension(maximumSize.width, preferredSize.height)
         }
         errorMessageLabel = JLabel().apply {
@@ -115,17 +117,18 @@ class RegionChooserController constructor(
         errorMessageLabel.text = ""
 
         val regionId = regionIdsStr.toIntOrNull()
-        if (!regionIdIsValid(regionId)) {
+        if (regionId == null || !regionIdIsValid(regionId)) {
             errorMessageLabel.text = INVALID_REGION_ID_TEXT
             return
         }
 
-        dispose()
-        loadRegionCallback(regionId!!, radius)
+        if (loadRegionCallback(this, regionId, radius)) {
+            dispose()
+        }
     }
 
-    private fun regionIdIsValid(regionId: Int?): Boolean {
-        return (regionId != null && regionId >= AppConstants.REGION_ID_MIN && regionId <= AppConstants.REGION_ID_MAX)
+    private fun regionIdIsValid(regionId: Int): Boolean {
+        return regionId >= AppConstants.REGION_ID_MIN && regionId <= AppConstants.REGION_ID_MAX
     }
 
     companion object {

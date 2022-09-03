@@ -1,8 +1,13 @@
 package controllers
 
 import AppConstants
+import controllers.RegionLoadingDialogHelper.confirmRegionLoad
+import controllers.worldRenderer.Constants.MAP_LENGTH
 import ui.NumericTextField
 import ui.listener.DocumentTextListener
+import utils.Utils.getRegionIdX
+import utils.Utils.getRegionIdY
+import utils.Utils.regionCoordinatesToRegionId
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagConstraints.CENTER
@@ -24,7 +29,7 @@ import javax.swing.JTextField
 import javax.swing.LayoutStyle
 import kotlin.math.max
 
-class GridRegionChooserController constructor(
+class GridRegionChooserController(
     owner: JFrame,
     title: String,
     private var loadRegionsCallback: (List<List<Int?>>) -> Unit
@@ -47,10 +52,10 @@ class GridRegionChooserController constructor(
 
         resizeGrid(2, 2)
 
-        val gridWidthField = NumericTextField.create(cols, 2, MAX_WIDTH).apply {
+        val gridWidthField = NumericTextField.create(cols, 1, MAP_LENGTH).apply {
             sizeToText("888")
         }
-        val gridHeightField = NumericTextField.create(rows, 2, MAX_HEIGHT).apply {
+        val gridHeightField = NumericTextField.create(rows, 1, MAP_LENGTH).apply {
             sizeToText("888")
         }
 
@@ -89,13 +94,16 @@ class GridRegionChooserController constructor(
             alignmentX = CENTER_ALIGNMENT
             mnemonic = 'L'.code
             addActionListener {
-                loadRegionsCallback(
-                    gridInputs.map { row ->
-                        row.map {
-                            it.value as Int?
-                        }
-                    }.reversed()
-                )
+                val numRegions = gridInputs.sumOf { row -> row.count { it.value != null } }
+                if (confirmRegionLoad(this@GridRegionChooserController, numRegions)) {
+                    loadRegionsCallback(
+                        gridInputs.map { row ->
+                            row.map {
+                                it.value as Int?
+                            }
+                        }.reversed()
+                    )
+                }
                 dispose()
             }
         }
@@ -207,22 +215,29 @@ class GridRegionChooserController constructor(
         if (autoPopulating || regionId == null || !chkBoxAutoPopulate.isSelected) return
         autoPopulating = true
 
+        // Take the northwestmost coordinates
+        // this is where the top-left corner of the input boxes would be in runescape coordinates
+        // i.e. when xx == 0 && yy == 0
+        val xWest = getRegionIdX(regionId) - x
+        val yNorth = getRegionIdY(regionId) + y
+
         for ((yy, inputs) in gridInputs.withIndex()) {
             for ((xx, input) in inputs.withIndex()) {
                 if (xx == x && yy == y) continue
 
-                val xdiff = xx - x
-                val ydiff = yy - y
+                // The current box's coordinate is our northwestmost coordinate plus the offset from the top-left corner
+                // (keeping in mind that north/up is +y in RS, but -y in our grid, so we have to go the other way)
+                val xHere = xWest + xx
+                val yHere = yNorth - yy
 
-                input.value = regionId + (xdiff * 256) - ydiff
+                // Avoid impossible coordinates (would normally cause the map to wrap weirdly)
+                if (xHere < 0 || xHere >= MAP_LENGTH) continue
+                if (yHere < 0 || yHere >= MAP_LENGTH) continue
+
+                input.value = regionCoordinatesToRegionId(xHere, yHere)
             }
         }
 
         autoPopulating = false
-    }
-
-    companion object {
-        const val MAX_WIDTH = 6
-        const val MAX_HEIGHT = 6
     }
 }

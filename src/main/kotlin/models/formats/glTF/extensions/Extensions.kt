@@ -1,4 +1,4 @@
-package models.glTF.extensions
+package models.formats.glTF.extensions
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

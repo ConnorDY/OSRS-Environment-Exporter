@@ -1,4 +1,4 @@
-package models.glTF
+package models.formats
 
 import cache.utils.ColorPalette
 import java.awt.Color

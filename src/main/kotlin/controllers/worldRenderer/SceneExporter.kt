@@ -7,8 +7,9 @@ import controllers.worldRenderer.entities.StaticObject
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
 import models.DebugOptionsModel
-import models.glTF.MaterialBuffers
-import models.glTF.glTF
+import models.formats.GlTFExporter
+import models.formats.MaterialBuffers
+import models.formats.MeshFormatExporter
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneLoadProgressListener
@@ -41,7 +42,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         File(outDir).mkdirs()
 
         // init glTF builder
-        val gltf = glTF()
+        val fmt = GlTFExporter(outDir, chunkWriteListeners)
 
         ++sceneId
 
@@ -60,12 +61,13 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
                                 val tileCol = tilePlane[x]
                                 for (y in 0 until REGION_SIZE) {
                                     val tile = tileCol[y] ?: continue
-                                    this.upload(gltf, tile, baseX + x, baseY + y)
+                                    this.upload(fmt, tile, baseX + x, baseY + y)
                                 }
                             }
                         }
                     }
 
+                    fmt.flush("region_${rx}_${ry}_${region.locationsDefinition.regionId}")
                     sceneLoadProgressListeners.forEach(SceneLoadProgressListener::onRegionLoaded)
                 }
             }
@@ -76,7 +78,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             throw e
         }
 
-        gltf.save(outDir, chunkWriteListeners)
+        fmt.finish()
 
         // copy textures
         if (textureManager.allTexturesLoaded()) {
@@ -85,7 +87,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         }
     }
 
-    private fun glTF.getMaterialBuffersAndAddTexture(textureId: Int): MaterialBuffers {
+    private fun MeshFormatExporter.getMaterialBuffersAndAddTexture(textureId: Int): MaterialBuffers {
         if (textureId != -1) {
             addTextureMaterial(
                 textureId,
@@ -108,41 +110,41 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         }
     }
 
-    private fun upload(gltf: glTF, tile: SceneTile, x: Int, y: Int) {
+    private fun upload(fmt: MeshFormatExporter, tile: SceneTile, x: Int, y: Int) {
         if (debugOptionsModel.showTilePaint.value.get()) {
-            tile.tilePaint?.let { upload(gltf, it, x, y, 0) }
+            tile.tilePaint?.let { upload(fmt, it, x, y, 0) }
         }
         if (debugOptionsModel.showTileModels.value.get()) {
-            tile.tileModel?.let { upload(gltf, it, x, y, 0) }
+            tile.tileModel?.let { upload(fmt, it, x, y, 0) }
         }
 
         tile.wall?.let { wall ->
-            uploadIfStatic(gltf, wall.entity, x, y, wall.entity.height)
+            uploadIfStatic(fmt, wall.entity, x, y, wall.entity.height)
             wall.entity2?.let {
-                uploadIfStatic(gltf, it, x, y, it.height)
+                uploadIfStatic(fmt, it, x, y, it.height)
             }
         }
 
         tile.floorDecoration?.entity?.let {
-            uploadIfStatic(gltf, it, x, y, it.height)
+            uploadIfStatic(fmt, it, x, y, it.height)
         }
         tile.wallDecoration?.entity?.let {
-            uploadIfStatic(gltf, it, x, y, it.height)
+            uploadIfStatic(fmt, it, x, y, it.height)
         }
         tile.wallDecoration?.entity2?.let {
-            uploadIfStatic(gltf, it, x, y, it.height)
+            uploadIfStatic(fmt, it, x, y, it.height)
         }
 
         tile.gameObjects.map { it.entity }.forEach {
-            uploadIfStatic(gltf, it, x, y, it.height)
+            uploadIfStatic(fmt, it, x, y, it.height)
         }
     }
 
-    private fun uploadIfStatic(gltf: glTF, entity: Entity?, tileX: Int, tileY: Int, height: Int) {
-        if (entity is StaticObject) uploadModel(gltf, entity, tileX, tileY, height)
+    private fun uploadIfStatic(fmt: MeshFormatExporter, entity: Entity?, tileX: Int, tileY: Int, height: Int) {
+        if (entity is StaticObject) uploadModel(fmt, entity, tileX, tileY, height)
     }
 
-    private fun upload(gltf: glTF, tile: TilePaint, tileX: Int, tileY: Int, height: Int) {
+    private fun upload(fmt: MeshFormatExporter, tile: TilePaint, tileX: Int, tileY: Int, height: Int) {
         val swHeight = tile.swHeight
         val seHeight = tile.seHeight
         val neHeight = tile.neHeight
@@ -163,7 +165,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             val vertexBx = 0
             val vertexBy = 128
 
-            val materialBuffer = gltf.getMaterialBuffersAndAddTexture(tile.texture)
+            val materialBuffer = fmt.getMaterialBuffersAndAddTexture(tile.texture)
 
             val x = tileX * Constants.LOCAL_TILE_SIZE
             val z = tileY * Constants.LOCAL_TILE_SIZE
@@ -207,7 +209,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         }
     }
 
-    private fun upload(gltf: glTF, tileModel: TileModel, tileX: Int, tileY: Int, height: Int) {
+    private fun upload(fmt: MeshFormatExporter, tileModel: TileModel, tileX: Int, tileY: Int, height: Int) {
         val faceX = tileModel.faceX
         val faceY = tileModel.faceY
         val faceZ = tileModel.faceZ
@@ -244,7 +246,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
                 val vertexZC = vertexZ[triangleC]
 
                 val textureId = if (triangleTextures != null) triangleTextures[i] else -1
-                val materialBuffer = gltf.getMaterialBuffersAndAddTexture(textureId)
+                val materialBuffer = fmt.getMaterialBuffersAndAddTexture(textureId)
 
                 materialBuffer.addVertex(
                     (vertexXA + x).toFloat() / scale,
@@ -274,7 +276,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         }
     }
 
-    private fun uploadModel(gltf: glTF, entity: Entity, tileX: Int, tileY: Int, height: Int) {
+    private fun uploadModel(fmt: MeshFormatExporter, entity: Entity, tileX: Int, tileY: Int, height: Int) {
         val model = entity.model
 
         val showOnly = debugOptionsModel.showOnlyModelType.value.get()
@@ -285,11 +287,11 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         val triangleCount = model.modelDefinition.faceCount
 
         for (i in 0 until triangleCount) {
-            pushFace(gltf, model, i, tileX, tileY, height)
+            pushFace(fmt, model, i, tileX, tileY, height)
         }
     }
 
-    private fun pushFace(gltf: glTF, model: Model, face: Int, tileX: Int, tileY: Int, height: Int) {
+    private fun pushFace(fmt: MeshFormatExporter, model: Model, face: Int, tileX: Int, tileY: Int, height: Int) {
         val modelDefinition = model.modelDefinition
 
         val vertexX = model.vertexPositionsX
@@ -342,7 +344,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             else face * 6
 
         val textureId = if (faceTextures != null) faceTextures[face].toInt() else -1
-        val materialBuffer = gltf.getMaterialBuffersAndAddTexture(textureId)
+        val materialBuffer = fmt.getMaterialBuffersAndAddTexture(textureId)
 
         materialBuffer.addVertex(
             (vertexX[triangleA] + x).toFloat() / scale,

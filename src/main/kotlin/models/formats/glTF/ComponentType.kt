@@ -1,4 +1,4 @@
-package models.glTF
+package models.formats.glTF
 
 enum class ComponentType(val value: Int) {
     BYTE(5120),

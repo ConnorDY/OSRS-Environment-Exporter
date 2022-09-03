@@ -58,7 +58,7 @@ class SceneLoadProgressDialogSpawner(private val parent: Frame) {
             }
         }
 
-        override fun onError() {
+        override fun onError(t: Throwable) {
             SwingUtilities.invokeLater {
                 progressContainer.status = "An error occurred"
                 progressContainer.complete()
