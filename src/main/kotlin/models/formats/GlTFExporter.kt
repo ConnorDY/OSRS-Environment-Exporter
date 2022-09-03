@@ -156,7 +156,7 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
         gltfModel.scenes.add(Scene(sceneNodes))
 
         // create buffer
-        val buffer = Buffer(dataFilename, chunkBuffer.byteLength)
+        val buffer = Buffer(dataFilename, byteLength = bufferFileOffset)
         gltfModel.buffers.add(buffer)
 
         // write buffer to files
