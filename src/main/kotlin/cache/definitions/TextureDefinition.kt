@@ -23,7 +23,7 @@ class TextureDefinition {
             val var7: SpriteDefinition = spriteLoader.get(fileIds[var6]) ?: return false
             var7.normalize()
             val var8: ByteArray = var7.pixelIdx
-            val var9: IntArray = var7.palette
+            val var9: IntArray = var7.palette.clone()
             val var10 = field1786[var6]
             var var11: Int
             var var12: Int
