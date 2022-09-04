@@ -16,7 +16,6 @@ import controllers.AboutController
 import controllers.DebugOptionsController
 import controllers.GridRegionChooserController
 import controllers.LocationSearchController
-import controllers.RegionChooserController
 import controllers.RegionLoadingDialogHelper.confirmAndLoadRadius
 import controllers.SettingsController
 import controllers.worldRenderer.Camera
@@ -134,10 +133,6 @@ class MainController constructor(
         JMenuBar().apply {
             JMenu("World").apply {
                 mnemonic = 'W'.code
-                JMenuItem("Change Region").apply {
-                    mnemonic = 'R'.code
-                    addActionListener(::changeRegionClicked)
-                }.let(::add)
                 JMenuItem("Location Search").apply {
                     mnemonic = 'S'.code
                     addActionListener(::locationSearchClicked)
@@ -269,10 +264,6 @@ class MainController constructor(
     override fun dispose() {
         super.dispose()
         animationTimer.stop()
-    }
-
-    private fun changeRegionClicked(event: ActionEvent) {
-        RegionChooserController(this, "Region Chooser", ::loadRadiusCallback).display()
     }
 
     private fun locationSearchClicked(event: ActionEvent) {
