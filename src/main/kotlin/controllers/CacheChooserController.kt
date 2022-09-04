@@ -6,7 +6,7 @@ import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonMappingException
 import controllers.main.MainController
-import environmentexporter.StartupOptions
+import models.StartupOptions
 import models.config.ConfigOptions
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream

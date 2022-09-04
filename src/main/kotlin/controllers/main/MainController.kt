@@ -26,9 +26,9 @@ import controllers.worldRenderer.SceneExporter
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
-import environmentexporter.StartupOptions
 import models.DebugOptionsModel
 import models.FrameRateModel
+import models.StartupOptions
 import models.config.ConfigOptions
 import models.github.GitHubRelease
 import models.scene.Scene

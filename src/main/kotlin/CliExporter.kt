@@ -1,5 +1,3 @@
-package environmentexporter
-
 import cache.XteaManager
 import cache.definitions.converters.ObjectToModelConverter
 import cache.loaders.LocationsLoader
@@ -15,6 +13,7 @@ import controllers.main.CountingSceneLoadProgressListener
 import controllers.worldRenderer.SceneExporter
 import controllers.worldRenderer.TextureManager
 import models.DebugOptionsModel
+import models.StartupOptions
 import models.scene.Scene
 import models.scene.SceneRegionBuilder
 import utils.ChunkWriteListener

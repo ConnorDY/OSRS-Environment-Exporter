@@ -1,4 +1,4 @@
-package environmentexporter
+package models
 
 import AppConstants.OUTPUT_DIRECTORY
 import models.config.ConfigOptions
