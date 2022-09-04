@@ -8,10 +8,9 @@ import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
 import java.nio.ByteBuffer
 
-class OverlayLoader constructor(
-    cacheLibrary: CacheLibrary,
-    private val overlayDefinitionCache: HashMap<Int, OverlayDefinition> = HashMap()
-) {
+class OverlayLoader(cacheLibrary: CacheLibrary) {
+    private val overlayDefinitionCache = HashMap<Int, OverlayDefinition>()
+
     fun get(id: Int): OverlayDefinition? {
         return overlayDefinitionCache[id]
     }

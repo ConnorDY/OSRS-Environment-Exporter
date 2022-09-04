@@ -26,6 +26,7 @@ import controllers.worldRenderer.SceneExporter
 import controllers.worldRenderer.SceneUploader
 import controllers.worldRenderer.TextureManager
 import controllers.worldRenderer.WorldRendererController
+import environmentexporter.StartupOptions
 import models.DebugOptionsModel
 import models.FrameRateModel
 import models.config.ConfigOptions
@@ -64,11 +65,12 @@ import javax.swing.Timer
 class MainController constructor(
     title: String,
     private val configOptions: ConfigOptions,
+    startupOptions: StartupOptions,
     xteaManager: XteaManager,
     cacheLibrary: CacheLibrary
 ) : JFrame(title) {
     private val animationTimer: Timer
-    private val worldRendererController: WorldRendererController
+    private val worldRendererController: WorldRendererController?
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val debugOptions = DebugOptionsModel()
     private val exporter: SceneExporter
@@ -102,24 +104,34 @@ class MainController constructor(
             debugOptions,
         )
         val textureManager = TextureManager(SpriteLoader(cacheLibrary), textureLoader)
-        exporter = SceneExporter(textureManager, debugOptions)
-        val sceneUploader = SceneUploader(debugOptions)
-        val renderer = Renderer(
-            camera, scene, sceneUploader,
-            textureManager,
-            configOptions,
-            frameRateModel,
-            debugOptions,
-        )
-        worldRendererController = WorldRendererController(renderer)
 
-        SceneLoadProgressDialogSpawner(this).attach(scene, sceneUploader, renderer)
+        // TODO: exportDir
+        // TODO: exportFlat
+        exporter = SceneExporter(textureManager, debugOptions)
+
+        if (startupOptions.showPreview) {
+            val sceneUploader = SceneUploader(debugOptions)
+            val renderer = Renderer(
+                camera, scene, sceneUploader,
+                textureManager,
+                configOptions,
+                frameRateModel,
+                debugOptions,
+            )
+            worldRendererController = WorldRendererController(renderer)
+
+            SceneLoadProgressDialogSpawner(this).attach(scene, sceneUploader, renderer)
+            renderer.sceneDrawListeners.add(object : SceneDrawListener {
+                override fun onStartDraw() {}
+                override fun onEndDraw() {}
+                override fun onError(t: Throwable) { reportSceneDrawError(t) }
+            })
+        } else {
+            worldRendererController = null
+            SceneLoadProgressDialogSpawner(this).attach(scene)
+        }
+
         SceneExportProgressDialogSpawner(this).attach(exporter)
-        renderer.sceneDrawListeners.add(object : SceneDrawListener {
-            override fun onStartDraw() {}
-            override fun onEndDraw() {}
-            override fun onError(t: Throwable) { reportSceneDrawError(t) }
-        })
 
         JMenuBar().apply {
             JMenu("World").apply {
@@ -186,12 +198,9 @@ class MainController constructor(
         }.let { add(it, BorderLayout.NORTH) }
 
         // load initial scene
-        scene.loadRadius(
-            configOptions.initialRegionId.value.get(),
-            configOptions.initialRadius.value.get()
-        )
+        scene.loadRadius(startupOptions.regionId, startupOptions.radius)
 
-        add(worldRendererController, BorderLayout.CENTER)
+        worldRendererController?.let { add(it, BorderLayout.CENTER) }
 
         var lastFrameCount = frameRateModel.frameCount
         var lastFrameCheck = System.nanoTime()
@@ -207,7 +216,7 @@ class MainController constructor(
         addWindowListener(object : WindowAdapter() {
             override fun windowClosed(e: WindowEvent?) {
                 animationTimer.stop()
-                worldRendererController.stopRenderer()
+                worldRendererController?.stopRenderer()
             }
         })
 
@@ -219,7 +228,7 @@ class MainController constructor(
 
             // Hack: Remove the renderer and retry.
             // Obviously this leaves the user with no visibility, but exiting is worse.
-            worldRendererController.isVisible = false
+            worldRendererController?.isVisible = false
             pack()
         }
 

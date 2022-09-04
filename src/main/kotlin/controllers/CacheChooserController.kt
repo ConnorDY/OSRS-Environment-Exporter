@@ -6,6 +6,7 @@ import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonMappingException
 import controllers.main.MainController
+import environmentexporter.StartupOptions
 import models.config.ConfigOptions
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -43,6 +44,7 @@ import javax.swing.text.JTextComponent
 class CacheChooserController(
     title: String,
     private val configOptions: ConfigOptions,
+    private val startupOptions: StartupOptions,
 ) : JFrame(title) {
     var xteaAndCache: Pair<XteaManager, CacheLibrary>? = null
 
@@ -216,7 +218,7 @@ class CacheChooserController(
         )
 
         populateCachesList(cacheListModel, listCaches, listCachesPlaceholder)
-        txtCacheLocation.text = configOptions.lastCacheDir.value.get()
+        txtCacheLocation.text = startupOptions.cacheDir
         if (txtCacheLocation.text.isEmpty()) {
             btnLaunch.isEnabled = false
         }
@@ -250,6 +252,7 @@ class CacheChooserController(
                 MainController(
                     "OSRS Environment Exporter",
                     configOptions,
+                    startupOptions,
                     xteaManager,
                     cacheLibrary,
                 ).isVisible = true
