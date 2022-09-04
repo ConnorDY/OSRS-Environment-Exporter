@@ -15,6 +15,8 @@
 
 - Load the user's chosen region in the centre of the radius, rather than the northeast &ndash; [#135](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/135) @ScoreUnder
 
+- Add a command-line interface for scriptable exporting &ndash; [#139](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/139) @ ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder
