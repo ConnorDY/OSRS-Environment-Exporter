@@ -45,11 +45,9 @@ class CliExporter(startupOptions: StartupOptions) {
 
         scene.sceneChangeListeners.add {
             // Export the scene once it has been loaded.
-            exporter.exportSceneToFile(scene)
+            exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat)
         }
         // TODO: progress indicator hooks
-        // TODO: directory option
-        // TODO: flat export option
     }
 
     fun exportRadius(regionId: Int, radius: Int) {

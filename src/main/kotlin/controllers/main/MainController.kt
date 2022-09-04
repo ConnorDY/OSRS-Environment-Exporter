@@ -65,7 +65,7 @@ import javax.swing.Timer
 class MainController constructor(
     title: String,
     private val configOptions: ConfigOptions,
-    startupOptions: StartupOptions,
+    private val startupOptions: StartupOptions,
     xteaManager: XteaManager,
     cacheLibrary: CacheLibrary
 ) : JFrame(title) {
@@ -105,8 +105,6 @@ class MainController constructor(
         )
         val textureManager = TextureManager(SpriteLoader(cacheLibrary), textureLoader)
 
-        // TODO: exportDir
-        // TODO: exportFlat
         exporter = SceneExporter(textureManager, debugOptions)
 
         if (startupOptions.showPreview) {
@@ -308,7 +306,7 @@ class MainController constructor(
         Thread {
             try {
                 try {
-                    exporter.exportSceneToFile(scene)
+                    exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat)
                 } catch (_: CancelledException) {
                     return@Thread
                 }
