@@ -46,12 +46,13 @@ abstract class CountingSceneLoadProgressListener : SceneLoadProgressListener {
     open fun prepareProgressContainer() {}
 
     private fun advanceProgress() {
-        progressContainer.progress = progress
+        val progressBeforeInc = progress
+        progressContainer.progress = progressBeforeInc
 
         currentRegion++
-        if (currentRegion >= numRegions) {
+        if (currentRegion > numRegions) {
             progressContainer.status = statusDone
-            if (progress == progressMax) {
+            if (progressBeforeInc == progressMax) {
                 progressContainer.complete()
             }
         } else {
