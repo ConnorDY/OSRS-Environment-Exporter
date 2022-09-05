@@ -98,7 +98,7 @@ class InputHandler internal constructor(
 
     override fun keyPressed(e: KeyEvent) {
         val code = e.keyCode
-        if (code >= 0 && code < keys.size)
+        if (code >= 0 && code < keys.size && keys[code] == STATE_RELEASED)
             keys[code] = STATE_PRESSED
 
         if (code in KeyEvent.VK_1..KeyEvent.VK_9) {
