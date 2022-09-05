@@ -90,6 +90,7 @@ import java.awt.event.ComponentEvent
 import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.min
+import kotlin.math.tan
 
 class Renderer(
     private val camera: Camera,
@@ -354,6 +355,9 @@ class Renderer(
             }
             isSceneUploadRequired = false
         }
+
+        val fov = configOptions.fov.value.get()
+        camera.scale = (canvasWidth / (2 * tan(Math.toRadians(fov / 2)))).toInt()
 
         val thisUpdate = System.nanoTime()
         val deltaTime = (thisUpdate - lastUpdate).toDouble() / 1_000_000

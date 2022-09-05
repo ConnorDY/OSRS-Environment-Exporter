@@ -5,7 +5,7 @@ import kotlin.math.abs
 class Camera {
     var yaw = 0 // yaw 0 true north, same with 2047 and 1
     var pitch = 220
-    val scale = 550
+    var scale = 550
     var cameraX: Int = 0
     var cameraY: Int = 0
     var cameraZ = -2500
