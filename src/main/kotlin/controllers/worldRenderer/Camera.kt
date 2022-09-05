@@ -6,21 +6,21 @@ class Camera {
     var yaw = 0 // yaw 0 true north, same with 2047 and 1
     var pitch = 220
     val scale = 550
-    var cameraX: Int = 0
-    var cameraY: Int = 0
-    var cameraZ = -2500
+    var cameraX: Double = 0.0
+    var cameraY: Double = 0.0
+    var cameraZ: Double = -2500.0
     var centerX = 400 // HALF OF VIEWPORT!
     var centerY = 300 // HALF OF VIEWPORT!
     var motionTicks = 0 // Amount of times this camera has been moved
-    fun addX(amt: Int) {
+    fun addX(amt: Double) {
         cameraX += amt
     }
 
-    fun addY(amt: Int) {
+    fun addY(amt: Double) {
         cameraY += amt
     }
 
-    fun addZ(amt: Int) {
+    fun addZ(amt: Double) {
         cameraZ += amt
     }
 
@@ -55,6 +55,9 @@ class Camera {
         }
         pitch = newPitch
     }
+
+    val pitchRads: Double get() = pitch * Constants.UNIT
+    val yawRads: Double get() = yaw * Constants.UNIT
 
     val pitchSin: Int
         get() = Constants.SINE.get(pitch)

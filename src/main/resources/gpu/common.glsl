@@ -44,12 +44,12 @@ ivec4 rotate(ivec4 vertex, int orientation) {
 /*
  * Calculate the distance to a vertex given the camera angle
  */
-int distance(ivec4 vertex, int cameraYaw, int cameraPitch) {
-  int yawSin = int(65536.0f * sin(cameraYaw * UNIT));
-  int yawCos = int(65536.0f * cos(cameraYaw * UNIT));
+int distance(ivec4 vertex, float cameraYaw, float cameraPitch) {
+  int yawSin = int(65536.0f * sin(cameraYaw));
+  int yawCos = int(65536.0f * cos(cameraYaw));
 
-  int pitchSin = int(65536.0f * sin(cameraPitch * UNIT));
-  int pitchCos = int(65536.0f * cos(cameraPitch * UNIT));
+  int pitchSin = int(65536.0f * sin(cameraPitch));
+  int pitchCos = int(65536.0f * cos(cameraPitch));
 
   int j = vertex.z * yawCos - vertex.x * yawSin >> 16;
   int l = vertex.y * pitchSin + j * pitchCos >> 16;
@@ -60,7 +60,7 @@ int distance(ivec4 vertex, int cameraYaw, int cameraPitch) {
 /*
  * Calculate the distance to a face
  */
-int face_distance(ivec4 vA, ivec4 vB, ivec4 vC, int cameraYaw, int cameraPitch) {
+int face_distance(ivec4 vA, ivec4 vB, ivec4 vC, float cameraYaw, float cameraPitch) {
   int dvA = distance(vA, cameraYaw, cameraPitch);
   int dvB = distance(vB, cameraYaw, cameraPitch);
   int dvC = distance(vC, cameraYaw, cameraPitch);
@@ -78,9 +78,12 @@ bool face_visible(ivec4 vA, ivec4 vB, ivec4 vC, ivec4 position) {
   vB += position - cameraPos;
   vC += position - cameraPos;
 
-  vec3 sA = toScreen(vA.xyz, cameraYaw, cameraPitch, centerX, centerY, zoom);
-  vec3 sB = toScreen(vB.xyz, cameraYaw, cameraPitch, centerX, centerY, zoom);
-  vec3 sC = toScreen(vC.xyz, cameraYaw, cameraPitch, centerX, centerY, zoom);
+  float yawf = float(cameraYaw);
+  float pitchf = float(cameraPitch);
+
+  vec3 sA = toScreen(vA.xyz, yawf, pitchf, centerX, centerY, zoom);
+  vec3 sB = toScreen(vB.xyz, yawf, pitchf, centerX, centerY, zoom);
+  vec3 sC = toScreen(vC.xyz, yawf, pitchf, centerX, centerY, zoom);
 
   return (sA.x - sB.x) * (sC.y - sB.y) - (sC.x - sB.x) * (sA.y - sB.y) > 0;
 }
