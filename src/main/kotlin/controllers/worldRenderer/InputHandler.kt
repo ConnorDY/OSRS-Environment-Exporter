@@ -11,7 +11,9 @@ import java.awt.event.KeyListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
+import kotlin.math.cos
 import kotlin.math.pow
+import kotlin.math.sin
 
 class InputHandler internal constructor(
     private val parent: Component,
@@ -35,14 +37,16 @@ class InputHandler internal constructor(
     var mouseY = 0
     var baseSpeed = 1.0
 
+    private val sensitivity get() = Constants.UNIT // TODO: multiply by a configurable value
+
     fun tick(dt: Double) {
         if (dt > 1000) { // big lag spike, don't send the user flying
             frameRateModel.notifyNeedFrames()
             return
         }
-        val xVec = (-camera.yawSin).toDouble() / 65535
-        val yVec = camera.yawCos.toDouble() / 65535
-        val zVec = camera.pitchSin.toDouble() / 65535
+        val xVec = -sin(camera.yawRads)
+        val yVec = cos(camera.yawRads)
+        val zVec = sin(camera.pitchRads)
         var speed = baseSpeed
         if (isKeyHeld(KeyEvent.VK_SHIFT)) {
             speed *= 4
@@ -125,10 +129,10 @@ class InputHandler internal constructor(
 
     private fun handleCameraDrag(e: MouseEvent) {
         val dx = previousMouseX - e.x
-        camera.addYaw(dx)
+        camera.addYaw(dx * sensitivity)
 
         val dy = previousMouseY - e.y
-        camera.addPitch(-dy)
+        camera.addPitch(-dy * sensitivity)
     }
 
     override fun mouseClicked(e: MouseEvent) {
