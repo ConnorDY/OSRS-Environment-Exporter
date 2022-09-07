@@ -11,14 +11,12 @@
     { "name": "Abandoned Mine level 5", "coords": [2722, 4451, 0] },
     { "name": "Abandoned Mine level 6", "coords": [2788, 4446, 0] },
     { "name": "Abandoned Mine level 6 (no light)", "coords": [2723, 4576, 0] },
-    { "name": "Abidor Crank (Temple Trekking)", "coords": [2051, 5043, 0] },
+    { "name": "Abidor Crank, Head and Tentacles, Bog / Bridge / River puzzles (Temple Trekking)", "coords": [2051, 5043, 0] },
     { "name": "Abyss", "coords": [3040, 4831, 0] },
     { "name": "Abyssal Area", "coords": [3038, 4896, 0] },
     { "name": "Abyssal Nexus", "coords": [3039, 4776, 0] },
-    { "name": "Agility Arena", "coords": [2809, 3191, 0] },
     { "name": "Agility Pyramid", "coords": [3364, 2840, 0] },
     { "name": "Agility Pyramid top floors", "coords": [3042, 4697, 0] },
-    { "name": "Ah Za Rhoon", "coords": [2908, 9336, 0] },
     { "name": "Ah Za Rhoon 1 (Shilo Village)", "coords": [2913, 9304, 0] },
     { "name": "Ah Za Rhoon 2 (Shilo Village)", "coords": [2915, 9369, 0] },
     { "name": "Air altar", "coords": [2844, 4832, 0] },
@@ -39,7 +37,7 @@
       "name": "Ancient Cavern mithril door (Dragon Slayer II)",
       "coords": [1556, 4883, 0]
     },
-    { "name": "Anger Room (A Soul's Bane)", "coords": [3026, 5233, 0] },
+    { "name": "Anger, Confusion, Fear, Hopelessness 1 (A Soul's Bane)", "coords": [3026, 5233, 0] },
     { "name": "Ape Atoll", "coords": [2747, 2751, 0] },
     {
       "name": "Ape Atoll Dungeon (Monkey Madness I)",
@@ -47,21 +45,15 @@
     },
     { "name": "Arandar", "coords": [2342, 3294, 0] },
     { "name": "Arceuus", "coords": [1688, 3745, 0] },
+    { "name": "Ardougne Monastery & Clocktower", "coords": [2602, 3215, 0] },
     { "name": "Ardougne Rat Pits", "coords": [2657, 9638, 0] },
-    { "name": "Ardougne Sewers", "coords": [2567, 9682, 0] },
-    { "name": "Ardougne Sewers Mine", "coords": [2655, 9677, 0] },
-    { "name": "Ardougne Zoo", "coords": [2612, 3275, 0] },
+    { "name": "Ardougne Sewers & Carnillean basement (Hazeel Cult) & East Ardougne prison (Song of the Elves)", "coords": [2567, 9682, 0] },
     { "name": "Asgarnian Ice Dungeon", "coords": [3038, 9580, 0] },
-    { "name": "Avatar of Creation", "coords": [2126, 2891, 0] },
-    { "name": "Avatar of Destruction", "coords": [2286, 2931, 0] },
+    { "name": "Blue Base, Western Graveyard, Avatar of Creation (Soul Wars)", "coords": [2161, 2898, 0] },
     { "name": "Baba Yaga's house", "coords": [2451, 4646, 0] },
     {
-      "name": "Balloon land crash (Enlightened Journey)",
+      "name": "Balloon crash sites (Enlightened Journey)",
       "coords": [1841, 4915, 0]
-    },
-    {
-      "name": "Balloon sea crash (Enlightened Journey)",
-      "coords": [1804, 4891, 0]
     },
     {
       "name": "Banana plantation (Monkey Madness I)",
@@ -77,7 +69,7 @@
       "name": "Banquet cutscene (A Kingdom Divided)",
       "coords": [2080, 6168, 0]
     },
-    { "name": "Barbarian Assault (1)", "coords": [2523, 3574, 0] },
+    { "name": "Barbarian Assault (1) & Barbarian Outpost", "coords": [2523, 3574, 0] },
     { "name": "Barbarian Assault (2)", "coords": [1887, 5470, 0] },
     { "name": "Barbarian Assault lobby", "coords": [2596, 5284, 0] },
     { "name": "Barbarian Assault Wave 10", "coords": [1885, 5406, 0] },
@@ -85,8 +77,6 @@
       "name": "Barbarian Camp cave (A Kingdom Divided)",
       "coords": [1580, 9831, 0]
     },
-    { "name": "Barbarian Outpost", "coords": [2552, 3561, 0] },
-    { "name": "Barbarian Outpost Agility Course", "coords": [2533, 3538, 0] },
     {
       "name": "Barbarian Outpost Agility Course Dungeon",
       "coords": [2550, 9951, 0]
@@ -101,24 +91,22 @@
     },
     { "name": "Battlefield", "coords": [2520, 3232, 0] },
     { "name": "Battlefront", "coords": [1368, 3716, 0] },
-    { "name": "Baxtorian Falls", "coords": [2513, 3461, 0] },
+    { "name": "Baxtorian Falls & Otto's Grotto", "coords": [2513, 3461, 0] },
     { "name": "Bear", "coords": [3285, 3838, 0] },
     { "name": "Bedabin Camp", "coords": [3169, 3036, 0] },
-    { "name": "Beehives", "coords": [2759, 3442, 0] },
-    { "name": "Beekeeper random event", "coords": [1926, 5043, 0] },
-    { "name": "Black Knights' Fortress", "coords": [3025, 3514, 0] },
+    { "name": "Beehives & Keep Le Faye", "coords": [2759, 3442, 0] },
+    { "name": "Beekeeper, Gravedigger, Pinball random event", "coords": [1926, 5043, 0] },
+    { "name": "Black Knights' Fortress & Edgeville Monastery", "coords": [3025, 3514, 0] },
     {
-      "name": "Black Knights' Fortress basement (King's Ransom)",
+      "name": "Black Knights' Fortress basement & Jail (King's Ransom)",
       "coords": [1867, 4237, 0]
     },
     { "name": "Blast Furnace", "coords": [1947, 4967, 0] },
     { "name": "Blast mine", "coords": [1493, 3848, 0] },
-    { "name": "Blue Base", "coords": [2125, 2914, 0] },
     { "name": "Blue Moon Inn basement", "coords": [3236, 9799, 0] },
     { "name": "Body altar", "coords": [2521, 4837, 0] },
-    { "name": "Bog puzzle (Temple Trekking)", "coords": [2058, 5005, 0] },
     { "name": "Bone Yard", "coords": [3236, 3746, 0] },
-    { "name": "Bonzara's hideout (Monkey Madness)", "coords": [2415, 9910, 0] },
+    { "name": "Bonzara's hideout (Monkey Madness) & Gnome glider hangar", "coords": [2415, 9910, 0] },
     {
       "name": "Boots of Lightness rooms (Temple of Ikov)",
       "coords": [2646, 9753, 0]
@@ -128,14 +116,12 @@
       "coords": [1761, 4704, 0]
     },
     { "name": "Braindeath Isalnd", "coords": [2144, 5120, 0] },
-    { "name": "Bridge puzzle (Temple Trekking)", "coords": [2091, 5039, 0] },
     { "name": "Brimhaven", "coords": [2773, 3176, 0] },
     { "name": "Brimhaven Agility Arena", "coords": [2784, 9567, 0] },
     { "name": "Brimhaven Dungeon (1)", "coords": [2668, 9520, 0] },
     { "name": "Brimhaven Dungeon (2)", "coords": [2689, 9506, 0] },
     { "name": "Brimhaven Dungeon task area", "coords": [2657, 9440, 0] },
     { "name": "Brimstail's cave", "coords": [2396, 9821, 0] },
-    { "name": "Brine Rat Cavern", "coords": [2718, 10143, 0] },
     { "name": "Brine Rat Cavern (Olaf's Quest)", "coords": [2720, 10146, 0] },
     { "name": "Bryophyta's lair", "coords": [3219, 9933, 0] },
     { "name": "Burgh de Rott", "coords": [3495, 3218, 0] },
@@ -145,13 +131,11 @@
     },
     { "name": "Burthorpe", "coords": [2893, 3541, 0] },
     { "name": "Burthorpe Games Room", "coords": [2207, 4960, 0] },
-    { "name": "Cairn Island Dungeon", "coords": [2764, 9376, 0] },
     { "name": "Cairn Isle", "coords": [2765, 2976, 0] },
     { "name": "Camelot Castle", "coords": [2758, 3507, 0] },
     { "name": "Campsite puzzle (Temple Trekking)", "coords": [2457, 5031, 0] },
     { "name": "Canifis", "coords": [3495, 3487, 0] },
     { "name": "Canoeing cutscene", "coords": [1825, 4508, 0] },
-    { "name": "Carnillean basement (Hazeel Cult)", "coords": [2569, 9668, 0] },
     { "name": "Castle Drakan", "coords": [3554, 3357, 0] },
     { "name": "Castle Wars", "coords": [2430, 3104, 0] },
     { "name": "Castle Wars underground", "coords": [2400, 9502, 0] },
@@ -165,19 +149,17 @@
     { "name": "Cerberus' Lair entrance", "coords": [1310, 1251, 0] },
     { "name": "Chambers of Xeric", "coords": [3314, 5352, 0] },
     { "name": "Champions' Challenge", "coords": [3169, 9758, 0] },
-    { "name": "Champions' Guild", "coords": [3191, 3360, 0] },
+    { "name": "Champions' Guild & River Lum", "coords": [3191, 3360, 0] },
     { "name": "Chaos altar", "coords": [2271, 4842, 0] },
     { "name": "Chaos Druid Tower Dungeon", "coords": [2580, 9743, 0] },
-    { "name": "Chaos Temple (1)", "coords": [2933, 3514, 0] },
-    { "name": "Chaos Temple (2)", "coords": [3240, 3608, 0] },
+    { "name": "Chaos Temple (Asgarnia) & Druid's Circle & Heroes' Guild", "coords": [2933, 3514, 0] },
+    { "name": "Chaos Temple (Wilderness)", "coords": [3240, 3608, 0] },
     { "name": "Chaos tunnels (What Lies Below)", "coords": [3165, 5216, 2] },
-    { "name": "Chapel", "coords": [1497, 3566, 0] },
     { "name": "Charcoal burners", "coords": [1738, 3468, 0] },
-    { "name": "Chasm of Fire (1)", "coords": [1438, 3677, 0] },
-    { "name": "Chasm of Fire (2)", "coords": [1439, 10079, 0] },
+    { "name": "Chasm of Fire entrance & Shamans", "coords": [1438, 3677, 0] },
+    { "name": "Chasm of Fire", "coords": [1439, 10079, 0] },
     { "name": "Chasm of Tears", "coords": [3234, 9509, 2] },
-    { "name": "Chos Druid Tower Dungeon", "coords": [2579, 9744, 0] },
-    { "name": "Clan Cup portal cave", "coords": [3156, 9824, 0] },
+    { "name": "Clan Cup portal cave & Varrock west bank basement", "coords": [3156, 9824, 0] },
     { "name": "Clan Hall", "coords": [1760, 5472, 0] },
     { "name": "Clan Wars", "coords": [3371, 3162, 0] },
     { "name": "Clan Wars", "coords": [3422, 4735, 0] },
@@ -196,12 +178,9 @@
     { "name": "Clan Wars - Turrets", "coords": [3168, 5056, 0] },
     { "name": "Clan Wars - Wasteland", "coords": [3296, 5056, 0] },
     { "name": "Clock Tower Dungeon", "coords": [2590, 9632, 0] },
-    { "name": "Clocktower", "coords": [2571, 3240, 0] },
-    { "name": "Clocktower Dungeon", "coords": [2590, 9630, 0] },
     { "name": "Coal Trucks", "coords": [2598, 3489, 0] },
     { "name": "Combat ring", "coords": [1543, 3623, 0] },
     { "name": "Combat Training Camp", "coords": [2515, 3369, 0] },
-    { "name": "Confusion Room (A Soul's Bane)", "coords": [3055, 5198, 0] },
     {
       "name": "Consortium cutscene (The Giant Dwarf)",
       "coords": [2016, 4514, 0]
@@ -218,9 +197,7 @@
     { "name": "Cosmic altar", "coords": [2142, 4832, 0] },
     { "name": "Cosmic entity's plane", "coords": [2079, 4828, 0] },
     { "name": "Courtroom (King's Ransom)", "coords": [1819, 4267, 0] },
-    { "name": "Crabclaw Caves", "coords": [1674, 9824, 0] },
-    { "name": "Crabclaw Caves (1)", "coords": [1691, 9815, 0] },
-    { "name": "Crabclaw Caves (2)", "coords": [1700, 9749, 0] },
+    { "name": "Crabclaw Caves", "coords": [1691, 9815, 0] },
     { "name": "Crabclaw Isle", "coords": [1759, 3421, 0] },
     { "name": "Crafting Guild", "coords": [2926, 3281, 0] },
     { "name": "Crandor", "coords": [2836, 3271, 0] },
@@ -237,10 +214,9 @@
     },
     { "name": "Crate (Merlin's Crystal)", "coords": [2777, 9849, 0] },
     { "name": "Creature Creation", "coords": [3038, 4384, 0] },
-    { "name": "Crombwick Manor", "coords": [3725, 3358, 0] },
+    { "name": "Crombwick Manor & Slepe", "coords": [3725, 3358, 0] },
     { "name": "Crumbling Tower basement", "coords": [1937, 9448, 0] },
     { "name": "Crypt cutscene (Romeo and Juliet)", "coords": [2329, 4641, 0] },
-    { "name": "Dagannoth Kings", "coords": [2913, 4448, 0] },
     { "name": "Dagannoth Kings (Ironmen)", "coords": [2914, 4382, 0] },
     { "name": "Dark Altar", "coords": [1689, 3877, 0] },
     { "name": "Dark Warriors' Fortress", "coords": [3029, 3630, 0] },
@@ -263,7 +239,7 @@
       "name": "Desert Mining Camp (The Tourist Trap)",
       "coords": [3293, 9434, 0]
     },
-    { "name": "Deserted Keep", "coords": [3153, 3931, 0] },
+    { "name": "Deserted Keep & Resource Area (Wilderness)", "coords": [3153, 3931, 0] },
     { "name": "Digsite", "coords": [3362, 3417, 0] },
     { "name": "Digsite Dungeon", "coords": [3367, 9819, 0] },
     { "name": "Digsite Dungeon (blocked)", "coords": [3366, 9754, 0] },
@@ -280,7 +256,7 @@
       "name": "Dorgesh-Kaan train construction (Another Slice of H.A.M.)",
       "coords": [2514, 5574, 0]
     },
-    { "name": "Dorgesh-Kaan train station", "coords": [2481, 5534, 0] },
+    { "name": "Dorgesh-Kaan train station & Keldagrim train station", "coords": [2481, 5534, 0] },
     { "name": "Dorgeshuun Mines", "coords": [3279, 9627, 0] },
     {
       "name": "Dragonkin castle cutscene (A Tail of Two Cats)",
@@ -290,15 +266,11 @@
     { "name": "Draynor bank robbery cutscene", "coords": [2135, 4912, 0] },
     { "name": "Draynor Manor", "coords": [3104, 3341, 0] },
     {
-      "name": "Draynor Manor basement (Ernest the Chicken)",
+      "name": "Draynor Manor basement (Ernest the Chicken) & Draynor Manor crypt (Vampyre Slayer)",
       "coords": [3105, 9754, 0]
     },
-    {
-      "name": "Draynor Manor crypt (Vampyre Slayer)",
-      "coords": [3077, 9772, 0]
-    },
     { "name": "Draynor Sewers", "coords": [3107, 9672, 0] },
-    { "name": "Draynor Village", "coords": [3105, 3258, 0] },
+    { "name": "Draynor Village, Market, Jail", "coords": [3105, 3258, 0] },
     { "name": "Dream World", "coords": [3874, 9949, 0] },
     {
       "name": "Dream World battle (Lunar Diplomacy)",
@@ -309,29 +281,22 @@
       "coords": [1760, 5084, 0]
     },
     { "name": "Drill Demon random event", "coords": [3168, 4832, 0] },
-    { "name": "Druids' Circle", "coords": [2925, 3482, 0] },
     { "name": "Duel Arena", "coords": [3361, 3232, 0] },
     { "name": "Dwarven Mine (1)", "coords": [3015, 3445, 0] },
     { "name": "Dwarven Mine (2)", "coords": [3034, 9801, 0] },
     { "name": "Dwarven Mine Dungeon", "coords": [3024, 9791, 0] },
-    { "name": "Eadgar's Cave", "coords": [2893, 10080, 0] },
+    { "name": "Eadgar's Cave / Troll Cave", "coords": [2893, 10080, 0] },
     { "name": "Eagle's Peak level 1", "coords": [2013, 4965, 0] },
     { "name": "Eagle's Peak level 2", "coords": [1956, 4901, 0] },
     { "name": "Eagles' Peak", "coords": [2332, 3486, 0] },
     { "name": "Earth altar", "coords": [2657, 4837, 0] },
     { "name": "East Ardougne", "coords": [2598, 3295, 0] },
-    {
-      "name": "East Ardougne prison (Song of the Elves)",
-      "coords": [2573, 9709, 0]
-    },
-    { "name": "Eastern Ardougne Sewers", "coords": [2659, 9701, 0] },
-    { "name": "Eastern Graveyard", "coords": [2251, 2924, 0] },
-    { "name": "Ectofuntus", "coords": [3659, 3519, 0] },
+    { "name": "Eastern Ardougne Sewers & Mine", "coords": [2659, 9701, 0] },
+    { "name": "Ectofuntus & Port Phasmatys", "coords": [3659, 3519, 0] },
     { "name": "Ectofuntus basement", "coords": [3681, 9887, 0] },
     { "name": "Edgeville", "coords": [3086, 3497, 0] },
     { "name": "Edgeville Dungeon", "coords": [3114, 9917, 0] },
-    { "name": "Elemental Workshop (1)", "coords": [1963, 5149, 0] },
-    { "name": "Elemental Workshop (2)", "coords": [2718, 9891, 0] },
+    { "name": "Elemental Workshop", "coords": [2718, 9891, 0] },
     { "name": "Elemental Workshop II", "coords": [1959, 5146, 0] },
     { "name": "Elf Camp", "coords": [2196, 3251, 0] },
     { "name": "Elven rabbit cave", "coords": [3296, 12578, 0] },
@@ -339,7 +304,6 @@
       "name": "Enakhra's Temple (Enakhra's Lament)",
       "coords": [3103, 9309, 0]
     },
-    { "name": "Enakhra's Temple Bottom Floor", "coords": [3104, 9312, 0] },
     { "name": "Enchanted Valley", "coords": [3040, 4504, 0] },
     { "name": "Entrana", "coords": [2843, 3378, 0] },
     { "name": "Etceteria", "coords": [2609, 3874, 0] },
@@ -363,11 +327,10 @@
       "coords": [2344, 4443, 0]
     },
     { "name": "Fake Lord Hosidius office", "coords": [1747, 9935, 0] },
-    { "name": "Falador", "coords": [3004, 3361, 0] },
+    { "name": "Falador & White Knights' Castle", "coords": [3004, 3361, 0] },
     { "name": "Falador Mole Lair", "coords": [1760, 5190, 0] },
     { "name": "Falconer", "coords": [2374, 3604, 0] },
     { "name": "Farming Guild", "coords": [1248, 3731, 0] },
-    { "name": "Fear Room (A Soul's Bane)", "coords": [3023, 5197, 0] },
     { "name": "Feldip Hills", "coords": [2556, 2982, 0] },
     { "name": "Fenkenstrain's Castle", "coords": [3548, 3554, 0] },
     { "name": "Fenkenstrain's Dungeon", "coords": [3519, 9952, 0] },
@@ -379,13 +342,13 @@
     { "name": "Fire altar", "coords": [2584, 4837, 0] },
     { "name": "Fisher Realm (Holy Grail)", "coords": [2783, 4707, 0] },
     { "name": "Fisher Realm (post quest)", "coords": [2655, 4706, 0] },
-    { "name": "Fishing Guild", "coords": [2604, 3400, 0] },
+    { "name": "Fishing Guild, Kingdom of Kandarin", "coords": [2604, 3400, 0] },
     { "name": "Fishing Hamlet", "coords": [1693, 3933, 0] },
     { "name": "Fishing Platform", "coords": [2772, 3283, 0] },
     { "name": "Fishing Trawler", "coords": [1891, 4829, 0] },
     { "name": "Fishing Trawler sinking", "coords": [2019, 4826, 0] },
     { "name": "Fishing Trawler sunk", "coords": [1955, 4824, 0] },
-    { "name": "Flax", "coords": [2744, 3443, 0] },
+    { "name": "Flax & Sorcerer's Tower", "coords": [2744, 3443, 0] },
     { "name": "Foodhall", "coords": [1842, 3746, 0] },
     { "name": "Forthos Dungeon", "coords": [1819, 9951, 0] },
     { "name": "Forthos Ruin", "coords": [1674, 3574, 0] },
@@ -402,19 +365,17 @@
     { "name": "Fremennik Slayer Dungeon (1)", "coords": [2805, 10001, 0] },
     { "name": "Fremennik Slayer Dungeon (2)", "coords": [2749, 10014, 0] },
     { "name": "Frogland random event", "coords": [2463, 4780, 0] },
-    { "name": "Frozen Waste Plateau", "coords": [2962, 3917, 0] },
+    { "name": "Frozen Waste Plateau & Wilderness Agility Course", "coords": [2962, 3917, 0] },
     { "name": "Genie cave (Spirits of the Elid)", "coords": [3373, 9308, 0] },
     { "name": "Giants' Den", "coords": [1441, 9881, 0] },
     { "name": "Giants' Foundry", "coords": [3328, 11456, 0] },
-    { "name": "Glarial's Tomb", "coords": [2543, 9827, 0] },
     { "name": "Glarial's Tomb (Waterfall Quest)", "coords": [2543, 9830, 0] },
     { "name": "Glod's cloud (Grim Tales)", "coords": [2145, 5535, 0] },
     {
       "name": "Glough's laboratory (Monkey Madness II)",
       "coords": [2207, 5471, 0]
     },
-    { "name": "Gnome Ball Field", "coords": [2395, 3486, 0] },
-    { "name": "Gnome glider hangar", "coords": [2391, 9891, 0] },
+    { "name": "Gnome Ball Field & Swamp", "coords": [2395, 3486, 0] },
     {
       "name": "Gnome hangar (after Monkey Madness I)",
       "coords": [2647, 4511, 0]
@@ -425,7 +386,7 @@
       "name": "Goblin kitchen (Recipe for Disaster)",
       "coords": [2980, 9891, 0]
     },
-    { "name": "Goblin Village", "coords": [2956, 3505, 0] },
+    { "name": "Goblin Village & Ice Mountain", "coords": [2956, 3505, 0] },
     {
       "name": "Goblin Village H.A.M. Attack (Another Slice of H.A.M.)",
       "coords": [2465, 5407, 0]
@@ -439,9 +400,7 @@
     { "name": "Grand Library", "coords": [3232, 12526, 0] },
     { "name": "Grand Tree", "coords": [2464, 3501, 0] },
     { "name": "Grand Tree Tunnels", "coords": [2463, 9887, 0] },
-    { "name": "Gravedigger random event", "coords": [1926, 4999, 0] },
-    { "name": "Graveyard", "coords": [3569, 3404, 0] },
-    { "name": "Graveyard of Heroes", "coords": [1481, 3558, 0] },
+    { "name": "Graveyard (Desert Treasure)", "coords": [3569, 3404, 0] },
     { "name": "Graveyard of Shadows", "coords": [3164, 3672, 0] },
     { "name": "Great Olm", "coords": [3232, 5731, 0] },
     {
@@ -465,27 +424,18 @@
     { "name": "Hangar cutscene (Monkey Madness I)", "coords": [2583, 4514, 0] },
     { "name": "Harmony", "coords": [3801, 2858, 0] },
     {
-      "name": "Harmony lighthouse basement (The Great Brain Robbery)",
+      "name": "Harmony lighthouse basement & Underwater Tunnel (The Great Brain Robbery)",
       "coords": [3785, 9221, 0]
     },
     { "name": "Haunted Woods", "coords": [3564, 3490, 0] },
     {
-      "name": "Head and Tentacles (Temple Trekking)",
-      "coords": [2062, 5032, 0]
-    },
-    {
       "name": "Headless Beast's lair (Getting Ahead)",
       "coords": [1191, 10019, 0]
     },
-    { "name": "Hemenster", "coords": [2634, 3437, 0] },
+    { "name": "Hemenster & Ranging Guild", "coords": [2634, 3437, 0] },
     { "name": "Here be penguins", "coords": [2615, 3958, 0] },
-    { "name": "Heroes' Guild", "coords": [2896, 3510, 0] },
-    { "name": "Heroes' Guild basement", "coords": [2915, 9900, 0] },
+    { "name": "Heroes' Guild basement & Witch's House basement", "coords": [2915, 9900, 0] },
     { "name": "Hespori lair", "coords": [1247, 10086, 0] },
-    {
-      "name": "Hopelessness Room 1 (A Soul's Bane)",
-      "coords": [3057, 5231, 0]
-    },
     {
       "name": "Hopelessness Room 2 (A Soul's Bane)",
       "coords": [3087, 5199, 0]
@@ -494,10 +444,8 @@
     { "name": "House on the Hill", "coords": [3779, 3873, 0] },
     { "name": "Iban's lair (Underground Pass)", "coords": [2144, 4640, 0] },
     { "name": "Iban's lair after quest (Regicide)", "coords": [2015, 4704, 0] },
-    { "name": "Iban's Lair Lower Level", "coords": [2335, 9855, 0] },
-    { "name": "Ice Mountain", "coords": [3007, 3481, 0] },
+    { "name": "Iban's Lair Lower Level / Klank's area (Underground Pass)", "coords": [2335, 9855, 0] },
     { "name": "Ice path", "coords": [2854, 3808, 0] },
-    { "name": "Ice Queen's lair", "coords": [2865, 9954, 0] },
     { "name": "Ice Queen's Lair (Heroes' Quest)", "coords": [2852, 9936, 0] },
     {
       "name": "Ice Troll Caves (The Fremennik Isles)",
@@ -509,21 +457,18 @@
       "name": "Inaccessible sewers (\"Lenny ladder\")",
       "coords": [2535, 9646, 0]
     },
-    { "name": "Infirmary", "coords": [1519, 3619, 0] },
     {
       "name": "Iorwerth Camp Dungeon (Song of the Elves)",
       "coords": [2200, 9675, 0]
     },
     { "name": "Iorwerth Dungeon", "coords": [3220, 12421, 0] },
     { "name": "Isafdar", "coords": [2244, 3180, 0] },
-    { "name": "Isle of Souls", "coords": [2209, 2875, 0] },
+    { "name": "Isle of Souls & Soul Wars Lobby", "coords": [2209, 2875, 0] },
     { "name": "Isle of Souls Dungeon", "coords": [2143, 9313, 0] },
     {
       "name": "Ivan Strom trekking (In Aid of the Myreque)",
       "coords": [2847, 4575, 0]
     },
-    { "name": "Jail", "coords": [3125, 3242, 0] },
-    { "name": "Jail (King's Ransom)", "coords": [1900, 4270, 0] },
     {
       "name": "Jaldraocht Pyramid level 1 (Desert Treasure)",
       "coords": [2917, 4953, 3]
@@ -547,8 +492,6 @@
       "name": "Jiggig Burial Tomb (Zogre Flesh Eaters)",
       "coords": [2466, 9439, 0]
     },
-    { "name": "Jiggig Dungeon (bottom level)", "coords": [2465, 9441, 0] },
-    { "name": "Jiggig Dungeon (middle level)", "coords": [2465, 9441, 2] },
     {
       "name": "Jormungand's Prison (The Fremennik Exiles)",
       "coords": [2448, 10415, 0]
@@ -557,33 +500,27 @@
       "name": "Judge of Yama battle (A Kingdom Divided)",
       "coords": [1674, 5920, 0]
     },
-    { "name": "Jungle eagle cave", "coords": [2518, 9322, 0] },
+    { "name": "Jungle eagle cave & Red chinchompa hunting ground", "coords": [2518, 9322, 0] },
     { "name": "Kalphite Cave", "coords": [3298, 9500, 0] },
     { "name": "Kalphite Lair (1)", "coords": [3226, 3106, 0] },
     { "name": "Kalphite Lair (2)", "coords": [3486, 9499, 0] },
     { "name": "Karamja", "coords": [2859, 3043, 0] },
-    { "name": "Karamja Dungeon", "coords": [2840, 9571, 0] },
     { "name": "Karamjan Temple (Dragon Slayer II)", "coords": [2847, 9247, 0] },
     { "name": "Karuulm Slayer Dungeon", "coords": [1312, 10222, 0] },
-    { "name": "Kebos Lowlands", "coords": [1258, 3645, 0] },
-    { "name": "Kebos Swamp", "coords": [1254, 3619, 0] },
-    { "name": "Keep Le Faye", "coords": [2769, 3399, 0] },
+    { "name": "Kebos Lowlands & Kebos Swamp", "coords": [1258, 3645, 0] },
     { "name": "Keep Le Faye (King's Ransom)", "coords": [1695, 4254, 0] },
     { "name": "Keldagrim (1)", "coords": [2855, 10175, 0] },
     { "name": "Keldagrim (2)", "coords": [2879, 10178, 0] },
     { "name": "Keldagrim Entrance", "coords": [2725, 3712, 0] },
     { "name": "Keldagrim Rat Pits", "coords": [1946, 4699, 0] },
-    { "name": "Keldagrim train station", "coords": [2439, 5531, 0] },
     { "name": "Keldagrim tunnel", "coords": [2783, 10142, 0] },
     { "name": "KGP headquarters (Cold War)", "coords": [2657, 10396, 0] },
     { "name": "Kharazi Jungle", "coords": [2833, 2922, 0] },
     { "name": "Kharidian Desert", "coords": [3264, 2960, 0] },
     { "name": "King Black Dragon lair", "coords": [2270, 4695, 0] },
     { "name": "Kingdom of Asgarnia", "coords": [2991, 3405, 0] },
-    { "name": "Kingdom of Great Kourend", "coords": [1604, 3692, 0] },
-    { "name": "Kingdom of Kandarin", "coords": [2572, 3445, 0] },
+    { "name": "Kingdom of Great Kourend & Kourend Castle", "coords": [1604, 3692, 0] },
     { "name": "Kingdom of Misthalin", "coords": [3215, 3318, 0] },
-    { "name": "Klank's area (Underground Pass)", "coords": [2335, 9854, 0] },
     {
       "name": "Klenter's Pyramid (A Tail of Two Cats)",
       "coords": [3293, 9189, 0]
@@ -592,7 +529,6 @@
       "name": "Koschei the deathless (The Fremennik Trials)",
       "coords": [2655, 10081, 0]
     },
-    { "name": "Kourend Castle", "coords": [1624, 3672, 0] },
     { "name": "Kourend Woodland", "coords": [1543, 3466, 0] },
     { "name": "Kraken Cove", "coords": [2272, 10014, 0] },
     { "name": "Kruk's Dungeon (Monkey Madness II)", "coords": [2589, 9148, 1] },
@@ -621,14 +557,12 @@
     { "name": "Lava Maze Dungeon", "coords": [3040, 10272, 0] },
     { "name": "Law altar", "coords": [2463, 4832, 0] },
     { "name": "Legends' Guild", "coords": [2730, 3377, 0] },
-    { "name": "Legends' Guild basement", "coords": [2716, 9755, 0] },
-    { "name": "Legends' Guild Dungeon", "coords": [2720, 9754, 0] },
+    { "name": "Legends' Guild Dungeon (basement)", "coords": [2720, 9754, 0] },
     { "name": "Library", "coords": [1619, 3821, 0] },
-    { "name": "Library Historical Archive", "coords": [1552, 10223, 0] },
+    { "name": "Library Historical Archive & Tower of Magic prison (Tale of the Righteous)", "coords": [1552, 10223, 0] },
     { "name": "Lighthouse", "coords": [2510, 3626, 0] },
     { "name": "Lighthouse (Horror from the Deep)", "coords": [2460, 4575, 0] },
     { "name": "Lighthouse Dungeon", "coords": [2518, 10021, 0] },
-    { "name": "Lighthouse Dungeon (after quest)", "coords": [2519, 10017, 0] },
     {
       "name": "Lighthouse Dungeon (during Horror from the Deep)",
       "coords": [2518, 4638, 0]
@@ -666,7 +600,6 @@
     { "name": "Lovakite mine", "coords": [1426, 3833, 0] },
     { "name": "Lumber Yard", "coords": [3305, 3505, 0] },
     { "name": "Lumbridge", "coords": [3224, 3218, 0] },
-    { "name": "Lumbridge Basement", "coords": [3213, 9620, 0] },
     { "name": "Lumbridge Castle basement", "coords": [3213, 9618, 0] },
     {
       "name": "Lumbridge Guide Quiz (Recipe for Disaster)",
@@ -686,21 +619,19 @@
     { "name": "Lunar Isle mine", "coords": [2336, 10336, 2] },
     { "name": "Mage Arena", "coords": [3105, 3932, 0] },
     { "name": "Mage Arena bank", "coords": [2526, 4705, 0] },
-    { "name": "Mage Training Arena (1)", "coords": [3363, 3304, 0] },
-    { "name": "Mage Training Arena (2)", "coords": [3364, 9639, 0] },
-    { "name": "Mage Training Arena Rooms", "coords": [3357, 9666, 0] },
+    { "name": "Mage Training Arena", "coords": [3363, 3304, 0] },
+    { "name": "Mage Training Arena Alchemist's Playground, Creature Graveyard, Enchanting Chamber", "coords": [3364, 9639, 0] },
     {
-      "name": "Mage Training Arena Teleinetic Theatre",
+      "name": "Mage Training Arena Telekinetic Theatre",
       "coords": [3359, 9696, 0]
     },
     { "name": "Marim", "coords": [2760, 2783, 0] },
-    { "name": "Market", "coords": [3082, 3246, 0] },
     { "name": "Mausoleum", "coords": [3503, 3572, 0] },
     { "name": "Maze random event", "coords": [2914, 4576, 0] },
     { "name": "McGrubor's Wood", "coords": [2641, 3480, 0] },
     { "name": "Meiyerditch", "coords": [3618, 3259, 0] },
     { "name": "Meiyerditch Laboratories", "coords": [3587, 9754, 0] },
-    { "name": "Meiyerditch Myreque Hideout", "coords": [3628, 9630, 0] },
+    { "name": "Meiyerditch Myreque Hideout & Old Man Ral Myreque Hideout", "coords": [3628, 9630, 0] },
     { "name": "Melzar's Maze", "coords": [2933, 3248, 0] },
     {
       "name": "Melzar's Maze Dungeon (Dragon Slayer I)",
@@ -716,17 +647,13 @@
       "name": "Miscellania & Etceteria Dungeon (Royal Trouble)",
       "coords": [2559, 10273, 0]
     },
-    { "name": "Miscellania and Etceteria Dungeon", "coords": [2558, 10276, 0] },
     {
       "name": "Misthalin Manor (Misthalin Mystery)",
       "coords": [1665, 4821, 0]
     },
-    { "name": "Mogre Camp", "coords": [2974, 9496, 1] },
     { "name": "Mogre Camp (Recipe for Disaster)", "coords": [2977, 9502, 0] },
     { "name": "Molch", "coords": [1313, 3669, 0] },
-    { "name": "Monastery", "coords": [2602, 3215, 0] },
-    { "name": "Monastery", "coords": [3052, 3487, 0] },
-    { "name": "Mor Ul Rek", "coords": [2494, 5124, 0] },
+    { "name": "Mor Ul Rek (TzHaar City)", "coords": [2494, 5124, 0] },
     { "name": "Mort Myre Myreque Hideout", "coords": [3479, 9821, 0] },
     { "name": "Mort Myre Swamp", "coords": [3440, 3380, 0] },
     { "name": "Mort'ton", "coords": [3487, 3283, 0] },
@@ -743,7 +670,6 @@
     { "name": "Mount Quidamortem", "coords": [1244, 3558, 0] },
     { "name": "Mountain Camp", "coords": [2801, 3670, 0] },
     { "name": "Mourner Tunnels", "coords": [1984, 4636, 0] },
-    { "name": "Mouse Hole", "coords": [2280, 5535, 0] },
     { "name": "Mouse Hole (Grim Tales)", "coords": [2278, 5533, 0] },
     { "name": "Mudskipper Point", "coords": [2992, 3116, 0] },
     { "name": "Musa Point", "coords": [2897, 3161, 0] },
@@ -759,10 +685,10 @@
       "name": "Naval Assault part 2 (Dragon Slayer II)",
       "coords": [1661, 5700, 0]
     },
-    { "name": "Necromancer", "coords": [2669, 3241, 0] },
+    { "name": "Necromancer & Tower of Life", "coords": [2669, 3241, 0] },
     { "name": "Necropolis", "coords": [3334, 2732, 0] },
     { "name": "Neitiznot", "coords": [2317, 3818, 0] },
-    { "name": "Nightmare Zone", "coords": [2603, 3115, 0] },
+    { "name": "Nightmare Zone & Wizards' Guild", "coords": [2603, 3115, 0] },
     {
       "name": "Nylocas Vasilias (Theatre of Blood)",
       "coords": [3296, 4258, 0]
@@ -770,12 +696,9 @@
     { "name": "Obor's lair", "coords": [3091, 9803, 0] },
     { "name": "Observatory", "coords": [2441, 3157, 0] },
     { "name": "Observatory Dungeon", "coords": [2334, 9375, 0] },
-    { "name": "Ogre Enclave", "coords": [2592, 9444, 0] },
     { "name": "Ogre Enclave (Watchtower)", "coords": [2592, 9442, 0] },
-    { "name": "Old Man Ral Myreque Hideout", "coords": [3598, 9613, 0] },
     { "name": "Old School Museum", "coords": [3040, 9951, 0] },
     { "name": "Original KBD Lair", "coords": [2718, 9816, 0] },
-    { "name": "Otto's Grotto", "coords": [2502, 3488, 0] },
     { "name": "Ourania Cave", "coords": [3036, 5610, 0] },
     { "name": "Outpost", "coords": [2441, 3345, 0] },
     { "name": "Palace", "coords": [3212, 3479, 0] },
@@ -784,13 +707,13 @@
       "name": "Paterdomus library (In Aid of the Myreque)",
       "coords": [3356, 9902, 0]
     },
+    { "name": "Paterdomus Temple", "coords": [3414, 3487, 0] },
     { "name": "Pest Control", "coords": [2656, 2593, 0] },
     { "name": "Pestilent Bloat (Theatre of Blood)", "coords": [3296, 4449, 0] },
     {
       "name": "Phoenix Gang Hideout (Shield of Arrav)",
       "coords": [3247, 9772, 0]
     },
-    { "name": "Pinball random event", "coords": [1973, 5045, 0] },
     { "name": "Pirate battle (Cabin Fever)", "coords": [1822, 4829, 0] },
     { "name": "Pirate's Cove", "coords": [2205, 3817, 0] },
     { "name": "Pirates' Hideout", "coords": [3041, 3950, 0] },
@@ -800,13 +723,11 @@
     { "name": "Polar eagle cave", "coords": [2722, 10210, 0] },
     { "name": "Pollnivneach", "coords": [3352, 2977, 0] },
     { "name": "Port Khazard", "coords": [2655, 3185, 0] },
-    { "name": "Port Phasmatys", "coords": [3674, 3486, 0] },
     { "name": "Port Phasmatys brewery", "coords": [3680, 9958, 0] },
     { "name": "Port Piscarilius", "coords": [1825, 3700, 0] },
     { "name": "Port Sarim", "coords": [3044, 3218, 0] },
     { "name": "Port Sarim Rat Pits", "coords": [2982, 9637, 0] },
     { "name": "Port Tyras", "coords": [2150, 3122, 0] },
-    { "name": "Pothole Dungeon", "coords": [2845, 9505, 0] },
     { "name": "Pothole Dungeon (Jungle Potion)", "coords": [2847, 9502, 0] },
     { "name": "Prifddinas (1)", "coords": [3263, 6082, 0] },
     { "name": "Prifddinas (2)", "coords": [3264, 6082, 0] },
@@ -827,7 +748,6 @@
     },
     { "name": "Quizmaster random event", "coords": [1952, 4765, 0] },
     { "name": "Raids", "coords": [3312, 5295, 0] },
-    { "name": "Ranging Guild", "coords": [2666, 3429, 0] },
     {
       "name": "Ranis Drakan battle (A Taste of Hope)",
       "coords": [2075, 4891, 0]
@@ -842,20 +762,12 @@
     },
     { "name": "Rashiliyia's Tomb (Shilo Village)", "coords": [2914, 9501, 0] },
     { "name": "Ratcatchers Mansion", "coords": [2847, 5086, 0] },
-    { "name": "Red Base", "coords": [2287, 2907, 0] },
-    { "name": "Red chinchompa hunting ground", "coords": [2522, 9296, 0] },
-    {
-      "name": "Rehnison house basement (Song of the Elves)",
-      "coords": [2541, 9743, 0]
-    },
+    { "name": "Red Base, Eastern Graveyard, Avatar of Destruction (Soul Wars)", "coords": [2251, 2924, 0] },
     { "name": "Rellekka", "coords": [2668, 3676, 0] },
-    { "name": "Resource Area", "coords": [3185, 3934, 0] },
     { "name": "Revenant Caves", "coords": [3211, 10150, 0] },
     { "name": "Rimmington", "coords": [2957, 3215, 0] },
     { "name": "River Elid", "coords": [3372, 3074, 0] },
-    { "name": "River Lum", "coords": [3167, 3346, 0] },
     { "name": "River Molch", "coords": [1255, 3671, 0] },
-    { "name": "River puzzle (Temple Trekking)", "coords": [2089, 5013, 0] },
     { "name": "River Salve", "coords": [3403, 3442, 0] },
     {
       "name": "Robert the Strong battle (Dragon Slayer II)",
@@ -872,8 +784,6 @@
     { "name": "Temple Trekking (2)", "coords": [2191, 5038, 0] },
     { "name": "Temple Trekking (3)", "coords": [2256, 5037, 0] },
     { "name": "Temple Trekking (4)", "coords": [2319, 5037, 0] },
-    { "name": "Ruins (1)", "coords": [2967, 3695, 0] },
-    { "name": "Ruins (2)", "coords": [3164, 3734, 0] },
     { "name": "Ruins of Camdozaal", "coords": [2973, 5799, 0] },
     { "name": "Ruins of Morra", "coords": [1447, 3510, 0] },
     { "name": "Ruins of Ullek", "coords": [3408, 2830, 0] },
@@ -889,7 +799,6 @@
     { "name": "Scorpion Pit", "coords": [3232, 3942, 0] },
     { "name": "Scrubfoot's cave", "coords": [1938, 6220, 0] },
     { "name": "Sea Spirit Dock", "coords": [3131, 2839, 0] },
-    { "name": "Secret Hangar", "coords": [2391, 9890, 0] },
     { "name": "Seers' Village", "coords": [2701, 3483, 0] },
     { "name": "Serafina's house (A Taste of Hope)", "coords": [3596, 9673, 0] },
     { "name": "Settlement Ruins", "coords": [1558, 3891, 0] },
@@ -899,11 +808,10 @@
       "name": "Shaikahan battle (Tai Bwo Wannai Trio)",
       "coords": [2527, 4572, 0]
     },
-    { "name": "Shamans", "coords": [1433, 3708, 0] },
     { "name": "Shantay Pass", "coords": [3304, 3122, 0] },
-    { "name": "Shayzien", "coords": [1524, 3562, 0] },
+    { "name": "Shayzien Chapel & Graveyard of Heroes", "coords": [1524, 3562, 0] },
     { "name": "Shayzien Crypts (Dragon Slayer II)", "coords": [1504, 9958, 0] },
-    { "name": "Shayzien Prison", "coords": [1439, 9959, 0] },
+    { "name": "Shayzien Infirmary & War Tent", "coords": [1519, 3619, 0] },
     {
       "name": "Shayzien Prison (A Kingdom Divided)",
       "coords": [1438, 9950, 0]
@@ -925,32 +833,20 @@
     { "name": "Skavid caves (Watchtower)", "coords": [2529, 9440, 0] },
     { "name": "Skotizo's lair", "coords": [2272, 5664, 0] },
     { "name": "Slayer Tower", "coords": [3428, 3554, 0] },
-    { "name": "Slepe", "coords": [3719, 3328, 0] },
     { "name": "Smoke Devil Dungeon", "coords": [2390, 9441, 0] },
     { "name": "Smoke Dungeon", "coords": [3265, 9373, 0] },
-    { "name": "Snakes, Route 1 (Temple Trekking)", "coords": [2383, 5037, 0] },
-    { "name": "Snakes, Route 2 (Temple Trekking)", "coords": [2415, 5037, 0] },
-    { "name": "Snakes, Route 3 (Temple Trekking)", "coords": [2395, 5010, 0] },
+    { "name": "Snakes (Temple Trekking)", "coords": [2383, 5037, 0] },
     { "name": "Sophanem", "coords": [3296, 2780, 0] },
-    { "name": "Sophanem Bank", "coords": [2799, 5166, 0] },
     { "name": "Sophanem Bank (Contact!)", "coords": [2765, 5137, 0] },
-    { "name": "Sophanem Dungeon (Contact!)", "coords": [3263, 9247, 0] },
     { "name": "Sophanem Slayer Dungeon (1)", "coords": [3262, 9245, 0] },
     { "name": "Sophanem Slayer Dungeon (2)", "coords": [3294, 9246, 2] },
-    { "name": "Sorcerer's Tower", "coords": [2702, 3404, 0] },
     { "name": "Sorceress's Garden", "coords": [2909, 5472, 0] },
     { "name": "Sotetseg (Theatre of Blood)", "coords": [3278, 4314, 0] },
-    { "name": "Soul Obelisk", "coords": [2206, 2910, 0] },
-    { "name": "Soul Wars Arena", "coords": [2204, 2934, 0] },
+    { "name": "Soul Obelisk & Soul Wars Arena", "coords": [2206, 2910, 0] },
     { "name": "Soul Wars instance", "coords": [2023, 5958, 0] },
-    { "name": "Soul Wars Lobby", "coords": [2209, 2846, 0] },
     {
       "name": "Sourhog Cave (A Porcine of Interest)",
       "coords": [3167, 9690, 0]
-    },
-    {
-      "name": "Southern Ardougne Sewers (Hazeel Cult)",
-      "coords": [2606, 9680, 0]
     },
     { "name": "Spider", "coords": [3320, 3756, 0] },
     {
@@ -969,26 +865,9 @@
       "name": "Stronghold of Security - Vault of War",
       "coords": [1884, 5218, 0]
     },
-    {
-      "name": "Stronghold of Security – Catacomb of Famine",
-      "coords": [2016, 5216, 0]
-    },
-    {
-      "name": "Stronghold of Security – Pit of Pestilence",
-      "coords": [2145, 5279, 0]
-    },
-    {
-      "name": "Stronghold of Security – Sepulchre of Death",
-      "coords": [2335, 5218, 0]
-    },
-    {
-      "name": "Stronghold of Security – Vault of War",
-      "coords": [1886, 5217, 0]
-    },
     { "name": "Stronghold Slayer Cave", "coords": [2435, 9806, 0] },
     { "name": "Sulphur mine", "coords": [1447, 3879, 0] },
     { "name": "Surprise Exam random event", "coords": [1886, 5023, 0] },
-    { "name": "Swamp", "coords": [2418, 3511, 0] },
     {
       "name": "Swensen's puzzle (The Fremennik Trials)",
       "coords": [2647, 10020, 0]
@@ -1004,15 +883,12 @@
     { "name": "Taverley", "coords": [2896, 3455, 0] },
     { "name": "Taverley Dungeon (1)", "coords": [2886, 9811, 0] },
     { "name": "Taverley Dungeon (2)", "coords": [2896, 9776, 0] },
-    { "name": "Temple", "coords": [3414, 3487, 0] },
     { "name": "Temple of Ikov", "coords": [2649, 9854, 0] },
-    { "name": "Temple of Ikov basement", "coords": [2682, 9853, 0] },
     { "name": "Temple of Light", "coords": [1890, 4638, 0] },
     {
       "name": "Temple of Light cutscenes (Song of the Elves)",
       "coords": [3197, 5922, 0]
     },
-    { "name": "Temple of Marimbo Dungeon", "coords": [2784, 9184, 0] },
     {
       "name": "Temple of Marimbo Dungeon (Monkey Madness I)",
       "coords": [2783, 9181, 0]
@@ -1041,7 +917,7 @@
     { "name": "The Warrens", "coords": [1776, 10143, 0] },
     { "name": "Theatre of Blood rewards room", "coords": [3236, 4318, 0] },
     { "name": "Tirannwn", "coords": [2240, 3263, 0] },
-    { "name": "Tirannwn leaf trap pitfalls", "coords": [2337, 9656, 0] },
+    { "name": "Tirannwn leaf trap pitfalls & Well of Voyage", "coords": [2337, 9656, 0] },
     {
       "name": "Titanic cutscene (A Tail of Two Cats)",
       "coords": [2020, 4887, 0]
@@ -1050,19 +926,13 @@
     { "name": "Toll Gate", "coords": [3271, 3226, 0] },
     { "name": "Tolna battle (A Soul's Bane)", "coords": [2978, 5212, 1] },
     { "name": "Tolna's Rift", "coords": [3297, 9824, 0] },
-    { "name": "Tomb of Bervirius (Shilo Village)", "coords": [2763, 9374, 0] },
+    { "name": "Tomb of Bervirius / Cairn Island Dungeon (Shilo Village)", "coords": [2763, 9374, 0] },
     {
       "name": "Tomb of Ivandis (In Aid of the Myreque)",
       "coords": [3501, 9864, 0]
     },
-    { "name": "Tower of Life", "coords": [2648, 3215, 0] },
     { "name": "Tower of Magic", "coords": [1579, 3818, 0] },
-    {
-      "name": "Tower of Magic prison (Tale of the Righteous)",
-      "coords": [1577, 10199, 0]
-    },
     { "name": "Trahaearn mine", "coords": [3296, 12451, 0] },
-    { "name": "Trawler", "coords": [2683, 3166, 0] },
     { "name": "Tree Gnome Stronghold", "coords": [2430, 3447, 0] },
     { "name": "Tree Gnome Village", "coords": [2527, 3166, 0] },
     { "name": "Tree Gnome Village Dungeon", "coords": [2526, 9555, 0] },
@@ -1070,7 +940,6 @@
       "name": "Tree Gnome Village Dungeon (Roving Elves)",
       "coords": [2592, 4446, 0]
     },
-    { "name": "Troll Cave", "coords": [2934, 10083, 0] },
     { "name": "Troll Stronghold (outside)", "coords": [2832, 3682, 0] },
     { "name": "Troll Stronghold (inside)", "coords": [2850, 10082, 0] },
     { "name": "Trollheim", "coords": [2891, 3676, 0] },
@@ -1080,7 +949,6 @@
     { "name": "Tutorial Island ", "coords": [3101, 3094, 0] },
     { "name": "Tutorial Island mine", "coords": [3095, 9507, 0] },
     { "name": "Tyras Camp", "coords": [2186, 3146, 0] },
-    { "name": "TzHaar City", "coords": [2451, 5146, 0] },
     { "name": "Underground Pass (entrance)", "coords": [2449, 3312, 0] },
     { "name": "Underground Pass", "coords": [2435, 9660, 0] },
     { "name": "Underground Pass Area 1", "coords": [2464, 9700, 0] },
@@ -1089,10 +957,6 @@
     {
       "name": "Underground Pass battle (Song of the Elves)",
       "coords": [2462, 6149, 0]
-    },
-    {
-      "name": "Underwater Tunnel (The Great Brain Robbery)",
-      "coords": [3808, 9254, 0]
     },
     { "name": "Ungael", "coords": [2271, 4065, 0] },
     {
@@ -1106,12 +970,9 @@
     { "name": "Varrock Museum basement fossils", "coords": [1631, 4959, 0] },
     { "name": "Varrock rat pits", "coords": [2909, 5093, 0] },
     { "name": "Varrock Sewers", "coords": [3225, 9887, 0] },
-    { "name": "Varrock west bank basement", "coords": [3191, 9826, 0] },
     { "name": "Ver Sinhaza", "coords": [3662, 3218, 0] },
     { "name": "Verzik Vitur (Theatre of Blood)", "coords": [3168, 4312, 0] },
     { "name": "Vinery", "coords": [1814, 3544, 0] },
-    { "name": "Viyeldi caves", "coords": [2398, 4717, 0] },
-    { "name": "Viyeldi caves (2)", "coords": [2782, 9315, 0] },
     {
       "name": "Viyeldi caves bottom floor (Legends' Quest)",
       "coords": [2401, 4706, 0]
@@ -1123,8 +984,6 @@
     { "name": "Void Knights' Outpost", "coords": [2639, 2674, 0] },
     { "name": "Volcanic Mine", "coords": [3808, 10171, 0] },
     { "name": "Volcano", "coords": [3778, 3778, 0] },
-    { "name": "Vultures", "coords": [3337, 2868, 0] },
-    { "name": "War Tent", "coords": [1484, 3636, 0] },
     { "name": "Warped Library (Song of the Elves)", "coords": [2622, 6158, 0] },
     { "name": "Warriors' Guild", "coords": [2855, 3543, 0] },
     { "name": "Warriors' Guild basement", "coords": [2923, 9965, 0] },
@@ -1136,17 +995,8 @@
     },
     { "name": "Waterbirth Dungeon (1)", "coords": [2495, 10144, 0] },
     { "name": "Waterbirth Dungeon (2)", "coords": [1895, 4367, 0] },
-    { "name": "Waterbirth Dungeon (3)", "coords": [1895, 4367, 1] },
-    { "name": "Waterbirth Dungeon (4)", "coords": [1895, 4367, 2] },
-    { "name": "Waterbirth Dungeon (5)", "coords": [1895, 4367, 3] },
-    { "name": "Waterbirth Dungeon (6)", "coords": [2912, 4448, 0] },
+    { "name": "Waterbirth Dungeon (3) & Dagannoth Kings", "coords": [2912, 4448, 0] },
     { "name": "Waterbirth Island", "coords": [2521, 3757, 0] },
-    { "name": "Waterbirth Island Dungeon", "coords": [2497, 10145, 0] },
-    {
-      "name": "Waterbirth Island Dungeon deeper area",
-      "coords": [1888, 4382, 0]
-    },
-    { "name": "Waterfall Dungeon", "coords": [2577, 9890, 0] },
     { "name": "Waterfall Dungeon (flooded)", "coords": [2539, 9900, 0] },
     {
       "name": "Waterfall Dungeon (Waterfall Quest)",
@@ -1164,36 +1014,29 @@
       "name": "Weiss underground (Making Friends with My Arm)",
       "coords": [2726, 5797, 0]
     },
-    { "name": "Well of Voyage", "coords": [2334, 9623, 0] },
     { "name": "Werewolf Agility Course", "coords": [3551, 9886, 0] },
     { "name": "West Ardougne", "coords": [2524, 3305, 0] },
     { "name": "West Ardougne prison (Plague City)", "coords": [2539, 9671, 0] },
     {
-      "name": "Western Ardougne Sewers (Plague City)",
+      "name": "Western Ardougne Sewers (Plague City) & Rehnison house basement (Song of the Elves)",
       "coords": [2514, 9757, 0]
     },
-    { "name": "Western Graveyard", "coords": [2161, 2898, 0] },
-    { "name": "White Knights' Castle", "coords": [2969, 3341, 0] },
     { "name": "White Knights' Castle Crypt", "coords": [2966, 9735, 0] },
     { "name": "White Wolf Mountain", "coords": [2847, 3494, 0] },
     { "name": "White Wolf Mountain passage", "coords": [2851, 9873, 0] },
-    { "name": "Wilderness", "coords": [3144, 3775, 0] },
-    { "name": "Wilderness Agility Course", "coords": [2998, 3952, 0] },
+    { "name": "Wilderness Ruins (1)", "coords": [2967, 3695, 0] },
+    { "name": "Wilderness Ruins (2) (Centre of wilderness)", "coords": [3144, 3775, 0] },
     { "name": "Wilderness Agility Course Dungeon", "coords": [2999, 10349, 0] },
     { "name": "Wilderness God Wars Dungeon", "coords": [3040, 10136, 0] },
     { "name": "Wilderness Slayer Cave (1)", "coords": [3392, 10102, 0] },
     { "name": "Wilderness Slayer Cave (2)", "coords": [3391, 10103, 0] },
     { "name": "Wintertodt", "coords": [1630, 4004, 0] },
-    { "name": "Witch's House basement", "coords": [2911, 9868, 0] },
     { "name": "Witchaven", "coords": [2709, 3289, 0] },
-    { "name": "Witchaven Dungeon (1)", "coords": [2722, 9689, 0] },
-    { "name": "Witchaven Dungeon (2)", "coords": [2329, 5097, 0] },
     { "name": "Witchaven Dungeon (Family Crest)", "coords": [2722, 9690, 0] },
     {
       "name": "Witchaven Dungeon (The Slug Menace)",
       "coords": [2335, 5086, 0]
     },
-    { "name": "Wizards' Guild", "coords": [2583, 3078, 0] },
     { "name": "Wizards' Tower", "coords": [3110, 3157, 0] },
     { "name": "Wizards' Tower basement", "coords": [3108, 9565, 0] },
     { "name": "Woodcutting Guild", "coords": [1612, 3492, 0] },
@@ -1210,8 +1053,7 @@
     },
     { "name": "Xeric's Shrine", "coords": [1310, 3619, 0] },
     { "name": "Yanille", "coords": [2554, 3089, 0] },
-    { "name": "Yanille Agility Dungeon (1)", "coords": [2581, 9499, 0] },
-    { "name": "Yanille Agility Dungeon (2)", "coords": [2580, 9577, 0] },
+    { "name": "Yanille Agility Dungeon", "coords": [2581, 9499, 0] },
     { "name": "Yanille Agility Dungeon basement", "coords": [2560, 9536, 0] },
     { "name": "Zalcano", "coords": [3032, 6048, 0] },
     { "name": "Zanaris", "coords": [2415, 4455, 0] },
