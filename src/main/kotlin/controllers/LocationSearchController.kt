@@ -55,9 +55,12 @@ class LocationSearchController(
         preferredSize = Dimension(600, 400)
 
         val filterableLocations = FilteredListModel(::locationToString)
-        listLocations = JList(filterableLocations).apply {
+        listLocations = JList(filterableLocations)
+        val locationsScrollPane = JScrollPane(listLocations).apply {
             val borderColor = UIManager.getColor("InternalFrame.borderColor")
             border = BorderFactory.createMatteBorder(0, 1, 0, 0, borderColor)
+            // Hack to prevent the width jumping when the horizontal scrollbar appears
+            preferredSize = Dimension(1, 1)
         }
         listLocations.cellRenderer = LocationCell()
         txtSearchQuery = PlaceholderTextField("", "Lumbridge")
@@ -91,8 +94,8 @@ class LocationSearchController(
             GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
         )
         add(
-            JScrollPane(listLocations),
-            GridBagConstraints(1, 1, 1, 7, 1.5, 1.0, LINE_END, BOTH, inset, 0, 0)
+            locationsScrollPane,
+            GridBagConstraints(1, 1, 1, 7, 5.0, 1.0, LINE_END, BOTH, inset, 0, 0)
         )
         add(
             lblSearchQuery,
