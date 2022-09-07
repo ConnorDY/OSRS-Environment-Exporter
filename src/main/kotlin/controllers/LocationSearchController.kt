@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.worldRenderer.Constants.MAP_LENGTH
 import models.locations.Location
 import models.locations.Locations
+import org.slf4j.LoggerFactory
 import ui.FilteredListModel
 import ui.JLinkLabel
 import ui.NumericTextField
@@ -43,6 +44,7 @@ class LocationSearchController(
     title: String,
     private val loadRegionCallback: (Component, Int, Int) -> Boolean,
 ) : JDialog(owner, title) {
+    private val logger = LoggerFactory.getLogger(LocationSearchController::class.java)
     private val listLocations: JList<Location>
     private val txtSearchQuery: JTextField
     private val txtRadius: JFormattedTextField
@@ -168,6 +170,20 @@ class LocationSearchController(
                 this::class.java.getResource("/data/locations.json"),
                 Locations::class.java
             )
+
+        // Warn if some locations are duplicate.
+        val duplicateLocations = locations.locations.groupBy(::regionIdForLocation).filter { it.value.size > 1 }
+        if (duplicateLocations.isNotEmpty()) {
+            val duplicateLocationsString = duplicateLocations.map {
+                it.value.joinToString(
+                    ", ",
+                    prefix = "[",
+                    postfix = "]",
+                    transform = ::locationToString
+                )
+            }.joinToString("\n")
+            logger.warn("Duplicate locations found:\n$duplicateLocationsString")
+        }
 
         return locations.locations
     }
