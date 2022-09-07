@@ -17,7 +17,7 @@
 
 - Merge region load by ID and region search dialogs &ndash; [#137](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/137) @ScoreUnder
 
-- Add a command-line interface for scriptable exporting &ndash; [#139](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/139) @ ScoreUnder
+- Add a command-line interface for scriptable exporting &ndash; [#139](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/139) @ScoreUnder
 
 ### :bug: Bug Fixes
 
