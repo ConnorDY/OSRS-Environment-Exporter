@@ -2,8 +2,6 @@ package controllers.worldRenderer.entities
 
 class GameObject(
     val entity: Entity,
-    val x: Int,
-    val y: Int,
     val xWidth: Int,
     val yLength: Int,
 ) {

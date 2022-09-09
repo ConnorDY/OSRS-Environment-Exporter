@@ -83,7 +83,6 @@ abstract class AbstractPriorityRenderer : PriorityRenderer {
         sceneX: Int,
         sceneY: Int,
         height: Int,
-        objType: Int
     ) {
         val computeObj = renderable.computeObj
         computeObj.flags = renderable.renderFlags

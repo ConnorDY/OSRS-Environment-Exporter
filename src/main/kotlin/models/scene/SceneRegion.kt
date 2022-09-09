@@ -1,6 +1,5 @@
 package models.scene
 
-import cache.LocationType
 import cache.definitions.Location
 import cache.definitions.LocationsDefinition
 import cache.definitions.OverlayDefinition
@@ -183,7 +182,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         entity.model.offsetY = length * REGION_SIZE
         entity2?.model?.offsetX = width * REGION_SIZE
         entity2?.model?.offsetY = length * REGION_SIZE
-        tile.wall = WallObject(entity, entity2, LocationType.fromId(location.type)!!)
+        tile.wall = WallObject(entity, entity2)
         tile.locations.add(location)
 
         rescaleWall(tile, entity)
@@ -229,7 +228,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
 
         entity.model.offsetX = width * REGION_SIZE
         entity.model.offsetY = length * REGION_SIZE
-        tile.gameObjects.add(GameObject(entity, x, y, width, length))
+        tile.gameObjects.add(GameObject(entity, width, length))
         tile.locations.add(location)
     }
 
@@ -373,8 +372,8 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                     for (gameObject in tile.gameObjects) {
                         val model = gameObject.entity.model
                         if (!model.isLit) {
-                            val distanceOtherX = gameObject.x - x
-                            val distanceOtherY = gameObject.y - y
+                            val distanceOtherX = xi - x
+                            val distanceOtherY = yi - y
                             val widthDiff = gameObject.xWidth - width
                             val lengthDiff = gameObject.yLength - length
                             mergeNormals(

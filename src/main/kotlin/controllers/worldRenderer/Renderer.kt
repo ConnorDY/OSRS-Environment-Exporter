@@ -1,6 +1,5 @@
 package controllers.worldRenderer
 
-import cache.LocationType
 import cache.utils.ColorPalette
 import controllers.worldRenderer.helpers.AlphaMode
 import controllers.worldRenderer.helpers.Animator
@@ -523,7 +522,6 @@ class Renderer(
                 x,
                 y,
                 0,
-                LocationType.TILE_PAINT.id
             )
         }
 
@@ -534,7 +532,6 @@ class Renderer(
                 x,
                 y,
                 0,
-                LocationType.TILE_MODEL.id
             )
         }
 
@@ -545,7 +542,6 @@ class Renderer(
                 x,
                 y,
                 floorDecorationEntity.height,
-                LocationType.FLOOR_DECORATION.id
             )
         }
 
@@ -556,7 +552,6 @@ class Renderer(
                 x,
                 y,
                 wall.entity.height,
-                wall.type.id
             )
             if (wall.entity2 != null) {
                 priorityRenderer.positionRenderable(
@@ -564,7 +559,6 @@ class Renderer(
                     x,
                     y,
                     wall.entity2.height,
-                    wall.type.id
                 )
             }
         }
@@ -576,7 +570,6 @@ class Renderer(
                 x,
                 y,
                 wallDecorationEntity.height,
-                LocationType.INSIDE_WALL_DECORATION.id
             )
         }
 
@@ -587,7 +580,6 @@ class Renderer(
                 x,
                 y,
                 wallDecorationEntity2.height,
-                LocationType.INSIDE_WALL_DECORATION.id
             )
         }
 
@@ -597,7 +589,6 @@ class Renderer(
                 x,
                 y,
                 gameObject.entity.height,
-                LocationType.INTERACTABLE.id
             )
         }
     }

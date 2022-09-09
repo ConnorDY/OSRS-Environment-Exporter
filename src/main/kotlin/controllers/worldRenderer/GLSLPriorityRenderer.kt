@@ -110,12 +110,11 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
         sceneX: Int,
         sceneY: Int,
         height: Int,
-        objType: Int
     ) {
         val computeObj = renderable.computeObj
         if (!isUploaded(computeObj)) return
 
-        super.positionRenderable(renderable, sceneX, sceneY, height, objType)
+        super.positionRenderable(renderable, sceneX, sceneY, height)
         computeObj.idx = modelBuffers.targetBufferOffset
         modelBuffers.addTargetBufferOffset(computeObj.size * 3)
 

@@ -11,7 +11,7 @@ interface PriorityRenderer {
     fun beginUploading()
     fun getBuffersForRenderable(renderable: Renderable, faces: Int, hasUVs: Boolean): Pair<IntBuffer, FloatBuffer>
     fun finishUploading()
-    fun positionRenderable(renderable: Renderable, sceneX: Int, sceneY: Int, height: Int, objType: Int)
+    fun positionRenderable(renderable: Renderable, sceneX: Int, sceneY: Int, height: Int)
     fun finishPositioning()
     fun produceVertices(camera: Camera, currFrame: Int)
     fun draw()

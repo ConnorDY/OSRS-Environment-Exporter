@@ -35,11 +35,11 @@ class CPUNonPriorityRenderer : AbstractPriorityRenderer() {
         meshBuffers.flip()
     }
 
-    override fun positionRenderable(renderable: Renderable, sceneX: Int, sceneY: Int, height: Int, objType: Int) {
+    override fun positionRenderable(renderable: Renderable, sceneX: Int, sceneY: Int, height: Int) {
         val computeObj = renderable.computeObj
         if (!isUploaded(computeObj)) return
 
-        super.positionRenderable(renderable, sceneX, sceneY, height, objType)
+        super.positionRenderable(renderable, sceneX, sceneY, height)
 
         val buffer = meshBuffers.vertexBuffer.buffer
         val xOffset = computeObj.x
