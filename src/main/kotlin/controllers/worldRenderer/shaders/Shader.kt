@@ -45,13 +45,14 @@ class Shader {
                 val shader = glCreateShader(unit.type)
                 if (shader == 0)
                     throw ShaderException("Unable to create shader of type ${unit.type}")
-                val source: String = template.load(unit.filename)
+                val processedFile = template.load(unit.filename)
+                val source = processedFile.contents
                 glShaderSource(shader, source)
                 glCompileShader(shader)
                 if (glGetShaderi(shader, GL_COMPILE_STATUS) != GL_TRUE) {
                     val err: String = glGetShaderInfoLog(shader)
                     glDeleteShader(shader)
-                    throw ShaderException(err)
+                    throw ShaderException(reformatErrorString(err, processedFile))
                 }
                 glAttachShader(program, shader)
                 shaders[i++] = shader
@@ -80,7 +81,27 @@ class Shader {
         return program
     }
 
+    private fun reformatErrorString(
+        err: String,
+        processedFile: Template.ProcessedFile
+    ): String =
+        // Extract and transform line numbers from error
+        err.split('\n').joinToString("\n") {
+            val match = ERROR_LINE_REGEX.matchEntire(it)
+            if (match != null) {
+                val (line, column, message) = match.destructured
+                val lineNumber = line.toInt()
+                val columnNumber = column.toInt()
+                val lineNumInfo = processedFile.getLineNumber(lineNumber)
+                "${lineNumInfo.filename}:${lineNumInfo.logicalLine}($columnNumber):$message"
+            } else {
+                it
+            }
+        }
+
     companion object {
+        // Line format: `0:123(10): error: ...`
+        private val ERROR_LINE_REGEX = Regex("0:(\\d+)\\((\\d+)\\): (.*)")
         const val VERSION_HEADER = "#version 430\n"
         val PROGRAM = lazy {
             Shader()
