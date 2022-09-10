@@ -19,6 +19,7 @@ class ConfigOptions(private val configuration: Configuration) {
     val priorityRenderer = ConfigOption("priority-renderer", ConfigOptionType.Enumerated(PriorityRenderers::valueOf, PriorityRenderers.values(), PriorityRenderers::humanReadableName), if (isMacOS()) PriorityRenderers.CPU_NAIVE else PriorityRenderers.GLSL, "Sorting renderer", 'R')
     val alphaMode = ConfigOption("alpha-mode", ConfigOptionType.Enumerated(AlphaMode::valueOf, AlphaMode.values(), AlphaMode::humanReadableName), AlphaMode.ORDERED_DITHER, "Alpha mode", 'L')
     val sampleShading = ConfigOption("sample-shading", ConfigOptionType.boolean, false, "Sub-sample shading (GL4.0; makes hashed alpha look nicer)", 'S')
+    val fov = ConfigOption("fov", ConfigOptionType.double, 90.0, "Field of view (degrees)", 'V')
 
     val isMacOS = isMacOS()
 
@@ -31,6 +32,7 @@ class ConfigOptions(private val configuration: Configuration) {
         checkForUpdates,
         lastCheckedForUpdates,
         mouseWarping,
+        fov,
         antiAliasing,
         alphaMode,
         sampleShading,

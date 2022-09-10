@@ -4,6 +4,7 @@ open class ConfigOptionType<T>(val convToString: (T) -> String, val convFromStri
     companion object {
         val int = ConfigOptionType({ it.toString() }, { it.toInt() })
         val long = ConfigOptionType({ it.toString() }, { it.toLong() })
+        val double = ConfigOptionType({ it.toString() }, { it.toDouble() })
         val string = ConfigOptionType({ it }, { it })
         val boolean = ConfigOptionType({ it.toString() }, { it.toBooleanStrict() })
         val intToggle = ConfigOptionType({ it?.toString() ?: "off" }, { it.toIntOrNull() })

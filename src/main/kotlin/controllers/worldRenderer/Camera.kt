@@ -3,7 +3,7 @@ package controllers.worldRenderer
 class Camera {
     var pitchRads: Double = Math.PI * 0.2
     var yawRads: Double = 0.0
-    val scale = 550
+    var scale = 550
     var cameraX: Double = 0.0
     var cameraY: Double = 0.0
     var cameraZ: Double = -2500.0
