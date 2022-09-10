@@ -87,16 +87,15 @@ class Shader {
     ): String =
         // Extract and transform line numbers from error
         err.split('\n').joinToString("\n") {
-            val match = ERROR_LINE_REGEX.matchEntire(it)
-            if (match != null) {
-                val (line, column, message) = match.destructured
-                val lineNumber = line.toInt()
-                val columnNumber = column.toInt()
-                val lineNumInfo = processedFile.getLineNumber(lineNumber)
-                "${lineNumInfo.filename}:${lineNumInfo.logicalLine}($columnNumber):$message"
-            } else {
-                it
-            }
+            val match = ERROR_LINE_REGEX.matchEntire(it) ?: return@joinToString it
+
+            val (line, column, message) = match.destructured
+            val lineNumber = line.toInt()
+            if (lineNumber < 1) return@joinToString it
+
+            val columnNumber = column.toInt()
+            val lineNumInfo = processedFile.getLineNumber(lineNumber)
+            "${lineNumInfo.filename}:${lineNumInfo.logicalLine}($columnNumber):$message"
         }
 
     companion object {
