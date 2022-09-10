@@ -11,7 +11,9 @@ import java.awt.event.KeyListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
+import kotlin.math.cos
 import kotlin.math.pow
+import kotlin.math.sin
 
 class InputHandler internal constructor(
     private val parent: Component,
@@ -35,48 +37,50 @@ class InputHandler internal constructor(
     var mouseY = 0
     var baseSpeed = 1.0
 
+    private val sensitivity get() = Constants.UNIT // TODO: multiply by a configurable value
+
     fun tick(dt: Double) {
         if (dt > 1000) { // big lag spike, don't send the user flying
             frameRateModel.notifyNeedFrames()
             return
         }
-        val xVec = (-camera.yawSin).toDouble() / 65535
-        val yVec = camera.yawCos.toDouble() / 65535
-        val zVec = camera.pitchSin.toDouble() / 65535
+        val xVec = -sin(camera.yawRads)
+        val yVec = cos(camera.yawRads)
+        val zVec = sin(camera.pitchRads)
         var speed = baseSpeed
         if (isKeyHeld(KeyEvent.VK_SHIFT)) {
             speed *= 4
         }
         var motionTicked = false
         if (isKeyHeld(KeyEvent.VK_W)) {
-            camera.addX((dt * xVec * speed).toInt())
-            camera.addY((dt * yVec * speed).toInt())
-            camera.addZ((dt * zVec * speed).toInt())
+            camera.addX(dt * xVec * speed)
+            camera.addY(dt * yVec * speed)
+            camera.addZ(dt * zVec * speed)
             motionTicked = true
         }
         if (isKeyHeld(KeyEvent.VK_S)) {
-            camera.addX((-(dt * xVec * speed)).toInt())
-            camera.addY((-(dt * yVec * speed)).toInt())
-            camera.addZ((-(dt * zVec * speed)).toInt())
+            camera.addX(-(dt * xVec * speed))
+            camera.addY(-(dt * yVec * speed))
+            camera.addZ(-(dt * zVec * speed))
             motionTicked = true
         }
         if (isKeyHeld(KeyEvent.VK_A)) {
             // X uses yVec because we want to move perpendicular
-            camera.addX((-(dt * yVec * speed)).toInt())
-            camera.addY((dt * xVec * speed).toInt())
+            camera.addX(-(dt * yVec * speed))
+            camera.addY(dt * xVec * speed)
             motionTicked = true
         }
         if (isKeyHeld(KeyEvent.VK_D)) {
-            camera.addX((dt * yVec * speed).toInt())
-            camera.addY((-(dt * xVec * speed)).toInt())
+            camera.addX(dt * yVec * speed)
+            camera.addY(-(dt * xVec * speed))
             motionTicked = true
         }
         if (isKeyHeld(KeyEvent.VK_SPACE)) {
-            camera.addZ((-dt * speed).toInt())
+            camera.addZ(-dt * speed)
             motionTicked = true
         }
         if (isKeyHeld(KeyEvent.VK_X)) {
-            camera.addZ((dt * speed).toInt())
+            camera.addZ(dt * speed)
             motionTicked = true
         }
         if (motionTicked) {
@@ -98,7 +102,7 @@ class InputHandler internal constructor(
 
     override fun keyPressed(e: KeyEvent) {
         val code = e.keyCode
-        if (code >= 0 && code < keys.size)
+        if (code >= 0 && code < keys.size && keys[code] == STATE_RELEASED)
             keys[code] = STATE_PRESSED
 
         if (code in KeyEvent.VK_1..KeyEvent.VK_9) {
@@ -125,10 +129,10 @@ class InputHandler internal constructor(
 
     private fun handleCameraDrag(e: MouseEvent) {
         val dx = previousMouseX - e.x
-        camera.addYaw(dx)
+        camera.addYaw(dx * sensitivity)
 
         val dy = previousMouseY - e.y
-        camera.addPitch(-dy)
+        camera.addPitch(-dy * sensitivity)
     }
 
     override fun mouseClicked(e: MouseEvent) {

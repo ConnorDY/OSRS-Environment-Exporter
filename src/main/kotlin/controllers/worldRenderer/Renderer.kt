@@ -6,7 +6,6 @@ import controllers.worldRenderer.helpers.AlphaMode
 import controllers.worldRenderer.helpers.Animator
 import controllers.worldRenderer.helpers.AntiAliasingMode
 import controllers.worldRenderer.helpers.GpuFloatBuffer
-import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import models.DebugOptionsModel
@@ -87,7 +86,7 @@ import utils.Utils.isMacOS
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.nio.IntBuffer
+import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.min
 import kotlin.math.tan
@@ -125,7 +124,7 @@ class Renderer(
 
     private var textureArrayId = 0
     private var uniformBufferId = 0
-    private val uniformBuffer: IntBuffer = GpuIntBuffer.allocateDirect(5 + 3 + 1)
+    private val uniformBuffer: ByteBuffer = BufferUtils.createByteBuffer(5 * Double.SIZE_BYTES + (3 + 1) * Int.SIZE_BYTES)
     private val textureOffsets = FloatArray(256)
 
     private lateinit var priorityRenderer: PriorityRenderer
@@ -347,9 +346,9 @@ class Renderer(
             uploadSceneGPUHalf()
             if (shouldResetCamera) {
                 if (debugOptionsModel.resetCameraOnSceneChange.value.get()) {
-                    camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
-                    camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
-                    camera.cameraZ = -2500
+                    camera.cameraX = (Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE).toDouble()
+                    camera.cameraY = (Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE).toDouble()
+                    camera.cameraZ = -2500.0
                 }
                 shouldResetCamera = false
             }
@@ -442,16 +441,24 @@ class Renderer(
         // UBO
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
-        uniformBuffer
-            .put(camera.yaw)
-            .put(camera.pitch)
-            .put(camera.centerX)
-            .put(camera.centerY)
-            .put(camera.scale)
+        val doubles = uniformBuffer.asDoubleBuffer()
+        doubles
+            .put(camera.yawRads)
+            .put(camera.pitchRads)
             .put(camera.cameraX) // x
             .put(camera.cameraZ) // z
             .put(camera.cameraY) // y
+        // Ints
+        val doublesPosition = doubles.position() * Double.SIZE_BYTES
+        uniformBuffer.position(doublesPosition)
+        val ints = uniformBuffer.asIntBuffer()
+        ints
+            .put(camera.centerX)
+            .put(camera.centerY)
+            .put(camera.scale)
             .put(clientCycle) // currFrame
+        val intsPosition = ints.position() * Int.SIZE_BYTES
+        uniformBuffer.position(doublesPosition + intsPosition)
         uniformBuffer.flip()
         glBufferSubData(
             GL_UNIFORM_BUFFER,
@@ -682,8 +689,6 @@ class Renderer(
         uniformBufferId = glGenBuffers()
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
-        uniformBuffer.put(IntArray(9))
-        uniformBuffer.flip()
         glBufferData(GL_UNIFORM_BUFFER, uniformBuffer, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
     }
@@ -730,8 +735,8 @@ class Renderer(
         return Matrix4f()
             .scale(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
             .mul(Matrix4f(GpuFloatBuffer.allocateDirect(projectionMatrix.size).put(projectionMatrix).flip()))
-            .rotateX((-Math.PI + camera.pitch * Constants.UNIT).toFloat())
-            .rotateY((camera.yaw * Constants.UNIT).toFloat())
+            .rotateX((-Math.PI + camera.pitchRads).toFloat())
+            .rotateY(camera.yawRads.toFloat())
             .translate(-camera.cameraX.toFloat(), -camera.cameraZ.toFloat(), -camera.cameraY.toFloat())
             .get(projectionMatrix)
     }

@@ -29,7 +29,9 @@
 
 - Allow the user to specify a wider range of region IDs (our initial assumptions were too restrictive) &ndash; [#136](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/136) @ScoreUnder
 
-- Fixed texture brightness changing between multiple exports in the same session &ndash; [#138](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/138) @ScoreUnder
+- Fix texture brightness changing between multiple exports in the same session &ndash; [#138](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/138) @ScoreUnder
+
+- Fix jitter when moving in power saving mode, and camera axis lock when moving slowly &ndash; [#140](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/140) @ScoreUnder
 
 ## 2.2.0
 

@@ -5,6 +5,7 @@ import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.helpers.MeshBuffers
 import controllers.worldRenderer.helpers.ModelBuffers
 import controllers.worldRenderer.shaders.Shader
+import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11C.GL_CULL_FACE
 import org.lwjgl.opengl.GL11C.GL_TRIANGLES
 import org.lwjgl.opengl.GL11C.glDisable
@@ -33,6 +34,7 @@ import org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BARRIER_BIT
 import org.lwjgl.opengl.GL43C.GL_SHADER_STORAGE_BUFFER
 import org.lwjgl.opengl.GL43C.glDispatchCompute
 import org.slf4j.LoggerFactory
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 import kotlin.math.min
@@ -52,7 +54,7 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
     private val glSmallComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(Shader.createTemplate(512, 1))
     private val glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.value.compile(Shader.createTemplate(-1, -1))
 
-    private val uniformBuffer: IntBuffer = GpuIntBuffer.allocateDirect(5 + 3 + 1)
+    private val uniformBuffer: ByteBuffer = BufferUtils.createByteBuffer(5 * Double.SIZE_BYTES + (3 + 1) * Int.SIZE_BYTES)
     private val uniformBufferId = initUniformBuffer(uniformBuffer)
 
     private val uniBlockSmall = glGetUniformBlockIndex(glSmallComputeProgram, "uniforms")
@@ -65,12 +67,10 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
 
     override val needsStrictUVs get() = false
 
-    private fun initUniformBuffer(uniformBuffer: IntBuffer): GLBuffer {
+    private fun initUniformBuffer(uniformBuffer: ByteBuffer): GLBuffer {
         val uniformBufferId = glGenBuffers()
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
-        uniformBuffer.put(IntArray(9))
-        uniformBuffer.flip()
         glBufferData(GL_UNIFORM_BUFFER, uniformBuffer, GL_DYNAMIC_DRAW)
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
         return uniformBufferId
@@ -156,16 +156,23 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
         // UBO
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
-        uniformBuffer
-            .put(camera.yaw)
-            .put(camera.pitch)
-            .put(camera.centerX)
-            .put(camera.centerY)
-            .put(camera.scale)
+        val doubles = uniformBuffer.asDoubleBuffer()
+        doubles
+            .put(camera.yawRads)
+            .put(camera.pitchRads)
             .put(camera.cameraX) // x
             .put(camera.cameraZ) // z
             .put(camera.cameraY) // y
+        val doublesPosition = doubles.position() * Double.SIZE_BYTES
+        uniformBuffer.position(doublesPosition)
+        val ints = uniformBuffer.asIntBuffer()
+        ints
+            .put(camera.centerX)
+            .put(camera.centerY)
+            .put(camera.scale)
             .put(currFrame)
+        val intsPosition = ints.position() * Int.SIZE_BYTES
+        uniformBuffer.position(doublesPosition + intsPosition)
         uniformBuffer.flip()
         glBufferSubData(GL_UNIFORM_BUFFER, 0, uniformBuffer)
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
