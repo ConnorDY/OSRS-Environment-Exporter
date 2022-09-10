@@ -32,4 +32,6 @@ class SceneTile {
     var wallDisplacement: Int = 16
     val attachments: ArrayList<Pair<Attachment, Entity>> = ArrayList()
     val gameObjects: ArrayList<GameObject> = ArrayList()
+
+    val allEntities get() = attachments.map { it.second } + gameObjects.map { it.entity }
 }

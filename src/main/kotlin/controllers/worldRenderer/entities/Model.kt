@@ -63,6 +63,14 @@ class Model private constructor(
     private var xzMag = 0
     private var xyzMag = 0
     private var diagonalMag = 0
+    var boundingSphereRadiusSq = -1
+        get() {
+            if (field < 0) {
+                computeBounds()
+            }
+            return field
+        }
+        private set
 
     var sceneId = -1 // scene ID in which this model was rendered
 
@@ -76,6 +84,7 @@ class Model private constructor(
         maxXCoord = Int.MIN_VALUE
         maxZCoord = Int.MIN_VALUE
         minZCoord = Int.MAX_VALUE
+        var realMagSq = Int.MIN_VALUE
         for (i in 0 until modelDefinition.vertexCount) {
             val x = modelDefinition.vertexPositionsX[i]
             val y = modelDefinition.vertexPositionsY[i]
@@ -88,10 +97,12 @@ class Model private constructor(
             maxZCoord = max(maxZCoord, z)
             val mag = x * x + z * z
             xzMag = max(xzMag, mag)
+            realMagSq = max(realMagSq, mag + y * y)
         }
         xzMag = (sqrt(xzMag.toDouble()) + 0.99).toInt()
         xyzMag = (sqrt((xzMag * xzMag + height * height).toDouble()) + 0.99).toInt()
         diagonalMag = xyzMag + (sqrt((xzMag * xzMag + bottomY * bottomY).toDouble()) + 0.99).toInt()
+        boundingSphereRadiusSq = realMagSq
     }
 
     private fun unshareXZ() {

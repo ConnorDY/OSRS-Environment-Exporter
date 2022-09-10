@@ -150,6 +150,8 @@ class Renderer(
     private var glCanvas: AWTGLCanvas? = null
     private lateinit var inputHandler: InputHandler
 
+    private val viewProjectionMatrix = Matrix4f()
+
     private val pendingGlThreadActions = ConcurrentLinkedQueue<Runnable>()
     val sceneDrawListeners = ArrayList<SceneDrawListener>() // TODO concurrent?
 
@@ -251,6 +253,11 @@ class Renderer(
             // Things are split like this because the render function locks AWT.
             preDisplay()
             animator!!.doBeforeGlRender(::preDisplay)
+        }
+
+        val clickHandler = ClickHandler(scene, inputHandler)
+        animator!!.doBeforeGlRender {
+            clickHandler.handle(viewProjectionMatrix, canvasWidth, canvasHeight)
         }
 
         return glCanvas
@@ -669,8 +676,8 @@ class Renderer(
             canvasHeight.toFloat(),
             50.0f
         )
-        return Matrix4f()
-            .scale(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
+        return viewProjectionMatrix
+            .scaling(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
             .mul(Matrix4f(GpuFloatBuffer.allocateDirect(projectionMatrix.size).put(projectionMatrix).flip()))
             .rotateX((-Math.PI + camera.pitch * Constants.UNIT).toFloat())
             .rotateY((camera.yaw * Constants.UNIT).toFloat())

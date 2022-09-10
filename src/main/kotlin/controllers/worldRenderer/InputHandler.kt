@@ -134,6 +134,7 @@ class InputHandler internal constructor(
     override fun mouseClicked(e: MouseEvent) {
         if (e.button == MouseEvent.BUTTON1) {
             mouseClicked = true
+            frameRateModel.notifyNeedFrames()
         }
     }
 
