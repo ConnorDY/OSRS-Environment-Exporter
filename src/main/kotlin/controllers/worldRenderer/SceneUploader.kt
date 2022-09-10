@@ -81,40 +81,10 @@ class SceneUploader(private val debugOptionsModel: DebugOptionsModel) {
             upload(sceneTileModel, priorityRenderer)
         }
 
-        val wall = tile.wall
-        if (wall != null) {
-            val entity = wall.entity
-            if (entity is StaticObject) {
-                uploadModel(entity, priorityRenderer)
-            }
-            val entity2 = wall.entity2
-            if (entity2 is StaticObject) {
-                uploadModel(entity2, priorityRenderer)
-            }
-        }
+        val allEntities =
+            tile.attachments.map { it.second } + tile.gameObjects.map { it.entity }
 
-        val wallDecoration = tile.wallDecoration
-        if (wallDecoration != null) {
-            val entity = wallDecoration.entity
-            if (entity is StaticObject) {
-                uploadModel(entity, priorityRenderer)
-            }
-            val entity2 = wallDecoration.entity2
-            if (entity2 is StaticObject) {
-                uploadModel(entity2, priorityRenderer)
-            }
-        }
-
-        val floorDecoration = tile.floorDecoration
-        if (floorDecoration != null) {
-            val entity = floorDecoration.entity
-            if (entity is StaticObject) {
-                uploadModel(entity, priorityRenderer)
-            }
-        }
-
-        for (gameObject in tile.gameObjects) {
-            val entity = gameObject.entity
+        for (entity in allEntities) {
             if (entity is StaticObject) {
                 uploadModel(entity, priorityRenderer)
             }

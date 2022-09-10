@@ -118,24 +118,10 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             tile.tileModel?.let { upload(fmt, it, x, y, 0) }
         }
 
-        tile.wall?.let { wall ->
-            uploadIfStatic(fmt, wall.entity, x, y, wall.entity.height)
-            wall.entity2?.let {
-                uploadIfStatic(fmt, it, x, y, it.height)
-            }
-        }
+        val allEntities =
+            tile.attachments.map { it.second } + tile.gameObjects.map { it.entity }
 
-        tile.floorDecoration?.entity?.let {
-            uploadIfStatic(fmt, it, x, y, it.height)
-        }
-        tile.wallDecoration?.entity?.let {
-            uploadIfStatic(fmt, it, x, y, it.height)
-        }
-        tile.wallDecoration?.entity2?.let {
-            uploadIfStatic(fmt, it, x, y, it.height)
-        }
-
-        tile.gameObjects.map { it.entity }.forEach {
+        allEntities.forEach {
             uploadIfStatic(fmt, it, x, y, it.height)
         }
     }

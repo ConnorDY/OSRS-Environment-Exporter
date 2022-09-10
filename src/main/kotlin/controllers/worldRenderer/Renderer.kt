@@ -535,60 +535,15 @@ class Renderer(
             )
         }
 
-        val floorDecorationEntity = tile.floorDecoration?.entity
-        if (floorDecorationEntity != null) {
-            priorityRenderer.positionRenderable(
-                floorDecorationEntity.model,
-                x,
-                y,
-                floorDecorationEntity.height,
-            )
-        }
+        val allEntities =
+            tile.attachments.map { it.second } + tile.gameObjects.map { it.entity }
 
-        val wall = tile.wall
-        if (wall != null) {
+        for (entity in allEntities) {
             priorityRenderer.positionRenderable(
-                wall.entity.model,
+                entity.model,
                 x,
                 y,
-                wall.entity.height,
-            )
-            if (wall.entity2 != null) {
-                priorityRenderer.positionRenderable(
-                    wall.entity2.model,
-                    x,
-                    y,
-                    wall.entity2.height,
-                )
-            }
-        }
-
-        val wallDecorationEntity = tile.wallDecoration?.entity
-        if (wallDecorationEntity != null) {
-            priorityRenderer.positionRenderable(
-                wallDecorationEntity.model,
-                x,
-                y,
-                wallDecorationEntity.height,
-            )
-        }
-
-        val wallDecorationEntity2 = tile.wallDecoration?.entity2
-        if (wallDecorationEntity2 != null) {
-            priorityRenderer.positionRenderable(
-                wallDecorationEntity2.model,
-                x,
-                y,
-                wallDecorationEntity2.height,
-            )
-        }
-
-        for (gameObject in tile.gameObjects) {
-            priorityRenderer.positionRenderable(
-                gameObject.entity.model,
-                x,
-                y,
-                gameObject.entity.height,
+                entity.height,
             )
         }
     }

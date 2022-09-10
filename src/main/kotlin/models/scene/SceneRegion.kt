@@ -10,15 +10,13 @@ import cache.definitions.RegionDefinition.Companion.Z
 import cache.definitions.UnderlayDefinition
 import cache.loaders.RegionLoader
 import cache.loaders.getTileHeight
-import controllers.worldRenderer.Constants
+import controllers.worldRenderer.Constants.LOCAL_HALF_TILE_SIZE
+import controllers.worldRenderer.Constants.LOCAL_TILE_SIZE
 import controllers.worldRenderer.entities.Entity
-import controllers.worldRenderer.entities.FloorDecoration
 import controllers.worldRenderer.entities.GameObject
 import controllers.worldRenderer.entities.Model
 import controllers.worldRenderer.entities.TileModel
 import controllers.worldRenderer.entities.TilePaint
-import controllers.worldRenderer.entities.WallDecoration
-import controllers.worldRenderer.entities.WallObject
 
 class SceneRegion(val locationsDefinition: LocationsDefinition) {
     val tiles = Array(Z) { Array(X) { arrayOfNulls<SceneTile>(Y) } }
@@ -104,9 +102,9 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
 
     fun newFloorDecoration(z: Int, x: Int, y: Int, entity: Entity) {
         val tile = ensureTile(z, x, y)
-        entity.model.offsetX = Constants.LOCAL_HALF_TILE_SIZE
-        entity.model.offsetY = Constants.LOCAL_HALF_TILE_SIZE
-        tile.floorDecoration = FloorDecoration(entity)
+        entity.model.offsetX = LOCAL_HALF_TILE_SIZE
+        entity.model.offsetY = LOCAL_HALF_TILE_SIZE
+        tile.attachments.add(Pair(SceneTile.Attachment.FLOOR_DECORATION, entity))
     }
 
     fun newWallDecoration(
@@ -121,14 +119,15 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         val tile = ensureTile(z, x, y)
 
         entity.setDecoDisplacements(displacementX, displacementY)
+        tile.attachments.add(Pair(SceneTile.Attachment.OFFSET_WALL_DECORATION, entity))
         if (entity2 != null) {
             val model = entity2.model
-            model.offsetX = Constants.LOCAL_HALF_TILE_SIZE
-            model.offsetY = Constants.LOCAL_HALF_TILE_SIZE
+            model.offsetX = LOCAL_HALF_TILE_SIZE
+            model.offsetY = LOCAL_HALF_TILE_SIZE
             // don't set displacementX/Y on entity2
-        }
 
-        tile.wallDecoration = WallDecoration(entity, entity2)
+            tile.attachments.add(Pair(SceneTile.Attachment.WALL_DECORATION, entity2))
+        }
     }
 
     private fun Entity.setDecoDisplacements(
@@ -136,8 +135,8 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         displacementY: Int
     ) {
         val model = model
-        model.offsetX = Constants.LOCAL_HALF_TILE_SIZE
-        model.offsetY = Constants.LOCAL_HALF_TILE_SIZE
+        model.offsetX = LOCAL_HALF_TILE_SIZE
+        model.offsetY = LOCAL_HALF_TILE_SIZE
         model.wallAttachedOffsetX = displacementX
         model.wallAttachedOffsetY = displacementY
     }
@@ -180,9 +179,13 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
 
         entity.model.offsetX = width * REGION_SIZE
         entity.model.offsetY = length * REGION_SIZE
-        entity2?.model?.offsetX = width * REGION_SIZE
-        entity2?.model?.offsetY = length * REGION_SIZE
-        tile.wall = WallObject(entity, entity2)
+        tile.attachments.add(Pair(SceneTile.Attachment.WALL_OBJECT, entity))
+        if (entity2 != null) {
+            val model = entity2.model
+            model.offsetX = width * REGION_SIZE
+            model.offsetY = length * REGION_SIZE
+            tile.attachments.add(Pair(SceneTile.Attachment.WALL_OBJECT, entity2))
+        }
         tile.locations.add(location)
 
         rescaleWall(tile, entity)
@@ -205,13 +208,14 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         tile: SceneTile,
         entity: Entity
     ) {
-        val wallDecoration = tile.wallDecoration
         val wallDisplacement = entity.objectDefinition.decorDisplacement
         tile.wallDisplacement = wallDisplacement
-        if (wallDecoration != null) {
-            val model = wallDecoration.entity.model
-            model.wallAttachedOffsetX = wallDisplacement * model.wallAttachedOffsetX / 16
-            model.wallAttachedOffsetY = wallDisplacement * model.wallAttachedOffsetY / 16
+        for ((attachmentType, attachmentEntity) in tile.attachments) {
+            if (attachmentType == SceneTile.Attachment.OFFSET_WALL_DECORATION) {
+                val model = attachmentEntity.model
+                model.wallAttachedOffsetX = wallDisplacement * model.wallAttachedOffsetX / 16
+                model.wallAttachedOffsetY = wallDisplacement * model.wallAttachedOffsetY / 16
+            }
         }
     }
 
@@ -247,19 +251,18 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                 for (y in 0 until Y) {
                     val tile = tiles[z][x][y]
                     if (tile != null) {
-                        val wall = tile.wall
-                        if (wall != null && !wall.entity.model.isLit) {
-                            val model1 = wall.entity.model
-                            model1.mergeLargeObjectNormals(regionLoader, z, x, y, 1, 1)
+                        val walls =
+                            tile.attachments.filter { it.first == SceneTile.Attachment.WALL_OBJECT }.map { it.second.model }
 
-                            val model2 = wall.entity2?.model
-                            if (model2 != null && !model2.isLit) {
-                                model2.mergeLargeObjectNormals(regionLoader, z, x, y, 1, 1)
-                                model1.mergeNormals(model2, 0, 0, 0, false)
-                                model2.light()
-                            }
-                            model1.light()
+                        walls.forEach { model1 ->
+                            model1.mergeLargeObjectNormals(regionLoader, z, x, y, 1, 1)
                         }
+                        walls.forEachIndexed { index, model1 ->
+                            walls.drop(index + 1).forEach { model2 ->
+                                model1.mergeNormals(model2, 0, 0, 0, false)
+                            }
+                        }
+                        walls.forEach(Model::light)
 
                         for (gameObject in tile.gameObjects) {
                             val model = gameObject.entity.model
@@ -269,12 +272,13 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                             }
                         }
 
-                        val floorDecoration = tile.floorDecoration
-                        if (floorDecoration != null && !floorDecoration.entity.model.isLit) {
-                            val model = floorDecoration.entity.model
-                            model.mergeFloorNormalsNorthEast(z, x, y)
-                            model.light()
-                        }
+                        tile.attachments
+                            .filter { it.first == SceneTile.Attachment.FLOOR_DECORATION && !it.second.model.isLit }
+                            .forEach { (_, entity) ->
+                                val model = entity.model
+                                model.mergeFloorNormalsNorthEast(z, x, y)
+                                model.light()
+                            }
                     }
                 }
             }
@@ -284,28 +288,31 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
     private fun Model.mergeFloorNormalsNorthEast(z: Int, x: Int, y: Int) {
         // TODO these bounds were all off by one in the original code :S
         if (x < X - 1) {
-            val model2 = tiles[z][x + 1][y]?.floorDecoration?.entity?.model
-            if (model2 != null && !model2.isLit) {
-                mergeNormals(model2, 128, 0, 0, true)
-            }
+            mergeFloorNormalsWithOffset(z, x, y, 1, 0)
         }
         if (y < Y - 1) {
-            val model2 = tiles[z][x][y + 1]?.floorDecoration?.entity?.model
-            if (model2 != null && !model2.isLit) {
-                mergeNormals(model2, 0, 0, 128, true)
-            }
+            mergeFloorNormalsWithOffset(z, x, y, 0, 1)
         }
         if (x < X - 1 && y < Y - 1) {
-            val model2 = tiles[z][x + 1][y + 1]?.floorDecoration?.entity?.model
-            if (model2 != null && !model2.isLit) {
-                mergeNormals(model2, 128, 0, 128, true)
-            }
+            mergeFloorNormalsWithOffset(z, x, y, 1, 1)
         }
         if (x < X - 1 && y > 0) {
-            val model2 = tiles[z][x + 1][y - 1]?.floorDecoration?.entity?.model
-            if (model2 != null && !model2.isLit) {
-                mergeNormals(model2, 128, 0, -128, true)
-            }
+            mergeFloorNormalsWithOffset(z, x, y, 1, -1)
+        }
+    }
+
+    private fun Model.mergeFloorNormalsWithOffset(
+        z: Int,
+        x: Int,
+        y: Int,
+        xOffset: Int,
+        yOffset: Int,
+    ) {
+        val tile = tiles[z][x + xOffset][y + yOffset] ?: return
+        tile.attachments.filter {
+            it.first == SceneTile.Attachment.FLOOR_DECORATION && !it.second.model.isLit
+        }.forEach { (_, entity) ->
+            mergeNormals(entity.model, xOffset * LOCAL_TILE_SIZE, 0, yOffset * LOCAL_TILE_SIZE, false)
         }
     }
 
@@ -345,29 +352,18 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
                             regionLoader.getTileHeight(zi, regionTileX + xi, regionTileY + yi)
                         ) / 4
                     val heightDiff = thisSurroundingHeight - surroundingHeight
-                    val wall = tile.wall
-                    if (wall != null) {
-                        val model1 = wall.entity.model
-                        if (!model1.isLit) {
+                    tile.attachments
+                        .filter { it.first == SceneTile.Attachment.WALL_OBJECT && !it.second.model.isLit }
+                        .forEach { (_, entity) ->
+                            val model = entity.model
                             mergeNormals(
-                                model1,
-                                (1 - width) * 64 + (xi - x) * 128,
+                                model,
+                                (1 - width) * LOCAL_HALF_TILE_SIZE + (xi - x) * LOCAL_TILE_SIZE,
                                 heightDiff,
-                                (yi - y) * 128 + (1 - length) * 64,
+                                (1 - length) * LOCAL_HALF_TILE_SIZE + (yi - y) * LOCAL_TILE_SIZE,
                                 hideOccludedFaces
                             )
                         }
-                        val model2 = wall.entity2?.model
-                        if (model2 != null && !model2.isLit) {
-                            mergeNormals(
-                                model2,
-                                (1 - width) * 64 + (xi - x) * 128,
-                                heightDiff,
-                                (yi - y) * 128 + (1 - length) * 64,
-                                hideOccludedFaces
-                            )
-                        }
-                    }
 
                     for (gameObject in tile.gameObjects) {
                         val model = gameObject.entity.model
