@@ -54,7 +54,7 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
     private val glSmallComputeProgram = Shader.COMPUTE_PROGRAM.value.compile(Shader.createTemplate(512, 1))
     private val glUnorderedComputeProgram = Shader.UNORDERED_COMPUTE_PROGRAM.value.compile(Shader.createTemplate(-1, -1))
 
-    private val uniformBuffer: ByteBuffer = BufferUtils.createByteBuffer(5 * Double.SIZE_BYTES + (3 + 1) * Int.SIZE_BYTES)
+    private val uniformBuffer: ByteBuffer = BufferUtils.createByteBuffer(5 * Float.SIZE_BYTES + (3 + 1) * Int.SIZE_BYTES)
     private val uniformBufferId = initUniformBuffer(uniformBuffer)
 
     private val uniBlockSmall = glGetUniformBlockIndex(glSmallComputeProgram, "uniforms")
@@ -156,14 +156,14 @@ class GLSLPriorityRenderer() : AbstractPriorityRenderer() {
         // UBO
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
-        val doubles = uniformBuffer.asDoubleBuffer()
+        val doubles = uniformBuffer.asFloatBuffer()
         doubles
-            .put(camera.yawRads)
-            .put(camera.pitchRads)
-            .put(camera.cameraX) // x
-            .put(camera.cameraZ) // z
-            .put(camera.cameraY) // y
-        val doublesPosition = doubles.position() * Double.SIZE_BYTES
+            .put(camera.yawRads.toFloat())
+            .put(camera.pitchRads.toFloat())
+            .put(camera.cameraX.toFloat()) // x
+            .put(camera.cameraZ.toFloat()) // z
+            .put(camera.cameraY.toFloat()) // y
+        val doublesPosition = doubles.position() * Float.SIZE_BYTES
         uniformBuffer.position(doublesPosition)
         val ints = uniformBuffer.asIntBuffer()
         ints

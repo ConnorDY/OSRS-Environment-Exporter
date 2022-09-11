@@ -28,7 +28,7 @@ class FilteredListModel<T>(val stringify: (T) -> String) : ListModel<T> {
         filteredList =
             if (filterQuery.isEmpty()) backingList
             else backingList.filter {
-                stringify(it).lowercase(Locale.getDefault()).contains(filterQuery)
+                stringify(it).lowercase(Locale.getDefault()).matchesFilter(filterQuery)
             }
         if (filteredList != prevFilteredList) {
             val removed =
@@ -40,6 +40,15 @@ class FilteredListModel<T>(val stringify: (T) -> String) : ListModel<T> {
                 it.intervalAdded(added)
             }
         }
+    }
+
+    private fun String.matchesFilter(filter: String): Boolean {
+        var i = -1
+        for (c in filter) {
+            i = indexOf(c, i + 1)
+            if (i == -1) return false
+        }
+        return true
     }
 
     override fun getSize(): Int = filteredList.size
