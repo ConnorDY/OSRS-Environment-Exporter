@@ -1,57 +1,5 @@
 {
   "locations": [
-    {
-      "name": "Akkha Arena (Tombs of Amascut)",
-      "coords": [3648, 5376, 0]
-    },
-    {
-      "name": "Akkha Puzzle (Tombs of Amascut)",
-      "coords": [3648, 5248, 0]
-    },
-    {
-      "name": "Ba-Ba Arena (Tombs of Amascut)",
-      "coords": [3776, 5376, 0]
-    },
-    {
-      "name": "Ba-Ba Puzzle (Tombs of Amascut)",
-      "coords": [3776, 5248, 0]
-    },
-    {
-      "name": "Kephri Arena (Tombs of Amascut)",
-      "coords": [3520, 5376, 0]
-    },
-    {
-      "name": "Kephri Puzzle (Tombs of Amascut)",
-      "coords": [3520, 5248, 0]
-    },
-    {
-      "name": "Reward Room (Tombs of Amascut)",
-      "coords": [3648, 5120, 0]
-    },
-    {
-      "name": "Outside Hub (Tombs of Amascut)",
-      "coords": [3328, 9088, 0]
-    },
-    {
-      "name": "Path Hub (Tombs of Amascut)",
-      "coords": [3520, 5120, 0]
-    },
-    {
-      "name": "Warden Arena - Phase 1/2 (Tombs of Amascut)",
-      "coords": [3776, 5120, 0]
-    },
-    {
-      "name": "Warden Arena - Phase 3 (Tombs of Amascut)",
-      "coords": [3904, 5120, 0]
-    },
-    {
-      "name": "Zebak Puzzle (Tombs of Amascut)",
-      "coords": [3904, 5248, 0]
-    },
-    {
-      "name": "Zebak Arena (Tombs of Amascut)",
-      "coords": [3904, 5376, 0]
-    },
     { "name": "2015 Clan Cup PvM Arena", "coords": [1698, 4700, 0] },
     { "name": "2017 Wilderness Wars lobby", "coords": [3296, 4639, 0] },
     { "name": "2018 Allstars Tournament Arena", "coords": [3329, 5823, 2] },
@@ -79,6 +27,8 @@
       "name": "Airship platform (Monkey Madness II)",
       "coords": [2078, 5405, 0]
     },
+    { "name": "Akkha Arena (Tombs of Amascut)", "coords": [3648, 5376, 0] },
+    { "name": "Akkha Puzzle (Tombs of Amascut)", "coords": [3648, 5248, 0] },
     { "name": "Al Kharid", "coords": [3293, 3151, 0] },
     { "name": "Alternate Tutorial Island in 2020", "coords": [1694, 6112, 0] },
     {
@@ -106,6 +56,8 @@
     { "name": "Asgarnian Ice Dungeon", "coords": [3038, 9580, 0] },
     { "name": "Avatar of Creation", "coords": [2126, 2891, 0] },
     { "name": "Avatar of Destruction", "coords": [2286, 2931, 0] },
+    { "name": "Ba-Ba Arena (Tombs of Amascut)", "coords": [3776, 5376, 0] },
+    { "name": "Ba-Ba Puzzle (Tombs of Amascut)", "coords": [3776, 5248, 0] },
     { "name": "Baba Yaga's house", "coords": [2451, 4646, 0] },
     {
       "name": "Balloon land crash (Enlightened Journey)",
@@ -123,8 +75,8 @@
       "name": "Banana plantation cutscene (Monkey Madness I)",
       "coords": [2659, 4576, 0]
     },
-    { "name": "Bandit Camp (Wilderness)", "coords": [3037, 3699, 0] },
     { "name": "Bandit Camp (Desert)", "coords": [3171, 2979, 0] },
+    { "name": "Bandit Camp (Wilderness)", "coords": [3037, 3699, 0] },
     {
       "name": "Banquet cutscene (A Kingdom Divided)",
       "coords": [2080, 6168, 0]
@@ -627,6 +579,8 @@
     { "name": "Keldagrim Rat Pits", "coords": [1946, 4699, 0] },
     { "name": "Keldagrim train station", "coords": [2439, 5531, 0] },
     { "name": "Keldagrim tunnel", "coords": [2783, 10142, 0] },
+    { "name": "Kephri Arena (Tombs of Amascut)", "coords": [3520, 5376, 0] },
+    { "name": "Kephri Puzzle (Tombs of Amascut)", "coords": [3520, 5248, 0] },
     { "name": "KGP headquarters (Cold War)", "coords": [2657, 10396, 0] },
     { "name": "Kharazi Jungle", "coords": [2833, 2922, 0] },
     { "name": "Kharidian Desert", "coords": [3264, 2960, 0] },
@@ -830,12 +784,14 @@
     { "name": "Otto's Grotto", "coords": [2502, 3488, 0] },
     { "name": "Ourania Cave", "coords": [3036, 5610, 0] },
     { "name": "Outpost", "coords": [2441, 3345, 0] },
+    { "name": "Outside Hub (Tombs of Amascut)", "coords": [3328, 9088, 0] },
     { "name": "Palace", "coords": [3212, 3479, 0] },
     { "name": "Paterdomus basement", "coords": [3421, 9889, 0] },
     {
       "name": "Paterdomus library (In Aid of the Myreque)",
       "coords": [3356, 9902, 0]
     },
+    { "name": "Path Hub (Tombs of Amascut)", "coords": [3520, 5120, 0] },
     { "name": "Pest Control", "coords": [2656, 2593, 0] },
     { "name": "Pestilent Bloat (Theatre of Blood)", "coords": [3296, 4449, 0] },
     {
@@ -903,6 +859,7 @@
     { "name": "Rellekka", "coords": [2668, 3676, 0] },
     { "name": "Resource Area", "coords": [3185, 3934, 0] },
     { "name": "Revenant Caves", "coords": [3211, 10150, 0] },
+    { "name": "Reward Room (Tombs of Amascut)", "coords": [3648, 5120, 0] },
     { "name": "Rimmington", "coords": [2957, 3215, 0] },
     { "name": "River Elid", "coords": [3372, 3074, 0] },
     { "name": "River Lum", "coords": [3167, 3346, 0] },
@@ -913,17 +870,13 @@
       "name": "Robert the Strong battle (Dragon Slayer II)",
       "coords": [1825, 5219, 2]
     },
-    { "name": "Rogues' Den", "coords": [3047, 4976, 1] },
     { "name": "Rogues' Castle", "coords": [3286, 3931, 0] },
+    { "name": "Rogues' Den", "coords": [3047, 4976, 1] },
     { "name": "Rogues' Den minigame", "coords": [3011, 5048, 1] },
     {
       "name": "Rose's house basement (A Kingdom Divided)",
       "coords": [1187, 10265, 0]
     },
-    { "name": "Temple Trekking (1)", "coords": [1999, 5039, 0] },
-    { "name": "Temple Trekking (2)", "coords": [2191, 5038, 0] },
-    { "name": "Temple Trekking (3)", "coords": [2256, 5037, 0] },
-    { "name": "Temple Trekking (4)", "coords": [2319, 5037, 0] },
     { "name": "Ruins (1)", "coords": [2967, 3695, 0] },
     { "name": "Ruins (2)", "coords": [3164, 3734, 0] },
     { "name": "Ruins of Camdozaal", "coords": [2973, 5799, 0] },
@@ -1069,6 +1022,10 @@
       "name": "Temple of Marimbo Dungeon (Monkey Madness I)",
       "coords": [2783, 9181, 0]
     },
+    { "name": "Temple Trekking (1)", "coords": [1999, 5039, 0] },
+    { "name": "Temple Trekking (2)", "coords": [2191, 5038, 0] },
+    { "name": "Temple Trekking (3)", "coords": [2256, 5037, 0] },
+    { "name": "Temple Trekking (4)", "coords": [2319, 5037, 0] },
     {
       "name": "Testing grounds (Recruitment Drive)",
       "coords": [2462, 4960, 0]
@@ -1123,8 +1080,8 @@
       "coords": [2592, 4446, 0]
     },
     { "name": "Troll Cave", "coords": [2934, 10083, 0] },
-    { "name": "Troll Stronghold (outside)", "coords": [2832, 3682, 0] },
     { "name": "Troll Stronghold (inside)", "coords": [2850, 10082, 0] },
+    { "name": "Troll Stronghold (outside)", "coords": [2832, 3682, 0] },
     { "name": "Trollheim", "coords": [2891, 3676, 0] },
     { "name": "Trollheim tunnel", "coords": [2914, 10028, 0] },
     { "name": "Trollweiss Dungeon", "coords": [2790, 10211, 0] },
@@ -1133,8 +1090,8 @@
     { "name": "Tutorial Island mine", "coords": [3095, 9507, 0] },
     { "name": "Tyras Camp", "coords": [2186, 3146, 0] },
     { "name": "TzHaar City", "coords": [2451, 5146, 0] },
-    { "name": "Underground Pass (entrance)", "coords": [2449, 3312, 0] },
     { "name": "Underground Pass", "coords": [2435, 9660, 0] },
+    { "name": "Underground Pass (entrance)", "coords": [2449, 3312, 0] },
     { "name": "Underground Pass Area 1", "coords": [2464, 9700, 0] },
     { "name": "Underground Pass Area 2", "coords": [2399, 9637, 0] },
     { "name": "Underground Pass Area 3", "coords": [2398, 9710, 0] },
@@ -1177,6 +1134,14 @@
     { "name": "Volcano", "coords": [3778, 3778, 0] },
     { "name": "Vultures", "coords": [3337, 2868, 0] },
     { "name": "War Tent", "coords": [1484, 3636, 0] },
+    {
+      "name": "Warden Arena - Phase 1/2 (Tombs of Amascut)",
+      "coords": [3776, 5120, 0]
+    },
+    {
+      "name": "Warden Arena - Phase 3 (Tombs of Amascut)",
+      "coords": [3904, 5120, 0]
+    },
     { "name": "Warped Library (Song of the Elves)", "coords": [2622, 6158, 0] },
     { "name": "Warriors' Guild", "coords": [2855, 3543, 0] },
     { "name": "Warriors' Guild basement", "coords": [2923, 9965, 0] },
@@ -1267,6 +1232,8 @@
     { "name": "Yanille Agility Dungeon basement", "coords": [2560, 9536, 0] },
     { "name": "Zalcano", "coords": [3032, 6048, 0] },
     { "name": "Zanaris", "coords": [2415, 4455, 0] },
+    { "name": "Zebak Arena (Tombs of Amascut)", "coords": [3904, 5376, 0] },
+    { "name": "Zebak Puzzle (Tombs of Amascut)", "coords": [3904, 5248, 0] },
     { "name": "Zul-Andra", "coords": [2204, 3064, 0] },
     { "name": "Zulrah's shrine", "coords": [2267, 3074, 0] }
   ]
