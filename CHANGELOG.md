@@ -19,7 +19,7 @@
 
 - Make camera FOV adjustable &ndash; [#141](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/141) @ScoreUnder
 
-- - Add Tombs of Amascut locations to Location Search &ndash; [#146](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/146) @LengaJenga
+- Add Tombs of Amascut locations to Location Search &ndash; [#146](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/146) @LengaJenga
 
 ### :bug: Bug Fixes
 
