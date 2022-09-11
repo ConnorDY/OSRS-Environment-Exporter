@@ -19,6 +19,8 @@
 
 - Make camera FOV adjustable &ndash; [#141](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/141) @ScoreUnder
 
+- - Add Tombs of Amascut locations to Location Search &ndash; [#146](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/146) @LengaJenga
+
 ### :bug: Bug Fixes
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder
@@ -58,9 +60,7 @@
 
 - Add power saving mode &ndash; [#111](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/111) @ScoreUnder
   - Independent of the frame cap, this will cause the renderer to drop FPS as low as possible while nothing is happening on screen and no input is being given, while hopefully not impacting the feel of the tool.
-
-- Add Tombs of Amascut locations to Location Search &ndash; [#146](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/146) @LengaJenga
-
+  
 ### :bug: Bug Fixes
 
 - Fix rotation of certain objects &ndash; [#98](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/98) @ConnorDY
