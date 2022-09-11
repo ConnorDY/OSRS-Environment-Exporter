@@ -100,7 +100,7 @@ class Shader {
 
             val columnStr = if (columnNumStr.isNotEmpty()) "($columnNumStr)" else ""
             val lineNumInfo = processedFile.getLineNumber(lineNumber)
-            "${lineNumInfo.filename}:${lineNumInfo.logicalLine}$columnStr:$message"
+            "$lineNumInfo$columnStr:$message"
         }
 
     companion object {
