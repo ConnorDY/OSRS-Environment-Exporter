@@ -35,6 +35,11 @@
 
 - Fix jitter when moving in power saving mode, and camera axis lock when moving slowly &ndash; [#140](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/140) @ScoreUnder
 
+### :wrench: Maintenance
+
+- De-duplicate entries in the locations list, merging different landmarks that exist in the same place &ndash; [#142](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/142) @ScoreUnder
+  - Make search a little fuzzier to compensate
+
 ## 2.2.0
 
 ### :sparkles: Enhancements
