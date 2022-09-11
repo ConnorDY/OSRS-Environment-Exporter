@@ -86,21 +86,27 @@ class Shader {
         processedFile: Template.ProcessedFile
     ): String =
         // Extract and transform line numbers from error
-        err.split('\n').joinToString("\n") {
-            val match = ERROR_LINE_REGEX.matchEntire(it) ?: return@joinToString it
+        err.split('\n').joinToString("\n") { errorLine ->
+            val matchTriplet = run {
+                val mesaMatch = ERROR_LINE_REGEX_MESA.matchEntire(errorLine)
+                if (mesaMatch != null) return@run Triple(mesaMatch.groupValues[1], mesaMatch.groupValues[2], mesaMatch.groupValues[3])
+                val nvidiaMatch = ERROR_LINE_REGEX_NVIDIA.matchEntire(errorLine)
+                if (nvidiaMatch != null) return@run Triple(nvidiaMatch.groupValues[1], "", nvidiaMatch.groupValues[2])
+                null
+            } ?: return@joinToString errorLine
+            val (lineNumStr, columnNumStr, message) = matchTriplet
+            val lineNumber = lineNumStr.toInt()
+            if (lineNumber < 1) return@joinToString errorLine
 
-            val (line, column, message) = match.destructured
-            val lineNumber = line.toInt()
-            if (lineNumber < 1) return@joinToString it
-
-            val columnNumber = column.toInt()
+            val columnStr = if (columnNumStr.isNotEmpty()) "($columnNumStr)" else ""
             val lineNumInfo = processedFile.getLineNumber(lineNumber)
-            "${lineNumInfo.filename}:${lineNumInfo.logicalLine}($columnNumber):$message"
+            "${lineNumInfo.filename}:${lineNumInfo.logicalLine}$columnStr:$message"
         }
 
     companion object {
         // Line format: `0:123(10): error: ...`
-        private val ERROR_LINE_REGEX = Regex("(?:0:)?(\\d+)\\((\\d+)\\)\\s*: (.*)")
+        private val ERROR_LINE_REGEX_MESA = Regex("\\d+:(\\d+)\\((\\d+)\\)\\s*: (.*)")
+        private val ERROR_LINE_REGEX_NVIDIA = Regex("\\d+\\((\\d+)\\)\\s*: (.*)")
         const val VERSION_HEADER = "#version 430\n"
         val PROGRAM = lazy {
             Shader()
