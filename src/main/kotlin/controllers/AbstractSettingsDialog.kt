@@ -14,6 +14,8 @@ import javax.swing.JComboBox
 import javax.swing.JDialog
 import javax.swing.JLabel
 import javax.swing.JList
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
 abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val options: List<ConfigOption<*>>) : JDialog(owner, title) {
     init {
@@ -23,6 +25,7 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
             @Suppress("UNCHECKED_CAST") when (option.type) {
                 ConfigOptionType.int -> makeIntControls(option as ConfigOption<Int>, index)
                 ConfigOptionType.intToggle -> makeIntToggleControls(option as ConfigOption<Int?>, index)
+                ConfigOptionType.double -> makeDoubleControls(option as ConfigOption<Double>, index)
                 ConfigOptionType.boolean -> makeBooleanControls(option as ConfigOption<Boolean>, index)
                 is ConfigOptionType.Enumerated<*> -> makeEnumeratedControls(
                     option as ConfigOption<out Enum<*>>,
@@ -40,15 +43,21 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
         }
     }
 
-    private fun makeIntControls(
-        option: ConfigOption<Int>,
-        index: Int
+    private fun makeIntControls(option: ConfigOption<Int>, index: Int) =
+        makeNumericControls(option, index, Int.MIN_VALUE, Int.MAX_VALUE, String::toIntOrNull, Int::class)
+
+    private fun makeDoubleControls(option: ConfigOption<Double>, index: Int) =
+        makeNumericControls(option, index, -Double.MAX_VALUE, Double.MAX_VALUE, String::toDoubleOrNull, Double::class)
+
+    private fun <T : Comparable<T>> makeNumericControls(
+        option: ConfigOption<T>,
+        index: Int,
+        min: T,
+        max: T,
+        conversion: (String) -> T?,
+        classT: KClass<T>,
     ) {
-        val editBox = NumericTextField.create(
-            option.value.get(),
-            Int.MIN_VALUE,
-            Int.MAX_VALUE
-        )
+        val editBox = NumericTextField.create(option.value.get(), min, max, conversion)
         add(
             editBox,
             GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, defaultInset, 0, 0)
@@ -63,7 +72,7 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
 
         editBox.addPropertyChangeListener {
             if (it.propertyName == "value") {
-                option.value.set(it.newValue as Int)
+                option.value.set(classT.cast(it.newValue))
             }
         }
         option.value.addListener(this) {
