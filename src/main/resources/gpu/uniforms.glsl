@@ -1,3 +1,5 @@
+#extension GL_ARB_gpu_shader_fp64 : enable
+
 layout(std140) uniform uniforms {
     double cameraYaw;
     double cameraPitch;
