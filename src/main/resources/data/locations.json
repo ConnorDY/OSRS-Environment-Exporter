@@ -1,5 +1,57 @@
 {
   "locations": [
+    {
+      "name": "Akkha Arena (Tombs of Amascut)",
+      "coords": [3648, 5376, 0]
+    },
+    {
+      "name": "Akkha Puzzle (Tombs of Amascut)",
+      "coords": [3648, 5248, 0]
+    },
+    {
+      "name": "Ba-Ba Arena (Tombs of Amascut)",
+      "coords": [3776, 5376, 0]
+    },
+    {
+      "name": "Ba-Ba Puzzle (Tombs of Amascut)",
+      "coords": [3776, 5248, 0]
+    },
+    {
+      "name": "Kephri Arena (Tombs of Amascut)",
+      "coords": [3520, 5376, 0]
+    },
+    {
+      "name": "Kephri Puzzle (Tombs of Amascut)",
+      "coords": [3520, 5248, 0]
+    },
+    {
+      "name": "Reward Room (Tombs of Amascut)",
+      "coords": [3648, 5120, 0]
+    },
+    {
+      "name": "Outside Hub (Tombs of Amascut)",
+      "coords": [3328, 9088, 0]
+    },
+    {
+      "name": "Path Hub (Tombs of Amascut)",
+      "coords": [3520, 5120, 0]
+    },
+    {
+      "name": "Warden Arena - Phase 1/2 (Tombs of Amascut)",
+      "coords": [3776, 5120, 0]
+    },
+    {
+      "name": "Warden Arena - Phase 3 (Tombs of Amascut)",
+      "coords": [3904, 5120, 0]
+    },
+    {
+      "name": "Zebak Puzzle (Tombs of Amascut)",
+      "coords": [3904, 5248, 0]
+    },
+    {
+      "name": "Zebak Arena (Tombs of Amascut)",
+      "coords": [3904, 5376, 0]
+    },
     { "name": "2015 Clan Cup PvM Arena", "coords": [1698, 4700, 0] },
     { "name": "2017 Wilderness Wars lobby", "coords": [3296, 4639, 0] },
     { "name": "2018 Allstars Tournament Arena", "coords": [3329, 5823, 2] },
