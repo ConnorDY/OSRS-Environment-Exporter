@@ -65,11 +65,8 @@ void main() {
   ivec4 vB[FACES_PER_THREAD];
   ivec4 vC[FACES_PER_THREAD];
 
-  float yawf = float(cameraYaw);
-  float pitchf = float(cameraPitch);
-
   for (int i = 0; i < FACES_PER_THREAD; i++) {
-    get_face(localId + i, minfo, yawf, pitchf, prio[i], dis[i], vA[i], vB[i], vC[i]);
+    get_face(localId + i, minfo, cameraYaw, cameraPitch, prio[i], dis[i], vA[i], vB[i], vC[i]);
   }
 
   memoryBarrierShared();
