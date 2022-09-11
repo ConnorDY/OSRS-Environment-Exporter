@@ -27,14 +27,14 @@
 #define UNIT PI / 1024.0f
 
 layout(std140) uniform uniforms {
-    int cameraYaw;
-    int cameraPitch;
+    double cameraYaw;
+    double cameraPitch;
+    double cameraX;
+    double cameraY;
+    double cameraZ;
     int centerX;
     int centerY;
     int zoom;
-    int cameraX;
-    int cameraY;
-    int cameraZ;
     int currFrame;
 };
 

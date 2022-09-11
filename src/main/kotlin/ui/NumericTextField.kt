@@ -9,7 +9,10 @@ import javax.swing.event.DocumentListener
 
 object NumericTextField {
     fun create(value: Int, min: Int, max: Int): JFormattedTextField =
-        createWithFormatter(value, RestrictedNumberFormat(min, max))
+        create(value, min, max, String::toIntOrNull)
+
+    fun <T : Comparable<T>> create(value: T, min: T, max: T, conversion: (String) -> T?): JFormattedTextField =
+        createWithFormatter(value, RestrictedNumberFormat(min, max, conversion))
 
     private fun createWithFormatter(value: Any?, formatter: JFormattedTextField.AbstractFormatter): JFormattedTextField {
         val field = JFormattedTextField(formatter)
@@ -21,13 +24,16 @@ object NumericTextField {
     }
 
     fun createNullable(value: Int?, min: Int, max: Int): JFormattedTextField =
-        createWithFormatter(value, NullableFormatter(RestrictedNumberFormat(min, max)))
+        createNullable(value, min, max, String::toIntOrNull)
 
-    class RestrictedNumberFormat(private val min: Int, private val max: Int) :
+    fun <T : Comparable<T>> createNullable(value: T?, min: T, max: T, conversion: (String) -> T?): JFormattedTextField =
+        createWithFormatter(value, NullableFormatter(RestrictedNumberFormat(min, max, conversion)))
+
+    class RestrictedNumberFormat<T : Comparable<T>>(private val min: T, private val max: T, private val conversion: (String) -> T?) :
         JFormattedTextField.AbstractFormatter() {
 
-        override fun stringToValue(string: String): Int {
-            val parsed = string.toIntOrNull()
+        override fun stringToValue(string: String): T {
+            val parsed = conversion(string)
             if (parsed == null || parsed < min || parsed > max) {
                 throw ParseException(string, 0)
             }
