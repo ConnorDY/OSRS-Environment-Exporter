@@ -1,6 +1,13 @@
 #!/bin/sh
 dirty=false
 
+need_installed() {
+    command -v "$1" >/dev/null || die "You must have $1 installed to run this script"
+}
+
+need_installed perl
+need_installed zip
+
 version=$(perl -Mv5.10 -ne '/version = "([^"]+)"/ && say $1' build.gradle.kts) || exit
 name=osrs-environment-exporter
 full_name=$name-$version
@@ -15,13 +22,6 @@ die() {
     printf %s\\n "$*" >&2
     exit 1
 }
-
-need_installed() {
-    command -v "$1" >/dev/null || die "You must have $1 installed to run this script"
-}
-
-need_installed perl
-need_installed zip
 
 if ! git diff --quiet; then
     dirty=true
