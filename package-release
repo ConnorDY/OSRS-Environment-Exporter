@@ -1,0 +1,43 @@
+#!/bin/sh
+dirty=false
+
+version=$(perl -Mv5.10 -ne '/version = "([^"]+)"/ && say $1' build.gradle.kts) || exit
+name=osrs-environment-exporter
+full_name=$name-$version
+
+jar_name=$full_name.jar
+zip_name=$full_name.zip
+dir_name=$full_name
+
+destdir=build/dist
+
+die() {
+    printf %s\\n "$*" >&2
+    exit 1
+}
+
+need_installed() {
+    command -v "$1" >/dev/null || die "You must have $1 installed to run this script"
+}
+
+need_installed perl
+need_installed zip
+
+if ! git diff --quiet; then
+    dirty=true
+    echo 'Warning: Not working from a clean branch!' >&2
+fi
+
+rm -rf -- "$destdir" || exit
+./gradlew clean build || exit
+
+mkdir -p -- "$destdir/$full_name" || exit
+cp -- run run.bat "build/libs/$jar_name" "$destdir/$full_name" || exit
+cd -- "$destdir" || exit
+zip -r "$zip_name" "$full_name" || exit
+
+if $dirty; then
+    echo 'Warning: This was not built from a clean branch!' >&2
+fi
+
+echo "Zip is at $destdir/$zip_name <file://$PWD/$zip_name>"
