@@ -7,10 +7,9 @@ import cache.utils.readUnsignedShort
 import com.displee.cache.CacheLibrary
 import java.nio.ByteBuffer
 
-class TextureLoader(
-    cacheLibrary: CacheLibrary,
-    private val textureDefinitionCache: HashMap<Int, TextureDefinition> = HashMap()
-) {
+class TextureLoader(cacheLibrary: CacheLibrary) {
+    private val textureDefinitionCache = HashMap<Int, TextureDefinition>()
+
     fun getAll(): Array<TextureDefinition?> {
         val maxId = textureDefinitionCache.maxBy { it.key }!!.key
         // Jagex skipped texture id 54 so now we have to do this?

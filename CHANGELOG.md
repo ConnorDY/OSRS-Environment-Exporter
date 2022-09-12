@@ -21,6 +21,8 @@
 
 - Add Tombs of Amascut locations to Location Search &ndash; [#146](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/146) @LengaJenga
 
+- Add a command-line interface for scriptable exporting &ndash; [#139](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/139) @ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder

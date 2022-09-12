@@ -8,10 +8,9 @@ import cache.utils.readUnsignedShort
 import com.displee.cache.CacheLibrary
 import java.nio.ByteBuffer
 
-class SpriteLoader(
-    cacheLibrary: CacheLibrary,
-    private val spriteDefinitionCache: HashMap<Int, SpriteDefinition> = HashMap()
-) {
+class SpriteLoader(cacheLibrary: CacheLibrary) {
+    private val spriteDefinitionCache = HashMap<Int, SpriteDefinition>()
+
     init {
         for (archive in cacheLibrary.index(IndexType.SPRITES.id).archiveIds()) {
             val data = cacheLibrary.data(IndexType.SPRITES.id, archive) ?: continue
