@@ -1,6 +1,11 @@
 #!/bin/sh
 dirty=false
 
+die() {
+    printf %s\\n "$*" >&2
+    exit 1
+}
+
 need_installed() {
     command -v "$1" >/dev/null || die "You must have $1 installed to run this script"
 }
@@ -20,11 +25,6 @@ dir_name=$full_name
 
 destdir=build/dist
 full_path=$destdir/$full_name
-
-die() {
-    printf %s\\n "$*" >&2
-    exit 1
-}
 
 if ! git diff --quiet; then
     dirty=true
