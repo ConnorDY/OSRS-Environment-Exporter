@@ -124,7 +124,7 @@ class Renderer(
 
     private var textureArrayId = 0
     private var uniformBufferId = 0
-    private val uniformBuffer: ByteBuffer = BufferUtils.createByteBuffer(5 * Double.SIZE_BYTES + (3 + 1) * Int.SIZE_BYTES)
+    private val uniformBuffer: ByteBuffer = BufferUtils.createByteBuffer(5 * Float.SIZE_BYTES + (3 + 1) * Int.SIZE_BYTES)
     private val textureOffsets = FloatArray(256)
 
     private lateinit var priorityRenderer: PriorityRenderer
@@ -441,15 +441,15 @@ class Renderer(
         // UBO
         glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
         uniformBuffer.clear()
-        val doubles = uniformBuffer.asDoubleBuffer()
+        val doubles = uniformBuffer.asFloatBuffer()
         doubles
-            .put(camera.yawRads)
-            .put(camera.pitchRads)
-            .put(camera.cameraX) // x
-            .put(camera.cameraZ) // z
-            .put(camera.cameraY) // y
+            .put(camera.yawRads.toFloat())
+            .put(camera.pitchRads.toFloat())
+            .put(camera.cameraX.toFloat()) // x
+            .put(camera.cameraZ.toFloat()) // z
+            .put(camera.cameraY.toFloat()) // y
         // Ints
-        val doublesPosition = doubles.position() * Double.SIZE_BYTES
+        val doublesPosition = doubles.position() * Float.SIZE_BYTES
         uniformBuffer.position(doublesPosition)
         val ints = uniformBuffer.asIntBuffer()
         ints

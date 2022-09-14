@@ -78,12 +78,9 @@ bool face_visible(ivec4 vA, ivec4 vB, ivec4 vC, ivec4 position) {
   vB += position - cameraPos;
   vC += position - cameraPos;
 
-  float yawf = float(cameraYaw);
-  float pitchf = float(cameraPitch);
-
-  vec3 sA = toScreen(vA.xyz, yawf, pitchf, centerX, centerY, zoom);
-  vec3 sB = toScreen(vB.xyz, yawf, pitchf, centerX, centerY, zoom);
-  vec3 sC = toScreen(vC.xyz, yawf, pitchf, centerX, centerY, zoom);
+  vec3 sA = toScreen(vA.xyz, cameraYaw, cameraPitch, centerX, centerY, zoom);
+  vec3 sB = toScreen(vB.xyz, cameraYaw, cameraPitch, centerX, centerY, zoom);
+  vec3 sC = toScreen(vC.xyz, cameraYaw, cameraPitch, centerX, centerY, zoom);
 
   return (sA.x - sB.x) * (sC.y - sB.y) - (sC.x - sB.x) * (sA.y - sB.y) > 0;
 }

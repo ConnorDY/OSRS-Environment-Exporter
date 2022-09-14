@@ -47,7 +47,6 @@ void main()
 
     vec3 rgb = hslToRgb(hsl);
 
-    ivec3 cameraPos = ivec3(cameraX, cameraY, cameraZ);
     gl_Position = viewProjectionMatrix * vec4(vertex, 1);
     Color = vec4(rgb, 1.f - a);
     fHsl = float(hsl);

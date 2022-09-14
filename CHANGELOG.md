@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.3.0
 
 ### :sparkles: Enhancements
 
@@ -19,6 +19,10 @@
 
 - Make camera FOV adjustable &ndash; [#141](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/141) @ScoreUnder
 
+- Add Tombs of Amascut locations to Location Search &ndash; [#146](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/146) @LengaJenga
+
+- Add a command-line interface for scriptable exporting &ndash; [#139](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/139) @ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder
@@ -32,6 +36,11 @@
 - Fix texture brightness changing between multiple exports in the same session &ndash; [#138](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/138) @ScoreUnder
 
 - Fix jitter when moving in power saving mode, and camera axis lock when moving slowly &ndash; [#140](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/140) @ScoreUnder
+
+### :wrench: Maintenance
+
+- De-duplicate entries in the locations list, merging different landmarks that exist in the same place &ndash; [#142](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/142) @ScoreUnder
+  - Make search a little fuzzier to compensate
 
 ## 2.2.0
 

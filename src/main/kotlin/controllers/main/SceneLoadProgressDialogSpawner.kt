@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities
 
 class SceneLoadProgressDialogSpawner(private val parent: Frame) {
     private var progressContainer: ProgressContainer = NullProgressContainer()
+    private var hasPreview = false
 
     private fun checkCancelled() {
         if (progressContainer.isCancelled) {
@@ -27,9 +28,13 @@ class SceneLoadProgressDialogSpawner(private val parent: Frame) {
             set(value) {
                 this@SceneLoadProgressDialogSpawner.progressContainer = value
             }
-        override val progressMax get() = numRegions * 2 + 1 // regions * (load + upload) + draw
+        override val progressMax get() =
+            if (hasPreview) numRegions * 2 + 1 // regions * (load + upload) + draw
+            else numRegions
         override val statusDoing get() = "Decoding region $currentRegion of $numRegions"
-        override val statusDone get() = "Finished decoding regions; passing to uploader"
+        override val statusDone get() =
+            if (hasPreview) "Finished decoding regions; passing to uploader"
+            else "Done"
     }
 
     private val sceneUploadProgressListener = object : CountingSceneLoadProgressListener() {
@@ -67,8 +72,13 @@ class SceneLoadProgressDialogSpawner(private val parent: Frame) {
     }
 
     fun attach(scene: Scene, sceneUploader: SceneUploader, renderer: Renderer) {
-        scene.sceneLoadProgressListeners.add(sceneLoaderListener)
+        attach(scene)
         sceneUploader.sceneLoadProgressListeners.add(sceneUploadProgressListener)
         renderer.sceneDrawListeners.add(sceneDrawListener)
+        hasPreview = true
+    }
+
+    fun attach(scene: Scene) {
+        scene.sceneLoadProgressListeners.add(sceneLoaderListener)
     }
 }
