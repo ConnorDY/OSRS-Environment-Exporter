@@ -10,7 +10,7 @@ Please visit the [Releases](https://github.com/ConnorDY/OSRS-Environment-Exporte
 
 We recommend using the latest release unless you are having problems with it.
 
-## How to use the exporter
+## How to use
 
 [TheSkulled](https://www.youtube.com/channel/UC3NPPMYWrCH4oCFeKRf9Ltw) made a lovely [tutorial video](https://www.youtube.com/watch?v=NhqLDY9QH7k) for the exporter. Give it a watch! 👀
 
