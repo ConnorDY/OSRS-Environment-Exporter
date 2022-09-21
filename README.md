@@ -2,13 +2,17 @@
 
 Tool for exporting Old School RuneScape environments so that they can be used in 3D modeling programs like Blender.
 
-![Screenshot of the application](./docs/screenshot.webp)
+[![Screenshot of the application](./docs/screenshot.webp)](https://www.youtube.com/watch?v=xAggnDgALck)
 
 ## Downloading
 
 Please visit the [Releases](https://github.com/ConnorDY/OSRS-Environment-Exporter/releases) page to download the application.
 
-We recommend using the latest release unless you are having issues with it.
+We recommend using the latest release unless you are having problems with it.
+
+## How to use
+
+[TheSkulled](https://www.youtube.com/channel/UC3NPPMYWrCH4oCFeKRf9Ltw) made a lovely [tutorial video](https://www.youtube.com/watch?v=NhqLDY9QH7k) for the exporter. Give it a watch! 👀
 
 ## Configuration
 
