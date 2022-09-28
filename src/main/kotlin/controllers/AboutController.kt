@@ -1,11 +1,10 @@
 package controllers
 
+import ui.JActionLabel
 import ui.JLinkLabel
 import utils.PackageMetadata
 import java.awt.Dimension
 import java.awt.Frame
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
 import java.awt.font.TextAttribute
 import javax.swing.BorderFactory
 import javax.swing.Box
@@ -78,16 +77,13 @@ class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
             alignmentX = CENTER_ALIGNMENT
         }.let(::add)
         sideBySide(
-            JLabel("This application uses code from RuneLite licensed under the "),
-            JLabel("BSD 2-Clause").apply {
-                font = font.deriveFont(
-                    HashMap(font.attributes).apply {
-                        put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON)
-                    }
-                )
-                addMouseListener(RuneLiteLicenseMouseListener(owner))
+            JLabel("This application uses code from "),
+            JLinkLabel("https://runelite.net/", "RuneLite"),
+            JLabel(" licensed under the "),
+            JActionLabel("BSD 2-Clause").apply {
+                addActionListener { showRuneLiteLicense() }
             },
-            JLabel("."),
+            JLabel(" license."),
         ).let(::add)
         Box.createGlue().let(::add)
 
@@ -99,21 +95,9 @@ class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
         items.forEach(::add)
     }
 
-    private class RuneLiteLicenseMouseListener(val owner: Frame) : MouseListener {
-        override fun mouseClicked(e: MouseEvent?) {
-            RuneLiteLicenseController(owner, "RuneLite License").isVisible = true
-        }
-
-        override fun mousePressed(e: MouseEvent?) {
-        }
-
-        override fun mouseReleased(e: MouseEvent?) {
-        }
-
-        override fun mouseEntered(e: MouseEvent?) {
-        }
-
-        override fun mouseExited(e: MouseEvent?) {
-        }
+    private fun showRuneLiteLicense() {
+        val licenseDialog = RuneLiteLicenseController(owner, "RuneLite License")
+        licenseDialog.setLocationRelativeTo(owner)
+        licenseDialog.isVisible = true
     }
 }
