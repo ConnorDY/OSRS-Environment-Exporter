@@ -67,7 +67,16 @@ class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
             JLinkLabel("https://runelite.net/", "RuneLite"),
             JLabel(" licensed under the "),
             JActionLabel("BSD 2-Clause").apply {
-                addActionListener { showRuneLiteLicense() }
+                addActionListener { showLicense("RuneLite") }
+            },
+            JLabel(" license."),
+        ).let(::add)
+        sideBySide(
+            JLabel("This application uses code from "),
+            JLinkLabel("https://github.com/kfricilone/OpenRS/blob/master/source/net/openrs/cache/type/ConfigArchive.java", "Kyle Fricilone's OpenRS fork"),
+            JLabel(", these parts licensed under the "),
+            JActionLabel("MIT").apply {
+                addActionListener { showLicense("OpenRS") }
             },
             JLabel(" license."),
         ).let(::add)
@@ -87,8 +96,8 @@ class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
         items.forEach(::add)
     }
 
-    private fun showRuneLiteLicense() {
-        val licenseDialog = RuneLiteLicenseController(owner, "RuneLite License")
+    private fun showLicense(project: String) {
+        val licenseDialog = LicenseViewerController(owner, "RuneLite License", project)
         licenseDialog.setLocationRelativeTo(owner)
         licenseDialog.isVisible = true
     }
