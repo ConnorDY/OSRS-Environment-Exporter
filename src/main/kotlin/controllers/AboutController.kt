@@ -43,14 +43,7 @@ class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
 
         Box.createRigidArea(Dimension(20, 20)).let(::add)
 
-        JLabel("Credits").apply {
-            font = font.deriveFont(
-                HashMap(font.attributes).apply {
-                    put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON)
-                }
-            )
-            alignmentX = CENTER_ALIGNMENT
-        }.let(::add)
+        headingLabel("Credits").let(::add)
         sideBySide(
             JLabel("Original idea by "),
             JLinkLabel("https://twitter.com/TrillionStudios", "Trillion"),
@@ -68,14 +61,7 @@ class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
         ).let(::add)
         Box.createGlue().let(::add)
 
-        JLabel("Licenses").apply {
-            font = font.deriveFont(
-                HashMap(font.attributes).apply {
-                    put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON)
-                }
-            )
-            alignmentX = CENTER_ALIGNMENT
-        }.let(::add)
+        headingLabel("Licenses").let(::add)
         sideBySide(
             JLabel("This application uses code from "),
             JLinkLabel("https://runelite.net/", "RuneLite"),
@@ -89,6 +75,12 @@ class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
 
         pack()
     }
+
+    private fun headingLabel(text: String) =
+        JLabel(text).apply {
+            font = font.deriveFont(font.attributes + (TextAttribute.UNDERLINE to TextAttribute.UNDERLINE_ON))
+            alignmentX = CENTER_ALIGNMENT
+        }
 
     private fun sideBySide(vararg items: JLabel) = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
