@@ -11,7 +11,6 @@ import models.config.ConfigOptions
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
-import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_BLEND
@@ -30,12 +29,9 @@ import org.lwjgl.opengl.GL11C.glViewport
 import org.lwjgl.opengl.GL14C.glBlendFuncSeparate
 import org.lwjgl.opengl.GL20C
 import org.lwjgl.opengl.GL20C.glDeleteProgram
-import org.lwjgl.opengl.GL20C.glDrawBuffers
 import org.lwjgl.opengl.GL20C.glGetUniformLocation
 import org.lwjgl.opengl.GL20C.glUniform1i
 import org.lwjgl.opengl.GL20C.glUseProgram
-import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0
-import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT1
 import org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER
 import org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER
 import org.lwjgl.opengl.GL30C.glBindFramebuffer
@@ -58,11 +54,12 @@ class Renderer(
     private val camera: Camera,
     private val scene: Scene,
     private val sceneUploader: SceneUploader,
-    private val textureManager: TextureManager,
+    textureManager: TextureManager,
     private val configOptions: ConfigOptions,
     private val frameRateModel: FrameRateModel,
     private val debugOptionsModel: DebugOptionsModel,
 ) : RuneliteRenderer(
+    textureManager = textureManager,
     antiAliasingMode = configOptions.antiAliasing.value.get()
 ) {
     enum class PreferredPriorityRenderer(val humanReadableName: String, val factory: () -> PriorityRenderer) {
@@ -78,8 +75,6 @@ class Renderer(
                 changePriorityRenderer()
             }
         }
-
-    private var textureArrayId = 0
 
     private lateinit var priorityRenderer: PriorityRenderer
 
@@ -142,8 +137,6 @@ class Renderer(
         frameRateModel.powerSavingMode.addListener {
             frameRateModel.notifyNeedFrames()
         }
-
-        textureArrayId = -1
 
         scene.sceneChangeListeners.add(
             ActionListener {
@@ -313,24 +306,13 @@ class Renderer(
                 configOptions.sampleShading.value.set(false)
             }
         }
+
         setupAntiAliasing(canvasWidth, canvasHeight)
-
-        // TODO: was this necessary?
-        val i = BufferUtils.createIntBuffer(2).put(GL_COLOR_ATTACHMENT0).put(GL_COLOR_ATTACHMENT1).flip()
-        glDrawBuffers(i)
-
         clearScene()
 
         val clientCycle = ((System.currentTimeMillis() - clientStart) / 20).toInt() // 50 fps
 
         priorityRenderer.produceVertices(camera, clientCycle)
-
-        if (textureArrayId == -1) {
-            // lazy init textures as they may not be loaded at plugin start.
-            // this will return -1 and retry if not all textures are loaded yet, too.
-            textureArrayId = textureManager.initTextureArray()
-        }
-//        val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
         prepareDrawProgram(camera, canvasWidth, canvasHeight, clientCycle)
         GL20C.glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
 
@@ -527,7 +509,7 @@ class Renderer(
 
     override fun initUniforms() {
         super.initUniforms()
-        uniMouseCoordsId = GL20C.glGetUniformLocation(glProgram, "mouseCoords")
+        uniMouseCoordsId = glGetUniformLocation(glProgram, "mouseCoords")
         uniAlphaMode = glGetUniformLocation(glProgram, "alphaMode")
     }
 

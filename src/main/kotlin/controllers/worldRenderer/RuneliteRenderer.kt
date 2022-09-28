@@ -76,6 +76,7 @@ import kotlin.math.min
 
 // Renderer code which appears to have originated with RuneLite
 open class RuneliteRenderer(
+    private val textureManager: TextureManager,
     var antiAliasingMode: AntiAliasingMode,
 ) {
     private var lastStretchedCanvasWidth = -1
@@ -86,6 +87,7 @@ open class RuneliteRenderer(
     private var rboSceneHandle = -1
     private var rboSceneDepthBuffer = -1
 
+    private var textureArrayId = -1
     private val textureOffsets = FloatArray(256)
 
     internal var glProgram = 0
@@ -223,6 +225,13 @@ open class RuneliteRenderer(
     }
 
     internal fun prepareDrawProgram(camera: Camera, canvasWidth: Int, canvasHeight: Int, clientCycle: Int) {
+        if (textureArrayId == -1) {
+            // lazy init textures as they may not be loaded at plugin start.
+            // this will return -1 and retry if not all textures are loaded yet, too.
+            textureArrayId = textureManager.initTextureArray()
+        }
+//        val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
+
         glUseProgram(glProgram)
         // Brightness happens to also be stored in the texture provider, so we use that
         glUniform1f(
