@@ -13,7 +13,7 @@ import javax.swing.SwingConstants
 
 class LicenseViewerController(owner: Frame, title: String, project: String) : JDialog(owner, title) {
     init {
-        preferredSize = Dimension(680, 500)
+        preferredSize = Dimension(680, 520)
         layout = BoxLayout(contentPane, BoxLayout.PAGE_AXIS)
         defaultCloseOperation = DISPOSE_ON_CLOSE
 

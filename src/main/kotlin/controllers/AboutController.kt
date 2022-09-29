@@ -16,7 +16,7 @@ import javax.swing.SwingConstants
 
 class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
     init {
-        preferredSize = Dimension(600, 300)
+        preferredSize = Dimension(640, 300)
         layout = BoxLayout(contentPane, BoxLayout.PAGE_AXIS)
         defaultCloseOperation = DISPOSE_ON_CLOSE
 
