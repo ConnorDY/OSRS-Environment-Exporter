@@ -1,5 +1,6 @@
 package controllers
 
+import ui.JActionLabel
 import ui.JLinkLabel
 import utils.PackageMetadata
 import java.awt.Dimension
@@ -13,9 +14,9 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants
 
-class AboutController(owner: Frame, title: String) : JDialog(owner, title) {
+class AboutController(val owner: Frame, title: String) : JDialog(owner, title) {
     init {
-        preferredSize = Dimension(600, 300)
+        preferredSize = Dimension(640, 300)
         layout = BoxLayout(contentPane, BoxLayout.PAGE_AXIS)
         defaultCloseOperation = DISPOSE_ON_CLOSE
 
@@ -42,14 +43,7 @@ class AboutController(owner: Frame, title: String) : JDialog(owner, title) {
 
         Box.createRigidArea(Dimension(20, 20)).let(::add)
 
-        JLabel("Credits").apply {
-            font = font.deriveFont(
-                HashMap(font.attributes).apply {
-                    put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON)
-                }
-            )
-            alignmentX = CENTER_ALIGNMENT
-        }.let(::add)
+        headingLabel("Credits").let(::add)
         sideBySide(
             JLabel("Original idea by "),
             JLinkLabel("https://twitter.com/TrillionStudios", "Trillion"),
@@ -67,11 +61,44 @@ class AboutController(owner: Frame, title: String) : JDialog(owner, title) {
         ).let(::add)
         Box.createGlue().let(::add)
 
+        headingLabel("Licenses").let(::add)
+        sideBySide(
+            JLabel("This application uses code from "),
+            JLinkLabel("https://runelite.net/", "RuneLite"),
+            JLabel(" licensed under the "),
+            JActionLabel("BSD 2-Clause").apply {
+                addActionListener { showLicense("RuneLite") }
+            },
+            JLabel(" license."),
+        ).let(::add)
+        sideBySide(
+            JLabel("This application uses code from "),
+            JLinkLabel("https://github.com/kfricilone/OpenRS/blob/master/source/net/openrs/cache/type/ConfigArchive.java", "Kyle Fricilone's OpenRS fork"),
+            JLabel(", these parts licensed under the "),
+            JActionLabel("MIT").apply {
+                addActionListener { showLicense("OpenRS") }
+            },
+            JLabel(" license."),
+        ).let(::add)
+        Box.createGlue().let(::add)
+
         pack()
     }
+
+    private fun headingLabel(text: String) =
+        JLabel(text).apply {
+            font = font.deriveFont(font.attributes + (TextAttribute.UNDERLINE to TextAttribute.UNDERLINE_ON))
+            alignmentX = CENTER_ALIGNMENT
+        }
 
     private fun sideBySide(vararg items: JLabel) = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.LINE_AXIS)
         items.forEach(::add)
+    }
+
+    private fun showLicense(project: String) {
+        val licenseDialog = LicenseViewerController(owner, "RuneLite License", project)
+        licenseDialog.setLocationRelativeTo(owner)
+        licenseDialog.isVisible = true
     }
 }
