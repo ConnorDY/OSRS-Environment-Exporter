@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### :wrench: Maintenance
+
+- Improve error reporting in shader code &ndash; [#144](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/144) @ScoreUnder
+
 ## 2.3.0
 
 ### :sparkles: Enhancements
