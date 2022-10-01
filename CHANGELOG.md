@@ -4,6 +4,8 @@
 
 ### :wrench: Maintenance
 
+- Acknowledge RuneLite license in applicable sources and distributed binaries &ndash; [#155](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/155) @ScoreUnder
+
 - Improve error reporting in shader code &ndash; [#144](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/144) @ScoreUnder
 
 ## 2.3.0
