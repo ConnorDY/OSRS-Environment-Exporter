@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### :sparkles: Enhancements
+
+- Add hexagon-packed dots mode to alpha types &ndash; [#158](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/158) @ScoreUnder
+
 ### :wrench: Maintenance
 
 - Acknowledge RuneLite license in applicable sources and distributed binaries &ndash; [#155](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/155) @ScoreUnder
