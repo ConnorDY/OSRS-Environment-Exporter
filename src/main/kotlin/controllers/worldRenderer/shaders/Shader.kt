@@ -105,7 +105,8 @@ class Shader {
 
     companion object {
         // Line format: `0:123(10): error: ...`
-        private val ERROR_LINE_REGEX_MESA = Regex("\\d+:(\\d+)(?:\\((\\d+)\\))?\\s*: (.*)")
+        private val ERROR_LINE_REGEX_MESA = Regex("(?:ERROR:\\s*)?\\d+:(\\d+)(?:\\((\\d+)\\))?\\s*: (.*)")
+        // Line format: `123(10) : error : ...`
         private val ERROR_LINE_REGEX_NVIDIA = Regex("\\d+\\((\\d+)\\)\\s*: (.*)")
         const val VERSION_HEADER = "#version 430\n"
         val PROGRAM = lazy {
