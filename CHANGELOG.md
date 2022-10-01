@@ -8,6 +8,10 @@
 
 - Improve error reporting in shader code &ndash; [#144](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/144) @ScoreUnder
 
+### :book: Documentation
+
+- Include `LICENSE`, `README.md`, and `CHANGELOG.md` in packaged releases &ndash; [#156](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/156) @ConnorDY
+
 ## 2.3.0
 
 ### :sparkles: Enhancements
