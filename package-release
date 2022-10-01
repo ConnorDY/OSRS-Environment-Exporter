@@ -35,7 +35,7 @@ rm -rf -- "$destdir" || exit
 ./gradlew clean build || exit
 
 mkdir -p -- "$destdir/$full_name" || exit
-cp -- run run.bat LICENSE README.md "build/libs/$src_jar_name" "$full_path" || exit
+cp -- run run.bat LICENSE README.md CHANGELOG.md "build/libs/$src_jar_name" "$full_path" || exit
 mv -- "$full_path/$src_jar_name" "$full_path/$jar_name"
 perl -i -ple 's,/build/libs(.*)-fat,$1,' "$full_path/run" "$full_path/run.bat" || exit
 unix2dos "$full_path/run.bat" || exit
