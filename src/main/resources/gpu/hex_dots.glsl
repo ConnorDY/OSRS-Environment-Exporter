@@ -25,7 +25,7 @@ vec2 findHexDotCentre(vec2 pos, float radius) {
 
     // Transform the coordinates such that different cases to be considered
     // are all at different integer values.
-    vec2 hexSection = gl_FragCoord.xy * vec2(3.0f / hexWidth, 2.0f / hexHeight);
+    vec2 hexSection = pos * vec2(3.0f / hexWidth, 2.0f / hexHeight);
 
     // x,y coordinates of the hexagon centre.
     // scaled such that 1.0 is the size of a hexagon in each dimension.
