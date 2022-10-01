@@ -12,7 +12,22 @@ We recommend using the latest release unless you are having problems with it.
 
 ## How to use
 
+If you're on Windows, double click `run.bat` to launch the application.
+
+If you're on macOS or Linux, open a terminal window, change directory to where you extracted the application, then execute the following command: `./run`.
+
 [TheSkulled](https://www.youtube.com/channel/UC3NPPMYWrCH4oCFeKRf9Ltw) made a lovely [tutorial video](https://www.youtube.com/watch?v=NhqLDY9QH7k) for the exporter. Give it a watch! 👀
+
+## Troubleshooting
+
+If the application does not run, make sure you have JDK 11 or newer installed.
+
+OpenJDK can be downloaded [here](https://learn.microsoft.com/en-us/java/openjdk/download).
+
+To check which version of Java you have installed, open Command Prompt (or a terminal window if you're on Linux or macOS) and run the following command:
+```bash
+java --version
+```
 
 ## Configuration
 
