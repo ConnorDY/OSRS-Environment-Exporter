@@ -20,11 +20,11 @@ jobs:
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
 
-    - name: Execute Gradle build
-      run: ./gradlew build
+    - name: Create packaged release
+      run: ./package-release
 
-    - name: Archive built jars
+    - name: Archive release
       uses: actions/upload-artifact@v3
       with:
-        name: osrs-environment-exporter-${{ matrix.os }}.jar
-        path: build/libs/osrs-environment-exporter-fat-*.jar
+        name: osrs-environment-exporter-${{ matrix.os }}.zip
+        path: build/dist/osrs-environment-exporter-*.zip
