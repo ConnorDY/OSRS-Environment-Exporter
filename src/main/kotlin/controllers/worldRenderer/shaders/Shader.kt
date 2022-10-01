@@ -70,13 +70,14 @@ class Shader {
                 val shader = glCreateShader(unit.type)
                 if (shader == 0)
                     throw ShaderException("Unable to create shader of type ${unit.type}")
-                val source: String = template.load(unit.filename)
+                val processedFile = template.load(unit.filename)
+                val source = processedFile.contents
                 glShaderSource(shader, source)
                 glCompileShader(shader)
                 if (glGetShaderi(shader, GL_COMPILE_STATUS) != GL_TRUE) {
                     val err: String = glGetShaderInfoLog(shader)
                     glDeleteShader(shader)
-                    throw ShaderException(err)
+                    throw ShaderException(reformatErrorString(err, processedFile))
                 }
                 glAttachShader(program, shader)
                 shaders[i++] = shader
@@ -105,7 +106,33 @@ class Shader {
         return program
     }
 
+    private fun reformatErrorString(
+        err: String,
+        processedFile: Template.ProcessedFile
+    ): String =
+        // Extract and transform line numbers from error
+        err.split('\n').joinToString("\n") { errorLine ->
+            val matchTriplet = run {
+                val mesaMatch = ERROR_LINE_REGEX_MESA.matchEntire(errorLine)
+                if (mesaMatch != null) return@run Triple(mesaMatch.groupValues[1], mesaMatch.groupValues[2], mesaMatch.groupValues[3])
+                val nvidiaMatch = ERROR_LINE_REGEX_NVIDIA.matchEntire(errorLine)
+                if (nvidiaMatch != null) return@run Triple(nvidiaMatch.groupValues[1], "", nvidiaMatch.groupValues[2])
+                null
+            } ?: return@joinToString errorLine
+            val (lineNumStr, columnNumStr, message) = matchTriplet
+            val lineNumber = lineNumStr.toInt()
+            if (lineNumber < 1) return@joinToString errorLine
+
+            val columnStr = if (columnNumStr.isNotEmpty()) "($columnNumStr)" else ""
+            val lineNumInfo = processedFile.getLineNumber(lineNumber)
+            "$lineNumInfo$columnStr:$message"
+        }
+
     companion object {
+        // Line format: `0:123(10): error: ...`
+        private val ERROR_LINE_REGEX_MESA = Regex("(?:ERROR:\\s*)?\\d+:(\\d+)(?:\\((\\d+)\\))?\\s*: (.*)")
+        // Line format: `123(10) : error : ...`
+        private val ERROR_LINE_REGEX_NVIDIA = Regex("\\d+\\((\\d+)\\)\\s*: (.*)")
         const val VERSION_HEADER = "#version 430\n"
         val PROGRAM = lazy {
             Shader()
