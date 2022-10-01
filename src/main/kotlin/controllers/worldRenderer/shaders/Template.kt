@@ -44,7 +44,8 @@ class Template {
                     }
                 )
                 physicalLines += resourceLoaded.physicalLines
-                lineNumbers.add(LineNumber(physicalLines, filename, index + 1))
+                // Insert a line number at the next line (i.e. index + next line + start at 1) which takes us back to this file
+                lineNumbers.add(LineNumber(physicalLines + 1, filename, index + 2))
             } else {
                 sb.append(line).append('\n')
                 physicalLines++
