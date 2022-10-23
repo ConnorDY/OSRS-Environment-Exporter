@@ -93,6 +93,7 @@ import kotlin.math.min
 class Renderer(
     private val camera: Camera,
     private val scene: Scene,
+    private val clickHandler: ClickHandler,
     private val sceneUploader: SceneUploader,
     private val textureManager: TextureManager,
     private val configOptions: ConfigOptions,
@@ -255,9 +256,13 @@ class Renderer(
             animator!!.doBeforeGlRender(::preDisplay)
         }
 
-        val clickHandler = ClickHandler(scene, inputHandler)
         animator!!.doBeforeGlRender {
-            clickHandler.handle(viewProjectionMatrix, canvasWidth, canvasHeight)
+            if (inputHandler.mouseClicked) {
+                inputHandler.mouseClicked = false
+                val mouseX = inputHandler.mouseX
+                val mouseY = inputHandler.mouseY
+                clickHandler.handle(mouseX, mouseY, viewProjectionMatrix, canvasWidth, canvasHeight)
+            }
         }
 
         return glCanvas

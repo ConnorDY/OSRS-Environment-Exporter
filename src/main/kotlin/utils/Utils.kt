@@ -4,9 +4,11 @@ import controllers.worldRenderer.Constants.REGION_X_STRIDE
 import java.util.Queue
 
 object Utils {
-    fun worldCoordinatesToRegionId(x: Int, y: Int): Int {
-        return (x ushr 6) shl 8 or (y ushr 6)
-    }
+    /** Convert a distance in blocks to a distance in regions. */
+    fun blockAxisToRegionAxis(blockAxis: Int): Int = blockAxis ushr 6
+
+    fun worldCoordinatesToRegionId(x: Int, y: Int) =
+        blockAxisToRegionAxis(x) shl 8 or blockAxisToRegionAxis(y)
 
     fun getRegionIdX(regionId: Int): Int = regionId / REGION_X_STRIDE
     fun getRegionIdY(regionId: Int): Int = regionId % REGION_X_STRIDE

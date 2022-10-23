@@ -13,12 +13,14 @@ import cache.loaders.UnderlayLoader
 import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.AboutController
+import controllers.AdjustSceneController
 import controllers.DebugOptionsController
 import controllers.GridRegionChooserController
 import controllers.LocationSearchController
 import controllers.RegionLoadingDialogHelper.confirmAndLoadRadius
 import controllers.SettingsController
 import controllers.worldRenderer.Camera
+import controllers.worldRenderer.ClickHandler
 import controllers.worldRenderer.Renderer
 import controllers.worldRenderer.SceneDrawListener
 import controllers.worldRenderer.SceneExporter
@@ -71,6 +73,7 @@ class MainController constructor(
     private val logger = LoggerFactory.getLogger(this::class.java)
     private val debugOptions = DebugOptionsModel()
     private val exporter: SceneExporter
+    private val clickHandler: ClickHandler
     private val frameRateModel = FrameRateModel(configOptions.powerSavingMode.value)
     private val btnExport: JButton
 
@@ -103,8 +106,11 @@ class MainController constructor(
         val textureManager = TextureManager(SpriteLoader(cacheLibrary), textureLoader)
         exporter = SceneExporter(textureManager, debugOptions)
         val sceneUploader = SceneUploader(debugOptions)
+        clickHandler = ClickHandler(scene)
         val renderer = Renderer(
-            camera, scene, sceneUploader,
+            camera, scene,
+            clickHandler,
+            sceneUploader,
             textureManager,
             configOptions,
             frameRateModel,
@@ -134,6 +140,11 @@ class MainController constructor(
             }.let(::add)
             JMenu("Edit").apply {
                 mnemonic = 'E'.code
+                JMenuItem("Adjust scene").apply {
+                    mnemonic = 'A'.code
+                    addActionListener(::adjustSceneClicked)
+                }.let(::add)
+                addSeparator()
                 JMenuItem("Preferences").apply {
                     mnemonic = 'P'.code
                     addActionListener(::preferencesClicked)
@@ -270,6 +281,10 @@ class MainController constructor(
         GridRegionChooserController(this, "Load Custom Grid") { regionIds ->
             scene.loadRegions(regionIds)
         }.display()
+    }
+
+    private fun adjustSceneClicked(event: ActionEvent) {
+        AdjustSceneController(this, "Adjust scene", scene, clickHandler).display()
     }
 
     private fun preferencesClicked(event: ActionEvent) {

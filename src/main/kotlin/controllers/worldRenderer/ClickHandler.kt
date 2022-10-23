@@ -16,41 +16,57 @@ import org.joml.Vector3f
 
 class ClickHandler(
     private val scene: Scene,
-    private val inputHandler: InputHandler,
 ) {
-    fun handle(viewProjectionMatrix: Matrix4f, width: Int, height: Int) {
-        if (!inputHandler.mouseClicked) return
-        inputHandler.mouseClicked = false
+    data class ClickLocation(
+        val z: Int,
+        val x: Int,
+        val y: Int,
+        val entity: Entity,
+        val distance: Float,
+    )
 
-        val x = inputHandler.mouseX
-        val y = inputHandler.mouseY
+    fun interface ClickListener {
+        fun onClick(clickLocation: ClickLocation)
+    }
 
-        val invViewProjectionMatrix = Matrix4f(viewProjectionMatrix).invert()
-        val ray = Ray.fromScreenCoordinates(x, y, width, height, invViewProjectionMatrix)
+    val clickListeners = mutableListOf<ClickListener>()
 
-        ray.getAllEntityHits().minByOrNull { it.first }?.let { (dist, entity) ->
-            val name = entity.objectDefinition.name
-            val id = entity.objectDefinition.id
-            println("Clicked $name ($id) at distance $dist")
+    init {
+        // Debug click listener
+        clickListeners.add { click ->
+            val dist = click.distance
+            val obj = click.entity.objectDefinition
+            val name = obj.name
+            val id = obj.id
+            println("Clicked $name ($id) at distance $dist, tile ${click.x}, ${click.y}, Z${click.z}")
         }
     }
 
-    private fun Ray.getAllEntityHits(): List<Pair<Float, Entity>> {
-        val hits = mutableListOf<Pair<Float, Entity>>()
-        withIntersectingRegions { region, regionPos ->
+    fun handle(mouseX: Int, mouseY: Int, viewProjectionMatrix: Matrix4f, width: Int, height: Int) {
+        val invViewProjectionMatrix = Matrix4f(viewProjectionMatrix).invert()
+        val ray = Ray.fromScreenCoordinates(mouseX, mouseY, width, height, invViewProjectionMatrix)
+
+        ray.getAllEntityHits().minByOrNull { it.distance }?.let { click ->
+            clickListeners.forEach { it.onClick(click) }
+        }
+    }
+
+    private fun Ray.getAllEntityHits(): List<ClickLocation> {
+        val hits = mutableListOf<ClickLocation>()
+        withIntersectingRegions { region, regionPos, regionX, regionY ->
             // Now actually check if the ray hit any entity
-            withPotentialEntityHits(region, regionPos, this) { entity, entityPos ->
+            withPotentialEntityHits(region, regionPos, this) { entity, entityPos, tz, tx, ty ->
                 // Check if it hit any of the entity's geometry
                 val hit = intersectsEntity(entity, entityPos)
                 if (hit >= 0f)
-                    hits.add(hit to entity)
+                    hits.add(ClickLocation(tz, tx + regionX * X, ty + regionY * Y, entity, hit))
             }
         }
         return hits
     }
 
     private inline fun Ray.withIntersectingRegions(
-        process: (SceneRegion, Vector3f) -> Unit
+        process: (SceneRegion, Vector3f, Int, Int) -> Unit
     ) {
         val regionSize = (REGION_SIZE * LOCAL_TILE_SIZE).toFloat()
         val aabbMin = Vector3f()
@@ -69,7 +85,7 @@ class ClickHandler(
                 // Reuse this vector for region coordinate offset
                 // Y offset is taken from bbox max because Y is inverted
                 aabbMin.y = aabbMax.y
-                process(region, aabbMin)
+                process(region, aabbMin, regionX, regionY)
             }
         }
     }
@@ -129,7 +145,7 @@ class ClickHandler(
         region: SceneRegion,
         regionPos: Vector3f,
         ray: Ray,
-        process: (Entity, Vector3f) -> Unit
+        process: (Entity, Vector3f, Int, Int, Int) -> Unit
     ) {
         val tilePos = Vector3f()
         val entityPos = Vector3f()
@@ -158,7 +174,7 @@ class ClickHandler(
                                 intersection
                             )
                         )
-                            process(entity, entityPos)
+                            process(entity, entityPos, tz, tx, ty)
                     }
                 }
             }
