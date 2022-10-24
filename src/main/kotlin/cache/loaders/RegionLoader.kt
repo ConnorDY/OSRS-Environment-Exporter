@@ -35,6 +35,7 @@ import cache.utils.readUnsignedShort
 import com.displee.cache.CacheLibrary
 import org.slf4j.LoggerFactory
 import utils.Utils
+import utils.Utils.parseCacheRevision
 import java.nio.ByteBuffer
 
 class RegionLoader(
@@ -52,13 +53,14 @@ class RegionLoader(
         }
 
         val inputStream = ByteBuffer.wrap(map)
+        val revision = parseCacheRevision(cacheLibrary.path)
 
         val tiles = Array(Z) {
             Array(X) {
                 Array(Y) {
                     val tile = RegionDefinition.Tile()
                     while (true) {
-                        val attribute: Int = inputStream.readUnsignedShort()
+                        val attribute: Int = if (revision >= 209) inputStream.readUnsignedShort() else inputStream.readUnsignedByte()
                         if (attribute == 0) {
                             break
                         } else if (attribute == 1) {
@@ -68,7 +70,7 @@ class RegionLoader(
                             break
                         } else if (attribute <= 49) {
                             tile.attrOpcode = attribute
-                            tile.overlayId = inputStream.short
+                            tile.overlayId = if (revision >= 209) inputStream.short else inputStream.get().toShort()
                             tile.overlayPath = ((attribute - 2) / 4).toByte()
                             tile.overlayRotation = (attribute - 2 and 3).toByte()
                         } else if (attribute <= 81) {

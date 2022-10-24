@@ -163,8 +163,8 @@ class SceneRegionBuilder constructor(
                         if (yi in 0 until REGION_SIZE) {
                             val r: RegionDefinition =
                                 regionLoader.findRegionForWorldCoordinates(baseX + xi, baseY + yi) ?: continue
-                            val underlayId: Int = r.tiles[z][xi][yi].underlayId.toInt() and 0x7FFF
-                            val overlayId: Int = r.tiles[z][xi][yi].overlayId.toInt() and 0x7FFF
+                            val underlayId: Int = r.tiles[z][xi][yi].underlayId.toInt() and 0xFF
+                            val overlayId: Int = r.tiles[z][xi][yi].overlayId.toInt() and 0xFF
                             if (underlayId <= 0 && overlayId <= 0) {
                                 continue
                             }
