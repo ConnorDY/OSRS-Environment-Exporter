@@ -31,6 +31,7 @@ import cache.definitions.RegionDefinition.Companion.X
 import cache.definitions.RegionDefinition.Companion.Y
 import cache.definitions.RegionDefinition.Companion.Z
 import cache.utils.readUnsignedByte
+import cache.utils.readUnsignedShort
 import com.displee.cache.CacheLibrary
 import org.slf4j.LoggerFactory
 import utils.Utils
@@ -57,7 +58,7 @@ class RegionLoader(
                 Array(Y) {
                     val tile = RegionDefinition.Tile()
                     while (true) {
-                        val attribute: Int = inputStream.readUnsignedByte()
+                        val attribute: Int = inputStream.readUnsignedShort()
                         if (attribute == 0) {
                             break
                         } else if (attribute == 1) {
@@ -67,13 +68,13 @@ class RegionLoader(
                             break
                         } else if (attribute <= 49) {
                             tile.attrOpcode = attribute
-                            tile.overlayId = inputStream.get()
+                            tile.overlayId = inputStream.short
                             tile.overlayPath = ((attribute - 2) / 4).toByte()
                             tile.overlayRotation = (attribute - 2 and 3).toByte()
                         } else if (attribute <= 81) {
                             tile.settings = (attribute - 49).toByte()
                         } else {
-                            tile.underlayId = (attribute - 81).toByte()
+                            tile.underlayId = (attribute - 81).toShort()
                         }
                     }
                     tile
