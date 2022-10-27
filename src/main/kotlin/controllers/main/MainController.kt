@@ -1,5 +1,6 @@
 package controllers.main
 
+import cache.ParamsManager
 import cache.XteaManager
 import cache.definitions.converters.ObjectToModelConverter
 import cache.loaders.LocationsLoader
@@ -66,7 +67,8 @@ class MainController constructor(
     private val configOptions: ConfigOptions,
     private val startupOptions: StartupOptions,
     xteaManager: XteaManager,
-    cacheLibrary: CacheLibrary
+    cacheLibrary: CacheLibrary,
+    paramsManager: ParamsManager
 ) : JFrame(title) {
     private val animationTimer: Timer
     private val worldRendererController: WorldRendererController?
@@ -87,7 +89,7 @@ class MainController constructor(
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
         val overlayLoader = OverlayLoader(cacheLibrary)
-        val regionLoader = RegionLoader(cacheLibrary)
+        val regionLoader = RegionLoader(cacheLibrary, paramsManager)
         val textureLoader = TextureLoader(cacheLibrary)
         val underlayLoader = UnderlayLoader(cacheLibrary)
 

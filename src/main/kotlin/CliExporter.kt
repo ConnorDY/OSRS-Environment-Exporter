@@ -1,3 +1,4 @@
+import cache.ParamsManager
 import cache.XteaManager
 import cache.definitions.converters.ObjectToModelConverter
 import cache.loaders.LocationsLoader
@@ -26,10 +27,12 @@ class CliExporter(startupOptions: StartupOptions) {
     init {
         val cacheLibrary = CacheLibrary("${startupOptions.cacheDir}/cache")
         val xteaManager = XteaManager(startupOptions.cacheDir)
+        val paramsManager = ParamsManager()
+        paramsManager.loadFromPath(startupOptions.cacheDir)
 
         val spriteLoader = SpriteLoader(cacheLibrary)
         val textureLoader = TextureLoader(cacheLibrary)
-        val regionLoader = RegionLoader(cacheLibrary)
+        val regionLoader = RegionLoader(cacheLibrary, paramsManager)
         val locationsLoader = LocationsLoader(cacheLibrary, xteaManager)
         val objectLoader = ObjectLoader(cacheLibrary)
         val underlayLoader = UnderlayLoader(cacheLibrary)
