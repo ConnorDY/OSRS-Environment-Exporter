@@ -363,10 +363,7 @@ class CacheChooserController(
         try {
             paramsManager.loadFromPath(txtCacheLocation.text)
         } catch (e: Exception) {
-            lblErrorText.text = when (e) {
-                is JsonMappingException, is JsonProcessingException -> "Bad cache: Could not load params file: ${e.message}"
-                else -> defaultErrorText(e)
-            }
+            lblErrorText.text = defaultErrorText(e)
             btnLaunch.isEnabled = false
             return
         }
