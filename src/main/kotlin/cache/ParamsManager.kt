@@ -18,7 +18,7 @@ class ParamsManager {
 
     fun parseParams(reader: BufferedReader) {
         paramsMap.clear()
-        reader.forEachLine {line ->
+        reader.forEachLine { line ->
             if (!line.contains("param=")) {
                 return@forEachLine
             }

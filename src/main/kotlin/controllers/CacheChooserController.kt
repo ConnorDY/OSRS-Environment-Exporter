@@ -243,7 +243,7 @@ class CacheChooserController(
     ) {
         val cacheLibrary = cacheLibrary ?: return
         val xteaManager = xteaManager ?: return
-        val paramsManager = paramsManager ?: return
+        val paramsManager = paramsManager
 
         btnLaunch.isEnabled = false
         lblStatusText.text =
