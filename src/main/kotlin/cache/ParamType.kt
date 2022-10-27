@@ -6,7 +6,7 @@ enum class ParamType(val id: Int) {
      */
     WEB_URL(2),
     /**
-     * The game revision number of the cache
+     * The game revision number of the cache starting in rev209
      */
     REVISION(25)
 }
