@@ -25,13 +25,4 @@ object Utils {
             action?.run()
         } while (action != null)
     }
-
-    private const val defaultCacheRevision = 209
-    fun parseCacheRevision(cachePath: String): Int {
-        // regex to match 2022-10-19-rev209
-        val revisionRegexp = """\d{4}-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])-(rev)([0-9][0-9][0-9])""".toRegex()
-        val revision = revisionRegexp.find(cachePath) ?: return defaultCacheRevision
-        val revString: String = revision.groups[4]?.value ?: return defaultCacheRevision
-        return revString.toInt()
-    }
 }
