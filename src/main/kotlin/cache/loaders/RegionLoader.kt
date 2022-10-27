@@ -37,7 +37,6 @@ import cache.utils.readUnsignedShort
 import com.displee.cache.CacheLibrary
 import org.slf4j.LoggerFactory
 import utils.Utils
-import utils.Utils.parseCacheRevision
 import java.nio.ByteBuffer
 
 class RegionLoader(
@@ -45,6 +44,7 @@ class RegionLoader(
     private val paramsManager: ParamsManager
 ) : ThreadsafeLazyLoader<RegionDefinition>() {
     private val logger = LoggerFactory.getLogger(RegionLoader::class.java)
+    private val readOverlayAsShort = paramsManager.getParam(ParamType.REVISION)?.toInt() == OVERLAY_SHORT_BREAKING_CHANGE_REV_NUMBER
 
     override fun load(id: Int): RegionDefinition? {
         val regionX = (id shr 8) and 0xFF
@@ -56,7 +56,6 @@ class RegionLoader(
         }
 
         val inputStream = ByteBuffer.wrap(map)
-        val readOverlayAsShort = readOverlayAsShortBreaking()
 
         val tiles = Array(Z) {
             Array(X) {
@@ -94,11 +93,6 @@ class RegionLoader(
 
     fun findRegionForWorldCoordinates(x: Int, y: Int): RegionDefinition? {
         return get(Utils.worldCoordinatesToRegionId(x, y))
-    }
-
-    private fun readOverlayAsShortBreaking(): Boolean {
-        val revision: Int = paramsManager.getParam(ParamType.REVISION)?.toInt() ?: return false
-        return revision == OVERLAY_SHORT_BREAKING_CHANGE_REV_NUMBER
     }
 
     companion object {
