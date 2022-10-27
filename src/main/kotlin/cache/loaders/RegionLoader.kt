@@ -44,7 +44,7 @@ class RegionLoader(
     private val paramsManager: ParamsManager
 ) : ThreadsafeLazyLoader<RegionDefinition>() {
     private val logger = LoggerFactory.getLogger(RegionLoader::class.java)
-    private val readOverlayAsShort = paramsManager.getParam(ParamType.REVISION)?.toInt() == OVERLAY_SHORT_BREAKING_CHANGE_REV_NUMBER
+    private val readOverlayAsShort = (paramsManager.getParam(ParamType.REVISION)?.toInt()?:0) >= OVERLAY_SHORT_BREAKING_CHANGE_REV_NUMBER
 
     override fun load(id: Int): RegionDefinition? {
         val regionX = (id shr 8) and 0xFF
