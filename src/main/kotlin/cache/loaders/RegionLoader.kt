@@ -26,6 +26,8 @@
 package cache.loaders
 
 import cache.IndexType
+import cache.ParamType
+import cache.ParamsManager
 import cache.definitions.RegionDefinition
 import cache.definitions.RegionDefinition.Companion.X
 import cache.definitions.RegionDefinition.Companion.Y
@@ -39,7 +41,8 @@ import utils.Utils.parseCacheRevision
 import java.nio.ByteBuffer
 
 class RegionLoader(
-    private val cacheLibrary: CacheLibrary
+    private val cacheLibrary: CacheLibrary,
+    private val paramsManager: ParamsManager
 ) : ThreadsafeLazyLoader<RegionDefinition>() {
     private val logger = LoggerFactory.getLogger(RegionLoader::class.java)
 
@@ -53,14 +56,14 @@ class RegionLoader(
         }
 
         val inputStream = ByteBuffer.wrap(map)
-        val revision = parseCacheRevision(cacheLibrary.path)
+        val readOverlayAsShort = readOverlayAsShortBreaking()
 
         val tiles = Array(Z) {
             Array(X) {
                 Array(Y) {
                     val tile = RegionDefinition.Tile()
                     while (true) {
-                        val attribute: Int = if (revision >= 209) inputStream.readUnsignedShort() else inputStream.readUnsignedByte()
+                        val attribute: Int = if (readOverlayAsShort) inputStream.readUnsignedShort() else inputStream.readUnsignedByte()
                         if (attribute == 0) {
                             break
                         } else if (attribute == 1) {
@@ -70,7 +73,7 @@ class RegionLoader(
                             break
                         } else if (attribute <= 49) {
                             tile.attrOpcode = attribute
-                            tile.overlayId = if (revision >= 209) inputStream.short else inputStream.get().toShort()
+                            tile.overlayId = if (readOverlayAsShort) inputStream.short else inputStream.get().toShort()
                             tile.overlayPath = ((attribute - 2) / 4).toByte()
                             tile.overlayRotation = (attribute - 2 and 3).toByte()
                         } else if (attribute <= 81) {
@@ -91,5 +94,14 @@ class RegionLoader(
 
     fun findRegionForWorldCoordinates(x: Int, y: Int): RegionDefinition? {
         return get(Utils.worldCoordinatesToRegionId(x, y))
+    }
+
+    private fun readOverlayAsShortBreaking(): Boolean {
+        val revision: Int = paramsManager.getParam(ParamType.REVISION)?.toInt() ?: return false
+        return revision == OVERLAY_SHORT_BREAKING_CHANGE_REV_NUMBER
+    }
+
+    companion object {
+        private const val OVERLAY_SHORT_BREAKING_CHANGE_REV_NUMBER = 209
     }
 }
