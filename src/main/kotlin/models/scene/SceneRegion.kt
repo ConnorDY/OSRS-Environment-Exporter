@@ -3,7 +3,6 @@ package models.scene
 import cache.definitions.Location
 import cache.definitions.LocationsDefinition
 import cache.definitions.OverlayDefinition
-import cache.definitions.RegionDefinition
 import cache.definitions.RegionDefinition.Companion.X
 import cache.definitions.RegionDefinition.Companion.Y
 import cache.definitions.RegionDefinition.Companion.Z
@@ -42,8 +41,7 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         neColorB: Int,
         nwColorB: Int,
         underlayDefinition: UnderlayDefinition?,
-        overlayDefinition: OverlayDefinition?,
-        cacheTile: RegionDefinition.Tile
+        overlayDefinition: OverlayDefinition?
     ) {
         when (overlayPath) {
             0 -> {
@@ -97,7 +95,6 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
         }
         tiles[z][x][y]?.underlayDefinition = underlayDefinition
         tiles[z][x][y]?.overlayDefinition = overlayDefinition
-        tiles[z][x][y]?.cacheTile = cacheTile
     }
 
     fun newFloorDecoration(z: Int, x: Int, y: Int, entity: Entity) {

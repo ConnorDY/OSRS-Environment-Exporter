@@ -187,8 +187,7 @@ class SceneRegionBuilder constructor(
                                     0,
                                     0,
                                     underlay,
-                                    null,
-                                    r.tiles[z][xi][yi]
+                                    null
                                 )
                             } else {
                                 val overlayPath: Int = r.tiles[z][xi][yi].overlayPath.toInt() + 1
@@ -233,8 +232,7 @@ class SceneRegionBuilder constructor(
                                     adjustOverlayBrightness(overlayHsl, neBrightness),
                                     adjustOverlayBrightness(overlayHsl, nwBrightness),
                                     underlay,
-                                    overlayDefinition,
-                                    r.tiles[z][xi][yi]
+                                    overlayDefinition
                                 )
                             }
                         }

@@ -2,7 +2,6 @@ package models.scene
 
 import cache.definitions.Location
 import cache.definitions.OverlayDefinition
-import cache.definitions.RegionDefinition
 import cache.definitions.UnderlayDefinition
 import controllers.worldRenderer.entities.Entity
 import controllers.worldRenderer.entities.GameObject
@@ -22,7 +21,6 @@ class SceneTile {
     }
 
     var locations: ArrayList<Location> = ArrayList()
-    var cacheTile: RegionDefinition.Tile? = null
     var overlayDefinition: OverlayDefinition? = null
     var underlayDefinition: UnderlayDefinition? = null
 
