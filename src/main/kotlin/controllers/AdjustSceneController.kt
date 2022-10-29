@@ -39,7 +39,7 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
         layout = BorderLayout()
 
         val treeModel = SceneTreeModel(scene)
-        treeEntities = object: JTree(treeModel) {
+        treeEntities = object : JTree(treeModel) {
             override fun convertValueToText(
                 value: Any?,
                 selected: Boolean,
@@ -68,7 +68,7 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
 
         val sceneChangeListener = ActionListener { treeModel.onSceneChange() }
         scene.sceneChangeListeners.add(sceneChangeListener)
-        addWindowListener(object: WindowAdapter() {
+        addWindowListener(object : WindowAdapter() {
             override fun windowClosed(e: WindowEvent?) {
                 scene.sceneChangeListeners.remove(sceneChangeListener)
             }
@@ -80,7 +80,7 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
             }
         }
         clickHandler.clickListeners.add(clickListener)
-        addWindowListener(object: WindowAdapter() {
+        addWindowListener(object : WindowAdapter() {
             override fun windowClosed(e: WindowEvent?) {
                 clickHandler.clickListeners.remove(clickListener)
             }
@@ -154,9 +154,9 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
         }
 
         override fun isLeaf(node: Any): Boolean =
-            (node is WrappedTile && node.tile == null)
-                || (node is WrappedRegion && node.region == null)
-                || node is Entity
+            (node is WrappedTile && node.tile == null) ||
+                (node is WrappedRegion && node.region == null) ||
+                node is Entity
 
         override fun valueForPathChanged(path: TreePath, newValue: Any) {
             // This is only editable through the underlying scene
