@@ -257,31 +257,9 @@ class SceneRegionBuilder constructor(
                 width = objectDefinition.sizeY
                 length = objectDefinition.sizeX
             }
-            val var11: Int
-            val var12: Int
-            if (width + x <= REGION_SIZE) {
-                var11 = (width shr 1) + x
-                var12 = (width + 1 shr 1) + x
-            } else {
-                var11 = x
-                var12 = x + 1
-            }
-            val var13: Int
-            val var14: Int
-            if (length + y <= REGION_SIZE) {
-                var13 = (length shr 1) + y
-                var14 = y + (length + 1 shr 1)
-            } else {
-                var13 = y
-                var14 = y + 1
-            }
-            val xSize = (x shl 7) + (width shl 6)
-            val ySize = (y shl 7) + (length shl 6)
-            val swHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var14)
-            val seHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var14)
-            val neHeight = regionLoader.getTileHeight(z, baseX + var12, baseY + var13)
-            val nwHeight = regionLoader.getTileHeight(z, baseX + var11, baseY + var13)
-            val height = swHeight + seHeight + neHeight + nwHeight shr 2
+            val xCentre = (x shl 7) + (width shl 6)
+            val yCentre = (y shl 7) + (length shl 6)
+            val height = calcEntityHeight(width, length, baseX, baseY, z, x, y)
 
             val firstEntityOrientation = when (loc.type) {
                 LocationType.WALL_CORNER.id,
@@ -296,7 +274,7 @@ class SceneRegionBuilder constructor(
             }
 
             val staticObject =
-                getEntity(objectDefinition, loc.type, firstEntityOrientation, xSize, height, ySize, z, baseX, baseY)
+                getEntity(objectDefinition, loc.type, firstEntityOrientation, xCentre, height, yCentre, z, baseX, baseY)
                     ?: return@forEach
 
             when (loc.type) {
@@ -306,7 +284,7 @@ class SceneRegionBuilder constructor(
                     sceneRegion.newWall(z, x, y, width, length, staticObject, null, loc)
                 }
                 LocationType.WALL_CORNER.id -> {
-                    val entity2 = getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xSize, height, ySize, z, baseX, baseY)
+                    val entity2 = getEntity(objectDefinition, loc.type, loc.orientation + 1 and 3, xCentre, height, yCentre, z, baseX, baseY)
                     sceneRegion.newWall(z, x, y, width, length, staticObject, entity2, loc)
                 }
                 LocationType.INSIDE_WALL_DECORATION.id -> {
@@ -326,7 +304,7 @@ class SceneRegionBuilder constructor(
                 LocationType.DIAGONAL_WALL_DECORATION.id -> {
                     val (displacementX, displacementY) = sceneRegion.getWallDiagonalDisplacement(loc, z, x, y)
 
-                    val entity2 = getEntity(objectDefinition, loc.type, ((loc.orientation + 2) and 3) + 4, xSize, height, ySize, z, baseX, baseY)!!
+                    val entity2 = getEntity(objectDefinition, loc.type, ((loc.orientation + 2) and 3) + 4, xCentre, height, yCentre, z, baseX, baseY)!!
 
                     sceneRegion.newWallDecoration(z, x, y, staticObject, entity2, displacementX / 2, displacementY / 2)
                 }
@@ -354,6 +332,40 @@ class SceneRegionBuilder constructor(
         return sceneRegion
     }
 
+    private fun calcEntityHeight(
+        width: Int,
+        length: Int,
+        baseX: Int,
+        baseY: Int,
+        z: Int,
+        x: Int,
+        y: Int
+    ): Int {
+        val xWest: Int
+        val xEast: Int
+        if (width + x <= REGION_SIZE) {
+            xWest = (width shr 1) + x
+            xEast = (width + 1 shr 1) + x
+        } else {
+            xWest = x
+            xEast = x + 1
+        }
+        val ySouth: Int
+        val yNorth: Int
+        if (length + y <= REGION_SIZE) {
+            ySouth = (length shr 1) + y
+            yNorth = y + (length + 1 shr 1)
+        } else {
+            ySouth = y
+            yNorth = y + 1
+        }
+        val neHeight = regionLoader.getTileHeight(z, baseX + xEast, baseY + yNorth)
+        val nwHeight = regionLoader.getTileHeight(z, baseX + xWest, baseY + yNorth)
+        val seHeight = regionLoader.getTileHeight(z, baseX + xEast, baseY + ySouth)
+        val swHeight = regionLoader.getTileHeight(z, baseX + xWest, baseY + ySouth)
+        return neHeight + nwHeight + seHeight + swHeight shr 2
+    }
+
     private fun fakeLocationsDefinition(regionId: Int): LocationsDefinition {
         logger.warn("Could not find location (entity) data for region $regionId")
         return LocationsDefinition(regionId)
@@ -363,9 +375,9 @@ class SceneRegionBuilder constructor(
         objectDefinition: ObjectDefinition,
         type: Int,
         orientation: Int,
-        xSize: Int,
+        xCentre: Int,
         height: Int,
-        ySize: Int,
+        yCentre: Int,
         zPlane: Int,
         baseX: Int,
         baseY: Int
@@ -383,9 +395,9 @@ class SceneRegionBuilder constructor(
         if (objectDefinition.contouredGround >= 0) {
             model.contourGround(
                 regionLoader,
-                xSize,
+                xCentre,
                 height,
-                ySize,
+                yCentre,
                 zPlane,
                 baseX,
                 baseY,
