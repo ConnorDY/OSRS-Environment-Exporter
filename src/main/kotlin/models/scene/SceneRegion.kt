@@ -174,13 +174,13 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
     ) {
         val tile = ensureTile(z, x, y)
 
-        entity.model.offsetX = width * REGION_SIZE
-        entity.model.offsetY = length * REGION_SIZE
+        entity.model.offsetX = width * LOCAL_HALF_TILE_SIZE
+        entity.model.offsetY = length * LOCAL_HALF_TILE_SIZE
         tile.attachments.add(Pair(SceneTile.Attachment.WALL_OBJECT, entity))
         if (entity2 != null) {
             val model = entity2.model
-            model.offsetX = width * REGION_SIZE
-            model.offsetY = length * REGION_SIZE
+            model.offsetX = width * LOCAL_HALF_TILE_SIZE
+            model.offsetY = length * LOCAL_HALF_TILE_SIZE
             tile.attachments.add(Pair(SceneTile.Attachment.WALL_OBJECT, entity2))
         }
         tile.locations.add(location)
@@ -227,8 +227,8 @@ class SceneRegion(val locationsDefinition: LocationsDefinition) {
     ) {
         val tile = ensureTile(z, x, y)
 
-        entity.model.offsetX = width * REGION_SIZE
-        entity.model.offsetY = length * REGION_SIZE
+        entity.model.offsetX = width * LOCAL_HALF_TILE_SIZE
+        entity.model.offsetY = length * LOCAL_HALF_TILE_SIZE
         tile.gameObjects.add(GameObject(entity, width, length))
         tile.locations.add(location)
     }
