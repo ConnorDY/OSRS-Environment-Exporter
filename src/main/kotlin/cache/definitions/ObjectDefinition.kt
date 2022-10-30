@@ -31,7 +31,6 @@ class ObjectDefinition {
     var modelSizeX = 128
     var modelSizeHeight = 128
     var modelSizeY = 128
-    var objectID = 0
     var offsetHeight = 0
     var offsetY = 0
     var obstructsGround = false
