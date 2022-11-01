@@ -6,6 +6,8 @@
 
 - Add hexagon-packed dots mode to alpha types &ndash; [#158](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/158) @ScoreUnder
 
+- Tweak loader code to support new cache versions &ndash; [#160](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/160) @tpetrychyn
+
 ### :wrench: Maintenance
 
 - Acknowledge RuneLite license in applicable sources and distributed binaries &ndash; [#155](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/155) @ScoreUnder
