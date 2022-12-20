@@ -17,6 +17,7 @@ class Model private constructor(
     val modelDefinition: ModelDefinition,
     val ambient: Int,
     val contrast: Int,
+    val orientation: Int, /* For reproducing the model from parameters, not for rendering */
     val faceColors1: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors2: IntArray = IntArray(modelDefinition.faceCount),
     val faceColors3: IntArray = IntArray(modelDefinition.faceCount)
@@ -449,10 +450,10 @@ class Model private constructor(
             return cache
         }
 
-        fun lightFromDefinition(def: ModelDefinition, ambient: Int, contrast: Int) =
-            Model(def, ambient + 64, contrast + 768).apply { light() }
+        fun lightFromDefinition(def: ModelDefinition, ambient: Int, contrast: Int, orientation: Int) =
+            Model(def, ambient + 64, contrast + 768, orientation).apply { light() }
 
-        fun unlitFromDefinition(modelDefinition: ModelDefinition, ambient: Int, contrast: Int): Model {
+        fun unlitFromDefinition(modelDefinition: ModelDefinition, ambient: Int, contrast: Int, orientation: Int): Model {
             val faceColors = IntArray(modelDefinition.faceCount) { 960 /* red */ }
             return Model(
                 modelDefinition,
@@ -461,6 +462,7 @@ class Model private constructor(
                 faceColors3 = faceColors.clone(),
                 ambient = ambient + 64,
                 contrast = contrast + 768,
+                orientation = orientation,
             )
         }
     }

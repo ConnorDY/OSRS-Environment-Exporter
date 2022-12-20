@@ -386,9 +386,9 @@ class SceneRegionBuilder constructor(
             objectToModelConverter.toModel(objectDefinition, type, orientation) ?: return null
 
         val model = if (objectDefinition.mergeNormals) {
-            Model.unlitFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+            Model.unlitFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast, orientation)
         } else {
-            Model.lightFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+            Model.lightFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast, orientation)
         }
         model.debugType = type
 

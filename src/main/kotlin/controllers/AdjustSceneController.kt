@@ -1,14 +1,18 @@
 package controllers
 
+import cache.LocationType
 import cache.definitions.RegionDefinition.Companion.X
 import cache.definitions.RegionDefinition.Companion.Y
 import cache.definitions.RegionDefinition.Companion.Z
 import controllers.worldRenderer.ClickHandler
 import controllers.worldRenderer.ClickHandler.ClickListener
 import controllers.worldRenderer.entities.Entity
+import models.config.ConfigOptionType
 import models.scene.Scene
 import models.scene.SceneRegion
 import models.scene.SceneTile
+import ui.propertyview.PropertyView
+import ui.propertyview.SimpleUIProperty
 import utils.Utils.blockAxisToRegionAxis
 import java.awt.BorderLayout
 import java.awt.CardLayout
@@ -21,7 +25,6 @@ import javax.swing.JDialog
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JScrollPane
-import javax.swing.JTable
 import javax.swing.JTree
 import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
@@ -31,8 +34,10 @@ import javax.swing.tree.TreeModel
 import javax.swing.tree.TreePath
 import javax.swing.tree.TreeSelectionModel
 
-class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clickHandler: ClickHandler) : JDialog(parent, title) {
+class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clickHandler: ClickHandler) :
+    JDialog(parent, title) {
     private val treeEntities: JTree
+    private val entityPropertyView: PropertyView<Entity>
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
@@ -58,8 +63,25 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
         cardPane.add(JLabel("Multiple items selected", SwingConstants.CENTER), CARD_MULTI)
 
         val entityPane = JPanel(GridBagLayout())
-        entityPane.add(JLabel("placeholder"))
-        val table = JTable()
+        entityPropertyView = PropertyView(
+            listOf(
+                SimpleUIProperty(
+                    "Location Type",
+                    ConfigOptionType.Enumerated(LocationType::valueOf, LocationType.values(), LocationType::toString),
+                    { LocationType.fromId(it.type) ?: LocationType.TILE_PAINT },
+                    { _, _ -> },
+                    true
+                ),
+                SimpleUIProperty(
+                    "Object Type",
+                    ConfigOptionType.int,
+                    { it.objectDefinition.id },
+                    { _, _ -> },
+                    true
+                ),
+            )
+        )
+        entityPane.add(entityPropertyView)
         cardPane.add(entityPane, CARD_ENTITY)
 
         add(cardPane, BorderLayout.EAST)
@@ -95,7 +117,7 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
                 cardLayout.show(cardPane, CARD_MULTI)
             else {
                 val entity = paths.first().lastPathComponent as Entity
-                // TODO.
+                entityPropertyView.target = entity
                 cardLayout.show(cardPane, CARD_ENTITY)
             }
         }
@@ -123,16 +145,20 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
                     null
                 }
             }
+
             is WrappedRegion ->
                 if (index in 0 until X) XCoord(parent.region!!, index)
                 else null
+
             is XCoord ->
                 if (index in 0 until Y) YCoord(parent.region, parent.x, index)
                 else null
+
             is YCoord ->
                 if (index in 0 until Z)
                     WrappedTile(index, parent.x, parent.y, parent.region.tiles[index][parent.x][parent.y])
                 else null
+
             is WrappedTile -> {
                 if (parent.tile != null && index >= 0 && index < parent.tile.allEntities.size) {
                     parent.tile.allEntities[index]
@@ -140,6 +166,7 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
                     null
                 }
             }
+
             else -> throw IllegalArgumentException("Invalid parent type")
         }
 
@@ -167,18 +194,23 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
             is Scene ->
                 if (child is WrappedRegion) child.y * parent.cols + child.x
                 else -1
+
             is WrappedRegion ->
                 if (child is XCoord) child.x
                 else -1
+
             is XCoord ->
                 if (child is YCoord) child.y
                 else -1
+
             is YCoord ->
                 if (child is WrappedTile) child.z
                 else -1
+
             is WrappedTile ->
                 if (child is Entity && parent.tile != null) parent.tile.allEntities.indexOf(child)
                 else -1
+
             else -> -1
         }
 
@@ -200,6 +232,7 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
                     else
                         "Empty region @ ${value.x}, ${value.y}"
                 }
+
                 is XCoord -> "X = ${value.x}"
                 is YCoord -> "Y = ${value.y}"
                 is WrappedTile -> "Z = ${value.z}"
@@ -208,6 +241,7 @@ class AdjustSceneController(parent: Frame, title: String, val scene: Scene, clic
                     if (def.name == "null") "Object ${def.id}"
                     else "${def.name} (${def.id})"
                 }
+
                 else -> value.toString()
             }
         }
