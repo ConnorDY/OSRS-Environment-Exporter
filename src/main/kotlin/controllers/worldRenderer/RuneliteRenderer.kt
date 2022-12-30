@@ -301,7 +301,7 @@ open class RuneliteRenderer(
         glBindBuffer(GL_UNIFORM_BUFFER, 0)
     }
 
-    fun clearScene() {
+    open fun clearScene() {
         // Clear scene
         val sky = 9493480
         GL11C.glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)

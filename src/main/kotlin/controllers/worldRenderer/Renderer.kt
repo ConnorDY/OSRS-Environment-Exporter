@@ -48,7 +48,6 @@ import org.lwjgl.opengl.GL20C.glDrawBuffers
 import org.lwjgl.opengl.GL20C.glGetUniformLocation
 import org.lwjgl.opengl.GL20C.glUniform1i
 import org.lwjgl.opengl.GL20C.glUseProgram
-import org.lwjgl.opengl.GL30C
 import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0
 import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT1
 import org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER
@@ -349,13 +348,7 @@ class Renderer(
         }
 
         setupAntiAliasing(canvasWidth, canvasHeight)
-        glDrawBuffer(GL30C.GL_COLOR_ATTACHMENT0)
         clearScene()
-
-        glDrawBuffer(GL_COLOR_ATTACHMENT1)
-
-        glClearColor(0f, 0f, 0f, 1f)
-        glClear(GL_COLOR_BUFFER_BIT)
 
         glDrawBuffers(intArrayOf(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1))
 
@@ -549,6 +542,16 @@ class Renderer(
 
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0)
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
+    }
+
+    override fun clearScene() {
+        glDrawBuffer(GL_COLOR_ATTACHMENT0)
+        super.clearScene()
+
+        glDrawBuffer(GL_COLOR_ATTACHMENT1)
+
+        glClearColor(0f, 0f, 0f, 1f)
+        glClear(GL_COLOR_BUFFER_BIT)
     }
 
     private fun shutdownProgram() {
