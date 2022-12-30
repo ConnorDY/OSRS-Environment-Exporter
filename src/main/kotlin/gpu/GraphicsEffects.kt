@@ -116,36 +116,42 @@ class GraphicsEffects {
         glBindVertexArray(0)
     }
 
-    fun copyAndUnantialias(textureId: Int, width: Int, height: Int): Int {
-        initTexcopyUnantialiasProgram()
+    fun drawNewTexture(width: Int, height: Int, func: () -> Unit): Int {
+        val fbo = glGenFramebuffers()
+        val tex = glGenTextures()
 
-        val framebuffer = glGenFramebuffers()
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer)
-
-        // create a color attachment texture
-        val outTexture = glGenTextures()
-        glBindTexture(GL_TEXTURE_2D, outTexture)
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+        glBindTexture(GL_TEXTURE_2D, tex)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0L)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outTexture, 0)
         glDrawBuffer(GL_COLOR_ATTACHMENT0)
         glViewport(0, 0, width, height)
+
+        func()
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+        glDeleteFramebuffers(fbo)
+        return tex
+    }
+
+    fun copyAndUnantialiasTexture(textureId: Int) {
+        initTexcopyUnantialiasProgram()
 
         glUseProgram(texcopyUnantialiasProgram)
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureId)
         glUniform1i(texcopyUnantialiasUniTex, 0)
         drawFullscreenQuad()
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0)
-        glDeleteFramebuffers(framebuffer)
-
-        return outTexture
+        glUseProgram(0)
     }
 
-    fun copyTextureToCurrentFramebuffer(textureId: Int) {
+    fun copyTexture(textureId: Int) {
         initTexcopyProgram()
 
         glUseProgram(texcopyProgram)
@@ -153,43 +159,17 @@ class GraphicsEffects {
         glBindTexture(GL_TEXTURE_2D, textureId)
         glUniform1i(texcopyUniTex, 0)
         drawFullscreenQuad()
+        glUseProgram(0)
     }
 
-    fun outlineTexture(textureId: Int, width: Int, height: Int): Int {
+    fun outlineTexture(textureId: Int) {
         initOutlineProgram()
 
-        // Create a framebuffer to render to
-        val framebuffer = glGenFramebuffers()
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer)
-
-        // Create a texture to render to
-        val renderTexture = glGenTextures()
-        setSensibleTextureParams(renderTexture)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0L)
-
-        // Attach the texture to the framebuffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0)
-
-        // Render to the framebuffer
-        glViewport(0, 0, width, height)
         glUseProgram(outlineProgram)
         glActiveTexture(GL_TEXTURE0)
-        glDrawBuffer(GL_COLOR_ATTACHMENT0)
         glBindTexture(GL_TEXTURE_2D, textureId)
         glUniform1i(outlineUniTex, 0)
         drawFullscreenQuad()
-
         glUseProgram(0)
-
-        glDeleteFramebuffers(framebuffer)
-        return renderTexture
-    }
-
-    private fun setSensibleTextureParams(renderTexture: Int) {
-        glBindTexture(GL_TEXTURE_2D, renderTexture)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
     }
 }

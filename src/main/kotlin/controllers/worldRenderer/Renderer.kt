@@ -367,13 +367,18 @@ class Renderer(
         glViewport(0, 0, canvasWidth, canvasHeight)
         priorityRenderer.draw()
 
-        val texHighlightCopy = graphicsEffects.copyAndUnantialias(texHighlightHandle, canvasWidth, canvasHeight)
+        val texHighlightCopy = graphicsEffects.drawNewTexture(canvasWidth, canvasHeight) {
+            graphicsEffects.copyAndUnantialiasTexture(texHighlightHandle)
+        }
 
         glBindTexture(GL_TEXTURE_2D, texHighlightCopy)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
 
-        val texHighlightOutline = graphicsEffects.outlineTexture(texHighlightCopy, canvasWidth, canvasHeight)
+        val texHighlightOutline = graphicsEffects.drawNewTexture(canvasWidth, canvasHeight) {
+            graphicsEffects.outlineTexture(texHighlightCopy)
+        }
+
         glDeleteTextures(texHighlightCopy)
 
         // draw to framebuffer
@@ -385,7 +390,7 @@ class Renderer(
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         glViewport(0, 0, canvasWidth, canvasHeight)
-        graphicsEffects.copyTextureToCurrentFramebuffer(texHighlightOutline)
+        graphicsEffects.copyTexture(texHighlightOutline)
 
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
         glBindTexture(GL_TEXTURE_2D, 0)
