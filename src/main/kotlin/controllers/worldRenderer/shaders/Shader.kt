@@ -87,6 +87,21 @@ class Shader {
                 .add(GL_VERTEX_SHADER, "/gpu/vert.glsl")
                 .add(GL_FRAGMENT_SHADER, "/gpu/frag.glsl")
         }
+        val TEXCOPY_PROGRAM = lazy {
+            Shader()
+                .add(GL_VERTEX_SHADER, "/gpu/texcopy/vert.glsl")
+                .add(GL_FRAGMENT_SHADER, "/gpu/texcopy/frag.glsl")
+        }
+        val TEXCOPY_UNANTIALIAS_PROGRAM = lazy {
+            Shader()
+                .add(GL_VERTEX_SHADER, "/gpu/texcopy/vert.glsl")
+                .add(GL_FRAGMENT_SHADER, "/gpu/texcopy-unantialias/frag.glsl")
+        }
+        val OUTLINE_PROGRAM = lazy {
+            Shader()
+                .add(GL_VERTEX_SHADER, "/gpu/texcopy/vert.glsl")
+                .add(GL_FRAGMENT_SHADER, "/gpu/outline/frag.glsl")
+        }
         val COMPUTE_PROGRAM = lazy {
             Shader()
                 .add(GL_COMPUTE_SHADER, "/gpu/comp.glsl")

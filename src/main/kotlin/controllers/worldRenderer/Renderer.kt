@@ -8,6 +8,7 @@ import controllers.worldRenderer.helpers.GpuFloatBuffer
 import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
+import gpu.GraphicsEffects
 import models.DebugOptionsModel
 import models.FrameRateModel
 import models.config.ConfigOptions
@@ -15,12 +16,12 @@ import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
 import org.joml.Matrix4f
-import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_BLEND
 import org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT
 import org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT
+import org.lwjgl.opengl.GL11C.GL_DEPTH_COMPONENT
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11C.GL_LEQUAL
 import org.lwjgl.opengl.GL11C.GL_NEAREST
@@ -28,16 +29,26 @@ import org.lwjgl.opengl.GL11C.GL_ONE
 import org.lwjgl.opengl.GL11C.GL_ONE_MINUS_SRC_ALPHA
 import org.lwjgl.opengl.GL11C.GL_RGBA
 import org.lwjgl.opengl.GL11C.GL_SRC_ALPHA
+import org.lwjgl.opengl.GL11C.GL_TEXTURE_2D
+import org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S
+import org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T
+import org.lwjgl.opengl.GL11C.glBindTexture
+import org.lwjgl.opengl.GL11C.glBlendFunc
 import org.lwjgl.opengl.GL11C.glClear
 import org.lwjgl.opengl.GL11C.glClearColor
+import org.lwjgl.opengl.GL11C.glDeleteTextures
 import org.lwjgl.opengl.GL11C.glDepthFunc
+import org.lwjgl.opengl.GL11C.glDepthMask
 import org.lwjgl.opengl.GL11C.glDepthRange
 import org.lwjgl.opengl.GL11C.glDisable
+import org.lwjgl.opengl.GL11C.glDrawBuffer
 import org.lwjgl.opengl.GL11C.glEnable
+import org.lwjgl.opengl.GL11C.glGenTextures
 import org.lwjgl.opengl.GL11C.glGetInteger
+import org.lwjgl.opengl.GL11C.glTexParameteri
 import org.lwjgl.opengl.GL11C.glViewport
+import org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE
 import org.lwjgl.opengl.GL13C.GL_MULTISAMPLE
-import org.lwjgl.opengl.GL14C.GL_DEPTH_COMPONENT16
 import org.lwjgl.opengl.GL14C.glBlendFuncSeparate
 import org.lwjgl.opengl.GL15C.GL_DYNAMIC_DRAW
 import org.lwjgl.opengl.GL15C.glBindBuffer
@@ -66,15 +77,14 @@ import org.lwjgl.opengl.GL30C.glBindFramebuffer
 import org.lwjgl.opengl.GL30C.glBindRenderbuffer
 import org.lwjgl.opengl.GL30C.glBlitFramebuffer
 import org.lwjgl.opengl.GL30C.glDeleteFramebuffers
-import org.lwjgl.opengl.GL30C.glDeleteRenderbuffers
-import org.lwjgl.opengl.GL30C.glFramebufferRenderbuffer
+import org.lwjgl.opengl.GL30C.glFramebufferTexture2D
 import org.lwjgl.opengl.GL30C.glGenFramebuffers
-import org.lwjgl.opengl.GL30C.glGenRenderbuffers
-import org.lwjgl.opengl.GL30C.glRenderbufferStorageMultisample
 import org.lwjgl.opengl.GL30C.glUniform1ui
 import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
+import org.lwjgl.opengl.GL32C.GL_TEXTURE_2D_MULTISAMPLE
+import org.lwjgl.opengl.GL32C.glTexImage2DMultisample
 import org.lwjgl.opengl.GL40C.GL_SAMPLE_SHADING
 import org.lwjgl.opengl.GL40C.glMinSampleShading
 import org.lwjgl.opengl.awt.AWTGLCanvas
@@ -119,8 +129,9 @@ class Renderer(
     private var glProgram = 0
 
     private var fboSceneHandle = -1
-    private var rboSceneHandle = -1
-    private var rboSceneDepthBuffer = -1
+    private var texSceneHandle = -1
+    private var texSceneDepthBuffer = -1
+    private var texHighlightHandle: Int = -1
 
     private var textureArrayId = 0
     private var uniformBufferId = 0
@@ -150,6 +161,7 @@ class Renderer(
     private var animator: Animator? = null
     private var glCanvas: AWTGLCanvas? = null
     private lateinit var inputHandler: InputHandler
+    private val graphicsEffects = GraphicsEffects()
 
     private val viewProjectionMatrix = Matrix4f()
 
@@ -162,8 +174,9 @@ class Renderer(
         camera.centerY = canvasHeight / 2
 
         fboSceneHandle = -1
-        rboSceneHandle = -1
-        rboSceneDepthBuffer = -1
+        texSceneHandle = -1
+        texSceneDepthBuffer = -1
+        texHighlightHandle = -1
 
         val glData = GLData()
         glData.majorVersion = 3
@@ -277,6 +290,7 @@ class Renderer(
             shutdownProgram()
             shutdownAAFbo()
             priorityRenderer.destroy()
+            graphicsEffects.destroy()
         }
     }
 
@@ -324,7 +338,6 @@ class Renderer(
         canvasHeight = height
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
-        glViewport(0, 0, width, height)
     }
 
     private var isSceneUploadRequired = true
@@ -405,14 +418,19 @@ class Renderer(
             shutdownAAFbo()
         }
         lastAntiAliasingMode = antiAliasingMode
-        // TODO: was this necessary?
-        val i = BufferUtils.createIntBuffer(2).put(GL_COLOR_ATTACHMENT0).put(GL_COLOR_ATTACHMENT1).flip()
-        glDrawBuffers(i)
+        glDrawBuffer(GL_COLOR_ATTACHMENT0)
 
         // Clear scene
         val sky = 9493480
         glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+
+        glDrawBuffer(GL_COLOR_ATTACHMENT1)
+
+        glClearColor(0f, 0f, 0f, 1f)
+        glClear(GL_COLOR_BUFFER_BIT)
+
+        glDrawBuffers(intArrayOf(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1))
 
         val clientCycle = ((System.currentTimeMillis() - clientStart) / 20).toInt() // 50 fps
 
@@ -479,9 +497,36 @@ class Renderer(
             glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE)
         }
 
+        glViewport(0, 0, canvasWidth, canvasHeight)
         priorityRenderer.draw()
 
-        if (useBlend) glDisable(GL_BLEND)
+        val texHighlightCopy = graphicsEffects.copyAndUnantialias(texHighlightHandle, canvasWidth, canvasHeight)
+
+        glBindTexture(GL_TEXTURE_2D, texHighlightCopy)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+
+        val texHighlightOutline = graphicsEffects.outlineTexture(texHighlightCopy, canvasWidth, canvasHeight)
+        glDeleteTextures(texHighlightCopy)
+
+        // draw to framebuffer
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboSceneHandle)
+
+        glEnable(GL_BLEND)
+        glDepthMask(false)
+        glDisable(GL_DEPTH_TEST)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
+        glViewport(0, 0, canvasWidth, canvasHeight)
+        graphicsEffects.copyTextureToCurrentFramebuffer(texHighlightOutline)
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+        glDeleteTextures(texHighlightOutline)
+
+        glDepthMask(true)
+        glEnable(GL_DEPTH_TEST)
+        glDisable(GL_BLEND)
         glUseProgram(0)
 
         if (aaEnabled) {
@@ -650,17 +695,23 @@ class Renderer(
         fboSceneHandle = glGenFramebuffers()
         glBindFramebuffer(GL_FRAMEBUFFER, fboSceneHandle)
 
-        // Create color render buffer
-        rboSceneHandle = glGenRenderbuffers()
-        glBindRenderbuffer(GL_RENDERBUFFER, rboSceneHandle)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, aaSamples, GL_RGBA, width, height)
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rboSceneHandle)
+        // Create color texture
+        texSceneHandle = glGenTextures()
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texSceneHandle)
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, aaSamples, GL_RGBA, width, height, false)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texSceneHandle, 0)
 
-        // Create depth buffer
-        rboSceneDepthBuffer = glGenRenderbuffers()
-        glBindRenderbuffer(GL_RENDERBUFFER, rboSceneDepthBuffer)
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, aaSamples, GL_DEPTH_COMPONENT16, width, height)
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboSceneDepthBuffer)
+        // Create highlight texture
+        texHighlightHandle = glGenTextures()
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texHighlightHandle)
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, aaSamples, GL_RGBA, width, height, false)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D_MULTISAMPLE, texHighlightHandle, 0)
+
+        // Create depth texture
+        texSceneDepthBuffer = glGenTextures()
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texSceneDepthBuffer)
+        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, aaSamples, GL_DEPTH_COMPONENT, width, height, false)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texSceneDepthBuffer, 0)
 
         // Reset
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
@@ -700,13 +751,17 @@ class Renderer(
             glDeleteFramebuffers(fboSceneHandle)
             fboSceneHandle = -1
         }
-        if (rboSceneHandle != -1) {
-            glDeleteRenderbuffers(rboSceneHandle)
-            rboSceneHandle = -1
+        if (texSceneHandle != -1) {
+            glDeleteTextures(texSceneHandle)
+            texSceneHandle = -1
         }
-        if (rboSceneDepthBuffer != -1) {
-            glDeleteRenderbuffers(rboSceneDepthBuffer)
-            rboSceneDepthBuffer = -1
+        if (texSceneDepthBuffer != -1) {
+            glDeleteTextures(texSceneDepthBuffer)
+            texSceneDepthBuffer = -1
+        }
+        if (texHighlightHandle != -1) {
+            glDeleteTextures(texHighlightHandle)
+            texHighlightHandle = -1
         }
     }
 }

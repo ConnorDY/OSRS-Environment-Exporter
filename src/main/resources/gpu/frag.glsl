@@ -40,6 +40,7 @@ in vec2 fUv;
 in vec3 vPosition;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec4 highColor;
 
 #include hsl_to_rgb.glsl
 #include pcg_hash.glsl
@@ -77,4 +78,9 @@ void main() {
   // else, blend or ignore means we don't do anything here
 
   fragColor = c;
+
+  int colorR = textureId & 3;
+  int colorG = (textureId >> 2) & 3;
+  int colorB = (textureId >> 4) & 3;
+  highColor = vec4(float(colorR) / 3.0f, float(colorG) / 3.0f, float(colorB) / 3.0f, 0);
 }
