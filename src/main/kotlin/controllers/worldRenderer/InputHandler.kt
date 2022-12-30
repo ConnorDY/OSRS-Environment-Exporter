@@ -3,6 +3,7 @@ package controllers.worldRenderer
 import models.FrameRateModel
 import models.config.ConfigOptions
 import models.scene.Scene
+import java.awt.AWTException
 import java.awt.Component
 import java.awt.GraphicsEnvironment
 import java.awt.Robot
@@ -21,7 +22,14 @@ class InputHandler internal constructor(
     private val frameRateModel: FrameRateModel,
 ) : KeyListener, MouseListener, MouseMotionListener {
     private var robotScreen = GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice
-    private var robot = Robot(robotScreen)
+    private var robot = run {
+        try {
+            Robot(robotScreen)
+        } catch (e: AWTException) {
+            // Robot is not supported on this platform
+            null
+        }
+    }
 
     var isLeftMouseDown = false
     var leftMousePressed = false
@@ -163,6 +171,8 @@ class InputHandler internal constructor(
     }
 
     private fun warpMouse(x: Int, y: Int): Boolean {
+        var robot = robot ?: return false
+
         val screen = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices.find { device ->
             device.configurations.find { it.bounds.contains(x, y) } != null
         }
@@ -171,6 +181,7 @@ class InputHandler internal constructor(
             if (screen != robotScreen) {
                 robotScreen = screen
                 robot = Robot(screen)
+                this.robot = robot
             }
             robot.mouseMove(x, y)
         }
