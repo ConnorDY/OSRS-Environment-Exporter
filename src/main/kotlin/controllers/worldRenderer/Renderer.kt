@@ -11,7 +11,6 @@ import models.config.ConfigOptions
 import models.scene.REGION_SIZE
 import models.scene.Scene
 import models.scene.SceneTile
-import org.joml.Matrix4f
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_BLEND
@@ -114,8 +113,6 @@ class Renderer(
     private var glCanvas: AWTGLCanvas? = null
     private lateinit var inputHandler: InputHandler
     private val graphicsEffects = GraphicsEffects()
-
-    private val viewProjectionMatrix = Matrix4f()
 
     private val pendingGlThreadActions = ConcurrentLinkedQueue<Runnable>()
     val sceneDrawListeners = ArrayList<SceneDrawListener>() // TODO concurrent?

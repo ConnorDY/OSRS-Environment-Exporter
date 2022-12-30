@@ -106,6 +106,8 @@ open class RuneliteRenderer(
     private var uniformBufferId = 0
     private val uniformBuffer: ByteBuffer = BufferUtils.createByteBuffer(5 * Float.SIZE_BYTES + (3 + 1) * Int.SIZE_BYTES)
 
+    protected val viewProjectionMatrix = Matrix4f()
+
     fun isAntiAliasingEnabled(): Boolean =
         antiAliasingMode !== AntiAliasingMode.DISABLED
 
@@ -201,8 +203,8 @@ open class RuneliteRenderer(
             canvasHeight.toFloat(),
             50.0f
         )
-        return Matrix4f()
-            .scale(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
+        return viewProjectionMatrix
+            .scaling(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
             .mul(Matrix4f(GpuFloatBuffer.allocateDirect(projectionMatrix.size).put(projectionMatrix).flip()))
             .rotateX((-Math.PI + camera.pitchRads).toFloat())
             .rotateY(camera.yawRads.toFloat())
