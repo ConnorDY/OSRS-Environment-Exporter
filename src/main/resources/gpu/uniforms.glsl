@@ -1,12 +1,12 @@
 layout(std140) uniform uniforms {
-    int cameraYaw;
-    int cameraPitch;
+    float cameraYaw;
+    float cameraPitch;
+    float cameraX;
+    float cameraY;
+    float cameraZ;
     int centerX;
     int centerY;
     int zoom;
-    int cameraX;
-    int cameraY;
-    int cameraZ;
     int currFrame;
 };
 

@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "link.cdy"
-version = "2.2.0"
+version = "2.4.0"
 
 repositories {
     mavenCentral {
@@ -42,6 +42,7 @@ dependencies {
     implementation("org.lwjgl", "lwjgl-opengl")
     implementation("org.lwjglx", "lwjgl3-awt", "0.1.9-SNAPSHOT")
     implementation("org.joml", "joml", "1.10.4")
+    testImplementation(kotlin("test"))
     for (
         p in listOf(
             "natives-linux",
@@ -72,6 +73,10 @@ tasks {
     build {
         dependsOn(fatJar)
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 val fatJar = task("fatJar", type = Jar::class) {

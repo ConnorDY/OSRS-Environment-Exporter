@@ -1,11 +1,7 @@
 package controllers.worldRenderer
 
-import cache.utils.ColorPalette
 import controllers.worldRenderer.helpers.AlphaMode
 import controllers.worldRenderer.helpers.Animator
-import controllers.worldRenderer.helpers.AntiAliasingMode
-import controllers.worldRenderer.helpers.GpuFloatBuffer
-import controllers.worldRenderer.helpers.GpuIntBuffer
 import controllers.worldRenderer.shaders.Shader
 import controllers.worldRenderer.shaders.ShaderException
 import gpu.GraphicsEffects
@@ -20,8 +16,6 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL.createCapabilities
 import org.lwjgl.opengl.GL11C.GL_BLEND
 import org.lwjgl.opengl.GL11C.GL_COLOR_BUFFER_BIT
-import org.lwjgl.opengl.GL11C.GL_DEPTH_BUFFER_BIT
-import org.lwjgl.opengl.GL11C.GL_DEPTH_COMPONENT
 import org.lwjgl.opengl.GL11C.GL_DEPTH_TEST
 import org.lwjgl.opengl.GL11C.GL_LEQUAL
 import org.lwjgl.opengl.GL11C.GL_NEAREST
@@ -44,45 +38,25 @@ import org.lwjgl.opengl.GL11C.glDisable
 import org.lwjgl.opengl.GL11C.glDrawBuffer
 import org.lwjgl.opengl.GL11C.glEnable
 import org.lwjgl.opengl.GL11C.glGenTextures
-import org.lwjgl.opengl.GL11C.glGetInteger
 import org.lwjgl.opengl.GL11C.glTexParameteri
 import org.lwjgl.opengl.GL11C.glViewport
 import org.lwjgl.opengl.GL12C.GL_CLAMP_TO_EDGE
-import org.lwjgl.opengl.GL13C.GL_MULTISAMPLE
 import org.lwjgl.opengl.GL14C.glBlendFuncSeparate
-import org.lwjgl.opengl.GL15C.GL_DYNAMIC_DRAW
-import org.lwjgl.opengl.GL15C.glBindBuffer
-import org.lwjgl.opengl.GL15C.glBufferData
-import org.lwjgl.opengl.GL15C.glBufferSubData
-import org.lwjgl.opengl.GL15C.glGenBuffers
+import org.lwjgl.opengl.GL20C
 import org.lwjgl.opengl.GL20C.glDeleteProgram
 import org.lwjgl.opengl.GL20C.glDrawBuffers
 import org.lwjgl.opengl.GL20C.glGetUniformLocation
-import org.lwjgl.opengl.GL20C.glUniform1f
 import org.lwjgl.opengl.GL20C.glUniform1i
-import org.lwjgl.opengl.GL20C.glUniform2fv
-import org.lwjgl.opengl.GL20C.glUniform2i
-import org.lwjgl.opengl.GL20C.glUniformMatrix4fv
 import org.lwjgl.opengl.GL20C.glUseProgram
+import org.lwjgl.opengl.GL30C
 import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT0
 import org.lwjgl.opengl.GL30C.GL_COLOR_ATTACHMENT1
-import org.lwjgl.opengl.GL30C.GL_DEPTH_ATTACHMENT
 import org.lwjgl.opengl.GL30C.GL_DRAW_FRAMEBUFFER
 import org.lwjgl.opengl.GL30C.GL_FRAMEBUFFER
-import org.lwjgl.opengl.GL30C.GL_MAX_SAMPLES
 import org.lwjgl.opengl.GL30C.GL_READ_FRAMEBUFFER
-import org.lwjgl.opengl.GL30C.GL_RENDERBUFFER
-import org.lwjgl.opengl.GL30C.glBindBufferBase
 import org.lwjgl.opengl.GL30C.glBindFramebuffer
-import org.lwjgl.opengl.GL30C.glBindRenderbuffer
 import org.lwjgl.opengl.GL30C.glBlitFramebuffer
-import org.lwjgl.opengl.GL30C.glDeleteFramebuffers
 import org.lwjgl.opengl.GL30C.glFramebufferTexture2D
-import org.lwjgl.opengl.GL30C.glGenFramebuffers
-import org.lwjgl.opengl.GL30C.glUniform1ui
-import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
-import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
-import org.lwjgl.opengl.GL31C.glUniformBlockBinding
 import org.lwjgl.opengl.GL32C.GL_TEXTURE_2D_MULTISAMPLE
 import org.lwjgl.opengl.GL32C.glTexImage2DMultisample
 import org.lwjgl.opengl.GL40C.GL_SAMPLE_SHADING
@@ -96,19 +70,21 @@ import utils.Utils.isMacOS
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.nio.IntBuffer
 import java.util.concurrent.ConcurrentLinkedQueue
-import kotlin.math.min
+import kotlin.math.tan
 
 class Renderer(
     private val camera: Camera,
     private val scene: Scene,
     private val clickHandler: ClickHandler,
     private val sceneUploader: SceneUploader,
-    private val textureManager: TextureManager,
+    textureManager: TextureManager,
     private val configOptions: ConfigOptions,
     private val frameRateModel: FrameRateModel,
     private val debugOptionsModel: DebugOptionsModel,
+) : RuneliteRenderer(
+    textureManager = textureManager,
+    antiAliasingMode = configOptions.antiAliasing.value.get()
 ) {
     enum class PreferredPriorityRenderer(val humanReadableName: String, val factory: () -> PriorityRenderer) {
         GLSL("GLSL Compute-based priority renderer", { GLSLPriorityRenderer() }),
@@ -116,8 +92,6 @@ class Renderer(
     }
 
     private val logger = LoggerFactory.getLogger(Renderer::class.java)
-
-    var antiAliasingMode: AntiAliasingMode = configOptions.antiAliasing.value.get()
     var priorityRendererPref: PreferredPriorityRenderer = configOptions.priorityRenderer.value.get()
         set(value) {
             if (field != value) {
@@ -126,37 +100,16 @@ class Renderer(
             }
         }
 
-    private var glProgram = 0
-
-    private var fboSceneHandle = -1
-    private var texSceneHandle = -1
-    private var texSceneDepthBuffer = -1
     private var texHighlightHandle: Int = -1
-
-    private var textureArrayId = 0
-    private var uniformBufferId = 0
-    private val uniformBuffer: IntBuffer = GpuIntBuffer.allocateDirect(5 + 3 + 1)
-    private val textureOffsets = FloatArray(256)
 
     private lateinit var priorityRenderer: PriorityRenderer
 
     // Uniforms
-    private var uniDrawDistance = 0
-    private var uniViewProjectionMatrix = 0
-    private var uniBrightness = 0
-    private var uniTextures = 0
-    private var uniTextureOffsets = 0
-    private var uniBlockMain = 0
-    private var uniSmoothBanding = 0
-    private var uniMouseCoordsId = 0
+    private var uniMouseCoordsId = -1
     private var uniAlphaMode = -1
-    private var uniHashSeed = -1
 
     var canvasWidth = 100
     var canvasHeight = (canvasWidth / 1.3).toInt()
-    private var lastStretchedCanvasWidth = 0
-    private var lastStretchedCanvasHeight = 0
-    private var lastAntiAliasingMode: AntiAliasingMode? = null
 
     private var animator: Animator? = null
     private var glCanvas: AWTGLCanvas? = null
@@ -173,9 +126,6 @@ class Renderer(
         camera.centerX = canvasWidth / 2
         camera.centerY = canvasHeight / 2
 
-        fboSceneHandle = -1
-        texSceneHandle = -1
-        texSceneDepthBuffer = -1
         texHighlightHandle = -1
 
         val glData = GLData()
@@ -218,11 +168,6 @@ class Renderer(
         frameRateModel.powerSavingMode.addListener {
             frameRateModel.notifyNeedFrames()
         }
-
-        lastStretchedCanvasHeight = -1
-        lastStretchedCanvasWidth = -1
-        lastAntiAliasingMode = null
-        textureArrayId = -1
 
         scene.sceneChangeListeners.add(
             ActionListener {
@@ -285,10 +230,11 @@ class Renderer(
         animator?.start()
     }
 
-    fun stop() {
+    override fun stop() {
         animator!!.stopWith {
+            super.stop()
+            deleteRenderTextures()
             shutdownProgram()
-            shutdownAAFbo()
             priorityRenderer.destroy()
             graphicsEffects.destroy()
         }
@@ -370,14 +316,17 @@ class Renderer(
             uploadSceneGPUHalf()
             if (shouldResetCamera) {
                 if (debugOptionsModel.resetCameraOnSceneChange.value.get()) {
-                    camera.cameraX = Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE
-                    camera.cameraY = Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE
-                    camera.cameraZ = -2500
+                    camera.cameraX = (Constants.LOCAL_HALF_TILE_SIZE * scene.cols * REGION_SIZE).toDouble()
+                    camera.cameraY = (Constants.LOCAL_HALF_TILE_SIZE * scene.rows * REGION_SIZE).toDouble()
+                    camera.cameraZ = -2500.0
                 }
                 shouldResetCamera = false
             }
             isSceneUploadRequired = false
         }
+
+        val fov = configOptions.fov.value.get()
+        camera.scale = (canvasWidth / (2 * tan(Math.toRadians(fov / 2)))).toInt()
 
         val thisUpdate = System.nanoTime()
         val deltaTime = (thisUpdate - lastUpdate).toDouble() / 1_000_000
@@ -385,10 +334,7 @@ class Renderer(
 
         inputHandler.tick(deltaTime)
 
-        // Setup anti-aliasing
-        val aaEnabled = antiAliasingMode !== AntiAliasingMode.DISABLED
-        if (aaEnabled) {
-            glEnable(GL_MULTISAMPLE)
+        if (isAntiAliasingEnabled()) {
             if (GL.getCapabilities().OpenGL40) {
                 if (configOptions.sampleShading.value.get()) {
                     glEnable(GL_SAMPLE_SHADING)
@@ -400,30 +346,11 @@ class Renderer(
                 logger.warn("Cannot use sample shading on OpenGL < 4.0")
                 configOptions.sampleShading.value.set(false)
             }
-            val stretchedCanvasWidth = canvasWidth
-            val stretchedCanvasHeight = canvasHeight
-
-            // Re-create fbo
-            if (lastStretchedCanvasWidth != stretchedCanvasWidth || lastStretchedCanvasHeight != stretchedCanvasHeight || lastAntiAliasingMode !== antiAliasingMode
-            ) {
-                val maxSamples: Int = glGetInteger(GL_MAX_SAMPLES)
-                val samples = min(antiAliasingMode.ordinal, maxSamples)
-                initAAFbo(stretchedCanvasWidth, stretchedCanvasHeight, samples)
-                lastStretchedCanvasWidth = stretchedCanvasWidth
-                lastStretchedCanvasHeight = stretchedCanvasHeight
-            }
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fboSceneHandle)
-        } else {
-            glDisable(GL_MULTISAMPLE)
-            shutdownAAFbo()
         }
-        lastAntiAliasingMode = antiAliasingMode
-        glDrawBuffer(GL_COLOR_ATTACHMENT0)
 
-        // Clear scene
-        val sky = 9493480
-        glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)
-        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        setupAntiAliasing(canvasWidth, canvasHeight)
+        glDrawBuffer(GL30C.GL_COLOR_ATTACHMENT0)
+        clearScene()
 
         glDrawBuffer(GL_COLOR_ATTACHMENT1)
 
@@ -435,61 +362,8 @@ class Renderer(
         val clientCycle = ((System.currentTimeMillis() - clientStart) / 20).toInt() // 50 fps
 
         priorityRenderer.produceVertices(camera, clientCycle)
-
-        if (textureArrayId == -1) {
-            // lazy init textures as they may not be loaded at plugin start.
-            // this will return -1 and retry if not all textures are loaded yet, too.
-            textureArrayId = textureManager.initTextureArray()
-        }
-//        val textures: Array<TextureDefinition> = textureProvider.getTextureDefinitions()
-        glUseProgram(glProgram)
-        // Brightness happens to also be stored in the texture provider, so we use that
-        glUniform1f(uniBrightness, ColorPalette.BRIGHTNESS_HIGH.toFloat()) // (float) textureProvider.getBrightness());
-        glUniform1i(uniDrawDistance, Constants.MAX_DISTANCE * Constants.LOCAL_TILE_SIZE)
-        glUniform1f(uniSmoothBanding, 1f)
-        glUniform1ui(uniHashSeed, camera.motionTicks)
-        glUniformMatrix4fv(uniViewProjectionMatrix, false, calculateViewProjectionMatrix())
-
-        // This is just for animating!
-//        for (int id = 0; id < textures.length; ++id) {
-//            TextureDefinition texture = textures[id];
-//            if (texture == null) {
-//                continue;
-//            }
-//
-//            textureProvider.load(id); // trips the texture load flag which lets textures animate
-//
-//            textureOffsets[id * 2] = texture.field1782;
-//            textureOffsets[id * 2 + 1] = texture.field1783;
-//        }
-        glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
-
-        // UBO
-        glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
-        uniformBuffer.clear()
-        uniformBuffer
-            .put(camera.yaw)
-            .put(camera.pitch)
-            .put(camera.centerX)
-            .put(camera.centerY)
-            .put(camera.scale)
-            .put(camera.cameraX) // x
-            .put(camera.cameraZ) // z
-            .put(camera.cameraY) // y
-            .put(clientCycle) // currFrame
-        uniformBuffer.flip()
-        glBufferSubData(
-            GL_UNIFORM_BUFFER,
-            0,
-            uniformBuffer
-        )
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
-
-        // Bind uniforms
-        glBindBufferBase(GL_UNIFORM_BUFFER, 0, uniformBufferId)
-        glUniformBlockBinding(glProgram, uniBlockMain, 0)
-        glUniform1i(uniTextures, 1) // texture sampler array is bound to texture1
-        glUniform2fv(uniTextureOffsets, textureOffsets)
+        prepareDrawProgram(camera, canvasWidth, canvasHeight, clientCycle)
+        GL20C.glUniform2i(uniMouseCoordsId, inputHandler.mouseX, canvasHeight - inputHandler.mouseY)
 
         val useBlend = configOptions.alphaMode.value.get() == AlphaMode.BLEND
         if (useBlend) {
@@ -529,15 +403,7 @@ class Renderer(
         glDisable(GL_BLEND)
         glUseProgram(0)
 
-        if (aaEnabled) {
-            glBindFramebuffer(GL_READ_FRAMEBUFFER, fboSceneHandle)
-            glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
-            glBlitFramebuffer(
-                0, 0, lastStretchedCanvasWidth, lastStretchedCanvasHeight,
-                0, 0, lastStretchedCanvasWidth, lastStretchedCanvasHeight,
-                GL_COLOR_BUFFER_BIT, GL_NEAREST
-            )
-        }
+        blitAntiAliasing()
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0)
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0)
@@ -664,42 +530,16 @@ class Renderer(
         glUseProgram(0)
     }
 
-    private fun initUniforms() {
-        uniViewProjectionMatrix = glGetUniformLocation(glProgram, "viewProjectionMatrix")
-        uniBrightness = glGetUniformLocation(glProgram, "brightness")
-        uniSmoothBanding = glGetUniformLocation(glProgram, "smoothBanding")
-        uniDrawDistance = glGetUniformLocation(glProgram, "drawDistance")
-        uniTextures = glGetUniformLocation(glProgram, "textures")
-        uniTextureOffsets = glGetUniformLocation(glProgram, "textureOffsets")
-        uniBlockMain = glGetUniformBlockIndex(glProgram, "uniforms")
+    override fun initUniforms() {
+        super.initUniforms()
         uniMouseCoordsId = glGetUniformLocation(glProgram, "mouseCoords")
         uniAlphaMode = glGetUniformLocation(glProgram, "alphaMode")
-        uniHashSeed = glGetUniformLocation(glProgram, "hashSeed")
     }
 
-    private fun initUniformBuffer() {
-        uniformBufferId = glGenBuffers()
-        glBindBuffer(GL_UNIFORM_BUFFER, uniformBufferId)
-        uniformBuffer.clear()
-        uniformBuffer.put(IntArray(9))
-        uniformBuffer.flip()
-        glBufferData(GL_UNIFORM_BUFFER, uniformBuffer, GL_DYNAMIC_DRAW)
-        glBindBuffer(GL_UNIFORM_BUFFER, 0)
-    }
+    override fun initAAFbo(width: Int, height: Int, aaSamples: Int) {
+        super.initAAFbo(width, height, aaSamples)
 
-    private fun initAAFbo(width: Int, height: Int, aaSamples: Int) {
-        // Discard old FBO
-        shutdownAAFbo()
-
-        // Create and bind the FBO
-        fboSceneHandle = glGenFramebuffers()
         glBindFramebuffer(GL_FRAMEBUFFER, fboSceneHandle)
-
-        // Create color texture
-        texSceneHandle = glGenTextures()
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texSceneHandle)
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, aaSamples, GL_RGBA, width, height, false)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texSceneHandle, 0)
 
         // Create highlight texture
         texHighlightHandle = glGenTextures()
@@ -707,38 +547,8 @@ class Renderer(
         glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, aaSamples, GL_RGBA, width, height, false)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D_MULTISAMPLE, texHighlightHandle, 0)
 
-        // Create depth texture
-        texSceneDepthBuffer = glGenTextures()
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texSceneDepthBuffer)
-        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, aaSamples, GL_DEPTH_COMPONENT, width, height, false)
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, texSceneDepthBuffer, 0)
-
-        // Reset
+        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0)
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
-        glBindRenderbuffer(GL_RENDERBUFFER, 0)
-    }
-
-    private fun makeProjectionMatrix(width: Float, height: Float, near: Float): FloatArray =
-        floatArrayOf(
-            2 / width, 0f, 0f, 0f,
-            0f, 2 / height, 0f, 0f,
-            0f, 0f, -1f, -1f,
-            0f, 0f, -2 * near, 0f,
-        )
-
-    private fun calculateViewProjectionMatrix(): FloatArray {
-        val projectionMatrix = makeProjectionMatrix(
-            canvasWidth.toFloat(),
-            canvasHeight.toFloat(),
-            50.0f
-        )
-        return viewProjectionMatrix
-            .scaling(camera.scale.toFloat(), camera.scale.toFloat(), 1.0f)
-            .mul(Matrix4f(GpuFloatBuffer.allocateDirect(projectionMatrix.size).put(projectionMatrix).flip()))
-            .rotateX((-Math.PI + camera.pitch * Constants.UNIT).toFloat())
-            .rotateY((camera.yaw * Constants.UNIT).toFloat())
-            .translate(-camera.cameraX.toFloat(), -camera.cameraZ.toFloat(), -camera.cameraY.toFloat())
-            .get(projectionMatrix)
     }
 
     private fun shutdownProgram() {
@@ -746,19 +556,7 @@ class Renderer(
         glProgram = -1
     }
 
-    private fun shutdownAAFbo() {
-        if (fboSceneHandle != -1) {
-            glDeleteFramebuffers(fboSceneHandle)
-            fboSceneHandle = -1
-        }
-        if (texSceneHandle != -1) {
-            glDeleteTextures(texSceneHandle)
-            texSceneHandle = -1
-        }
-        if (texSceneDepthBuffer != -1) {
-            glDeleteTextures(texSceneDepthBuffer)
-            texSceneDepthBuffer = -1
-        }
+    private fun deleteRenderTextures() {
         if (texHighlightHandle != -1) {
             glDeleteTextures(texHighlightHandle)
             texHighlightHandle = -1

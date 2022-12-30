@@ -32,10 +32,9 @@ import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
 import java.nio.ByteBuffer
 
-class UnderlayLoader constructor(
-    cacheLibrary: CacheLibrary,
-    private val underlayDefinitionCache: HashMap<Int, UnderlayDefinition> = HashMap()
-) {
+class UnderlayLoader(cacheLibrary: CacheLibrary) {
+    private val underlayDefinitionCache = HashMap<Int, UnderlayDefinition>()
+
     fun get(id: Int): UnderlayDefinition? {
         return underlayDefinitionCache[id]
     }

@@ -17,9 +17,6 @@ import models.scene.SceneTile
 import ui.CancelledException
 import utils.ChunkWriteListener
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -29,16 +26,14 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
     val chunkWriteListeners = ArrayList<ChunkWriteListener>()
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
-    fun exportSceneToFile(scene: Scene) {
+    fun exportSceneToFile(scene: Scene, directory: String, exportFlat: Boolean) {
         // create output directory if it does not yet exist
-        File(AppConstants.OUTPUT_DIRECTORY).mkdirs()
+        File(directory).mkdirs()
 
         // create timestamped output directory
-        val timestamp = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd HH_mm_ss.SSSSSS")
-            .withZone(ZoneOffset.UTC)
-            .format(Instant.now())
-        val outDir = "${AppConstants.OUTPUT_DIRECTORY}/$timestamp"
+        val outDir =
+            if (exportFlat) directory
+            else "$directory/${makeTimestamp()}"
         File(outDir).mkdirs()
 
         // init glTF builder
@@ -82,10 +77,15 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
 
         // copy textures
         if (textureManager.allTexturesLoaded()) {
-            textureManager.dumpTextures(File(AppConstants.TEXTURES_DIRECTORY))
-            copyTextures(outDir)
+            textureManager.dumpTextures(File("$outDir/${AppConstants.TEXTURES_DIRECTORY_NAME}"))
         }
     }
+
+    private fun makeTimestamp(): String =
+        DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH_mm_ss.SSSSSS")
+            .withZone(ZoneOffset.UTC)
+            .format(Instant.now())
 
     private fun MeshFormatExporter.getMaterialBuffersAndAddTexture(textureId: Int): MaterialBuffers {
         if (textureId != -1) {
@@ -95,19 +95,6 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             )
         }
         return getOrCreateBuffersForMaterial(textureId)
-    }
-
-    private fun copyTextures(outDir: String) {
-        val src = Path.of(AppConstants.TEXTURES_DIRECTORY)
-        val dest = Path.of("$outDir/${AppConstants.TEXTURES_DIRECTORY_NAME}")
-
-        Files.walk(src).forEach {
-            Files.copy(
-                it,
-                dest.resolve(src.relativize(it)),
-                StandardCopyOption.REPLACE_EXISTING
-            )
-        }
     }
 
     private fun upload(fmt: MeshFormatExporter, tile: SceneTile, x: Int, y: Int) {

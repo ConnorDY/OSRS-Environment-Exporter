@@ -17,6 +17,9 @@ object Utils {
     fun isMacOS() =
         System.getProperty("os.name").lowercase().startsWith("mac")
 
+    fun isWindows() =
+        System.getProperty("os.name").lowercase().startsWith("windows")
+
     fun Queue<Runnable>.doAllActions() {
         var action: Runnable?
         do {

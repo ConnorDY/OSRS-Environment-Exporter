@@ -1,6 +1,24 @@
 # Changelog
 
-## Unreleased
+## 2.4.0
+
+### :sparkles: Enhancements
+
+- Add hexagon-packed dots mode to alpha types &ndash; [#158](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/158) @ScoreUnder
+
+- Tweak loader code to support new cache versions &ndash; [#160](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/160) @tpetrychyn
+
+### :wrench: Maintenance
+
+- Acknowledge RuneLite license in applicable sources and distributed binaries &ndash; [#155](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/155) @ScoreUnder
+
+- Improve error reporting in shader code &ndash; [#144](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/144) @ScoreUnder
+
+### :book: Documentation
+
+- Include `LICENSE`, `README.md`, and `CHANGELOG.md` in packaged releases &ndash; [#156](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/156) @ConnorDY
+
+## 2.3.0
 
 ### :sparkles: Enhancements
 
@@ -17,6 +35,12 @@
 
 - Merge region load by ID and region search dialogs &ndash; [#137](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/137) @ScoreUnder
 
+- Make camera FOV adjustable &ndash; [#141](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/141) @ScoreUnder
+
+- Add Tombs of Amascut locations to Location Search &ndash; [#146](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/146) @LengaJenga
+
+- Add a command-line interface for scriptable exporting &ndash; [#139](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/139) @ScoreUnder
+
 ### :bug: Bug Fixes
 
 - Fix a potential process lingering issue when the renderer fails to load &ndash; [#119](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/119) @ScoreUnder
@@ -27,7 +51,14 @@
 
 - Allow the user to specify a wider range of region IDs (our initial assumptions were too restrictive) &ndash; [#136](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/136) @ScoreUnder
 
-- Fixed texture brightness changing between multiple exports in the same session &ndash; [#138](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/138) @ScoreUnder
+- Fix texture brightness changing between multiple exports in the same session &ndash; [#138](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/138) @ScoreUnder
+
+- Fix jitter when moving in power saving mode, and camera axis lock when moving slowly &ndash; [#140](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/140) @ScoreUnder
+
+### :wrench: Maintenance
+
+- De-duplicate entries in the locations list, merging different landmarks that exist in the same place &ndash; [#142](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/142) @ScoreUnder
+  - Make search a little fuzzier to compensate
 
 ## 2.2.0
 
