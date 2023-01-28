@@ -2,19 +2,38 @@
 
 Tool for exporting Old School RuneScape environments so that they can be used in 3D modeling programs like Blender.
 
-![Screenshot of the application](./docs/screenshot.webp)
+[![Screenshot of the application](./docs/screenshot.webp)](https://www.youtube.com/watch?v=xAggnDgALck)
 
 ## Downloading
 
 Please visit the [Releases](https://github.com/ConnorDY/OSRS-Environment-Exporter/releases) page to download the application.
 
-We recommend using the latest release unless you are having issues with it.
+We recommend using the latest release unless you are having problems with it.
+
+## How to use
+
+If you're on Windows, double click `run.bat` to launch the application.
+
+If you're on macOS or Linux, open a terminal window, change directory to where you extracted the application, then execute the following command: `./run`.
+
+[TheSkulled](https://www.youtube.com/channel/UC3NPPMYWrCH4oCFeKRf9Ltw) made a lovely [tutorial video](https://www.youtube.com/watch?v=NhqLDY9QH7k) for the exporter. Give it a watch! 👀
+
+## Troubleshooting
+
+If the application does not run, make sure you have JDK 11 or newer installed.
+
+OpenJDK can be downloaded [here](https://learn.microsoft.com/en-us/java/openjdk/download).
+
+To check which version of Java you have installed, open Command Prompt (or a terminal window if you're on Linux or macOS) and run the following command:
+```bash
+java --version
+```
 
 ## Configuration
 
 | Config                     | Type      | Default Value    | Description                                                                                                                                                                                                  |
 |----------------------------|-----------|------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `alpha-mode`               | `Enum`    | `ORDERED_DITHER` | The type of alpha blending to use. One of `BLEND`, `CLIP`, `HASH`, `ORDERED_DITHER`, `IGNORE`.                                                                                                               |
+| `alpha-mode`               | `Enum`    | `ORDERED_DITHER` | The type of alpha blending to use. One of `BLEND`, `CLIP`, `HASH`, `ORDERED_DITHER`, `HEX_DOTS`, `IGNORE`.                                                                                                   |
 | `anti-aliasing`            | `Enum`    | `MSAA_16`        | The multisampling depth to use. One of `DISABLED`, `MSAA_2`, `MSAA_4`, `MSAA_8`, `MSAA_16`.                                                                                                                  |
 | `check-for-updates`        | `Boolean` | `true`           | If enabled, will check for newer versions of the application after the cache chooser screen.                                                                                                                 |
 | `debug`                    | `Boolean` | `false`          | If enabled, the cache chooser will load the most recently used cache automatically, and a small suite of debug options will be accessible from the toolbar.                                                  |

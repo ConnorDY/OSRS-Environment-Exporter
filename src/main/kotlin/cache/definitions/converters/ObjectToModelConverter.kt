@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory
 class ObjectToModelConverter(
     private val modelLoader: ModelLoader,
     private val debugOptionsModel: DebugOptionsModel,
-    private val litModelCache: HashMap<Long, ModelDefinition> = HashMap()
 ) {
     private val logger = LoggerFactory.getLogger(ObjectToModelConverter::class.java)
+    private val litModelCache = HashMap<Long, ModelDefinition>()
 
     init {
         val listener: (Any?) -> Unit = {

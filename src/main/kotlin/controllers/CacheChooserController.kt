@@ -1,11 +1,13 @@
 package controllers
 
 import AppConstants
+import cache.ParamsManager
 import cache.XteaManager
 import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonMappingException
 import controllers.main.MainController
+import models.StartupOptions
 import models.config.ConfigOptions
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
@@ -43,8 +45,11 @@ import javax.swing.text.JTextComponent
 class CacheChooserController(
     title: String,
     private val configOptions: ConfigOptions,
+    private val startupOptions: StartupOptions,
 ) : JFrame(title) {
-    var xteaAndCache: Pair<XteaManager, CacheLibrary>? = null
+    var cacheLibrary: CacheLibrary? = null
+    var xteaManager: XteaManager? = null
+    private val paramsManager: ParamsManager = ParamsManager()
 
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
@@ -216,7 +221,7 @@ class CacheChooserController(
         )
 
         populateCachesList(cacheListModel, listCaches, listCachesPlaceholder)
-        txtCacheLocation.text = configOptions.lastCacheDir.value.get()
+        txtCacheLocation.text = startupOptions.cacheDir
         if (txtCacheLocation.text.isEmpty()) {
             btnLaunch.isEnabled = false
         }
@@ -236,7 +241,9 @@ class CacheChooserController(
         txtCacheLocation: JTextField,
         btnLaunch: JButton
     ) {
-        val (xteaManager, cacheLibrary) = xteaAndCache ?: return
+        val cacheLibrary = cacheLibrary ?: return
+        val xteaManager = xteaManager ?: return
+        val paramsManager = paramsManager
 
         btnLaunch.isEnabled = false
         lblStatusText.text =
@@ -250,8 +257,10 @@ class CacheChooserController(
                 MainController(
                     "OSRS Environment Exporter",
                     configOptions,
+                    startupOptions,
                     xteaManager,
                     cacheLibrary,
+                    paramsManager
                 ).isVisible = true
                 dispose()
             }
@@ -332,14 +341,15 @@ class CacheChooserController(
 
         btnLaunch.isEnabled = true
         lblErrorText.text = ""
-        val cacheLibrary = try {
+        cacheLibrary = try {
             CacheLibrary("${txtCacheLocation.text}/cache")
         } catch (e: Exception) {
             lblErrorText.text = defaultErrorText(e)
             btnLaunch.isEnabled = false
             return
         }
-        val xtea = try {
+
+        xteaManager = try {
             XteaManager(txtCacheLocation.text)
         } catch (e: Exception) {
             lblErrorText.text = when (e) {
@@ -349,7 +359,14 @@ class CacheChooserController(
             btnLaunch.isEnabled = false
             return
         }
-        xteaAndCache = Pair(xtea, cacheLibrary)
+
+        try {
+            paramsManager.loadFromPath(txtCacheLocation.text)
+        } catch (e: Exception) {
+            lblErrorText.text = defaultErrorText(e)
+            btnLaunch.isEnabled = false
+            return
+        }
     }
 
     private fun defaultErrorText(e: Exception) = when (e) {

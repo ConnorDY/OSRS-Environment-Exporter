@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.worldRenderer.Constants.MAP_LENGTH
 import models.locations.Location
 import models.locations.Locations
+import org.slf4j.LoggerFactory
 import ui.FilteredListModel
 import ui.JLinkLabel
 import ui.NumericTextField
@@ -43,6 +44,7 @@ class LocationSearchController(
     title: String,
     private val loadRegionCallback: (Component, Int, Int) -> Boolean,
 ) : JDialog(owner, title) {
+    private val logger = LoggerFactory.getLogger(LocationSearchController::class.java)
     private val listLocations: JList<Location>
     private val txtSearchQuery: JTextField
     private val txtRadius: JFormattedTextField
@@ -53,9 +55,12 @@ class LocationSearchController(
         preferredSize = Dimension(600, 400)
 
         val filterableLocations = FilteredListModel(::locationToString)
-        listLocations = JList(filterableLocations).apply {
+        listLocations = JList(filterableLocations)
+        val locationsScrollPane = JScrollPane(listLocations).apply {
             val borderColor = UIManager.getColor("InternalFrame.borderColor")
             border = BorderFactory.createMatteBorder(0, 1, 0, 0, borderColor)
+            // Hack to prevent the width jumping when the horizontal scrollbar appears
+            preferredSize = Dimension(1, 1)
         }
         listLocations.cellRenderer = LocationCell()
         txtSearchQuery = PlaceholderTextField("", "Lumbridge")
@@ -89,8 +94,8 @@ class LocationSearchController(
             GridBagConstraints(0, 0, 2, 1, 1.0, 0.0, CENTER, NONE, inset, 0, 0)
         )
         add(
-            JScrollPane(listLocations),
-            GridBagConstraints(1, 1, 1, 7, 1.5, 1.0, LINE_END, BOTH, inset, 0, 0)
+            locationsScrollPane,
+            GridBagConstraints(1, 1, 1, 7, 5.0, 1.0, LINE_END, BOTH, inset, 0, 0)
         )
         add(
             lblSearchQuery,
@@ -168,6 +173,20 @@ class LocationSearchController(
                 this::class.java.getResource("/data/locations.json"),
                 Locations::class.java
             )
+
+        // Warn if some locations are duplicate.
+        val duplicateLocations = locations.locations.groupBy(::regionIdForLocation).filter { it.value.size > 1 }
+        if (duplicateLocations.isNotEmpty()) {
+            val duplicateLocationsString = duplicateLocations.map {
+                it.value.joinToString(
+                    ", ",
+                    prefix = "[",
+                    postfix = "]",
+                    transform = ::locationToString
+                )
+            }.joinToString("\n")
+            logger.warn("Duplicate locations found:\n$duplicateLocationsString")
+        }
 
         return locations.locations
     }
