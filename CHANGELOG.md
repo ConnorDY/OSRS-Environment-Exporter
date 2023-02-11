@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.5.0
+
+### :bug: Bug Fixes
+
+- Fix `idOffset` reading in `LocationsLoader` &ndash; [#174](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/174) @dennisdev
+
+- Add default object transform &ndash; [#175](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/175) @dennisdev
+
 ## 2.4.0
 
 ### :sparkles: Enhancements
