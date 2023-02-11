@@ -87,7 +87,7 @@ class LocationsLoader(
                 positionOffset = buffer.readUnsignedShortSmart()
             }
 
-            idOffset = buffer.readUnsignedShortSmart()
+            idOffset = buffer.readUnsignedSmartShortExtended()
         }
 
         return locationsDefinition
