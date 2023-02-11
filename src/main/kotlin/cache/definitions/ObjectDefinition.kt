@@ -62,7 +62,7 @@ class ObjectDefinition {
     var obstructsGround = false
     var contouredGround = -1
     var supportsItems = -1
-    lateinit var transforms: IntArray
+    var transforms: IntArray? = null
     var isRotated = false
     var transformVarp = -1
     var ambientSoundId = -1
