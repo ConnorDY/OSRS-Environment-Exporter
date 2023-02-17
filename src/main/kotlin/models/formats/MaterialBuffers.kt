@@ -3,7 +3,7 @@ package models.formats
 import cache.utils.ColorPalette
 import java.awt.Color
 
-class MaterialBuffers(isTextured: Boolean) {
+class MaterialBuffers(isTextured: Boolean, private val scale: Float) {
     val positions = FloatVectorBuffer(3)
     val texcoords: FloatVectorBuffer?
     val colors: FloatVectorBuffer?
@@ -26,7 +26,7 @@ class MaterialBuffers(isTextured: Boolean) {
         texcoordV: Float,
         rs2color: Int
     ) {
-        positions.add(positionX, -positionY, -positionZ)
+        positions.add(positionX * scale, -positionY * scale, -positionZ * scale)
 
         if (colors != null) {
             val color = Color(pal[rs2color and 0xFFFF])

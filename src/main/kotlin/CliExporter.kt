@@ -50,7 +50,12 @@ class CliExporter(startupOptions: StartupOptions) {
 
         scene.sceneChangeListeners.add {
             // Export the scene once it has been loaded.
-            exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat)
+            val scaleFactor =
+                if (startupOptions.hasScaleFactor)
+                    startupOptions.scaleFactor
+                else
+                    startupOptions.defaultScaleFactor
+            exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat, scaleFactor)
         }
 
         // Listen for progress updates

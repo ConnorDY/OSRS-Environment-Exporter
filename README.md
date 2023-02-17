@@ -47,6 +47,7 @@ java --version
 | `power-saving-mode`        | `Boolean` | `false`          | If enabled, will attempt to keep the idle frame rate as low as possible without impacting usability.                                                                                                         |
 | `priority-renderer`        | `Enum`    | Varies           | The face-sorting renderer to use. May not actually sort faces. One of `GLSL`, `CPU_NAIVE`. Set to `CPU_NAIVE` on MacOS due to missing compute shader support, and `GLSL` everywhere else.                    |
 | `sample-shading`           | `Boolean` | `false`          | If enabled, tells OpenGL to shade sub-samples in MSAA (OpenGL 4.0+).                                                                                                                                         |
+| `scale-mode`               | `Enum`    | `SCALE_1TO128`   | The scaling mode to use. One of `SCALE_1TO1`, `SCALE1TO100`, `SCALE_1TO128`. See also `--scale`.                                                                                                             |
 
 ## Development
 
