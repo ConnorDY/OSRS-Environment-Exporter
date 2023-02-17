@@ -11,7 +11,6 @@ class StartupOptions(configOptions: ConfigOptions) {
     var exportDir = OUTPUT_DIRECTORY
     var exportFlat = false
     var showPreview = true
-    var scaleFactor = 0f
-    val hasScaleFactor get() = scaleFactor != 0f
-    val defaultScaleFactor = configOptions.scaleMode.value.get().scaleFactor
+    var scaleFactor = configOptions.scaleMode.value.get().scaleFactor
+    var hasScaleFactor = false
 }

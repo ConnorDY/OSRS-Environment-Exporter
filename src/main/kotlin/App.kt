@@ -134,6 +134,7 @@ fun main(args: Array<String>) {
                             return
                         }
                         startupOptions.scaleFactor = scaleNumerator / scaleDenominator
+                        startupOptions.hasScaleFactor = true
                     } catch (e: NumberFormatException) {
                         println("Error: Invalid scale: $scale")
                         return
