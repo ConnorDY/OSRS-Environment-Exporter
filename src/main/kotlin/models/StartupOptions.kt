@@ -11,4 +11,6 @@ class StartupOptions(configOptions: ConfigOptions) {
     var exportDir = OUTPUT_DIRECTORY
     var exportFlat = false
     var showPreview = true
+    var scaleFactor = configOptions.scaleMode.value.get().scaleFactor
+    var hasScaleFactor = false
 }

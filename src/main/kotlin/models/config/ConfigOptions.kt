@@ -2,6 +2,7 @@ package models.config
 
 import controllers.worldRenderer.helpers.AlphaMode
 import controllers.worldRenderer.helpers.AntiAliasingMode
+import models.config.types.ScaleMode
 import utils.Utils.isMacOS
 import controllers.worldRenderer.Renderer.PreferredPriorityRenderer as PriorityRenderers
 
@@ -20,6 +21,7 @@ class ConfigOptions(private val configuration: Configuration) {
     val alphaMode = ConfigOption("alpha-mode", ConfigOptionType.Enumerated(AlphaMode::valueOf, AlphaMode.values(), AlphaMode::humanReadableName), AlphaMode.ORDERED_DITHER, "Alpha mode", 'L')
     val sampleShading = ConfigOption("sample-shading", ConfigOptionType.boolean, false, "Sub-sample shading (GL4.0; makes hashed alpha look nicer)", 'S')
     val fov = ConfigOption("fov", ConfigOptionType.double, 90.0, "Field of view (degrees)", 'V')
+    val scaleMode = ConfigOption("scale-mode", ConfigOptionType.Enumerated(ScaleMode::valueOf, ScaleMode.values(), ScaleMode::humanReadableName), ScaleMode.SCALE_1TO128, "Export scale", 'C')
 
     val isMacOS = isMacOS()
 
@@ -27,6 +29,7 @@ class ConfigOptions(private val configuration: Configuration) {
         lastCacheDir,
         initialRegionId,
         initialRadius,
+        scaleMode,
         fpsCap,
         powerSavingMode,
         checkForUpdates,

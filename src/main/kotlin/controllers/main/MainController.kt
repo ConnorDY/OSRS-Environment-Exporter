@@ -299,7 +299,12 @@ class MainController constructor(
         Thread {
             try {
                 try {
-                    exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat)
+                    val scaleFactor =
+                        if (startupOptions.hasScaleFactor)
+                            startupOptions.scaleFactor
+                        else
+                            configOptions.scaleMode.value.get().scaleFactor
+                    exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat, scaleFactor)
                 } catch (_: CancelledException) {
                     return@Thread
                 }

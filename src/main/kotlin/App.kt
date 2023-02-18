@@ -53,6 +53,7 @@ private fun printHelp() {
     println("  --export-dir <path>   Set the export directory for this run")
     println("  --flat, -f            Do not use timestamped subdirectories for export")
     println("  --format <format>     Set the export format for this run")
+    println("  --scale <factor>      Set the export scale factor (e.g. 1:128), overrides config")
     println("  --no-preview          Run the GUI, but don't render the preview")
     println("  --                    End of options")
     println()
@@ -111,6 +112,31 @@ fun main(args: Array<String>) {
                     // Placeholder for when we actually support multiple export formats
                     if (formatName != "gltf") {
                         println("Error: Unknown export format: $formatName")
+                        return
+                    }
+                }
+                "--scale" -> {
+                    if (args.size < 2) {
+                        println("Error: --scale requires an argument")
+                        return
+                    }
+                    val scale = args[++argIndex]
+                    val scaleParts = scale.split(":")
+                    if (scaleParts.size != 2) {
+                        println("Error: Invalid scale: $scale")
+                        return
+                    }
+                    try {
+                        val scaleNumerator = scaleParts[0].trim().toFloat()
+                        val scaleDenominator = scaleParts[1].trim().toFloat()
+                        if (scaleNumerator == 0f || scaleDenominator == 0f) {
+                            println("Error: Invalid scale: $scale")
+                            return
+                        }
+                        startupOptions.scaleFactor = scaleNumerator / scaleDenominator
+                        startupOptions.hasScaleFactor = true
+                    } catch (e: NumberFormatException) {
+                        println("Error: Invalid scale: $scale")
                         return
                     }
                 }

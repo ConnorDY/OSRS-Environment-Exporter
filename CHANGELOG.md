@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### :sparkles: Enhancements
+
+- Add custom scale factors and default to 1:128 instead of 1:100 &ndash; [#177](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/177) @ScoreUnder
+
 ## 2.4.1
 
 ### :bug: Bug Fixes
