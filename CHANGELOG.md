@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### :sparkles: Enhancements
+
+- Add option for changing the sky color &ndash; [#179](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/179) @ConnorDY
+
 ## 2.4.1
 
 ### :bug: Bug Fixes
