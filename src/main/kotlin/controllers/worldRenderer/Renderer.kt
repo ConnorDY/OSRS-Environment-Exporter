@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory
 import ui.CancelledException
 import utils.Utils.doAllActions
 import utils.Utils.isMacOS
+import java.awt.Color
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -60,6 +61,7 @@ class Renderer(
     private val debugOptionsModel: DebugOptionsModel,
 ) : RuneliteRenderer(
     textureManager = textureManager,
+    skyColor = Color.decode(configOptions.skyColor.value.get()),
     antiAliasingMode = configOptions.antiAliasing.value.get()
 ) {
     enum class PreferredPriorityRenderer(val humanReadableName: String, val factory: () -> PriorityRenderer) {
@@ -157,6 +159,9 @@ class Renderer(
         setFpsTarget(configOptions.fpsCap.value.get() ?: 0)
 
         configOptions.priorityRenderer.value.addListener(::priorityRendererPref::set)
+        configOptions.skyColor.value.addListener {
+            try { skyColor = Color.decode(it) } catch (e: NumberFormatException) {}
+        }
         configOptions.antiAliasing.value.addListener(::antiAliasingMode::set)
 
         val redrawSceneListener: (Any?) -> Unit = {

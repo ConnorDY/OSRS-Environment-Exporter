@@ -3,7 +3,9 @@ package controllers
 import models.config.ConfigOption
 import models.config.ConfigOptionType
 import ui.NumericTextField
+import ui.listener.DocumentTextListener
 import java.awt.Component
+import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -14,6 +16,7 @@ import javax.swing.JComboBox
 import javax.swing.JDialog
 import javax.swing.JLabel
 import javax.swing.JList
+import javax.swing.JTextField
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
@@ -26,6 +29,7 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
                 ConfigOptionType.int -> makeIntControls(option as ConfigOption<Int>, index)
                 ConfigOptionType.intToggle -> makeIntToggleControls(option as ConfigOption<Int?>, index)
                 ConfigOptionType.double -> makeDoubleControls(option as ConfigOption<Double>, index)
+                ConfigOptionType.string -> makeStringControls(option as ConfigOption<String>, index)
                 ConfigOptionType.boolean -> makeBooleanControls(option as ConfigOption<Boolean>, index)
                 is ConfigOptionType.Enumerated<*> -> makeEnumeratedControls(
                     option as ConfigOption<out Enum<*>>,
@@ -141,6 +145,33 @@ abstract class AbstractSettingsDialog(owner: Frame, title: String, protected val
         }
         option.value.addListener(this) {
             checkbox.isSelected = it
+        }
+    }
+
+    private fun makeStringControls(
+        option: ConfigOption<String>,
+        index: Int
+    ) {
+        val editBox = JTextField(option.value.get())
+        add(
+            editBox,
+            GridBagConstraints(1, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, defaultInset, 0, 0)
+        )
+        val label = JLabel(option.humanReadableName)
+        label.displayedMnemonic = option.mnemonic.code
+        label.labelFor = editBox
+        add(
+            label,
+            GridBagConstraints(0, index, 1, 1, 0.0, 0.0, GridBagConstraints.LINE_START, GridBagConstraints.NONE, defaultInset, 0, 0)
+        )
+
+        editBox.document.addDocumentListener(
+            DocumentTextListener {
+                option.value.set(editBox.text)
+            }
+        )
+        option.value.addListener(this) {
+            invokeLater { if (editBox.text != it) editBox.text = it }
         }
     }
 
