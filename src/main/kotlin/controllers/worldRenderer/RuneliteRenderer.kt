@@ -71,12 +71,14 @@ import org.lwjgl.opengl.GL30C.glUniform1ui
 import org.lwjgl.opengl.GL31C.GL_UNIFORM_BUFFER
 import org.lwjgl.opengl.GL31C.glGetUniformBlockIndex
 import org.lwjgl.opengl.GL31C.glUniformBlockBinding
+import java.awt.Color
 import java.nio.ByteBuffer
 import kotlin.math.min
 
 // Renderer code which appears to have originated with RuneLite
 open class RuneliteRenderer(
     private val textureManager: TextureManager,
+    var skyColor: Color,
     var antiAliasingMode: AntiAliasingMode,
 ) {
     private var lastStretchedCanvasWidth = -1
@@ -317,8 +319,7 @@ open class RuneliteRenderer(
 
     fun clearScene() {
         // Clear scene
-        val sky = 9493480
-        GL11C.glClearColor((sky shr 16 and 0xFF) / 255f, (sky shr 8 and 0xFF) / 255f, (sky and 0xFF) / 255f, 1f)
+        GL11C.glClearColor(skyColor.red / 255f, skyColor.green / 255f, skyColor.blue / 255f, 1f)
         GL11C.glClear(GL_COLOR_BUFFER_BIT or GL11C.GL_DEPTH_BUFFER_BIT)
     }
 }

@@ -20,6 +20,7 @@ class ConfigOptions(private val configuration: Configuration) {
     val alphaMode = ConfigOption("alpha-mode", ConfigOptionType.Enumerated(AlphaMode::valueOf, AlphaMode.values(), AlphaMode::humanReadableName), AlphaMode.ORDERED_DITHER, "Alpha mode", 'L')
     val sampleShading = ConfigOption("sample-shading", ConfigOptionType.boolean, false, "Sub-sample shading (GL4.0; makes hashed alpha look nicer)", 'S')
     val fov = ConfigOption("fov", ConfigOptionType.double, 90.0, "Field of view (degrees)", 'V')
+    val skyColor = ConfigOption("sky-color", ConfigOptionType.string, "#90DBE8", "Sky color (hex)", 'C')
 
     val isMacOS = isMacOS()
 
@@ -32,6 +33,7 @@ class ConfigOptions(private val configuration: Configuration) {
         checkForUpdates,
         lastCheckedForUpdates,
         mouseWarping,
+        skyColor,
         fov,
         antiAliasing,
         alphaMode,
