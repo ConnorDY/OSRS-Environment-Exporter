@@ -6,6 +6,8 @@
 
 - Add custom scale factors and default to 1:128 instead of 1:100 &ndash; [#177](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/177) @ScoreUnder
 
+- Add command line option to select Z layers &ndash; [#181](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/181) @ScoreUnder
+
 ## 2.4.1
 
 ### :bug: Bug Fixes
