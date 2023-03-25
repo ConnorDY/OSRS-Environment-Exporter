@@ -86,7 +86,7 @@ fun main(args: Array<String>) {
                     configOptions.debug.value.set(true)
                 }
                 "--cache-dir" -> {
-                    if (args.size < 2) {
+                    if (args.size - argIndex < 2) {
                         println("Error: --cache-dir requires an argument")
                         return
                     }
@@ -96,7 +96,7 @@ fun main(args: Array<String>) {
                     startupOptions.exportOnly = true
                 }
                 "--export-dir" -> {
-                    if (args.size < 2) {
+                    if (args.size - argIndex < 2) {
                         println("Error: --export-dir requires an argument")
                         return
                     }
@@ -106,7 +106,7 @@ fun main(args: Array<String>) {
                     startupOptions.exportFlat = true
                 }
                 "--format" -> {
-                    if (args.size < 2) {
+                    if (args.size - argIndex < 2) {
                         println("Error: --format requires an argument")
                         return
                     }
@@ -118,7 +118,7 @@ fun main(args: Array<String>) {
                     }
                 }
                 "--scale" -> {
-                    if (args.size < 2) {
+                    if (args.size - argIndex < 2) {
                         println("Error: --scale requires an argument")
                         return
                     }
@@ -146,7 +146,7 @@ fun main(args: Array<String>) {
                     startupOptions.showPreview = false
                 }
                 "--z-layers" -> {
-                    if (args.size < 2) {
+                    if (args.size - argIndex < 2) {
                         println("Error: --z-layers requires an argument")
                         return
                     }
