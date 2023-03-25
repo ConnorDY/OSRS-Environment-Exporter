@@ -13,4 +13,5 @@ class StartupOptions(configOptions: ConfigOptions) {
     var showPreview = true
     var scaleFactor = configOptions.scaleMode.value.get().scaleFactor
     var hasScaleFactor = false
+    var enabledZLayers = (0..3).toList()
 }

@@ -40,6 +40,7 @@ class CliExporter(startupOptions: StartupOptions) {
         val modelLoader = ModelLoader(cacheLibrary)
 
         val debugOptionsModel = DebugOptionsModel()
+        debugOptionsModel.setZLevelsFromList(startupOptions.enabledZLayers)
 
         val textureManager = TextureManager(spriteLoader, textureLoader)
         val objectToModelConverter = ObjectToModelConverter(modelLoader, debugOptionsModel)

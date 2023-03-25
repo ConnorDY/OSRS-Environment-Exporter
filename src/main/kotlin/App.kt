@@ -1,3 +1,4 @@
+import cache.definitions.RegionDefinition.Companion.Z
 import controllers.CacheChooserController
 import models.StartupOptions
 import models.config.ConfigOptions
@@ -55,6 +56,7 @@ private fun printHelp() {
     println("  --format <format>     Set the export format for this run")
     println("  --scale <factor>      Set the export scale factor (e.g. 1:128), overrides config")
     println("  --no-preview          Run the GUI, but don't render the preview")
+    println("  --z-layers <layers>   Set the Z layers to render (e.g. 0,1,2,3)")
     println("  --                    End of options")
     println()
     println("Arguments:")
@@ -142,6 +144,25 @@ fun main(args: Array<String>) {
                 }
                 "--no-preview" -> {
                     startupOptions.showPreview = false
+                }
+                "--z-layers" -> {
+                    if (args.size < 2) {
+                        println("Error: --z-layers requires an argument")
+                        return
+                    }
+                    val zLayers = args[++argIndex]
+                    val zLayerParts = zLayers.split(",")
+                    val zLayersList = try {
+                        zLayerParts.map { it.trim().toInt() }
+                    } catch (e: NumberFormatException) {
+                        println("Error: List of Z layers should contain only numbers: $zLayers")
+                        return
+                    }
+                    if (zLayersList.any { it < 0 || it >= Z }) {
+                        println("Error: All Z layers should be in the range 0-${Z - 1}: $zLayers")
+                        return
+                    }
+                    startupOptions.enabledZLayers = zLayersList
                 }
                 "--" -> {
                     argIndex++

@@ -17,4 +17,10 @@ class DebugOptionsModel {
     val all = listOf(showOnlyModelType, showTilePaint, showTileModels, resetCameraOnSceneChange, removeProperlyTypedModels, modelSubIndex, badModelIndexOverride)
 
     val zLevelsSelected = Array(Z) { true }.map(::ObservableValue)
+
+    fun setZLevelsFromList(enabledZLayers: List<Int>) {
+        zLevelsSelected.forEachIndexed { index, value ->
+            value.set(index in enabledZLayers)
+        }
+    }
 }
