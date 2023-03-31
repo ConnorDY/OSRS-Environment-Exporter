@@ -85,6 +85,8 @@ class MainController constructor(
         layout = BorderLayout()
         preferredSize = Dimension(1600, 800)
 
+        debugOptions.setZLevelsFromList(startupOptions.enabledZLayers)
+
         val camera = Camera()
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
