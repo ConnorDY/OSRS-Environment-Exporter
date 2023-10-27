@@ -5,9 +5,53 @@ if [ -x "$JAVA_HOME/bin/java" ]; then
     java="$JAVA_HOME/bin/java"
 fi
 
+show_error_dialog() {
+    title="$1"  # The title of the dialog
+    message="$2"  # The message to display in the dialog (escaped newlines are supported)
+
+    if command -v kdialog >/dev/null; then
+        kdialog --title "$title" --error "$message"
+    elif command -v zenity >/dev/null; then
+        zenity --error --title "$title" --text "$message"
+    elif command -v yad >/dev/null; then
+        yad --button=OK --image=dialog-error --title "$title" --text "$message"
+    elif command -v xmessage >/dev/null; then
+        printf '%b\n' "$message" | xmessage -center -title "$title" -file -
+    elif command -v osascript >/dev/null; then
+        osascript -e 'display alert "'"$title"'" message "'"$message"'"'
+    elif command -v notify-send >/dev/null; then
+        notify-send -i dialog-error "$title" "$message"
+    else
+        printf '%b\n' "$message" >&2
+    fi
+}
+
 contains() {
     [ "${1#*"$2"}" != "$1" ]
 }
+
+java_version() {
+    "$java" -version 2>&1 | awk -F '"' '/version/ {print $2; exit}'
+}
+
+check_java_version() {
+    minimum_version="$1"
+    current_version=$(java_version)
+    current_major=${current_version%%.*}
+
+    if ! command -v "$java" >/dev/null; then
+        show_error_dialog "Java not found" "Java $minimum_version or higher is required to run this program, but it was not found on your system.\nPlease install Java and try again."
+        exit 1
+    elif [ -z "$current_version" ]; then
+        show_error_dialog "Java version unknown" "Java $minimum_version or higher is required to run this program, but the version could not be determined.\nPlease check your Java installation."
+        exit 1
+    elif [ "$current_major" -lt "$minimum_version" ]; then
+        show_error_dialog "Java version too low" "Java $minimum_version or higher is required to run this program, but you have $current_version.\nPlease update your Java installation."
+        exit 1
+    fi
+}
+
+check_java_version 11
 
 if [ "${1#--debug}" != "$1" ]; then
     if contains "$1" "software"; then
