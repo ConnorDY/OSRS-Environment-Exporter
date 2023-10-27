@@ -26,6 +26,14 @@ show_error_dialog() {
     fi
 }
 
+open_download_page() {
+    download_link="https://learn.microsoft.com/en-us/java/openjdk/download"
+
+    if command -v open >/dev/null; then
+        open $download_link
+    fi
+}
+
 contains() {
     [ "${1#*"$2"}" != "$1" ]
 }
@@ -41,12 +49,15 @@ check_java_version() {
 
     if ! command -v "$java" >/dev/null; then
         show_error_dialog "Java not found" "Java $minimum_version or higher is required to run this program, but it was not found on your system.\nPlease install Java and try again."
+        open_download_page
         exit 1
     elif [ -z "$current_version" ]; then
         show_error_dialog "Java version unknown" "Java $minimum_version or higher is required to run this program, but the version could not be determined.\nPlease check your Java installation."
+        open_download_page
         exit 1
     elif [ "$current_major" -lt "$minimum_version" ]; then
         show_error_dialog "Java version too low" "Java $minimum_version or higher is required to run this program, but you have $current_version.\nPlease update your Java installation."
+        open_download_page
         exit 1
     fi
 }
