@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.4.1
+
+### :sparkles: Enhancements
+
+- Regions with newer textures will now display properly.
+  
+- More locations added
+
 ## 2.4.0
 
 ### :sparkles: Enhancements
