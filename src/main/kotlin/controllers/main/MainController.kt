@@ -85,6 +85,8 @@ class MainController constructor(
         layout = BorderLayout()
         preferredSize = Dimension(1600, 800)
 
+        debugOptions.setZLevelsFromList(startupOptions.enabledZLayers)
+
         val camera = Camera()
         val objectToModelConverter =
             ObjectToModelConverter(ModelLoader(cacheLibrary), debugOptions)
@@ -299,7 +301,12 @@ class MainController constructor(
         Thread {
             try {
                 try {
-                    exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat)
+                    val scaleFactor =
+                        if (startupOptions.hasScaleFactor)
+                            startupOptions.scaleFactor
+                        else
+                            configOptions.scaleMode.value.get().scaleFactor
+                    exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat, scaleFactor)
                 } catch (_: CancelledException) {
                     return@Thread
                 }

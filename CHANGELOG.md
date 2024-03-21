@@ -1,12 +1,24 @@
 # Changelog
 
-## 2.4.1
+## Unreleased
 
 ### :sparkles: Enhancements
 
-- Regions with newer textures will now display properly.
-  
 - More locations added
+
+- Regions with newer textures will now display properly.
+
+- Add custom scale factors and default to 1:128 instead of 1:100 &ndash; [#177](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/177) @ScoreUnder
+
+- Add command line option to select Z layers &ndash; [#181](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/181) @ScoreUnder
+
+## 2.4.1
+
+### :bug: Bug Fixes
+
+- Fix `idOffset` reading in `LocationsLoader` &ndash; [#174](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/174) @dennisdev
+
+- Add default object transform &ndash; [#175](https://github.com/ConnorDY/OSRS-Environment-Exporter/pull/175) @dennisdev
 
 ## 2.4.0
 

@@ -26,7 +26,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
     val chunkWriteListeners = ArrayList<ChunkWriteListener>()
     var sceneId = (System.currentTimeMillis() / 1000L).toInt()
 
-    fun exportSceneToFile(scene: Scene, directory: String, exportFlat: Boolean) {
+    fun exportSceneToFile(scene: Scene, directory: String, exportFlat: Boolean, scale: Float) {
         // create output directory if it does not yet exist
         File(directory).mkdirs()
 
@@ -37,7 +37,7 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         File(outDir).mkdirs()
 
         // init glTF builder
-        val fmt = GlTFExporter(outDir, chunkWriteListeners)
+        val fmt = GlTFExporter(outDir, scale, chunkWriteListeners)
 
         ++sceneId
 
@@ -157,40 +157,40 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
             val x = tileX * Constants.LOCAL_TILE_SIZE
             val z = tileY * Constants.LOCAL_TILE_SIZE
             materialBuffer.addVertex(
-                (vertexAx + x).toFloat() / scale,
-                (neHeight + height).toFloat() / scale,
-                (vertexAy + z).toFloat() / scale,
+                (vertexAx + x).toFloat(),
+                (neHeight + height).toFloat(),
+                (vertexAy + z).toFloat(),
                 1f, 1f, neColor
             )
             materialBuffer.addVertex(
-                (vertexBx + x).toFloat() / scale,
-                (nwHeight + height).toFloat() / scale,
-                (vertexBy + z).toFloat() / scale,
+                (vertexBx + x).toFloat(),
+                (nwHeight + height).toFloat(),
+                (vertexBy + z).toFloat(),
                 0f, 1f, nwColor
             )
             materialBuffer.addVertex(
-                (vertexCx + x).toFloat() / scale,
-                (seHeight + height).toFloat() / scale,
-                (vertexCy + z).toFloat() / scale,
+                (vertexCx + x).toFloat(),
+                (seHeight + height).toFloat(),
+                (vertexCy + z).toFloat(),
                 1f, 0f, seColor
             )
 
             materialBuffer.addVertex(
-                (vertexDx + x).toFloat() / scale,
-                (swHeight + height).toFloat() / scale,
-                (vertexDy + z).toFloat() / scale,
+                (vertexDx + x).toFloat(),
+                (swHeight + height).toFloat(),
+                (vertexDy + z).toFloat(),
                 0f, 0f, swColor
             )
             materialBuffer.addVertex(
-                (vertexCx + x).toFloat() / scale,
-                (seHeight + height).toFloat() / scale,
-                (vertexCy + z).toFloat() / scale,
+                (vertexCx + x).toFloat(),
+                (seHeight + height).toFloat(),
+                (vertexCy + z).toFloat(),
                 1f, 0f, seColor
             )
             materialBuffer.addVertex(
-                (vertexBx + x).toFloat() / scale,
-                (nwHeight + height).toFloat() / scale,
-                (vertexBy + z).toFloat() / scale,
+                (vertexBx + x).toFloat(),
+                (nwHeight + height).toFloat(),
+                (vertexBy + z).toFloat(),
                 0f, 1f, nwColor
             )
         }
@@ -236,25 +236,25 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
                 val materialBuffer = fmt.getMaterialBuffersAndAddTexture(textureId)
 
                 materialBuffer.addVertex(
-                    (vertexXA + x).toFloat() / scale,
-                    (vertexY[triangleA] + height).toFloat() / scale,
-                    (vertexZA + z).toFloat() / scale,
+                    (vertexXA + x).toFloat(),
+                    (vertexY[triangleA] + height).toFloat(),
+                    (vertexZA + z).toFloat(),
                     vertexXA.toFloat() / 128.0f,
                     vertexZA.toFloat() / 128.0f,
                     colorA
                 )
                 materialBuffer.addVertex(
-                    (vertexXB + x).toFloat() / scale,
-                    (vertexY[triangleB] + height).toFloat() / scale,
-                    (vertexZB + z).toFloat() / scale,
+                    (vertexXB + x).toFloat(),
+                    (vertexY[triangleB] + height).toFloat(),
+                    (vertexZB + z).toFloat(),
                     vertexXB.toFloat() / 128.0f,
                     vertexZB.toFloat() / 128.0f,
                     colorB
                 )
                 materialBuffer.addVertex(
-                    (vertexXC + x).toFloat() / scale,
-                    (vertexY[triangleC] + height).toFloat() / scale,
-                    (vertexZC + z).toFloat() / scale,
+                    (vertexXC + x).toFloat(),
+                    (vertexY[triangleC] + height).toFloat(),
+                    (vertexZC + z).toFloat(),
                     vertexXC.toFloat() / 128.0f,
                     vertexZC.toFloat() / 128.0f,
                     colorC
@@ -334,32 +334,31 @@ class SceneExporter(private val textureManager: TextureManager, private val debu
         val materialBuffer = fmt.getMaterialBuffersAndAddTexture(textureId)
 
         materialBuffer.addVertex(
-            (vertexX[triangleA] + x).toFloat() / scale,
-            (vertexY[triangleA] + height).toFloat() / scale,
-            (vertexZ[triangleA] + z).toFloat() / scale,
+            (vertexX[triangleA] + x).toFloat(),
+            (vertexY[triangleA] + height).toFloat(),
+            (vertexZ[triangleA] + z).toFloat(),
             uv[uvIdx], uv[uvIdx + 1],
             alpha or priority or color1
         )
 
         materialBuffer.addVertex(
-            (vertexX[triangleB] + x).toFloat() / scale,
-            (vertexY[triangleB] + height).toFloat() / scale,
-            (vertexZ[triangleB] + z).toFloat() / scale,
+            (vertexX[triangleB] + x).toFloat(),
+            (vertexY[triangleB] + height).toFloat(),
+            (vertexZ[triangleB] + z).toFloat(),
             uv[uvIdx + 2], uv[uvIdx + 3],
             alpha or priority or color2
         )
 
         materialBuffer.addVertex(
-            (vertexX[triangleC] + x).toFloat() / scale,
-            (vertexY[triangleC] + height).toFloat() / scale,
-            (vertexZ[triangleC] + z).toFloat() / scale,
+            (vertexX[triangleC] + x).toFloat(),
+            (vertexY[triangleC] + height).toFloat(),
+            (vertexZ[triangleC] + z).toFloat(),
             uv[uvIdx + 4], uv[uvIdx + 5],
             alpha or priority or color3
         )
     }
 
     companion object {
-        const val scale = 100f
         val fakeUvArray = floatArrayOf(0f, 0f, 0f, 0f, 0f, 0f)
     }
 }

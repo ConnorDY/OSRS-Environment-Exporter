@@ -19,7 +19,7 @@ import utils.ByteChunkBuffer
 import utils.ChunkWriteListener
 import java.io.File
 
-class GlTFExporter(private val directory: String, private val chunkWriteListeners: List<ChunkWriteListener>) : MeshFormatExporter {
+class GlTFExporter(private val directory: String, private val scale: Float, private val chunkWriteListeners: List<ChunkWriteListener>) : MeshFormatExporter {
     private val materialMap = HashMap<Int, MaterialBuffers>()
     private val rsIndexToMaterialIndex = HashMap<Int, Int>()
     private val sceneNodes = ArrayList<Int>()
@@ -94,7 +94,7 @@ class GlTFExporter(private val directory: String, private val chunkWriteListener
     }
 
     override fun getOrCreateBuffersForMaterial(materialId: Int) = materialMap.getOrPut(materialId) {
-        MaterialBuffers(materialId >= 0)
+        MaterialBuffers(materialId >= 0, scale)
     }
 
     override fun addTextureMaterial(rsIndex: Int, imagePath: String) {

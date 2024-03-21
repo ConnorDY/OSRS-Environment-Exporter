@@ -40,6 +40,7 @@ class CliExporter(startupOptions: StartupOptions) {
         val modelLoader = ModelLoader(cacheLibrary)
 
         val debugOptionsModel = DebugOptionsModel()
+        debugOptionsModel.setZLevelsFromList(startupOptions.enabledZLayers)
 
         val textureManager = TextureManager(spriteLoader, textureLoader)
         val objectToModelConverter = ObjectToModelConverter(modelLoader, debugOptionsModel)
@@ -50,7 +51,12 @@ class CliExporter(startupOptions: StartupOptions) {
 
         scene.sceneChangeListeners.add {
             // Export the scene once it has been loaded.
-            exporter.exportSceneToFile(scene, startupOptions.exportDir, startupOptions.exportFlat)
+            exporter.exportSceneToFile(
+                scene,
+                startupOptions.exportDir,
+                startupOptions.exportFlat,
+                startupOptions.scaleFactor
+            )
         }
 
         // Listen for progress updates

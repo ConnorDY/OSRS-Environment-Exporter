@@ -1,6 +1,7 @@
 package models
 
 import AppConstants.OUTPUT_DIRECTORY
+import cache.definitions.RegionDefinition.Companion.Z
 import models.config.ConfigOptions
 
 class StartupOptions(configOptions: ConfigOptions) {
@@ -11,4 +12,7 @@ class StartupOptions(configOptions: ConfigOptions) {
     var exportDir = OUTPUT_DIRECTORY
     var exportFlat = false
     var showPreview = true
+    var scaleFactor = configOptions.scaleMode.value.get().scaleFactor
+    var hasScaleFactor = false
+    var enabledZLayers = (0 until Z).toList()
 }

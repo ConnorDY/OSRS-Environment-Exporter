@@ -397,17 +397,23 @@ class SceneRegionBuilder constructor(
         baseX: Int,
         baseY: Int
     ): Entity? {
-        val modelDefinition: ModelDefinition =
-            objectToModelConverter.toModel(objectDefinition, type, orientation) ?: return null
-
-        val model = if (objectDefinition.mergeNormals) {
-            Model.unlitFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+        val transformDef = if (objectDefinition.transforms != null && objectDefinition.transforms!!.isNotEmpty()) {
+            objectLoader.get(objectDefinition.transforms!![0]) ?: return null
         } else {
-            Model.lightFromDefinition(modelDefinition, objectDefinition.ambient, objectDefinition.contrast)
+            objectDefinition
+        }
+
+        val modelDefinition: ModelDefinition =
+            objectToModelConverter.toModel(transformDef, type, orientation) ?: return null
+
+        val model = if (transformDef.mergeNormals) {
+            Model.unlitFromDefinition(modelDefinition, transformDef.ambient, transformDef.contrast)
+        } else {
+            Model.lightFromDefinition(modelDefinition, transformDef.ambient, transformDef.contrast)
         }
         model.debugType = type
 
-        if (objectDefinition.contouredGround >= 0) {
+        if (transformDef.contouredGround >= 0) {
             model.contourGround(
                 regionLoader,
                 xSize,
@@ -416,11 +422,11 @@ class SceneRegionBuilder constructor(
                 zPlane,
                 baseX,
                 baseY,
-                objectDefinition.contouredGround
+                transformDef.contouredGround
             )
         }
 
-        return StaticObject(objectDefinition, model, height, type)
+        return StaticObject(transformDef, model, height, type)
     }
 
     private fun packHsl(hue: Int, var1: Int, lightness: Int): Int {
