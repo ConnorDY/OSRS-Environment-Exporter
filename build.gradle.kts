@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "link.cdy"
-version = "2.4.1"
+version = "2.4.2"
 
 repositories {
     mavenCentral {
