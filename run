@@ -26,7 +26,4 @@ if [ "${1#--debug}" != "$1" ]; then
     shift
 fi
 
-# Get the appropriate version from build.gradle.kts
-version=$(grep -oP '(?<=version = ").*(?=")' build.gradle.kts)
-
-exec "$java" $debug_params -jar ./build/libs/osrs-environment-exporter-fat-$version.jar "$@"
+exec "$java" $debug_params -jar ./build/libs/osrs-environment-exporter-fat-2.4.2.jar "$@"
