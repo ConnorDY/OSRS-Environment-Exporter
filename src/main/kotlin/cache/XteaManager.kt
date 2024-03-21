@@ -2,6 +2,7 @@ package cache
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.File
@@ -23,6 +24,7 @@ class XteaManager(path: String) {
         return xteaKeys[region]
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class XteaKey @JsonCreator constructor(
         @JsonProperty("mapsquare") @JsonAlias("region") val mapsquare: Int,
         @JsonProperty("key") @JsonAlias("keys") val key: IntArray
