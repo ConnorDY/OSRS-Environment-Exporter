@@ -194,10 +194,16 @@ class ObjectLoader(private val cacheLibrary: CacheLibrary) : ThreadsafeLazyLoade
         } else if (opcode == 78) {
             def.ambientSoundId = inputStream.readUnsignedShort()
             def.anInt2083 = inputStream.readUnsignedByte()
+
+            // rev 220+
+            inputStream.readUnsignedByte()
         } else if (opcode == 79) {
             def.anInt2112 = inputStream.readUnsignedShort()
             def.anInt2113 = inputStream.readUnsignedShort()
             def.anInt2083 = inputStream.readUnsignedByte()
+
+            // rev 220+
+            inputStream.readUnsignedByte()
             val length: Int = inputStream.readUnsignedByte()
             val anIntArray2084 = IntArray(length)
             for (index in 0 until length) {
@@ -205,7 +211,12 @@ class ObjectLoader(private val cacheLibrary: CacheLibrary) : ThreadsafeLazyLoade
             }
             def.anIntArray2084 = anIntArray2084
         } else if (opcode == 81) {
-            def.contouredGround = inputStream.readUnsignedByte() * 256
+            inputStream.readUnsignedByte() * 256
+            // 'removed' at some point (should be in rev 219 or later than that, definitely before rev 225)
+            // the reason why trees look weird is because of the 'dummy' value that is written for them after this change
+            // def.contouredGround = inputStream.readUnsignedByte() * 256
+        } else if (opcode == 90) {
+            // fix location anim after loc change
         } else if (opcode == 82) {
             def.mapAreaId = inputStream.readUnsignedShort()
         } else if (opcode == 89) {

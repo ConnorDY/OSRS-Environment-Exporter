@@ -6,9 +6,11 @@ import cache.XteaManager
 import com.displee.cache.CacheLibrary
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonMappingException
+import com.fasterxml.jackson.databind.ObjectMapper
 import controllers.main.MainController
 import models.StartupOptions
 import models.config.ConfigOptions
+import models.openrs2.OpenRs2Cache
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream
@@ -16,6 +18,7 @@ import org.jsoup.Jsoup
 import ui.FilteredListModel
 import ui.listener.DocumentTextListener
 import ui.listener.FilterTextListener
+import utils.OpenRs2Api
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
@@ -23,8 +26,18 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.net.URI
 import java.net.URL
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.net.ssl.SSLHandshakeException
 import javax.swing.GroupLayout
 import javax.swing.GroupLayout.Alignment
@@ -352,10 +365,24 @@ class CacheChooserController(
         xteaManager = try {
             XteaManager(txtCacheLocation.text)
         } catch (e: Exception) {
-            lblErrorText.text = when (e) {
-                is JsonMappingException, is JsonProcessingException -> "Bad cache: Could not decode xteas file: ${e.message}"
-                else -> defaultErrorText(e)
+            if(e is JsonMappingException || e is JsonProcessingException) {
+                lblErrorText.text = "Bad cache: Could not decode xteas file: ${e.message}"
+                return
             }
+
+            if (e is FileNotFoundException) {
+                val msg = e.message ?: "Unknown file"
+                if (msg.contains("xteas.json")) {
+                    println("cache decryption keys not found as part of installed cache. Searching archive.openrs2.org")
+                    val success = tryLocateCacheKeys(txtCacheLocation.text)
+                    if(!success) {
+                        defaultErrorText(e)
+                    }
+                    return
+                }
+            }
+
+            defaultErrorText(e)
             btnLaunch.isEnabled = false
             return
         }
@@ -369,6 +396,71 @@ class CacheChooserController(
         }
     }
 
+     /**
+      * Fetches the list of all available caches from OpenRS2 archive and filters for a cache which matches the
+      *  date on the user's selected cache.
+      *
+      * @return A list of OpenRs2Cache objects containing information about available caches
+      * @throws IOException If a network error occurs
+      * @throws HttpException If the server returns a non-2xx status code
+      */
+    private fun tryLocateCacheKeys(cacheLocation: String): Boolean {
+        val date = parseDateFromCachePath(cacheLocation) ?: return false
+
+        println("attempting to locate cache decryption keys for cache: $cacheLocation")
+
+        val openRsApi = OpenRs2Api()
+        val caches = openRsApi.getCaches()
+
+        for (cache in caches) {
+            val instant = cache.timestamp?.let { Instant.parse(it) }
+            val localDate = instant?.atZone(ZoneId.of("UTC"))?.toLocalDate()
+            localDate?.format(DateTimeFormatter.ISO_LOCAL_DATE)
+
+            if(localDate == date) {
+                println("Found openrs2 cache matching date: $date with id: ${cache.id}, fetching keys...")
+                val keys = openRsApi.getCacheKeysById(cache.id.toString())
+
+                val directory = Paths.get(cacheLocation)
+                Files.createDirectories(directory)
+
+                val filePath = directory.resolve("xteas.json")
+                Files.newBufferedWriter(
+                    filePath,
+                    StandardOpenOption.CREATE,
+                    StandardOpenOption.TRUNCATE_EXISTING
+                ).use { writer ->
+                    ObjectMapper().writerWithDefaultPrettyPrinter().writeValue(writer, keys)
+                }
+                return true
+            }
+        }
+
+        return false
+    }
+
+    /**
+     * Parses a date from a cache directory path in the format "{path}/2025-03-05-rev229".
+     * Extracts and parses the date portion (2025-03-05).
+     *
+     * @param cachePath The path string containing the date to parse
+     * @return The LocalDate object represented by the date in the path, or null if parsing fails
+     */
+    private fun parseDateFromCachePath(cachePath: String): LocalDate? {
+        try {
+            val fileName = Paths.get(cachePath).fileName.toString()
+
+            val datePattern = """(\d{4}-\d{2}-\d{2})-rev\d+""".toRegex()
+            val matchResult = datePattern.find(fileName)
+
+            val dateStr = matchResult?.groupValues?.get(1) ?: return null
+            return LocalDate.parse(dateStr, DateTimeFormatter.ISO_LOCAL_DATE)
+        } catch (e: Exception) {
+            println("failed to parse date from cache: ${e.message}")
+            return null
+        }
+    }
+
     private fun defaultErrorText(e: Exception) = when (e) {
         is FileNotFoundException -> "Bad cache: Missing required file: ${e.message}"
         else -> {
@@ -379,5 +471,6 @@ class CacheChooserController(
 
     companion object {
         private const val RUNESTATS_URL = "https://archive.runestats.com/osrs"
+        private const val OPENRS2_URL = "https://archive.openrs2.org"
     }
 }
