@@ -10,9 +10,9 @@ jobs:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - uses: actions/setup-java@v3
+    - uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: 17
@@ -27,7 +27,7 @@ jobs:
       run: ./package-release
 
     - name: Archive release
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: osrs-environment-exporter-${{ matrix.os }}.zip
         path: build/dist/osrs-environment-exporter-*.zip
