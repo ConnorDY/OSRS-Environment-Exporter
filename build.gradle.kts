@@ -62,7 +62,7 @@ dependencies {
 
 tasks {
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "19"
     }
     withType<Jar> {
         manifest {
