@@ -26,7 +26,7 @@ class XteaManager(path: String) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class XteaKey @JsonCreator constructor(
-        @JsonProperty("mapsquare") @JsonAlias("region") val mapsquare: Int,
+        @JsonProperty("mapsquare") @JsonAlias("mapSquare", "region") val mapsquare: Int,
         @JsonProperty("key") @JsonAlias("keys") val key: IntArray
     )
 }

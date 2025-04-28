@@ -1,5 +1,6 @@
 package models.openrs2
 
+import com.fasterxml.jackson.annotation.JsonAlias
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -14,7 +15,7 @@ data class OpenRs2CacheKeys @JsonCreator constructor(
     val nameHash: Int,
     @JsonProperty("name")
     val name: String,
-    @JsonProperty("mapsquare")
+    @JsonProperty("mapsquare") @JsonAlias("mapSquare")
     val mapSquare: Int,
     @JsonProperty("key")
     val key: Array<Int>,
