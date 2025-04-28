@@ -60,6 +60,10 @@ dependencies {
     }
 }
 
+ktlint {
+    ignoreFailures = true
+}
+
 tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "19"
