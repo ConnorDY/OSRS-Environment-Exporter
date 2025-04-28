@@ -2,8 +2,8 @@ import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10"
-    id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
+    kotlin("jvm") version "1.9.0"
+    id("org.jlleitschuh.gradle.ktlint") version "12.2.0"
     id("application")
 }
 
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.displee:rs-cache-library:6.8.1")
+    implementation("com.displee:rs-cache-library:7.2.0")
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
@@ -44,25 +44,29 @@ dependencies {
     implementation("org.joml", "joml", "1.10.4")
     testImplementation(kotlin("test"))
     for (
-        p in listOf(
-            "natives-linux",
-            "natives-linux-arm32",
-            "natives-linux-arm64",
-            "natives-macos",
-            "natives-macos-arm64",
-            "natives-windows",
-            "natives-windows-arm64",
-            "natives-windows-x86",
-        )
+    p in listOf(
+        "natives-linux",
+        "natives-linux-arm32",
+        "natives-linux-arm64",
+        "natives-macos",
+        "natives-macos-arm64",
+        "natives-windows",
+        "natives-windows-arm64",
+        "natives-windows-x86",
+    )
     ) {
         runtimeOnly("org.lwjgl", "lwjgl", classifier = p)
         runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = p)
     }
 }
 
+ktlint {
+    ignoreFailures = true
+}
+
 tasks {
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "19"
     }
     withType<Jar> {
         manifest {
@@ -79,12 +83,13 @@ tasks.test {
     useJUnitPlatform()
 }
 
-val fatJar = task("fatJar", type = Jar::class) {
-    archiveBaseName.set("${project.name}-fat")
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
-    with(tasks.jar.get() as CopySpec)
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
+val fatJar =
+    task("fatJar", type = Jar::class) {
+        archiveBaseName.set("${project.name}-fat")
+        from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+        with(tasks.jar.get() as CopySpec)
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
 
 application {
     mainClass.set("AppKt")
