@@ -2,7 +2,7 @@ import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.9.0"
     id("org.jlleitschuh.gradle.ktlint") version "10.3.0"
     id("application")
 }
@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    implementation("com.displee:rs-cache-library:6.8.1")
+    implementation("com.displee:rs-cache-library:7.1.0")
     implementation("org.jsoup:jsoup:1.14.3")
     implementation("org.apache.commons:commons-compress:1.21")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
