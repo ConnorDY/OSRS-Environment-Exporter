@@ -1,2 +1,2 @@
 @echo off
-java -jar ./build/libs/osrs-environment-exporter-fat-2.4.2.jar %*
+java -jar ./build/libs/osrs-environment-exporter-fat-2.5.0.jar %*
