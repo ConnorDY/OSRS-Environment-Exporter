@@ -29,6 +29,7 @@ import cache.ConfigType
 import cache.IndexType
 import cache.definitions.OverlayDefinition
 import cache.utils.read24BitInt
+import cache.utils.readString
 import cache.utils.readUnsignedByte
 import com.displee.cache.CacheLibrary
 import java.nio.ByteBuffer
@@ -59,6 +60,8 @@ class OverlayLoader(cacheLibrary: CacheLibrary) {
             } else if (opcode == 7) {
                 val secondaryColor: Int = inputStream.read24BitInt()
                 def.secondaryRgbColor = secondaryColor
+            } else if (opcode == 8) {
+                inputStream.readString()
             }
         }
         def.calculateHsl()
