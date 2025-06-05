@@ -61,13 +61,7 @@ class OverlayLoader(cacheLibrary: CacheLibrary) {
                 val secondaryColor: Int = inputStream.read24BitInt()
                 def.secondaryRgbColor = secondaryColor
             } else if (opcode == 8) {
-                // Handle opcode 8 introduced in newer cache revisions
-                // Read string to prevent BufferUnderflowException
                 inputStream.readString()
-            } else {
-                // Handle unknown opcodes by skipping a single byte
-                // This prevents BufferUnderflowException when encountering new opcodes
-                inputStream.readUnsignedByte()
             }
         }
         def.calculateHsl()
