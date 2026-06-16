@@ -26,4 +26,4 @@ if [ "${1#--debug}" != "$1" ]; then
     shift
 fi
 
-exec "$java" $debug_params -jar ./build/libs/osrs-environment-exporter-fat-2.4.2.jar "$@"
+exec "$java" $debug_params -jar ./build/libs/osrs-environment-exporter-fat-2.5.0.jar "$@"
