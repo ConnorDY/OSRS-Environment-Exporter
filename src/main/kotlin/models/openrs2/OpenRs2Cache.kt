@@ -1,8 +1,13 @@
 package models.openrs2;
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+import java.time.DateTimeException
+import java.time.Instant
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class OpenRs2Cache @JsonCreator constructor(
@@ -48,3 +53,23 @@ data class Build @JsonCreator constructor(
     @JsonProperty("minor")
     val minor: Int? = null
 )
+
+val OpenRs2Cache.timestampDateTime: ZonedDateTime?
+    get() = timestamp?.let {
+        try {
+            it.let(Instant::parse)
+                .atZone(ZoneOffset.UTC)
+        } catch (_: DateTimeException) {
+            null
+        }
+    }
+
+val OpenRs2Cache.dateString: String?
+    get() =
+        try {
+            timestampDateTime?.format(DateTimeFormatter.ISO_LOCAL_DATE)
+        } catch (_: DateTimeException) {
+            null
+        }
+
+val Build.versionString: String get() = if (minor == null) major.toString() else "$major.$minor"
