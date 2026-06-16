@@ -11,17 +11,7 @@ group = "link.cdy"
 version = "2.4.2"
 
 repositories {
-    mavenCentral {
-        content {
-            excludeModule("org.lwjglx", "lwjgl3-awt")
-        }
-    }
-    maven {
-        url = uri("https://score.moe/m2/")
-        metadataSources {
-            artifact()
-        }
-    }
+    mavenCentral()
 }
 
 dependencies {
@@ -40,7 +30,9 @@ dependencies {
     implementation("org.lwjgl", "lwjgl")
     implementation("org.lwjgl", "lwjgl-jawt")
     implementation("org.lwjgl", "lwjgl-opengl")
-    implementation("org.lwjglx", "lwjgl3-awt", "0.1.9-SNAPSHOT")
+    implementation("org.lwjglx", "lwjgl3-awt", "0.2.4") {
+        isTransitive = false
+    }
     implementation("org.joml", "joml", "1.10.4")
     testImplementation(kotlin("test"))
     for (

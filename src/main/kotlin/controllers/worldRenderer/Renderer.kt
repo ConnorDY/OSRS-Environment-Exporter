@@ -108,14 +108,15 @@ class Renderer(
             }
 
             override fun paintGL() {
-                if (isMacOS()) {
-                    // MacOS highDPI stuff returns the wrong value for framebuffer width/height
-                    this@Renderer.reshape(width, height)
-                } else {
-                    this@Renderer.reshape(framebufferWidth, framebufferHeight)
-                }
-                if (width > 0 && height > 0)
+                val renderWidth =
+                    if (isMacOS()) framebufferWidth.takeIf { it > 0 } ?: width else framebufferWidth
+                val renderHeight =
+                    if (isMacOS()) framebufferHeight.takeIf { it > 0 } ?: height else framebufferHeight
+
+                this@Renderer.reshape(renderWidth, renderHeight)
+                if (renderWidth > 0 && renderHeight > 0) {
                     this@Renderer.display(this)
+                }
             }
 
             override fun disposeCanvas() {

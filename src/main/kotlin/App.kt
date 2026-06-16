@@ -5,6 +5,7 @@ import models.config.ConfigOptions
 import models.config.Configuration
 import org.pushingpixels.radiance.theming.api.skin.RadianceGraphiteAquaLookAndFeel
 import utils.PackageMetadata
+import utils.Utils.isMacOS
 import utils.Utils.isWindows
 import javax.swing.JPopupMenu
 import javax.swing.SwingUtilities
@@ -199,6 +200,9 @@ fun main(args: Array<String>) {
 fun setThemingOptions() {
     setSysProperty("awt.useSystemAAFontSettings", "on")
     setSysProperty("swing.aatext", "true")
+    if (isMacOS()) {
+        setSysProperty("apple.laf.useScreenMenuBar", "true")
+    }
 
     SwingUtilities.invokeLater {
         try {
